@@ -28,8 +28,8 @@
   /* --- movimiento: una duración y una curva para toda la app --- */
   --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
 
-  /* --- foco: dos capas, para que se despegue igual sobre claro y sobre oscuro --- */
-  --foco:0 0 0 2px var(--sup), 0 0 0 4px var(--ac);
+  /* --- foco: dos capas, para que se despegue igual sobre claro y sobre oscuro ---
+     (va en `body`, abajo: usa --sup y --ac, que los declara el tema en <body>) */
 
   /* --- armazón (medidas del encargo) --- */
   --barra:176px;      /* lateral */
@@ -39,6 +39,43 @@
   --pie:32px;         /* footer */
   --cal-w:34px;       /* columna de número de semana */
   --der-actual:var(--der);
+}
+
+/* Los tokens que COMPONEN otros tokens de tema se declaran en `body`, no en
+   `:root`: un var() dentro de una custom property se resuelve en el elemento
+   donde se DECLARA, y --ok-fg, --sup3, --line, --ac… los pone el tema en
+   body.tema-*. Declarados en :root quedaban inválidos (el mapa se pintaba sin
+   color de estado y ningún anillo de foco aparecía). Medido en navegador. */
+body{
+  /* --- foco: dos capas, para que se despegue igual sobre claro y sobre oscuro --- */
+  --foco:0 0 0 2px var(--sup), 0 0 0 4px var(--ac);
+
+  /* --- bloque Malla · iteración 4a --------------------------------
+     Parejas texto/fondo del estado del ramo en la vista mapa. El fondo
+     es un tinte del color de estado sobre la superficie de tarjeta, así
+     que el tema decide los dos valores. Contraste medido en navegador:
+     claro 6,09 · 5,85 · 5,50 · 6,70 y oscuro 7,30 · 7,63 · 5,53 · 6,92
+     (aprobado, curso, disponible, bloqueado; WCAG mínimo 4,5:1). */
+  --malla-aprobado-bg:color-mix(in srgb,var(--ok) 14%,var(--sup3));
+  --malla-aprobado-fg:var(--ok-fg);
+  --malla-curso-bg:color-mix(in srgb,var(--warn) 14%,var(--sup3));
+  --malla-curso-fg:var(--warn-fg);
+  --malla-disponible-bg:color-mix(in srgb,var(--ac) 14%,var(--sup3));
+  --malla-disponible-fg:var(--ac-fuerte);
+  --malla-bloqueado-bg:color-mix(in srgb,var(--muted) 10%,var(--sup3));
+  --malla-bloqueado-fg:var(--muted2);
+
+  /* estructura del mapa y sus flechas: un color, un rol */
+  --malla-nodo-borde:var(--line);
+  --malla-nodo-sel:var(--ac);
+  --malla-flecha:var(--line-fuerte);
+  --malla-flecha-entra:var(--ac);
+  --malla-flecha-sale:var(--warn);
+  --malla-seccion-bg:var(--sup2);
+  --malla-seccion-linea:var(--line);
+  --malla-mapa-fondo:var(--sup);
+  --malla-mapa-borde:var(--line);
+  --malla-mapa-pista:var(--muted2);
 }
 
 *{box-sizing:border-box}

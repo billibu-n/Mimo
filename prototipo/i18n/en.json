@@ -269,7 +269,90 @@
     "valorRacha": "3 days",
     "valorSesiones": "2 of 4",
     "notaEstudio": "Declared by the Study manifest: panelContexto. The shell renders the panel.",
-    "notaAporte": "Assessments contributes the course and its weight to every assessment."
+    "notaAporte": "Assessments contributes the course and its weight to every assessment.",
+    "mallaSinCurso": "No context · no course selected"
+  },
+
+  "malla": {
+    "titulo": "Curriculum",
+    "sub": {
+      "resumen": "{semestres} semesters · {ramos} courses · {aprobados} passed · {activos} in progress · {creditos} credits passed",
+      "vacio": "No data yet · import the JSON backup.",
+      "sinMotor": "The curriculum engine is missing: this screen turns on when bloques/malla/motor.js loads.",
+      "error": "The curriculum could not be read. Try again."
+    },
+    "pista": "Select a course to see its detail in the panel.",
+    "leyenda": { "aria": "Course status" },
+    "vista": {
+      "selector": "View",
+      "mapa": "Map",
+      "tarjetas": "Cards"
+    },
+    "estado": {
+      "aprobado": "Passed",
+      "curso": "In progress",
+      "disponible": "Available",
+      "bloqueado": "Locked",
+      "desconocido": "No status"
+    },
+    "badge": { "anual": "year-long" },
+    "seccion": {
+      "planComun": "Common plan",
+      "licenciatura": "Bachelor's",
+      "especialidad": "Specialization"
+    },
+    "mapa": {
+      "aria": "Curriculum map",
+      "pista": "Select a course to see its prerequisites and what it unlocks.",
+      "leyendaSel": "Blue: what it needs · Amber: what it unlocks."
+    },
+    "creditos": "credits",
+    "creditosCorto": "cr",
+    "ramos": "courses",
+    "enCurso": "In progress",
+    "semestreN": "Semester {n}",
+    "o": "or",
+    "acc": {
+      "importar": "Import JSON",
+      "importarAria": "Import JSON · opens a curriculum backup file",
+      "importarTitulo": "Import the JSON backup (format 2)",
+      "exportar": "Export",
+      "exportarAria": "Export · curriculum summary (the full export arrives in 4e)",
+      "exportarTitulo": "For now it shows the summary: the download arrives in 4e"
+    },
+    "vacio": {
+      "sinMotorTit": "The curriculum engine is missing",
+      "sinMotorTxt": "This screen needs bloques/malla/motor.js. It retries on refresh and no data is invented.",
+      "sinDatosTit": "No curriculum yet",
+      "sinDatosTxt": "Import the JSON backup (format 2) to see your courses grouped by semester.",
+      "errorTit": "The curriculum could not be read",
+      "errorTxt": "The engine returned an error. Try again or check the imported backup.",
+      "reintentar": "Retry"
+    },
+    "import": {
+      "sinMotor": "The curriculum engine is not loaded yet: it cannot import.",
+      "sinImportador": "bloques/malla/importar.js is missing: the file cannot be read.",
+      "error": "The file could not be imported. ",
+      "ok": "Curriculum imported: {cursos} courses · {aprobados} passed · {activos} in progress"
+    },
+    "export": {
+      "4e": "The full export arrives in 4e.",
+      "resumen": "{cursos} courses · {aprobados} passed · {activos} in progress. ",
+      "sinExportador": "No exporter is loaded yet. "
+    },
+    "panel": {
+      "titulo": "Course detail",
+      "estado": "Status",
+      "creditos": "Credits",
+      "semestre": "Semester",
+      "prerrequisitos": "Prerequisites",
+      "sinRequisitos": "No prerequisites",
+      "desbloquea": "Unlocks",
+      "noDesbloquea": "It unlocks no course",
+      "unoDe": "one of the two",
+      "notas": "Grades",
+      "notaFinal": "Final grade"
+    }
   },
 
   "pie": {

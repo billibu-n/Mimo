@@ -269,7 +269,90 @@
     "valorRacha": "3 días",
     "valorSesiones": "2 de 4",
     "notaEstudio": "Lo declara el manifiesto de Estudio: panelContexto. El panel lo pinta el shell.",
-    "notaAporte": "Evaluaciones aporta el ramo y su peso a cada evaluación."
+    "notaAporte": "Evaluaciones aporta el ramo y su peso a cada evaluación.",
+    "mallaSinCurso": "Sin contexto · sin curso seleccionado"
+  },
+
+  "malla": {
+    "titulo": "Malla curricular",
+    "sub": {
+      "resumen": "{semestres} semestres · {ramos} ramos · {aprobados} aprobados · {activos} en curso · {creditos} créditos aprobados",
+      "vacio": "Sin datos todavía · importa el respaldo en JSON.",
+      "sinMotor": "Falta el motor de la malla: esta pantalla se activa cuando cargue bloques/malla/motor.js.",
+      "error": "No se pudo leer la malla. Vuelve a intentarlo."
+    },
+    "pista": "Selecciona un ramo para ver su detalle en el panel.",
+    "leyenda": { "aria": "Estado de los ramos" },
+    "vista": {
+      "selector": "Vista",
+      "mapa": "Mapa",
+      "tarjetas": "Tarjetas"
+    },
+    "estado": {
+      "aprobado": "Aprobado",
+      "curso": "En curso",
+      "disponible": "Disponible",
+      "bloqueado": "Bloqueado",
+      "desconocido": "Sin estado"
+    },
+    "badge": { "anual": "anual" },
+    "seccion": {
+      "planComun": "Plan común",
+      "licenciatura": "Licenciatura",
+      "especialidad": "Especialidad"
+    },
+    "mapa": {
+      "aria": "Mapa curricular",
+      "pista": "Elige un ramo para ver sus prerrequisitos y lo que desbloquea.",
+      "leyendaSel": "Azul: lo que necesita · Ámbar: lo que desbloquea."
+    },
+    "creditos": "créditos",
+    "creditosCorto": "cr",
+    "ramos": "ramos",
+    "enCurso": "En curso",
+    "semestreN": "Semestre {n}",
+    "o": "o",
+    "acc": {
+      "importar": "Importar JSON",
+      "importarAria": "Importar JSON · abre un archivo de respaldo de la malla",
+      "importarTitulo": "Importar el respaldo en JSON (formato 2)",
+      "exportar": "Exportar",
+      "exportarAria": "Exportar · resumen de la malla (la exportación completa llega en la 4e)",
+      "exportarTitulo": "Por ahora muestra el resumen: la descarga llega en la 4e"
+    },
+    "vacio": {
+      "sinMotorTit": "Falta el motor de la malla",
+      "sinMotorTxt": "Esta pantalla necesita bloques/malla/motor.js. Se reintenta al refrescar y no se inventa ningún dato.",
+      "sinDatosTit": "Todavía no hay malla",
+      "sinDatosTxt": "Importa el respaldo en JSON (formato 2) para ver tus ramos agrupados por semestre.",
+      "errorTit": "No se pudo leer la malla",
+      "errorTxt": "El motor respondió con un error. Vuelve a intentarlo o revisa el respaldo importado.",
+      "reintentar": "Reintentar"
+    },
+    "import": {
+      "sinMotor": "El motor de la malla aún no está cargado: no se puede importar.",
+      "sinImportador": "Falta bloques/malla/importar.js: no se puede leer el archivo.",
+      "error": "No se pudo importar el archivo. ",
+      "ok": "Malla importada: {cursos} cursos · {aprobados} aprobados · {activos} en curso"
+    },
+    "export": {
+      "4e": "La exportación completa llega en la 4e.",
+      "resumen": "{cursos} cursos · {aprobados} aprobados · {activos} en curso. ",
+      "sinExportador": "No hay exportador cargado todavía. "
+    },
+    "panel": {
+      "titulo": "Detalle del curso",
+      "estado": "Estado",
+      "creditos": "Créditos",
+      "semestre": "Semestre",
+      "prerrequisitos": "Prerrequisitos",
+      "sinRequisitos": "Sin prerrequisitos",
+      "desbloquea": "Desbloquea",
+      "noDesbloquea": "No abre paso a ningún ramo",
+      "unoDe": "uno de los dos",
+      "notas": "Notas",
+      "notaFinal": "Nota final"
+    }
   },
 
   "pie": {

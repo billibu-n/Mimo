@@ -1,13 +1,39 @@
 # CONTRATO DE BLOQUES — Mimo Nuevo
 
-> **Versión 0.2 (prototipo)** · 2026-10-19 · Estado: **propuesta para revisión del dueño**
+> **Versión 0.3 (prototipo)** · 2026-10-19 · Estado: **propuesta para revisión del dueño**
 > Este documento fija **qué tiene que cumplir** un bloque para que la base no se rompa cuando
 > llegue el primero escrito por otro. No decide todavía la implementación (WebView, worker o
 > iframe): decide el contrato.
 >
-> **La v0.1 se conserva entera debajo.** Las secciones §1 a §6 **no se han editado**: hay material
-> citándolas y reescribirlas borraría el registro de lo que se aprobó. Lo que cambia va en el bloque
-> de aquí abajo y en las **cuatro secciones nuevas** (§7 a §10).
+> **La v0.1 y la v0.2 se conservan enteras debajo.** Las secciones §1 a §10 **no se han editado**: hay
+> material citándolas y reescribirlas borraría el registro de lo que se aprobó. La v0.3 añade **tres
+> secciones** (§11, §12 y §13) y **precisa** un punto de §2 sin cambiarlo (§11.2).
+
+## Cambios en v0.3
+
+La v0.2 decidió la forma; la v0.3 la **pone a prueba con el primer bloque real** (Malla) y escribe lo
+que solo se ve al construirlo. Cada punto dice **dónde se lee**.
+
+1. **El primer bloque con pantalla de verdad, y la superficie para tenerla.** Hasta ahora el shell
+   dibujaba la pantalla de todo bloque («próximamente»), así que un bloque no podía tener la suya sin
+   editar el shell. Ahora el bloque expone `montar` · `desmontar` · `panel` · `refrescar` y el shell
+   solo sabe **montar** lo que el mapa declara. → **§12**
+2. **El panel derecho gana una forma dinámica.** La v0.2 declaraba `panelContexto` como lista de
+   etiqueta·valor (resumen fijo). Un detalle que cambia con la selección necesita otra forma: el bloque
+   **describe** `{titulo, bloques[{h, items}]}` y el shell lo dibuja. `modo` en el manifiesto dice cuál
+   de las dos se usa. → **§12.4**
+3. **Una clave de almacén por bloque.** `datos.posee` nombra **colecciones lógicas**; la clave física es
+   `mimo.bloque.<id>`. Sin esto, una escritura del bloque tocaba tres claves y podía quedar a medias.
+   → **§11.2** (precisa §2; no lo cambia)
+4. **Extensiones: piezas declaradas y NO activas.** `extensiones[]` con `porDefecto:false`. Declarar no
+   es instalar; el bloque funciona sin todas (AU-21). Malla declara tres (`editor`, `importar-pdf`,
+   `simulador`). → **§11.3**
+5. **`recursos.scripts` y el porte del cálculo.** Un bloque con lógica declara **qué ficheros** monta y
+   en qué orden; y el cálculo se porta de la aplicación anterior **sin** portar su dibujo, comparando
+   los estados con el mismo respaldo real. → **§11.1** y **§11.4**
+6. **Importar y exportar con dueño.** Un bloque entra y sale **solo con sus colecciones**: seis de las
+   doce claves del respaldo son de Malla. La fusión de todos los bloques es de la 4e, y tendrá que
+   cumplir AU-14/AU-15/AU-17. → **§13**
 
 ## Cambios en v0.2
 
@@ -445,3 +471,411 @@ manifiestos**, no un formato distinto que haya que traducir.
    antes de usarse** (§3.6).
 6. **El canal se enseña antes de instalar.** El usuario sabe si lo que va a instalar vino con la app,
    de una carpeta suya o de internet.
+
+---
+
+## 11. El bloque Malla: manifiesto, motor y almacén
+
+**Qué estrena la v0.3.** La v0.2 decidió la **forma** de los bloques, pero ninguna entrada del catálogo
+tenía pantalla de verdad: todas decían «próximamente». La v0.3 escribe **el primero funcional** y, al
+escribirlo, aparecen cuatro cosas que solo se descubren haciendo: **dónde vive lo que un bloque guarda**
+(§11.2), **qué es una extensión declarada y no activa** (§11.3), **cómo se porta el cálculo de la
+aplicación anterior sin portar su dibujo** (§11.4) y **cómo se comprueba que el porte es fiel** (§11.5).
+
+### 11.1 Forma
+
+```json
+{
+  "id": "malla",
+  "nombre": "Malla curricular",
+  "version": "1.0.0",
+  "autor": "Mimo Labs",
+  "licencia": "MIT",
+  "naturaleza": "seccion",
+  "zona": "main",
+  "compatible": ">=0.1.0 <1.0.0",
+  "permisos": ["almacen:propio", "puente:calendario.leerEventos"],
+  "ofrece": [
+    "malla.getCurso(codigo)",
+    "malla.getCursosDeSemestre(n)",
+    "malla.getEstadoCurso(codigo)",
+    "malla.getRamosActivos()"
+  ],
+  "necesita": [],
+  "consume": ["calendario.leerEventos"],
+  "configuraciones": [],
+  "extensiones": [
+    { "id": "editor", "nombre": "Editor de malla", "porDefecto": false },
+    { "id": "importar-pdf", "nombre": "Importar PDF de malla", "porDefecto": false },
+    { "id": "simulador", "nombre": "Simulador de notas", "porDefecto": false }
+  ],
+  "datos": {
+    "posee": ["malla.cursos", "malla.aprobados", "malla.config"],
+    "conservarAlQuitar": true
+  },
+  "recursos": {
+    "icono": "iconos/malla.svg",
+    "estilos": ["bloques/malla/estilos.css"],
+    "scripts": [
+      "bloques/malla/motor.js",
+      "bloques/malla/importar.js",
+      "bloques/malla/exportar.js",
+      "bloques/malla/ui.js"
+    ]
+  },
+  "panelContexto": {
+    "modo": "dinamico",
+    "puente": "malla.panel",
+    "titulo": "Detalle del curso",
+    "siFalta": "el panel derecho dice «Sin contexto · sin curso seleccionado»"
+  }
+}
+```
+
+El fichero exacto es `prototipo/bloques/malla/manifiesto.json`, y `datos/bloques.json` lleva la **misma**
+entrada más `descripcion` y `lanzamiento` (que son de la ficha del catálogo, no del contrato).
+
+- **Todas las claves de §2 siguen siendo obligatorias** aunque valgan vacío o `null`. `datos/bloques.json`
+  ya lo exigía para los ocho manifiestos de la v0.2; Malla no es la excepción.
+- **`recursos.scripts` es nuevo en la v0.3.** La v0.2 declaraba los estilos y **no decía cómo llega el
+  código**. Un bloque con lógica tiene que decirlo: el shell carga esos ficheros **en el orden
+  declarado**, una vez, y en un ámbito propio (§5). Solo aplica a `bundled` y `local`; un bloque `remoto`
+  traerá su propio transporte cuando exista (decisión 9, sigue abierta).
+- **`ofrece` es el contrato del motor, no una lista de deseos.** Malla ofrece cuatro funciones y la
+  pantalla usa exactamente esas cuatro más las de apoyo de §11.4. Si una pantalla futura necesita más,
+  se amplía el manifiesto **antes** de usarla.
+
+### 11.2 Dónde vive lo que un bloque guarda
+
+**Regla nueva, y precisa lo que §2 daba a entender.** §2 decía «`datos.posee`: claves de almacén que son
+suyas». Eso se leía como una clave física por colección, y con el primer bloque real no cuadra:
+
+> **La clave física es UNA por bloque: `mimo.bloque.<id>`. `datos.posee` nombra las COLECCIONES lógicas
+> que son suyas, no los nombres de las claves.**
+
+Por qué se decide así, y qué se gana:
+
+| antes (§2 leído al pie de la letra) | ahora (v0.3) |
+|---|---|
+| `malla.cursos`, `malla.aprobados`, `malla.config` = tres claves | tres **colecciones** dentro de `mimo.bloque.malla` |
+| una escritura del bloque toca tres claves: puede quedar a medias | una escritura es **atómica**: una clave, un `setItem` |
+| el shell tiene que abrir tres claves antes de montar | abre **una** y sabe a quién pertenece por el nombre |
+| borrar el bloque = `removeItem` de tres claves, y si una falla quedan restos | borrar = **una** operación (§3.3, §5) |
+
+Lo que **no** cambia: `datos.posee` sigue siendo la declaración que el usuario lee **antes** de instalar
+(AU-32), y sigue siendo la lista de lo que se borra al desinstalar. Cambia **dónde** está, no **qué** es.
+
+La forma del almacén de Malla (**v1**) — es la que escribe `motor.js` y la que lee todo el bloque:
+
+```json
+{
+  "_v": 1,
+  "catalogo": { "MA2001": { "nombre": "Cálculo Integral", "creditos": 6, "nivel": 2,
+                "semestre_num": 2, "tipo": "obligatorio", "en_malla": true, "anual": false,
+                "requisitos": ["MA1001"], "requisitos_o": [["FI2004","IQ2212"]],
+                "desbloquea": ["MA3001"], "aprobacion": "74" } },
+  "aprobados": { "MA1001": true },
+  "importado": { "codigos": ["MA1001"], "cuando": "2026-09-19" },
+  "ramos": [ { "codigo": "MA2002", "nombre": "…", "creditos": 6, "nivel": 4 } ],
+  "notas": { "MA2002": 5.8 },
+  "ajustes": { "av": { "colores": { "aprobado": "#16a34a", "curso": "#eab308",
+                "disponible": "#2563eb", "bloqueado": "#94a3b8" } } },
+  "niveles": [ { "nivel": 1, "titulo": "Semestre I", "ramos": ["BT1211"] } ]
+}
+```
+
+- **`_v` es obligatorio y no se toca al importar.** Es lo que permite migrar **solo añadiendo** (§3.4)
+  cuando el formato cambie. Un almacén sin `_v` se trata como vacío, no como «v1 por suerte».
+- **`ramos` son los ramos ACTIVOS**, no la malla entera: lo que el usuario está cursando ahora. La malla
+  completa es `catalogo` + `niveles`.
+- **`notas` es opcional.** Viene del respaldo si existe; Malla **no** es el bloque de calificaciones y no
+  inventa notas que no le hayan dado (AU-24).
+- **`ajustes.av.colores` son colores del USUARIO**, no del kit. La pantalla los aplica como variables CSS
+  en línea, con los tokens del tema como respaldo. En `estilos.css` no aparece ni un literal (§5).
+- **Nada duplicado:** el nombre de un curso vive en `catalogo` una vez; `aprobados`, `ramos` y `notas`
+  solo llevan códigos y valores. (AU-10, AU-73.)
+
+### 11.3 Extensiones: declaradas, y ninguna activa
+
+**Qué es una extensión.** Una pieza del bloque **que no se monta por defecto**: código y pantalla que
+existen en el manifiesto pero no en el arranque. Es distinta de `configuraciones` (§8: valores que el
+usuario cambia) y de `instala` (§9: otros bloques que trae un pack). Una extensión **es del bloque** y se
+enciende dentro de él.
+
+| extensión | qué añadiría | por qué no está activa en la v0.3 |
+|---|---|---|
+| `editor` | escribir la malla: crear, editar y borrar ramos y prerrequisitos | el editor de Academics (30 KB, `02-editor-ramos.js`) escribe el catálogo **a mano**; portarlo sin antes decidir qué pasa con las notas y con los aprobados importados deja dos fuentes de verdad |
+| `importar-pdf` | leer la malla desde un PDF del plan de estudios | necesita un lector de PDF (21 KB en Academics) y un criterio de confianza: un PDF mal leído **inventa prerrequisitos**, y eso se propaga a todos los estados |
+| `simulador` | marcar ramos como «aprobados en simulación» y ver qué se desbloquea | el simulador de Academics ya está parametrizado (`calcularCon(aprob)`), pero su pantalla vive dentro del dibujo de la malla; mostrar dos estados a la vez (real y simulado) es una decisión de diseño, no un porte |
+
+Las cuatro reglas de una extensión:
+
+1. **Declarar no es instalar.** `porDefecto: false` significa «no se monta hasta que el usuario la
+   encienda». Ni el shell ni el bloque la dan por hecha.
+2. **El bloque funciona sin todas.** Es AU-21 aplicada a la extensión: si Malla necesitara el editor para
+   dibujar, el editor no sería una extensión, sería el bloque.
+3. **Enciende y apaga sin perder datos.** Una extensión no cambia la forma del almacén de forma
+   incompatible; si la cambia, la migración es de solo añadir (§3.4).
+4. **Lo que la extensión añade se ve como añadido.** Un ramo inventado por el simulador no se pinta igual
+   que uno aprobado de verdad (AU-25, AU-109: no solo por color).
+
+### 11.4 El motor: se porta el cálculo, NO el dibujo
+
+El material de origen es la aplicación anterior, en `/tmp/mimo-explore/` (solo lectura). Lo que se portó:
+
+| función portada | de dónde | qué hace |
+|---|---|---|
+| `calcularCon(aprob)` | `js/malla/03-dibujo.js:22` | estados de todos los ramos con un juego de aprobados dado |
+| `aprobadosSet()` | `js/malla/03-dibujo.js:10` | une los aprobados a mano con los marcados en los semestres |
+| `requisitosFaltantes(cod)` | `js/malla/03-dibujo.js:52` | qué falta para desbloquear un ramo, con los grupos «basta uno» |
+| `cadena(cod, dir)` | `js/malla/03-dibujo.js:62` | la línea completa de prerrequisitos (antes) o de desbloqueos (después) |
+| `herederoDe(cod)` | `js/malla/03-dibujo.js:73` | equivalencias: quién hereda el aprobado de quién |
+| `esAnual` / `semestresQueOcupa` | `js/malla/03-dibujo.js:82,91` | ramos anuales y cuántos semestres ocupan |
+| `aplanar(grupos)` | `js/malla/03-dibujo.js:51` | abre los grupos `requisitos_o` en una lista |
+| normalización del catálogo | `js/comun/03-catalogo.js` | campos obligatorios, `semestre_num`, `desbloquea` |
+| lectura de la malla (filas/JSON) | `js/malla/01-importar.js` | base del importador, **sin** la UI del modal |
+
+**Lo que NO se portó, y por qué:** `renderMalla`, `nodoHTML`, `dibujarLineas`, `chipCurso`,
+`renderMallaDetalle`, `acomodarAnuales` (`03-dibujo.js`), el modal del editor (`02-editor-ramos.js`),
+la lectura de PDF (`04-pdf.js`) y el simulador de pantalla (`06-simulador.js`). Todo eso es **dibujo**:
+la pantalla nueva se escribe contra los tokens del prototipo y no hereda ni una clase de Academics
+(AU-49 dice mirar el material; no dice copiarlo).
+
+**El cálculo no es opinable.** `getEstadoCurso(codigo)` devuelve uno de cuatro valores, con esta
+prioridad y en este orden:
+
+1. **`aprobado`** — está en `aprobados`.
+2. **`curso`** — está en `ramos` (los activos de ahora).
+3. **`disponible`** — no lo está, pero **todos** sus `requisitos` están aprobados **y** **cada** grupo de
+   `requisitos_o` tiene **al menos uno** aprobado. (Este segundo requisito es el que faltaba en la
+   versión anterior y marcaba `MI3230` como disponible sin tener `FI2004`: el caso está en el comentario
+   del origen, `03-dibujo.js:36-38`.)
+4. **`bloqueado`** — lo demás.
+
+Un ciclo en el grafo (un ramo que acaba siendo prerrequisito de sí mismo) **no cuelga la recursión**: se
+memoiza y se corta con el conjunto «visto», y el ramo que cierra el ciclo queda `bloqueado`.
+
+**Sin `window` ni `document`.** El motor es cálculo puro (§5). Se hace **una** concesión explícita: lee y
+escribe su almacén por **una sola puerta** (`leer()` / `escribir()`), que en el navegador es
+`localStorage` y en una prueba de Node es un doble en memoria. Ninguna función de cálculo toca el almacén
+salvo para pedirlo una vez. La línea de exportación (`window.MimoMallaMotor = …`) es la única que nombra
+`window`.
+
+### 11.5 Cómo se comprueba que el porte es fiel
+
+No basta con que la pantalla se vea: **el cálculo se compara con el de la aplicación anterior**, con el
+mismo respaldo real del dueño (formato 2, 125 KB, 84 cursos, 18 aprobados a mano). La comprobación que se
+corrió, y que cualquiera puede repetir:
+
+1. **Node con `localStorage` falso**, cargando `motor.js` como script: la malla del respaldo da los
+   cuatro estados, sin excepción y sin colgarse en ningún ciclo.
+2. **Un caso que DEBE fallar** (AU-51): un fichero con `formato: 1` y un JSON roto. El importador los
+   rechaza **con mensaje** y **no toca el almacén**: los datos anteriores siguen idénticos.
+3. **Ida y vuelta**: importar → exportar → reimportar da los mismos números (cursos, aprobados, activos,
+   notas, colores). Si no los da, la exportación está inventando o perdiendo algo.
+
+**Resultado medido** (respaldo real del dueño, `datos/malla-ejemplo.json`, 125 335 B):
+
+| comprobación | resultado |
+|---|---|
+| importación | 84 cursos · 18 aprobados · 5 ramos activos · 5 notas · 12 niveles · 4 colores |
+| estados | 18 aprobado · 5 curso · 15 disponible · 46 bloqueado = **84** |
+| fidelidad contra Academics | **84 de 84** estados idénticos uno a uno; ramos activos idénticos; `requisitosFaltantes` idéntico en los 20 bloqueados comparados |
+| códigos que sobran del motor viejo | **6** (MI5071, CR240, MI5041, MI4900, CR264, MI5901): solo aparecen como prerrequisito y **no están en el catálogo del dueño**. El motor nuevo **no los inventa** y el importador **avisa**: «7 prerrequisitos apuntan a ramos que no vienen en el archivo» |
+| ida y vuelta | exportar → texto → importar = mismos 84 estados, mismas notas, mismos niveles |
+| rechazos | formato 1, JSON roto, sin `estado`, catálogo vacío: mensaje claro y almacén **byte a byte intacto** |
+| aislamiento | el único `setItem` es `mimo.bloque.malla`; `mimo.idioma` y `mimo.bloques.instalados` intactos |
+| navegador | 0 excepciones y 0 errores de consola al montar, importar, seleccionar y desinstalar |
+
+---
+
+## 12. La pantalla de un bloque: la superficie `montar` · `desmontar` · `panel`
+
+### 12.1 Por qué hacía falta
+
+Hasta la v0.2, la pantalla de un bloque **la dibujaba el shell**: `navegacion.js` creaba una sección
+genérica con la ficha del manifiesto y un cartel de «próximamente». Así un bloque **no podía tener
+pantalla propia sin editar el shell**, que es justo lo que §5 prohíbe. La v0.3 cierra ese agujero con una
+superficie mínima: el shell **sabe montar** una pantalla de bloque sin saber qué hay dentro.
+
+### 12.2 Forma
+
+El bloque se registra en `window.MimoBloques` y expone cuatro funciones y un id:
+
+```js
+window.MimoBloques = window.MimoBloques || {};
+window.MimoBloques.malla = {
+  id: 'malla',
+  montar: function (raiz, ctx) {},  // la sección .pantalla[data-panel="malla"] ya está en el DOM y vacía
+  desmontar: function () {},        // quita oyentes y deja la sección como estaba
+  panel: function () {},            // null o la estructura de §12.4
+  refrescar: function () {}         // repinta con el almacén actual
+};
+```
+
+El shell declara qué bloques tienen pantalla propia en **un mapa** (`PANTALLAS_PROPIAS`), y lo hace una
+sola vez. Añadir un bloque nuevo con pantalla es **una línea en ese mapa y un manifiesto**: no se toca
+ni la navegación ni el panel.
+
+### 12.3 El contexto que el shell entrega
+
+`ctx` es la **superficie declarada** que §5 promete. Es pequeña a propósito:
+
+| miembro | qué es | por qué no más |
+|---|---|---|
+| `t(clave, params, respaldo)` | el traductor del shell, con respaldo en español | un bloque no debe cargar su propio idioma: el idioma es del sistema (AU-40) |
+| `aviso(texto, tipo, icono)` | el toast del shell (`''`, `ok`, `warn`, `bad`) | si cada bloque inventara su aviso, habría cinco formas de decir lo mismo (AU-41) |
+| `ir(pantalla)` | navegar a otra sección | hay un solo enrutador |
+| `pedirPanel()` | «repinta el panel derecho» | el bloque **no dibuja** el panel: lo describe (§12.4) |
+
+**La UI nunca toca el DOM del shell**: ni `#panel`, ni `.marco`, ni el `<body>`. Solo escribe dentro de
+`raiz`. Es la regla de §5 aplicada al dibujo, y es lo que permite que un bloque se caiga sin llevarse la
+ventana (AU-29).
+
+### 12.4 `panelContexto` dinámico
+
+La v0.2 declaró `panelContexto` como **lista de etiqueta·valor** (§7.4): sirve para un resumen fijo
+(«Tiempo hoy · 50 min»). Para un detalle que **cambia con la selección** —el curso que el usuario acaba de
+tocar— una lista estática no vale, y el bloque no puede dibujar el panel sin romper §12.3.
+
+La v0.3 añade la segunda forma, y el manifiesto dice **cuál usa**:
+
+```json
+"panelContexto": { "modo": "dinamico", "puente": "malla.panel" }
+```
+
+`panel()` devuelve `null` o esta estructura, sin HTML:
+
+```js
+{
+  titulo: 'Detalle del curso',
+  bloques: [
+    { h: 'MA2001 · Cálculo Integral', items: [ { t: 'Estado', meta: 'disponible' } ] },
+    { h: 'Prerrequisitos', items: [ { t: 'MA1001', meta: 'aprobado' } ] },
+    { h: 'Desbloquea', items: [ { t: 'MA3001', meta: '' } ] }
+  ]
+}
+```
+
+Y el **shell** la traduce a su forma: `<h2 class="panel__h">` + `<ul class="ctx-lista">` +
+`<li class="ctx-item">`. El bloque describe; el shell dibuja.
+
+- **`null` no es un error: es «no hay selección».** El panel dice «Sin contexto · sin curso seleccionado»
+  y **no** dibuja un detalle vacío (§7.4: un bloque sin `panelContexto` no inventa contexto; y AU-91: un
+  hueco no se dibuja).
+- **`modo` es obligatorio** cuando hay `panelContexto`. Sin `modo`, se lee como la forma estática de la
+  v0.2 (compatibilidad: los manifiestos de la v0.2 no cambian).
+- **El panel no es un sitio para operar.** Lo que se pulsa se pulsa en la pantalla; el panel informa
+  (§12.1 y AU-01: el panel es lo primero que se repliega).
+
+### 12.5 Reglas
+
+1. **Montar es idempotente.** Llamar `montar` dos veces sobre la misma sección no duplica nada; y
+   `desmontar` deja la sección **vacía**, no a medias.
+2. **Simetría estricta** (§3.5): instalar → sección, nav y panel; desinstalar → no queda ni la sección,
+   ni el botón de la barra, ni la zona de panel con restos.
+3. **El bloque no pide red para montar.** Malla se monta con lo que hay en su almacén, que puede estar
+   vacío: en ese caso dibuja **el vacío con su acción** —«trae tus datos»—, no una rejilla de cero
+   cursos (AU-122).
+4. **Un error del bloque se atribuye al bloque** (§5, AU-30): el shell lo encierra, marca la sección
+   «no disponible» y sigue.
+5. **Accesible por teclado, y el estado no se distingue solo por color** (AU-109, AU-125): cada tarjeta de
+   curso lleva su código, y su estado se lee en texto además del color.
+6. **Responsive declarado**: la rejilla de semestres se reordena a 1440, 1200 y 960 **sin scroll
+   horizontal** del contenido. El panel derecho es lo primero que se repliega (AU-01), y lo decide el
+   shell, no el bloque.
+
+### 12.6 Lo que esta sección deja abierto
+
+- **Quién enciende una extensión** y dónde se ve: el manifiesto la declara, pero la pantalla que las
+  enciende no existe todavía. Decisión abierta (la 11, al final).
+- **Si un bloque puede pedir que el panel se abra solo** al seleccionar un curso, o si abrir el panel es
+  siempre una acción del usuario.
+- **El texto de la pantalla**: hoy va en español en el propio bloque, con respaldo de `t()` cuando la
+  clave existe. Si el prototipo se queda bilingüe, hay que decidir si los textos de un bloque viven en
+  los ficheros de idioma del shell o en un paquete de idioma del propio bloque.
+
+---
+
+## 13. Importar y exportar: el formato 2 y la fusión
+
+**Qué resuelve.** El usuario tiene datos vivos en la aplicación anterior. Un bloque nuevo que empieza
+vacío no es un bloque nuevo: es una pérdida. La v0.3 fija **cómo entra** un respaldo y **cómo sale** una
+parte, sin que la fusión de todos los bloques se improvise después (eso es la Iteración 4e).
+
+### 13.1 Quién es dueño de qué
+
+El respaldo real (formato 2) es **un solo fichero con las cosas de todos los bloques**: catálogo,
+aprobados, ramos activos, notas, colores, y también horario, evaluaciones y marcas de tiempo. La regla es
+la de §5 y §11.2:
+
+> **Un bloque importa y exporta SOLO sus colecciones. Lo que no es suyo no lo mira, no lo copia y no lo
+> borra.**
+
+De las 12 claves de `estado` del respaldo del dueño, Malla toma **seis**: `catalogo`, `aprobados`,
+`importado`, `extras[0].ramos` (o los ramos del semestre activo), `metas_ramo[*].nota` y
+`ajustes.av.colores`. Las demás (`tiempo`, `ficha`, `sem`, `agregados`, `fuera`, `v`, `activo`) son de
+otros bloques o del estado del sistema.
+
+### 13.2 Importar
+
+```js
+MimoMallaImportar.desdeArchivo(file)   // -> Promise<{ ok, resumen, avisos } | { ok:false, error }>
+MimoMallaImportar.desdeObjeto(obj)     // idem, sin fichero
+```
+
+Reglas:
+
+1. **Se valida ANTES de escribir** (§3.6, AU-36). Si el fichero no es formato 2, no es JSON o no trae
+   `estado`, **se rechaza con un mensaje que dice qué pasó** y el almacén **no se toca**. Es el caso que
+   se prueba a propósito (§11.5.2).
+2. **El catálogo se normaliza, no se copia a ciegas.** Todo curso acaba con `requisitos: []`,
+   `requisitos_o: []`, `desbloquea: []`, `semestre_num` y `nivel` numéricos.
+3. **Una referencia rota no rompe la importación**: un prerrequisito que apunta a un código que no está en
+   el catálogo deja ese curso `bloqueado` y **se avisa**; no se inventa el curso que falta.
+4. **Reemplaza solo lo de Malla.** Las seis colecciones se sustituyen; `_v` se conserva. No se escribe
+   en `mimo.bloques.instalados`, ni en `mimo.idioma`, ni en la clave de ningún otro bloque.
+5. **Importar dos veces no acumula basura**: la segunda importación deja lo mismo que la primera (es la
+   prueba de ida y vuelta de §11.5.3).
+
+### 13.3 Exportar
+
+```js
+MimoMallaExportar.aFormato2()   // -> objeto formato 2, solo con lo de Malla
+MimoMallaExportar.comoTexto()   // -> JSON legible
+MimoMallaExportar.resumen()     // -> { cursos, aprobados, activos }
+```
+
+La salida tiene **la forma del formato 2** (`estado.catalogo`, `estado.aprobados`, `estado.importado`,
+`estado.extras[0].ramos`, `estado.ajustes.av.colores`, `niveles`), para que el fichero completo que
+genere el shell en la 4e sea **un solo JSON** y no un injerto.
+
+- **Aquí no se fusiona nada.** La exportación de Malla emite **su parte**; juntar las partes de todos los
+  bloques en un fichero es del shell (Iteración 4e), y esa fusión tendrá que cumplir AU-14, AU-15 (nada de
+  «gana el último») y AU-17 (determinista).
+- **El botón de la v0.3 es honesto y no miente**: dice que la exportación completa llega en la 4e y
+  enseña el resumen real de lo que hay (AU-120: un cartel que promete, o hace, o explica por qué no).
+
+### 13.4 Lo que esta sección deja abierto
+
+- **El nombre y el destino del fichero exportado** (descarga, carpeta, diálogo del sistema).
+- **La fusión de bloques** y qué pasa cuando dos bloques guardan la misma colección: la 4e lo decide.
+- **Los ficheros de otros bloques**: Malla sabe leer su parte de un respaldo ajeno, pero no hay todavía
+  una regla general de «quién importa qué» cuando hay cinco bloques con datos en el mismo fichero.
+
+---
+
+## Lo que la v0.3 NO decide
+
+Sigue abierto, y no se ha inventado en esta iteración:
+
+| # | pregunta | por qué importa |
+|---|---|---|
+| 7 | Un pack que se desinstala, ¿se lleva los datos de sus bloques? | ya en la v0.2; sigue sin respuesta |
+| 8 | ¿Un bloque puede aportar a dos secciones base a la vez? | idem |
+| 9 | El canal remoto, ¿exige firma además de huella? | idem; la v0.3 no lo toca |
+| 10 | Un tema aportado por un bloque, ¿se va al quitarlo? | idem |
+| 11 | ¿Quién enciende una extensión, y dónde se ve? | el manifiesto ya las declara (§11.3), pero no hay pantalla que las encienda |
+| 12 | ¿El panel derecho se abre solo al seleccionar, o siempre lo abre el usuario? | toca `ir()` y la sensación de que la app «responde» |
+| 13 | Los textos de un bloque, ¿en los idiomas del shell o en un paquete del bloque? | decide si un bloque de terceros puede estar traducido sin tocar la app |
+| 14 | ¿La malla se edita dentro de Malla o el editor es una extensión que se instala aparte? | si es extensión, la malla básica es de solo lectura; si no, `editor` sobra del manifiesto |

@@ -1,6 +1,6 @@
 {
-  "_nota": "Catálogo v0.2 del prototipo, canal bundled. Este fichero es la FORMA canónica del manifiesto v0.2 y ahora SÍ lo lee la app: navegacion.js lo pide por fetch y construye con él las fichas del modal y la barra lateral. Los ocho manifiestos son COMPLETOS: todos los campos obligatorios, aunque valgan vacío o null. `descripcion` y `lanzamiento` no son campos del contrato: son lo que la ficha necesita enseñar antes de instalar (AU-32). El texto que se ve se pide a i18n (bloque.<id>.*); lo de aquí es el valor canónico en español.",
-  "_version": "0.2",
+  "_nota": "Catálogo v0.3 del prototipo, canal bundled. Este fichero es la FORMA canónica del manifiesto v0.3 y ahora SÍ lo lee la app: navegacion.js lo pide por fetch y construye con él las fichas del modal y la barra lateral. Los ocho manifiestos son COMPLETOS: todos los campos obligatorios, aunque valgan vacío o null. La entrada de `malla` es la copia literal de bloques/malla/manifiesto.json (con `descripcion` y `lanzamiento`, que son de la ficha), y estrena los dos campos de la v0.3: `extensiones` (§11.3) y `panelContexto` en modo dinámico, con `puente` a la función que lo sirve. `descripcion` y `lanzamiento` no son campos del contrato: son lo que la ficha necesita enseñar antes de instalar (AU-32). El texto que se ve se pide a i18n (bloque.<id>.*); lo de aquí es el valor canónico en español.",
+  "_version": "0.3",
   "_fecha": "2026-10-19",
 
   "catalogo": {
@@ -82,7 +82,7 @@
 
     {
       "id": "malla",
-      "nombre": "Malla",
+      "nombre": "Malla curricular",
       "version": "1.0.0",
       "autor": "Mimo Labs",
       "licencia": "MIT",
@@ -92,13 +92,47 @@
       "descripcion": "Malla curricular: ramos, semestre y créditos.",
       "lanzamiento": "2026-05-20",
       "permisos": ["almacen:propio", "puente:calendario.leerEventos"],
-      "ofrece": ["malla.leer", "malla.ramo"],
+      "ofrece": [
+        "malla.getCurso(codigo)",
+        "malla.getCursosDeSemestre(n)",
+        "malla.getEstadoCurso(codigo)",
+        "malla.getRamosActivos()"
+      ],
       "necesita": [],
       "consume": ["calendario.leerEventos"],
       "configuraciones": [],
-      "datos": { "posee": ["malla.ramos"], "conservarAlQuitar": true },
-      "recursos": { "icono": "iconos/malla.svg", "estilos": [] },
-      "panelContexto": null
+      "extensiones": [
+        { "id": "editor", "nombre": "Editor de malla", "porDefecto": false },
+        { "id": "importar-pdf", "nombre": "Importar PDF de malla", "porDefecto": false },
+        { "id": "simulador", "nombre": "Simulador de notas", "porDefecto": false },
+        { "id": "vista-mapa", "nombre": "Vista de mapa", "porDefecto": true },
+        { "id": "vista-tarjetas", "nombre": "Vista de tarjetas", "porDefecto": false }
+      ],
+      "vistas": {
+        "porDefecto": "mapa",
+        "secciones": []
+      },
+      "datos": {
+        "posee": ["malla.cursos", "malla.aprobados", "malla.config"],
+        "conservarAlQuitar": true
+      },
+      "recursos": {
+        "icono": "iconos/malla.svg",
+        "estilos": ["bloques/malla/estilos.css", "bloques/malla/vista-mapa.css"],
+        "scripts": [
+          "bloques/malla/motor.js",
+          "bloques/malla/importar.js",
+          "bloques/malla/exportar.js",
+          "bloques/malla/vista-mapa.js",
+          "bloques/malla/ui.js"
+        ]
+      },
+      "panelContexto": {
+        "modo": "dinamico",
+        "puente": "malla.panel",
+        "titulo": "Detalle del curso",
+        "siFalta": "el panel derecho dice «Sin contexto · sin curso seleccionado»; no dibuja un detalle vacío"
+      }
     },
 
     {

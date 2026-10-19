@@ -1,0 +1,206 @@
+/* ============================================================================
+   bloques/malla/vista-mapa.css — vista de mapa de la malla (iteración 4a)
+
+   Dueña: la vista (vista-mapa.js). Se carga después de estilos.css del bloque.
+   Reglas:
+   - Solo clases .malla-*; no se pisa ningún selector del shell ni del bloque.
+   - CERO colores literales y CERO hex: todo color es var(--malla-*), y esos
+     tokens se declaran una vez en prototipo/css/estilos.css sobre los tokens
+     del tema (claro/oscuro). Aquí solo hay forma y medida.
+   - Medidas: --e-1..--e-8, --r-sm/md/lg, --t-xs..--t-lg y las tres medidas
+     propias de la rejilla (ancho de columna y dos huecos), declaradas abajo.
+   ============================================================================ */
+
+.malla-mapa{
+  /* medidas propias de la vista: la columna es ancha para que quepa el nombre
+     a dos líneas; el mapa se desplaza en horizontal dentro de su caja. */
+  --malla-col-w:188px;
+  --malla-col-gap:var(--e-3);
+  --malla-fila-gap:var(--e-2);
+  min-width:0;
+  border:1px solid var(--malla-mapa-borde);
+  border-radius:var(--r-lg);
+  background:var(--malla-mapa-fondo);
+  overflow:hidden;
+}
+
+/* pista de la selección: dice qué significan el azul y el ámbar */
+.malla-mapa__pista{
+  margin:0; padding:var(--e-2) var(--e-3);
+  border-bottom:1px solid var(--malla-mapa-borde);
+  font-size:var(--t-xs); color:var(--malla-mapa-pista);
+}
+.malla-mapa__pista[data-hay="si"]{color:var(--malla-mapa-pista)}
+
+/* el único que se desplaza: el desborde vive dentro, nunca en la página */
+.malla-mapa__scroll{
+  overflow-x:auto; overflow-y:hidden;
+  padding:var(--e-3);
+  scrollbar-gutter:stable;
+}
+
+/* el lienzo contiene las columnas y el SVG superpuesto; su ancho es el del
+   contenido, para que las flechas se midan contra el mapa entero. */
+.malla-mapa__lienzo{
+  position:relative;
+  display:flex; align-items:flex-start; gap:var(--e-4);
+  width:max-content; min-width:100%;
+}
+
+/* -------------------------------------------------------- 1. secciones */
+
+/* Una sección agrupa columnas: título centrado, fondo suave y una línea
+   vertical que la separa de la siguiente. Sin secciones declaradas hay un
+   único bloque sin fondo, que es el caso normal del respaldo del usuario. */
+.malla-mapa__bloque{position:relative; z-index:1; flex:none; min-width:0}
+.malla-mapa__bloque--seccion{
+  padding:var(--e-2);
+  background:var(--malla-seccion-bg);
+  border:1px solid var(--malla-seccion-linea);
+  border-left-width:3px;
+  border-radius:var(--r-md);
+}
+.malla-mapa__seccion-tit{
+  margin:0 0 var(--e-2); text-align:center;
+  font-size:var(--t-sm); font-weight:650;
+  letter-spacing:.04em; text-transform:uppercase;
+  color:var(--malla-mapa-pista);
+}
+.malla-mapa__sigla{
+  display:inline-block; margin-right:var(--e-1);
+  padding:0 5px; border:1px solid currentColor; border-radius:4px;
+  font-size:var(--t-xs); font-weight:700;
+}
+
+/* -------------------------------------------------------- 2. columnas */
+
+/* Rejilla única por bloque: las cabeceras van en la fila 1 y cada ramo se
+   coloca por (columna, fila) desde JS. Así un anual puede ocupar dos
+   columnas con span 2 sin partir la rejilla. */
+.malla-mapa__cols{
+  display:grid;
+  grid-template-columns:repeat(var(--malla-cols,1),var(--malla-col-w));
+  column-gap:var(--malla-col-gap);
+  row-gap:var(--malla-fila-gap);
+  align-items:start;
+}
+.malla-mapa__colcab{
+  grid-row:1;
+  display:flex; flex-direction:column; gap:2px;
+  padding:0 var(--e-1) var(--e-1);
+  border-bottom:1px solid var(--malla-seccion-linea);
+  text-align:center;
+}
+.malla-mapa__nivel{
+  font-size:var(--t-xs); font-weight:650; color:var(--malla-mapa-pista);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.malla-mapa__cred{
+  font-size:var(--t-xs); color:var(--malla-mapa-pista);
+  font-variant-numeric:tabular-nums; opacity:.8;
+}
+
+/* ---------------------------------------------------------- 3. ramos */
+
+.malla-nodo{
+  display:flex; flex-direction:column; gap:2px;
+  width:100%; min-height:52px; text-align:left;
+  font:inherit; font-size:var(--t-xs);
+  padding:var(--e-2);
+  border:1px solid var(--malla-nodo-borde); border-left:3px solid transparent;
+  border-radius:var(--r-sm);
+  cursor:pointer;
+  transition:filter var(--t) var(--curva), box-shadow var(--t) var(--curva);
+}
+/* el hover tiñe sin mover, como el resto de la app */
+.malla-nodo:hover{filter:brightness(.97)}
+.malla-nodo:focus-visible{box-shadow:var(--foco)}
+/* la selección se dibuja por dentro para no tapar el anillo de foco */
+.malla-nodo[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--malla-nodo-sel)}
+.malla-nodo:focus-visible[aria-pressed="true"]{box-shadow:var(--foco),inset 0 0 0 2px var(--malla-nodo-sel)}
+
+.malla-nodo__cab{display:flex; align-items:center; gap:var(--e-1); flex-wrap:wrap; min-width:0}
+.malla-nodo__cod{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:var(--t-xs); font-weight:700; line-height:1.5; white-space:nowrap;
+}
+.malla-nodo__badge{
+  padding:0 5px; border:1px solid currentColor; border-radius:999px;
+  font-size:var(--t-xs); line-height:1.4; white-space:nowrap; opacity:.85;
+}
+/* «nombre corto»: dos líneas como máximo; el nombre entero va en el title */
+.malla-nodo__nom{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; overflow-wrap:anywhere;
+  font-size:var(--t-sm); font-weight:600; line-height:1.3;
+}
+
+/* el estado pinta el fondo y el texto: la pareja está medida en ambos temas */
+.malla-nodo--aprobado{
+  background:var(--malla-aprobado-bg); color:var(--malla-aprobado-fg);
+  border-left-color:var(--malla-aprobado-fg);
+}
+.malla-nodo--curso{
+  background:var(--malla-curso-bg); color:var(--malla-curso-fg);
+  border-left-color:var(--malla-curso-fg);
+}
+.malla-nodo--disponible{
+  background:var(--malla-disponible-bg); color:var(--malla-disponible-fg);
+  border-left-color:var(--malla-disponible-fg);
+}
+.malla-nodo--bloqueado{
+  background:var(--malla-bloqueado-bg); color:var(--malla-bloqueado-fg);
+  border-left-color:var(--malla-bloqueado-fg);
+}
+.malla-nodo--desconocido{
+  background:var(--malla-bloqueado-bg); color:var(--malla-bloqueado-fg);
+  border-left-color:var(--malla-nodo-borde); border-left-style:dashed;
+}
+
+/* los electivos van en una columna de 24 ramos: una línea cada uno */
+.malla-nodo--mini{
+  min-height:32px; flex-direction:row; align-items:center; gap:6px;
+  padding:4px var(--e-2);
+}
+.malla-nodo--mini .malla-nodo__nom{
+  display:block; min-width:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; font-size:var(--t-xs);
+}
+
+/* el anual ocupa dos columnas; el span lo fija JS, aquí solo se marca */
+.malla-nodo--anual{border-right-style:dashed}
+
+/* --------------------------------------------------------- 4. flechas */
+
+/* SVG superpuesto al lienzo entero, POR ENCIMA de los bloques: el bloque con
+   secciones pinta fondo (--malla-seccion-bg) y, si el SVG va debajo, tapa todas
+   las flechas que corren por dentro del grupo (medido: con 2 secciones solo se
+   veían los dos trazos del pasillo entre bloques). Las líneas no pisan texto
+   porque el trazado va por los pasillos: nunca cruza una tarjeta. */
+.malla-mapa__flechas{
+  position:absolute; left:0; top:0; z-index:2;
+  pointer-events:none; overflow:visible;
+}
+.malla-flecha{
+  color:var(--malla-flecha);
+  fill:none; stroke:currentColor; stroke-width:1.4;
+  stroke-linecap:round; stroke-linejoin:round;
+  opacity:.55;
+  transition:opacity var(--t) var(--curva), stroke-width var(--t) var(--curva);
+}
+.malla-flecha__punta{fill:currentColor; stroke:none}
+/* con un ramo elegido: sus entradas en azul, sus salidas en ámbar, resto atenuado */
+.malla-flecha--resto{opacity:.13}
+.malla-flecha--entra{color:var(--malla-flecha-entra); opacity:.95; stroke-width:2.2}
+.malla-flecha--sale{color:var(--malla-flecha-sale); opacity:.95; stroke-width:2.2}
+
+/* ------------------------------------------------------- 5. responsive */
+
+/* el mapa siempre se desplaza dentro de su caja; a menos ancho, columnas algo
+   más estrechas para que se vean más a la vez (la página no desborda nunca). */
+@media (max-width:1100px){ .malla-mapa{--malla-col-w:168px} }
+@media (max-width:680px){ .malla-mapa{--malla-col-w:158px} }
+
+@media (prefers-reduced-motion:reduce){
+  .malla-nodo,.malla-flecha{transition:none}
+}

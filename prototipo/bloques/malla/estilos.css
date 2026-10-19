@@ -1,0 +1,169 @@
+/* ============================================================================
+   bloques/malla/estilos.css — pantalla del bloque Malla (v1.0.0 · Iteración 3)
+
+   Dueño: la UI del bloque (ui.js). Se carga DESPUÉS de los tres CSS del shell.
+   Reglas respetadas:
+   - TODAS las clases llevan prefijo `malla-`; no se renombra ni se pisa ningún
+     selector del shell.
+   - CERO colores literales: todo sale de los tokens del tema (--fg, --ac, --ok,
+     --t-ok, --e-*, --t-*, --r-*, --foco…). Los colores IMPORTADOS por el usuario
+     (§2 del contrato) llegan como variables en línea `--malla-color-*` puestas
+     por ui.js; aquí solo se consumen con el token como respaldo.
+   - Medidas: --e-1..--e-8, --r-sm/md/lg y la escala de texto --t-xs..--t-lg.
+   - Claro y oscuro: el mismo fichero, los mismos nombres; el tema decide el valor.
+   ============================================================================ */
+
+/* --------------------------------------------------------- 1. cabecera */
+
+/* El título y los botones son .sec-cab del shell (forma pura). Aquí solo el
+   input de fichero, que se abre desde el botón «Importar JSON». */
+.malla-file{display:none}
+
+/* ------------------------------------------------------ 2. barra superior */
+
+.malla-barra{display:flex;align-items:center;gap:var(--e-3);flex-wrap:wrap;
+             margin-bottom:var(--e-4)}
+.malla-leyenda{display:flex;align-items:center;gap:var(--e-3);flex-wrap:wrap;
+               font-size:var(--t-xs);color:var(--muted2)}
+.malla-leyenda__it{display:inline-flex;align-items:center;gap:5px}
+.malla-leyenda__pto{width:9px;height:9px;border-radius:3px;flex:none;display:inline-block}
+
+/* la pista del panel no compite con la leyenda: cede y se oculta antes */
+.malla-barra__pista{margin-left:0;font-size:var(--t-xs);color:var(--muted2)}
+
+/* ------------------------------------------------- 2-bis. selector de vista */
+
+/* Mapa/Tarjetas. Va a la derecha de la barra (el `auto` empuja el grupo) y la
+   pista queda a su lado; a 960 la pista desaparece y el selector se queda solo. */
+.malla-vista{display:inline-flex;align-items:center;gap:var(--e-2);margin-left:auto}
+.malla-vista > span{font-size:var(--t-xs);color:var(--muted2)}
+.malla-vista__sel{
+  font:inherit;font-size:var(--t-sm);color:var(--fg);
+  padding:4px var(--e-2);border:1px solid var(--line-fuerte);
+  border-radius:var(--r-sm);background:var(--sup);
+}
+.malla-vista__sel:hover{border-color:var(--muted)}
+.malla-vista__sel:focus-visible{outline:none;box-shadow:var(--foco)}
+
+/* ------------------------------------------------- 3. rejilla de semestres */
+
+.malla-semestres{display:grid;
+                 grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));
+                 gap:var(--e-4);align-items:start}
+.malla-semestre{min-width:0;background:var(--sup2);border:1px solid var(--line);
+                border-radius:var(--r-lg);padding:var(--e-3)}
+/* el semestre en curso se marca con una barra de acento, no solo con una píldora */
+.malla-semestre--activo{border-left:3px solid var(--ac)}
+.malla-semestre__cab{display:flex;align-items:center;gap:var(--e-2);flex-wrap:wrap;
+                     margin-bottom:var(--e-2)}
+.malla-semestre__tit{font-size:var(--t-md);font-weight:650;letter-spacing:0}
+/* el resumen del semestre va en su propia línea: a 300 px no cabe al lado */
+.malla-semestre__meta{flex-basis:100%;font-size:var(--t-xs);color:var(--muted2);
+                      font-variant-numeric:tabular-nums}
+
+.malla-cursos{list-style:none;margin:0;padding:0;display:grid;gap:var(--e-2)}
+.malla-cursos__it{min-width:0}
+
+/* ----------------------------------------------------- 4. tarjeta de curso */
+
+.malla-curso{display:grid;grid-template-columns:auto minmax(0,1fr);
+             grid-template-areas:"cod nom" "pie pie";
+             column-gap:var(--e-2);row-gap:2px;
+             width:100%;min-width:0;text-align:left;font:inherit;color:var(--fg);
+             padding:var(--e-2) var(--e-3);
+             border:1px solid var(--line);border-left-width:3px;
+             border-radius:var(--r-sm);background:var(--sup3);cursor:pointer;
+             transition:background var(--t) var(--curva),filter var(--t) var(--curva)}
+/* el hover TIÑE sin mover: mismo criterio que el resto de la app */
+.malla-curso:hover{filter:brightness(.97)}
+/* el foco visible lo pinta el shell (:focus-visible); aquí no se pisa. Pero la
+   selección sí necesita un anillo propio: se dibuja POR DENTRO y solo cuando no
+   hay foco, para no tapar el anillo de foco del teclado (regla siguiente). */
+.malla-curso[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ac)}
+.malla-curso:focus-visible{box-shadow:var(--foco)}
+
+.malla-curso__cod{grid-area:cod;justify-self:start;align-self:start;
+                  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+                  font-size:var(--t-xs);font-weight:650;line-height:1.5;
+                  color:var(--muted2);background:var(--sup2);
+                  border:1px solid var(--line);border-radius:4px;
+                  padding:0 5px;white-space:nowrap}
+.malla-curso__nom{grid-area:nom;min-width:0;font-size:var(--t-md);font-weight:600;
+                  line-height:1.35;overflow-wrap:anywhere}
+.malla-curso__pie{grid-area:pie;display:flex;align-items:center;gap:var(--e-2);
+                  flex-wrap:wrap;margin-top:2px}
+.malla-curso__cred{font-size:var(--t-xs);color:var(--muted2);
+                   font-variant-numeric:tabular-nums}
+
+/* --- estado: color de borde + tinte + una ETIQUETA con texto (AU-109).
+   El color fuerte pinta el punto y el borde de la tarjeta; el texto usa el token
+   -fg del estado (contraste medido). Sin color también se entiende: dice la
+   palabra. Los colores importados entran por --malla-color-* con el token de
+   respaldo. --- */
+.malla-estado{display:inline-flex;align-items:center;gap:4px;margin-left:auto;
+              border:1px solid var(--line);border-radius:999px;
+              padding:0 var(--e-2);font-size:var(--t-xs);font-weight:650;
+              background:var(--sup2);color:var(--muted2);white-space:nowrap}
+.malla-estado__pto{width:7px;height:7px;border-radius:999px;flex:none;
+                   background:currentColor;display:inline-block}
+
+.malla-curso--aprobado{border-left-color:var(--malla-color-aprobado,var(--ok));
+  background:color-mix(in srgb,var(--malla-color-aprobado,var(--ok)) 7%,var(--sup3))}
+.malla-curso--curso{border-left-color:var(--malla-color-curso,var(--warn));
+  background:color-mix(in srgb,var(--malla-color-curso,var(--warn)) 7%,var(--sup3))}
+.malla-curso--disponible{border-left-color:var(--malla-color-disponible,var(--ac));
+  background:color-mix(in srgb,var(--malla-color-disponible,var(--ac)) 7%,var(--sup3))}
+.malla-curso--bloqueado{border-left-color:var(--malla-color-bloqueado,var(--muted));
+  background:color-mix(in srgb,var(--malla-color-bloqueado,var(--muted)) 5%,var(--sup3))}
+/* el motor respondió algo que no es un estado: se dice, no se pinta de un color */
+.malla-curso--desconocido{border-left-color:var(--line-fuerte)}
+
+.malla-estado--aprobado{color:var(--ok-fg);border-color:var(--ok);
+  background:color-mix(in srgb,var(--malla-color-aprobado,var(--ok)) 10%,var(--sup3))}
+.malla-estado--curso{color:var(--warn-fg);border-color:var(--warn);
+  background:color-mix(in srgb,var(--malla-color-curso,var(--warn)) 10%,var(--sup3))}
+.malla-estado--disponible{color:var(--ac);border-color:var(--ac);
+  background:color-mix(in srgb,var(--malla-color-disponible,var(--ac)) 8%,var(--sup3))}
+.malla-estado--bloqueado{color:var(--muted2);border-color:var(--line);
+  background:var(--sup2)}
+.malla-estado--desconocido{color:var(--muted2);border-color:var(--line);
+  background:var(--sup2)}
+
+/* la leyenda repite los cuatro puntos, con el color de su estado */
+.malla-leyenda__pto--aprobado{background:var(--malla-color-aprobado,var(--ok))}
+.malla-leyenda__pto--curso{background:var(--malla-color-curso,var(--warn))}
+.malla-leyenda__pto--disponible{background:var(--malla-color-disponible,var(--ac))}
+.malla-leyenda__pto--bloqueado{background:var(--malla-color-bloqueado,var(--muted))}
+
+/* ------------------------------------------------------- 5. vacío honesto */
+
+.malla-vacio{display:flex;flex-direction:column;align-items:center;gap:var(--e-2);
+             padding:var(--e-8) var(--e-4);text-align:center;
+             border:1px dashed var(--line);border-radius:var(--r-lg);
+             background:var(--sup2);color:var(--muted2)}
+.malla-vacio__ic{width:40px;height:40px;border-radius:var(--r-md);
+                 display:grid;place-items:center;flex:none;
+                 background:var(--sup3);border:1px solid var(--line);color:var(--ac)}
+.malla-vacio__svg{width:22px;height:22px}
+.malla-vacio__tit{font-size:var(--t-lg);color:var(--fg)}
+.malla-vacio__txt{font-size:var(--t-sm);line-height:1.55;max-width:48ch}
+.malla-vacio .btn{margin-top:var(--e-2)}
+
+/* --------------------------------------------------------- 6. responsive */
+
+/* a 960 el contenido ya pierde el lateral: la pista del panel deja paso */
+@media (max-width:1023px){
+  .malla-barra__pista{display:none}
+}
+/* a una sola columna la cabecera del semestre cabe en una línea y la píldora
+   «En curso» se queda junto al título */
+@media (max-width:680px){
+  .malla-semestres{grid-template-columns:1fr}
+  .malla-semestre__meta{flex-basis:auto}
+}
+
+/* el shell ya recorta todas las transiciones; se declara aquí también para que
+   el bloque no dependa de ello */
+@media (prefers-reduced-motion:reduce){
+  .malla-curso{transition:none}
+}

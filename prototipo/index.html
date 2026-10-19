@@ -9,6 +9,13 @@
 <link rel="stylesheet" href="css/estilos.css">
 <link rel="stylesheet" href="css/tema-claro.css">
 <link rel="stylesheet" href="css/tema-oscuro.css">
+<!-- el bloque Malla entra como cualquier bloque: su hoja va DESPUÉS de las tres
+     del shell para que no tenga que tocar ningún selector ajeno (solo pinta
+     clases .malla-*). Sin esta línea el bloque se monta sin estilo. -->
+<link rel="stylesheet" href="bloques/malla/estilos.css">
+<!-- vista de mapa (4a): va después de la hoja del bloque. Solo añade clases
+     .malla-* y sus colores son tokens --malla-*; no pisa nada ajeno. -->
+<link rel="stylesheet" href="bloques/malla/vista-mapa.css">
 <!-- el motor de idioma va en la CABECERA: empieza a pedir su JSON mientras se
      parsea el resto de la página, y navegacion.js (al final) le espera. -->
 <script src="js/i18n.js"></script>
@@ -38,6 +45,13 @@
     <symbol id="ic-cuadricula" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
       <rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/>
       <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>
+    </symbol>
+    <!-- Malla: rejilla de 3×3 con sus dos ejes marcados, que es lo que es una
+         malla curricular (semestres × ramos). No se reutiliza ic-cuadricula:
+         una cuadrícula de 4 piezas sueltas ya significa «catálogo de bloques». -->
+    <symbol id="ic-malla" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2.2"/>
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>
     </symbol>
     <symbol id="ic-pack" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2.6L2.8 7.4 12 12.2l9.2-4.8z"/><path d="M2.8 12.2L12 17l9.2-4.8"/><path d="M2.8 16.9L12 21.7l9.2-4.8"/>
@@ -811,6 +825,13 @@
         <p class="panel__nota" data-i18n="panel.notaEstudio">Lo declara el manifiesto de Estudio: panelContexto.</p>
       </div>
 
+      <!-- ---- contexto: Malla (dinámico) ----
+           La zona nace VACÍA y no lleva texto: la pinta navegacion.js con la
+           estructura que devuelve malla.panel() (panelContexto modo dinámico).
+           Si no hay curso seleccionado se dice «Sin contexto», no se dibuja un
+           detalle vacío con rótulos huérfanos. -->
+      <div class="panel__zona panel__zona--ctx" data-ctx="malla"></div>
+
       <!-- ---- contexto: Ajustes ---- -->
       <div class="panel__zona panel__zona--ctx" data-ctx="ajustes">
         <p class="vacio vacio--panel">
@@ -919,6 +940,17 @@
   </div>
 </div>
 
+<!-- ============================ BLOQUE MALLA ==============================
+     Los cinco módulos del bloque se cargan como scripts clásicos y en este
+     orden (motor → importar → exportar → vista-mapa → ui): ui.js es quien
+     cuelga window.MimoBloques.malla, y navegacion.js (después) solo puede
+     montarlo si ya existe. vista-mapa.js va ANTES de ui.js porque ui.js le
+     pide que monte la vista. Todos exportan UN global y nada más. -->
+<script src="bloques/malla/motor.js"></script>
+<script src="bloques/malla/importar.js"></script>
+<script src="bloques/malla/exportar.js"></script>
+<script src="bloques/malla/vista-mapa.js"></script>
+<script src="bloques/malla/ui.js"></script>
 <script src="js/navegacion.js"></script>
 </body>
 </html>

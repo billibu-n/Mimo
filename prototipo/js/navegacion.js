@@ -10,7 +10,8 @@
         sus bloques (dice cuántos antes de hacerlo).
      3. REPINTA lo que depende del estado: barra lateral (Base · Bloques
         instalados · Aportes), panel derecho, ajustes y las pantallas de los
-        bloques que aún no tienen pantalla propia.
+        bloques que aún no tienen pantalla propia. Los que SÍ la tienen (hoy:
+        Malla) se montan y se desmontan aquí, con su sección y su panel.
      4. HABLA el idioma del motor `i18n.js`: todo el texto sale de t(), y un
         cambio de idioma repinta la parte dinámica en vivo.
      5. Sigue haciendo lo de siempre: tema, panel derecho, cajón, modal,
@@ -50,6 +51,21 @@
   var busqueda = '';
   var pantallaActiva = 'calendario';
   var plantillaEstudio = null;  /* nodo de la pantalla de Estudio, fuera del DOM si no está instalado */
+
+  /* Bloques con pantalla propia: id de bloque → clave en window.MimoBloques.
+     Solo estos NO usan la pantalla genérica «próximamente»: traen su sección,
+     su montaje y su panel contextual. Los demás siguen igual que antes. */
+  var PANTALLAS_PROPIAS = { malla: 'malla' };
+
+  /* Qué pantallas propias están montadas AHORA (id → true). renderPantallas()
+     se ejecuta en cada renderTodo(), así que sin esta marca se llamaría a
+     montar() una y otra vez: oyentes duplicados y estado perdido. */
+  var montadas = {};
+
+  /* Idioma con el que se montó cada pantalla propia. Si cambia, se le pide al
+     bloque que se repinte (refrescar) en vez de remontarlo: remontar tiraría
+     la selección que el bloque guarda en memoria y dejaría el panel vacío. */
+  var idiomaMontaje = {};
 
   function leerEstado() {
     try {
@@ -153,6 +169,10 @@
     tema: 'ic-luna',
     pack: 'ic-pack'
   };
+
+  /* Un icono propio solo cuando el bloque lo trae en el sprite: si no está en
+     este mapa, la sección usa el icono genérico de bloque. */
+  var ICONO_BLOQUE = { malla: 'ic-malla' };
 
   function cargarCatalogo() {
     return fetch('datos/bloques.json', { cache: 'no-cache' })
@@ -261,7 +281,7 @@
       boton.type = 'button';
       boton.setAttribute('data-ir', b.id);
       boton.innerHTML =
-        '<svg class="nav__ic" aria-hidden="true"><use href="#ic-bloque"/></svg>' +
+        '<svg class="nav__ic" aria-hidden="true"><use href="#' + (ICONO_BLOQUE[b.id] || 'ic-bloque') + '"/></svg>' +
         '<span class="nav__t" data-nombre></span>' +
         '<span class="nav__punto nav__punto--seccion" title="' + esc(t('nat.seccion')) + '"></span>' +
         '<span class="nav__ver" data-version></span>';
@@ -466,6 +486,145 @@
     }
   }
 
+  /* -------------------------- 5-bis. BLOQUES CON PANTALLA PROPIA ---------
+     Un bloque con pantalla propia se registra él mismo en window.MimoBloques y
+     declara aquí su id. El shell solo hace tres cosas con él: crearle la
+     sección, entregarle la superficie (ctx) y pintar el panel que devuelva.
+     Todo lo demás —su marcado, sus datos, sus oyentes— es del bloque. */
+
+  function apiBloque(id) {
+    var clave = PANTALLAS_PROPIAS[id];
+    if (!clave) { return null; }
+    var registro = window.MimoBloques;
+    var api = registro ? registro[clave] : null;
+    if (!api || typeof api.montar !== 'function') { return null; }
+    return api;
+  }
+
+  /* Superficie que se entrega al bloque (contrato §11). Es la ÚNICA puerta que
+     tiene hacia el shell: no toca #panel, ni .marco, ni document.body. */
+  function superficie() {
+    return {
+      t: function (clave, params, respaldo) { return tConRespaldo(clave, params, respaldo); },
+      aviso: function (texto, tipo, icono) {
+        /* el mismo toast que usa el shell: un solo lenguaje visual para avisar */
+        if (typeof window.mimoToast === 'function') { window.mimoToast(texto, tipo, icono); }
+        else { encolar(texto, tipo, icono); }
+      },
+      ir: function (pantalla) { ir(pantalla); },
+      pedirPanel: function () { pedirPanel(); }
+    };
+  }
+
+  /* t() del shell con respaldo en español: el motor devuelve la propia clave
+     cuando no la encuentra, y entonces se usa el texto que traiga el bloque. */
+  function tConRespaldo(clave, params, respaldo) {
+    var texto = t(clave, params);
+    if (texto === clave && respaldo !== undefined && respaldo !== null) { return respaldo; }
+    return texto;
+  }
+
+  /* El bloque pide repintar su contexto (cambió la selección). Se repinta SOLO
+     si su pantalla es la activa: una zona oculta no se ve y cuesta. */
+  function pedirPanel() {
+    if (PANTALLAS_PROPIAS[pantallaActiva]) { pintarPanelCtx(); }
+  }
+
+  /* Al desmontar se vacía también la zona del panel: si el bloque se va, el
+     detalle del último curso que llegó a pintar no se queda ahí escondido
+     (simetría §3.5: o está todo, o no está nada). */
+  function limpiarPanelCtx(id) {
+    var zona = document.querySelector('[data-ctx="' + id + '"]');
+    if (!zona) { return; }
+    while (zona.firstChild) { zona.removeChild(zona.firstChild); }
+  }
+
+  /* Panel vacío honesto: no se dibuja un detalle con rótulos huérfanos.
+     El texto se busca una vez por idioma: si la clave no existe, el motor avisa
+     por consola y avisaríamos en cada repintado. */
+  var vacioTexto = {};   /* idioma → texto ya resuelto */
+  function textoVacio() {
+    var lang = idioma();
+    if (!vacioTexto[lang]) {
+      /* la clave `panel.mallaSinCurso` todavía no está en i18n/: se usa el
+         respaldo en español que fija la spec y, cuando exista, se localiza sola */
+      vacioTexto[lang] = tConRespaldo('panel.mallaSinCurso', null, 'Sin contexto · sin curso seleccionado');
+    }
+    return vacioTexto[lang];
+  }
+
+  function vacioCtx() {
+    var p = document.createElement('p');
+    p.className = 'vacio vacio--panel';
+    p.innerHTML = '<svg class="vacio__ic" aria-hidden="true"><use href="#ic-info"/></svg>';
+    var span = document.createElement('span');
+    span.textContent = textoVacio();
+    p.appendChild(span);
+    return p;
+  }
+
+  /* Pinta la zona [data-ctx] del bloque activo con la estructura que devuelve
+     su panel(): {titulo, bloques:[{h, items:[{t, meta}]}]}, o null si no hay
+     selección. El shell SOLO escribe dentro de esa zona. */
+  function pintarPanelCtx() {
+    var id = pantallaActiva;
+    if (!PANTALLAS_PROPIAS[id]) { return; }   /* las demás zonas son estáticas */
+    var zona = document.querySelector('[data-ctx="' + id + '"]');
+    if (!zona) { return; }
+
+    var api = apiBloque(id);
+    var estructura = null;
+    if (api && typeof api.panel === 'function') {
+      try { estructura = api.panel(); } catch (e) {
+        if (window.console) { console.error('[mimo] panel() de ' + id + ' falló', e); }
+        estructura = null;
+      }
+    }
+
+    while (zona.firstChild) { zona.removeChild(zona.firstChild); }
+
+    if (!estructura || !estructura.bloques || !estructura.bloques.length) {
+      zona.appendChild(vacioCtx());
+      return;
+    }
+
+    if (estructura.titulo) {
+      var titulo = document.createElement('h2');
+      titulo.className = 'panel__h';
+      titulo.textContent = estructura.titulo;
+      zona.appendChild(titulo);
+    }
+
+    estructura.bloques.forEach(function (bl) {
+      if (!bl) { return; }
+      if (bl.h) {
+        var cab = document.createElement('h2');
+        cab.className = 'panel__h';
+        cab.textContent = bl.h;
+        zona.appendChild(cab);
+      }
+      var ul = document.createElement('ul');
+      ul.className = 'ctx-lista';
+      (bl.items || []).forEach(function (it) {
+        if (!it) { return; }
+        var li = document.createElement('li');
+        li.className = 'ctx-item';
+        var txt = document.createElement('span');
+        txt.className = 'ctx-t';
+        txt.textContent = it.t === undefined || it.t === null ? '' : String(it.t);
+        li.appendChild(txt);
+        if (it.meta !== undefined && it.meta !== null && it.meta !== '') {
+          var meta = document.createElement('span');
+          meta.className = 'ctx-meta';
+          meta.textContent = String(it.meta);
+          li.appendChild(meta);
+        }
+        ul.appendChild(li);
+      });
+      if (ul.firstChild) { zona.appendChild(ul); }
+    });
+  }
+
   /* Pantallas de los bloques que todavía no tienen pantalla propia: se crean y
      se quitan con el bloque, para que instalar/desinstalar sea simétrico. */
   function renderPantallas() {
@@ -483,13 +642,73 @@
       main.appendChild(plantillaEstudio);
     }
 
-    var genericas = deNaturaleza('seccion').filter(function (b) { return b.id !== 'estudio'; });
+    /* --- bloques con pantalla propia: o está todo, o no está nada (§3.5) ---
+       Sección + montaje + panel entran y salen juntos. Nunca queda una sección
+       vacía esperando, ni un nav que apunte a un hueco. */
+    Object.keys(PANTALLAS_PROPIAS).forEach(function (id) {
+      var api = apiBloque(id);
+      var sec = main.querySelector('.pantalla[data-panel="' + id + '"]');
+
+      /* una genérica anterior del mismo id (si el bloque no había cargado) se
+         sustituye: dos secciones con el mismo data-panel se encenderían las dos */
+      if (sec && sec.getAttribute('data-generica')) {
+        sec.parentNode.removeChild(sec);
+        sec = null;
+      }
+
+      if (!esInstalado(id) || !api) {
+        if (sec) {
+          if (montadas[id] && api && typeof api.desmontar === 'function') {
+            try { api.desmontar(); } catch (e) {
+              if (window.console) { console.error('[mimo] desmontar() de ' + id + ' falló', e); }
+            }
+          }
+          sec.parentNode.removeChild(sec);
+        }
+        delete montadas[id];
+        delete idiomaMontaje[id];
+        limpiarPanelCtx(id);
+        return;
+      }
+
+      if (!sec) {
+        sec = document.createElement('section');
+        sec.className = 'pantalla';
+        sec.setAttribute('data-panel', id);
+        /* SIN data-generica: no es la pantalla «próximamente», es la suya */
+        main.appendChild(sec);   /* al DOM ANTES de montar: montar() recibe la raíz ya dentro */
+      }
+
+      if (!montadas[id]) {
+        try {
+          api.montar(sec, superficie());
+          montadas[id] = true;
+          idiomaMontaje[id] = idioma();
+        } catch (e) {
+          if (window.console) { console.error('[mimo] montar() de ' + id + ' falló', e); }
+        }
+      } else if (idiomaMontaje[id] !== idioma() && typeof api.refrescar === 'function') {
+        /* cambió el idioma: se repinta, no se remonta (no se pierde la selección) */
+        try {
+          api.refrescar();
+          idiomaMontaje[id] = idioma();
+        } catch (e) {
+          if (window.console) { console.error('[mimo] refrescar() de ' + id + ' falló', e); }
+        }
+      }
+    });
+
+    var genericas = deNaturaleza('seccion').filter(function (b) {
+      return b.id !== 'estudio' && !apiBloque(b.id);
+    });
 
     /* quitar las que ya no tocan */
     var existentes = main.querySelectorAll('.pantalla[data-generica]');
     for (var i = 0; i < existentes.length; i++) {
       var idSec = existentes[i].getAttribute('data-panel');
-      if (!esInstalado(idSec) || idSec === 'estudio') { existentes[i].parentNode.removeChild(existentes[i]); }
+      if (!esInstalado(idSec) || idSec === 'estudio' || apiBloque(idSec)) {
+        existentes[i].parentNode.removeChild(existentes[i]);
+      }
     }
 
     genericas.forEach(function (b) {
@@ -788,6 +1007,10 @@
 
     renderPanel(nombrePantalla);
 
+    /* contexto dinámico del bloque activo: lo declara su panel() y lo pinta el
+       shell aquí, después de encender la zona (pintar una zona oculta no se ve) */
+    pintarPanelCtx();
+
     var cuerpo = document.getElementById('panel-cuerpo');
     if (cuerpo) { cuerpo.scrollTop = 0; }
 
@@ -963,6 +1186,11 @@
     if (!boton) { return; }
     if (boton.closest('.pie') || boton.closest('.modal') || boton.closest('.acor') ||
         boton.closest('.bloque__nav')) { return; }
+    /* los controles de una pantalla PROPIA son del bloque: ya responden a su
+       clic, así que el shell no los anota como «visual» (sería un aviso falso
+       encima de una acción que sí hace algo) */
+    var pantalla = boton.closest('.pantalla');
+    if (pantalla && PANTALLAS_PROPIAS[pantalla.getAttribute('data-panel')]) { return; }
     aviso(t('toast.visual'), '', 'ic-info');
   }
 
@@ -1005,6 +1233,9 @@
     renderAjustes();
     renderCatalogo();
     renderPanel(pantallaActiva);
+    /* el panel dinámico también se repinta en cada renderTodo: un cambio de
+       idioma o de almacén tiene que llegar a sus rótulos */
+    pintarPanelCtx();
     pintarTema(document.body.classList.contains('tema-oscuro') ? 'oscuro' : 'claro');
     marcarIdioma();
     marcarFiltro();
