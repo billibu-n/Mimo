@@ -1,0 +1,42 @@
+/* ============================================================================
+   tema-oscuro.css — Mimo Nuevo · TEMA OSCURO
+
+   Paleta heredada de Mimo Academics "medianoche" (fondos casi negros, acento
+   azul claro #8ab4f8). Solo COLORES y elevación.
+
+   DOS DIFERENCIAS DE FONDO CON EL TEMA CLARO, y son a propósito:
+   1) La elevación es SUPERFICIE MÁS CLARA, no sombra (Material 3): --sup3
+      (#242526, la tarjeta) es más claro que --sup2 (#18191a, su marco) y que
+      --sup. Un tema oscuro hecho con sombras grises no se lee.
+   2) El relleno sólido es azul CLARO con letra OSCURA: al revés que en claro.
+      Con azul oscuro y letra blanca, el contraste se cae.
+   ============================================================================ */
+body.tema-oscuro{
+  color-scheme:dark;
+
+  /* texto y superficies */
+  --fg:#e3e3e3; --muted:#b0b6bc; --muted2:#bdc1c6;
+  --bg:#131314; --sup:#1e1f20; --sup2:#18191a; --sup3:#242526;
+  --line:#444746; --line2:#303336;
+  /* en oscuro el borde de un control tiene que ser CLARO: #8e9396 sobre #18191a
+     da 5,6:1. --line (oscuro) solo vale para separar superficies. */
+  --line-fuerte:#8e9396;
+
+  /* acento y relleno sólido */
+  --ac:#8ab4f8; --ac-fuerte:#8ab4f8; --ac-fuerte-h:#a8c7fa; --ac-txt:#131314;
+  --ac-2:#c58af9;
+
+  /* estados: vivo para borde/icono, -fg para texto (sobre fondo oscuro el -fg es el vivo) */
+  --ok:#81c995;   --ok-fg:#a8dab5;
+  --warn:#fdd663; --warn-fg:#fdd663;
+  --bad:#f28b82;  --bad-fg:#f28b82;
+  --q:#c58af9;    --q-fg:#d7b8ff;
+
+  /* tintes: fondos de estado, oscuros y con tinte, no grises */
+  --t-ac:#1f2b3d; --t-ok:#0f2a1c; --t-warn:#3a2f14; --t-bad:#3c1f22; --t-q:#262a3a;
+
+  /* elevación: superficie más clara + sombra corta (la sombra sola no eleva en oscuro) */
+  --sombra:0 1px 2px rgba(0,0,0,.45);
+  --sombra-alta:0 18px 50px rgba(0,0,0,.60);
+  --velo:rgba(0,0,0,.62);
+}

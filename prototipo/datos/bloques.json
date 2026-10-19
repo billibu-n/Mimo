@@ -1,0 +1,237 @@
+{
+  "_nota": "Catálogo v0.2 del prototipo, canal bundled. Este fichero es la FORMA canónica del manifiesto v0.2 y ahora SÍ lo lee la app: navegacion.js lo pide por fetch y construye con él las fichas del modal y la barra lateral. Los ocho manifiestos son COMPLETOS: todos los campos obligatorios, aunque valgan vacío o null. `descripcion` y `lanzamiento` no son campos del contrato: son lo que la ficha necesita enseñar antes de instalar (AU-32). El texto que se ve se pide a i18n (bloque.<id>.*); lo de aquí es el valor canónico en español.",
+  "_version": "0.2",
+  "_fecha": "2026-10-19",
+
+  "catalogo": {
+    "canal": "bundled",
+    "origen": "datos/bloques.json",
+    "actualizado": "2026-10-19",
+    "huella": null,
+    "firma": null
+  },
+
+  "bloques": [
+    {
+      "id": "academics",
+      "nombre": "Academics",
+      "version": "1.0.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "pack",
+      "zona": "ninguna",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Cinco bloques académicos en un solo encargo.",
+      "lanzamiento": "2026-04-02",
+      "instala": ["estudio", "malla", "tiempo", "calificaciones", "apuntes"],
+      "permisos": [],
+      "ofrece": [],
+      "necesita": [],
+      "consume": [],
+      "configuraciones": [
+        {
+          "id": "academics.grupo",
+          "seccion": "sistema",
+          "titulo": "Agrupar sus bloques bajo «Academics»",
+          "campos": [
+            { "tipo": "checkbox", "id": "activo", "default": true }
+          ]
+        }
+      ],
+      "datos": { "posee": [], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/academics.svg", "estilos": [] },
+      "panelContexto": null
+    },
+
+    {
+      "id": "estudio",
+      "nombre": "Estudio",
+      "version": "1.2.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "seccion",
+      "zona": "main",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Sesiones de estudio y notas rápidas; ocupa una sección.",
+      "lanzamiento": "2026-03-14",
+      "permisos": ["almacen:propio", "puente:calendario.leerEventos", "config:estudio.pomodoro"],
+      "ofrece": ["sesiones.leer", "sesiones.anadir"],
+      "necesita": ["calendario.leerEventos"],
+      "consume": ["calendario.leerEventos"],
+      "configuraciones": [
+        {
+          "id": "estudio.pomodoro",
+          "seccion": "propia",
+          "titulo": "Pomodoro",
+          "campos": [
+            { "tipo": "number", "id": "duracion", "default": 25 }
+          ]
+        }
+      ],
+      "datos": { "posee": ["estudio.sesiones", "estudio.ajustes"], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/estudio.svg", "estilos": ["estudio.css"] },
+      "panelContexto": {
+        "titulo": "Sesión de hoy",
+        "campos": [
+          { "etiqueta": "Tiempo hoy", "valor": "50 min" },
+          { "etiqueta": "Racha", "valor": "3 días" },
+          { "etiqueta": "Sesiones", "valor": "2 de 4" }
+        ]
+      }
+    },
+
+    {
+      "id": "malla",
+      "nombre": "Malla",
+      "version": "1.0.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "seccion",
+      "zona": "main",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Malla curricular: ramos, semestre y créditos.",
+      "lanzamiento": "2026-05-20",
+      "permisos": ["almacen:propio", "puente:calendario.leerEventos"],
+      "ofrece": ["malla.leer", "malla.ramo"],
+      "necesita": [],
+      "consume": ["calendario.leerEventos"],
+      "configuraciones": [],
+      "datos": { "posee": ["malla.ramos"], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/malla.svg", "estilos": [] },
+      "panelContexto": null
+    },
+
+    {
+      "id": "tiempo",
+      "nombre": "Tiempo",
+      "version": "1.0.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "seccion",
+      "zona": "main",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Horas de estudio por semana y por ramo.",
+      "lanzamiento": "2026-06-11",
+      "permisos": ["almacen:propio", "config:tiempo.semana"],
+      "ofrece": ["tiempo.horas"],
+      "necesita": [],
+      "consume": [],
+      "configuraciones": [
+        {
+          "id": "tiempo.semana",
+          "seccion": "propia",
+          "titulo": "Horas objetivo por semana",
+          "campos": [
+            { "tipo": "number", "id": "horas", "default": 20 }
+          ]
+        }
+      ],
+      "datos": { "posee": ["tiempo.registro"], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/tiempo.svg", "estilos": [] },
+      "panelContexto": null
+    },
+
+    {
+      "id": "calificaciones",
+      "nombre": "Calificaciones",
+      "version": "1.0.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "seccion",
+      "zona": "main",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Resultados de evaluaciones y notas numéricas.",
+      "lanzamiento": "2026-07-01",
+      "permisos": ["almacen:propio", "puente:evaluaciones.getEtiquetas", "config:calificaciones.notaMaxima"],
+      "ofrece": ["calificaciones.promedio"],
+      "necesita": [],
+      "consume": ["evaluaciones.getEtiquetas"],
+      "configuraciones": [
+        {
+          "id": "calificaciones.notaMaxima",
+          "seccion": "propia",
+          "titulo": "Nota máxima de la escala",
+          "campos": [
+            { "tipo": "number", "id": "maxima", "default": 7 }
+          ]
+        }
+      ],
+      "datos": { "posee": ["calificaciones.notas"], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/calificaciones.svg", "estilos": [] },
+      "panelContexto": null
+    },
+
+    {
+      "id": "apuntes",
+      "nombre": "Apuntes",
+      "version": "0.9.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "seccion",
+      "zona": "main",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Notas de texto libre por ramo o tema.",
+      "lanzamiento": "2026-08-19",
+      "permisos": ["almacen:propio", "puente:malla.leer"],
+      "ofrece": ["apuntes.leer", "apuntes.anadir"],
+      "necesita": ["malla.leer"],
+      "consume": ["malla.leer"],
+      "configuraciones": [],
+      "datos": { "posee": ["apuntes.notas"], "conservarAlQuitar": false },
+      "recursos": { "icono": "iconos/apuntes.svg", "estilos": [] },
+      "panelContexto": null
+    },
+
+    {
+      "id": "evaluaciones",
+      "nombre": "Evaluaciones",
+      "version": "1.1.0",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "aporte",
+      "zona": "sidebar",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Pone el ramo y su peso en cada evaluación del calendario.",
+      "lanzamiento": "2026-02-27",
+      "permisos": ["almacen:propio", "puente:calendario.leerEventos", "config:evaluaciones.calendario"],
+      "ofrece": ["evaluaciones.getEtiquetas"],
+      "necesita": ["calendario.leerEventos"],
+      "consume": ["calendario.leerEventos"],
+      "configuraciones": [
+        {
+          "id": "evaluaciones.calendario",
+          "seccion": "calendario",
+          "titulo": "Mostrar etiquetas por ramo",
+          "campos": [
+            { "tipo": "checkbox", "id": "activo", "default": true }
+          ]
+        }
+      ],
+      "datos": { "posee": ["evaluaciones.etiquetas"], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/evaluaciones.svg", "estilos": [] },
+      "panelContexto": null
+    },
+
+    {
+      "id": "kit-temas-oscuros",
+      "nombre": "Kit de temas oscuros",
+      "version": "1.0.1",
+      "autor": "Mimo Labs",
+      "licencia": "MIT",
+      "naturaleza": "tema",
+      "zona": "sistema",
+      "compatible": ">=0.1.0 <1.0.0",
+      "descripcion": "Tres temas oscuros: medianoche, negro y deepsea.",
+      "lanzamiento": "2026-01-15",
+      "permisos": ["tema:aportar"],
+      "ofrece": ["tema.aplicar"],
+      "necesita": [],
+      "consume": [],
+      "configuraciones": [],
+      "aporta": ["medianoche", "negro", "deepsea"],
+      "datos": { "posee": [], "conservarAlQuitar": true },
+      "recursos": { "icono": "iconos/kit-temas.svg", "estilos": ["kit-temas.css"] },
+      "panelContexto": null
+    }
+  ]
+}
