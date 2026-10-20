@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mimo · armazón C · paneles</title>
+<style>
+/* ============================================================================
+   TOKENS — el único sitio de este fichero donde se escribe un color.
+   Piel C · Materia, claro y oscuro, copiada tal cual de armazon.html.
+   Los seis temas siguen siendo DATOS para la pantalla de apariencia.
+   ============================================================================ */
+:root{
+  --c-fondo:#f2ede6; --c-sup:#faf7f2; --c-sup2:#e8e1d6;
+  --c-tinta:#211e19; --c-muted:#615950;
+  --c-linea:#d9d1c4; --c-linea-fuerte:#6f665a;
+  --c-acento:#b23c10; --c-acento-txt:#fff8f2;
+  --c-velo:rgba(33,30,25,.42);
+  --c-sombra:0 10px 30px rgba(60,42,20,.10);
+  --c-sombra-suave:0 2px 10px rgba(60,42,20,.10);
+  --c-osc-fondo:#141210; --c-osc-sup:#1d1a16; --c-osc-sup2:#27231e;
+  --c-osc-tinta:#f4eee4; --c-osc-muted:#b5aa9a;
+  --c-osc-linea:#332e28; --c-osc-linea-fuerte:#a2947f;
+  --c-osc-acento:#f4915f; --c-osc-acento-txt:#1a1512;
+  --c-osc-velo:rgba(0,0,0,.55);
+
+  /* temas de la app: una ficha, cuatro valores */
+  --papel-fondo:#FAF9F6; --papel-sup:#FFFFFF; --papel-tinta:#16130F; --papel-acento:#A03A22;
+  --arena-fondo:#F6F1E7; --arena-sup:#FFFDF8; --arena-tinta:#2A241C; --arena-acento:#7A5B2E;
+  --marea-fondo:#F1F5F7; --marea-sup:#FFFFFF; --marea-tinta:#10202A; --marea-acento:#0E6E7A;
+  --grafito-fondo:#17181A; --grafito-sup:#202225; --grafito-tinta:#ECEDEE; --grafito-acento:#9BB7FF;
+  --medianoche-fondo:#0E1220; --medianoche-sup:#171C2E; --medianoche-tinta:#E4E8F5; --medianoche-acento:#6FE3C4;
+  --contraste-fondo:#000000; --contraste-sup:#0A0A0A; --contraste-tinta:#FFFFFF; --contraste-acento:#FFD400;
+}
+
+/* ============================================================================
+   ARMAZÓN COMÚN — estructura: rejilla, caja, posición, movimiento declarado.
+   El aspecto (tamaños, espacios, radios, duraciones) lo pone la piel C.
+   ============================================================================ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh}
+h1,h2,p,ul{margin:0}
+ul{list-style:none;padding:0}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+.icono{display:block;width:20px;height:20px;flex:none;fill:none;stroke:currentColor;
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* la página es una rejilla de tres filas: barra, cuerpo, pie. El pie NO flota. */
+body{display:grid;grid-template-rows:48px minmax(0,1fr) 32px;height:100vh;overflow:hidden}
+body[data-pie="oculto"]{grid-template-rows:48px minmax(0,1fr)}
+body[data-pie="oculto"] .pie{display:none}
+
+.barra{display:flex;align-items:center;min-width:0;border-bottom:1px solid var(--linea);
+  background:var(--sup);color:var(--tinta)}
+.barra__bloque{display:flex;align-items:center;min-width:0}
+.barra__nombre{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.barra__chevron{display:flex;align-items:center;flex:none;color:var(--muted)}
+.barra__fin{display:flex;align-items:center;margin-left:auto;min-width:0}
+
+.armazon{position:relative;display:flex;align-items:stretch;min-height:0;min-width:0}
+.riel{display:flex;flex-direction:column;flex:none;overflow:hidden;min-width:0;width:56px;
+  background:var(--sup);color:var(--tinta);
+  transition-property:width;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
+[data-riel="abierto"] .riel{width:256px;transition-duration:240ms}
+.riel__bloques,.riel__fijos{display:flex;flex-direction:column;min-width:0}
+.riel__fila{display:flex;align-items:center;min-width:0}
+.riel__bloque,.riel__mas,.riel__fijo{display:flex;align-items:center;width:100%;text-align:left;
+  border:0;background:transparent;color:inherit;cursor:pointer;min-width:0;font-family:inherit}
+.riel__nombre{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.filete{display:block;height:1px;background:var(--linea);border:0}
+
+.losa{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;
+  background:var(--sup);color:var(--tinta);box-shadow:var(--sombra)}
+.losa__barra{display:flex;align-items:center;flex-wrap:wrap}
+.losa__cuerpo{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden}
+.vista--bloque{display:grid;grid-template-rows:auto 1fr;flex:none;width:100%;margin:auto}
+.bloque{display:grid}
+.bloque__nombre{margin:0;font-weight:500}
+.estanteria{display:flex;flex-wrap:wrap;align-items:center}
+.est__v{border:0;background:transparent;cursor:pointer;color:var(--muted);font-family:inherit}
+.pomo{display:grid;align-items:center;justify-self:center;max-width:100%;min-width:0}
+.pomo__anillo{position:relative}
+.pomo__anillo svg{display:block;width:100%;height:100%}
+.pomo__pista,.pomo__arco{fill:none}
+.pomo__pista{stroke:var(--sup2)}
+.pomo__arco{stroke:var(--acento);stroke-dasharray:245 82;transform:rotate(-90deg);transform-origin:60px 60px}
+.pomo__centro{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.pomo__lado{display:grid;min-width:0}
+.pomo__acciones{display:flex;flex-wrap:wrap}
+.pomo__cifra,.pomo__fase,.pomo__sesion{margin:0}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit}
+.btn:focus-visible,.btn-icono:focus-visible,.riel__bloque:focus-visible,.riel__fijo:focus-visible,
+.riel__mas:focus-visible,.est__v:focus-visible,.pestana:focus-visible,.ficha:focus-visible,
+.btn-icono:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
+.btn-icono{display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:pointer;
+  border:1px solid transparent;background:transparent;color:var(--tinta);padding:0}
+.btn-icono .icono{transition-property:transform;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
+
+/* el panel derecho: pestañas y dos caras */
+.der{display:flex;flex:none;overflow:hidden;min-width:0;width:0;background:var(--sup);color:var(--tinta);
+  transition-property:width;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
+[data-der="abierto"] .der{width:352px;transition-duration:240ms}
+.der__caja{display:flex;flex-direction:column;flex:none;width:352px;min-height:0;overflow-y:auto}
+.der__cab{display:flex;align-items:center;border-bottom:1px solid var(--linea)}
+.pestanas{display:flex;align-items:center;min-width:0}
+.pestana{border:0;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit}
+.der__cara{display:none}
+body[data-cara="contexto"] .der__cara--contexto,
+body[data-cara="gabinete"] .der__cara--gabinete{display:grid}
+.ctx__h{margin:0;font-weight:500}
+.ctx__h--rotulo{text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.ctx__lista{display:grid}
+.ctx__item{display:flex;align-items:baseline;justify-content:space-between;min-width:0}
+.ctx__t,.ctx__meta{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gab__lista{display:grid}
+.gab__item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;
+  grid-template-areas:"ico nom btn" "ico desc btn";background:var(--sup2)}
+.gab__item .icono{grid-area:ico}
+.gab__item .gab__nombre{grid-area:nom}
+.gab__item .gab__desc{grid-area:desc}
+.gab__item .btn{grid-area:btn}
+.gab__instalados .gab__item{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"nom btn";background:transparent}
+.gab__nombre,.gab__desc{min-width:0}
+.gab__nombre,.gab__desc{margin:0}
+.gab__rotulo{margin:0;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.gab__etiqueta{color:var(--muted)}
+.gab__intro{margin:0;color:var(--muted)}
+
+/* losas de los otros estados */
+.vacia,.apariencia,.ajustes{display:none;width:100%;margin:auto}
+body[data-vista="vacia"] .vacia,
+body[data-vista="apariencia"] .apariencia,
+body[data-vista="ajustes"] .ajustes{display:grid}
+body[data-vista="vacia"] .vista--bloque,
+body[data-vista="apariencia"] .vista--bloque,
+body[data-vista="ajustes"] .vista--bloque{display:none}
+.chips{display:flex;flex-wrap:wrap}
+.fichas{display:grid}
+.ficha{display:grid;width:100%;text-align:left;cursor:pointer;font-family:inherit;color:inherit;background:var(--fondo);border:0}
+.ficha__muestras{display:flex}
+.ficha__c{flex:1;display:block;outline:1px solid var(--linea);outline-offset:-1px}
+.ajuste{display:flex;align-items:center;justify-content:space-between;background:var(--sup2)}
+.ajuste__t{margin:0}
+
+.pie{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
+  border-top:1px solid var(--linea);background:var(--sup);color:var(--muted)}
+.pie__z{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pie__z--fin{text-align:right}
+
+/* superposición: por debajo de 900 px o en el estado `angosto` */
+.velo{position:absolute;inset:0;z-index:2;display:none;background:var(--velo)}
+body[data-modo="superpuesto"] .armazon{padding:0}
+body[data-modo="superpuesto"] .losa{margin:0 0 0 56px}
+body[data-modo="superpuesto"] .riel{position:absolute;left:0;top:0;bottom:0;z-index:1;box-shadow:var(--sombra)}
+body[data-modo="superpuesto"] .der{position:absolute;right:0;top:0;bottom:0;z-index:4;box-shadow:var(--sombra)}
+body[data-modo="superpuesto"][data-der="abierto"] .velo{display:block}
+
+/* movimiento: apertura 240 · cierre 160 · reduced-motion lo apaga */
+@keyframes entra-izq{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes entra-der{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+.entra-izq{animation:entra-izq 240ms cubic-bezier(.2,.8,.2,1) both}
+.entra-der{animation:entra-der 240ms cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion: reduce){
+  body *{transition:none!important;animation:none!important}
+}
+
+/* ============================================================================
+   PIEL C · MATERIA — el único sitio de este fichero con tamaños, espacios,
+   radios y duraciones. Techos: 5 tamaños · 8 espacios · 2 radios · 3 duraciones.
+   ============================================================================ */
+[data-piel="c"]{
+  --fondo:var(--c-fondo); --sup:var(--c-sup); --sup2:var(--c-sup2);
+  --tinta:var(--c-tinta); --muted:var(--c-muted);
+  --linea:var(--c-linea); --fuerte:var(--c-linea-fuerte);
+  --acento:var(--c-acento); --acento-txt:var(--c-acento-txt);
+  --velo:var(--c-velo); --sombra:var(--c-sombra);
+  font-family:'Century Gothic','Avenir Next','URW Gothic',system-ui,sans-serif;
+  color:var(--tinta); background:var(--fondo);
+}
+body[data-piel="c"][data-tema="oscuro"]{
+  --fondo:var(--c-osc-fondo); --sup:var(--c-osc-sup); --sup2:var(--c-osc-sup2);
+  --tinta:var(--c-osc-tinta); --muted:var(--c-osc-muted);
+  --linea:var(--c-osc-linea); --fuerte:var(--c-osc-linea-fuerte);
+  --acento:var(--c-osc-acento); --acento-txt:var(--c-osc-acento-txt);
+  --velo:var(--c-osc-velo); --sombra:none;
+}
+[data-piel="c"] .barra{gap:16px;padding:0 32px;font-size:13px}
+[data-piel="c"] .barra__bloque{gap:12px;font-size:15px}
+[data-piel="c"] .barra__fecha{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+[data-piel="c"] .barra__fin{gap:16px}
+[data-piel="c"] .barra__tema{gap:8px;color:var(--tinta)}
+[data-piel="c"] .btn-icono{width:36px;height:36px;border-radius:999px;transition-property:background-color;transition-duration:160ms}
+[data-piel="c"] .btn-icono:hover{background:var(--sup2);transition-duration:240ms}
+[data-piel="c"] .btn-icono .icono{transition-duration:160ms}
+[data-piel="c"] .btn-icono[aria-expanded="true"] .icono{transform:rotate(90deg);transition-duration:240ms}
+[data-piel="c"] .btn-icono:active{transform:scale(.98);transition-duration:100ms}
+[data-piel="c"] .armazon{gap:0;padding:0 32px}
+
+[data-piel="c"] .riel{gap:8px;padding:8px;border-radius:16px}
+[data-piel="c"] .riel__bloques,[data-piel="c"] .riel__fijos{gap:8px}
+[data-piel="c"] .riel__bloque{gap:16px;padding:16px 24px;font-size:15px;border-radius:999px;
+  transition-property:background-color,color;transition-duration:160ms}
+[data-piel="c"] .riel__bloque:hover{background:var(--sup2);transition-duration:240ms}
+[data-piel="c"] .riel__bloque[aria-current="page"]{background:var(--sup2);color:var(--tinta)}
+[data-piel="c"] .riel__mas{gap:16px;padding:16px 24px;font-size:15px;border:1px solid var(--fuerte);
+  border-radius:999px;color:var(--muted);transition-property:background-color,color;transition-duration:160ms}
+[data-piel="c"] .riel__mas:hover{background:var(--sup2);color:var(--tinta);transition-duration:240ms}
+[data-piel="c"] .riel__fijo{gap:16px;padding:16px 24px;font-size:15px;border-radius:999px;color:var(--muted);
+  transition-property:background-color,color;transition-duration:160ms}
+[data-piel="c"] .riel__fijo:hover{background:var(--sup2);color:var(--tinta);transition-duration:240ms}
+[data-piel="c"] .riel__filete{margin:8px 0}
+[data-riel="plegado"] .riel__bloque,[data-riel="plegado"] .riel__mas,[data-riel="plegado"] .riel__fijo{
+  gap:0;padding:16px 0;justify-content:center}
+[data-riel="plegado"] .riel__nombre{display:none}
+
+[data-piel="c"] .losa{margin:0 32px;border-radius:16px}
+[data-piel="c"] .losa__barra{gap:16px;padding:16px 24px;font-size:13px}
+[data-piel="c"] .losa__cuerpo{gap:32px;padding:48px}
+[data-piel="c"] .vista--bloque{max-width:760px;row-gap:8px}
+[data-piel="c"] .bloque{gap:16px}
+[data-piel="c"] .bloque__nombre{font-size:17px;font-weight:500}
+[data-piel="c"] .estanteria{gap:8px;padding:8px;background:var(--sup2);border-radius:999px}
+[data-piel="c"] .est__v{padding:8px 24px;font-size:15px;border-radius:999px;
+  transition-property:background-color,color,box-shadow;transition-duration:160ms}
+[data-piel="c"] .est__v:hover{color:var(--tinta);background:var(--sup);transition-duration:240ms}
+[data-piel="c"] .est__v[aria-current="page"]{color:var(--tinta);background:var(--sup);box-shadow:var(--c-sombra-suave)}
+[data-piel="c"] .pomo{gap:32px;padding:48px;background:var(--fondo);border-radius:16px}
+[data-piel="c"] .pomo__anillo{width:260px;height:260px}
+[data-piel="c"] .pomo__pista,[data-piel="c"] .pomo__arco{stroke-width:6}
+[data-piel="c"] .pomo__arco{stroke-linecap:round}
+[data-piel="c"] .pomo__centro{gap:8px}
+[data-piel="c"] .pomo__cifra{font-size:64px;font-weight:300;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+[data-piel="c"] .pomo__fase{font-size:15px;color:var(--muted)}
+[data-piel="c"] .pomo__lado{gap:24px;justify-items:center}
+[data-piel="c"] .pomo__sesion{font-size:15px;color:var(--muted)}
+[data-piel="c"] .pomo__acciones{gap:16px;justify-content:center}
+[data-piel="c"] .btn{gap:16px;padding:16px 24px;font-size:17px;border:1px solid var(--fuerte);
+  border-radius:999px;background:transparent;color:var(--tinta);
+  transition-property:background-color,border-color,color,transform;transition-duration:160ms}
+[data-piel="c"] .btn:hover{background:var(--sup2);transition-duration:240ms}
+[data-piel="c"] .btn:active{transform:scale(.98);transition-duration:100ms}
+[data-piel="c"] .btn--primario{background:var(--acento);border-color:var(--acento);color:var(--acento-txt)}
+[data-piel="c"] .btn--primario:hover{background:var(--acento);opacity:.92}
+[data-piel="c"] .btn--mini{padding:8px 16px;font-size:13px}
+
+[data-piel="c"] .der__cab{gap:8px;padding:16px 24px}
+[data-piel="c"] .pestanas{gap:8px}
+[data-piel="c"] .pestana{padding:8px 16px;font-size:15px;border-radius:999px;
+  transition-property:background-color,color;transition-duration:160ms}
+[data-piel="c"] .pestana:hover{color:var(--tinta);background:var(--sup2);transition-duration:240ms}
+[data-piel="c"] .pestana[aria-selected="true"]{background:var(--sup2);color:var(--tinta)}
+[data-piel="c"] .der__cerrar{margin-left:auto}
+[data-piel="c"] .der__cara{gap:8px;padding:16px 24px}
+[data-piel="c"] .ctx__h{font-size:17px}
+[data-piel="c"] .ctx__h--rotulo{font-size:13px;margin-top:8px}
+[data-piel="c"] .ctx__lista{gap:8px}
+[data-piel="c"] .ctx__item{font-size:15px}
+[data-piel="c"] .ctx__meta{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+[data-piel="c"] .gab__intro{font-size:15px}
+[data-piel="c"] .gab__rotulo{font-size:13px;margin-top:8px}
+[data-piel="c"] .gab__lista{gap:8px}
+[data-piel="c"] .gab__item{gap:8px 12px;padding:8px 12px;border-radius:16px}
+[data-piel="c"] .gab__instalados .gab__item{padding:8px 12px}
+[data-piel="c"] .gab__nombre{font-size:15px;font-weight:500}
+[data-piel="c"] .gab__desc{font-size:13px;color:var(--muted)}
+[data-piel="c"] .gab__etiqueta{font-size:13px}
+
+[data-piel="c"] .pie{gap:16px;padding:0 32px;font-size:13px}
+[data-piel="c"] .pie__z{font-variant-numeric:tabular-nums}
+
+[data-piel="c"] .vacia{gap:32px;align-content:center;justify-items:center;text-align:center;padding:48px 0}
+[data-piel="c"] .vacia__tit{font-size:26px;font-weight:500}
+[data-piel="c"] .vacia__txt{font-size:15px;color:var(--muted)}
+[data-piel="c"] .vacia__nota{font-size:13px;color:var(--muted)}
+[data-piel="c"] .chips{gap:8px;justify-content:center}
+[data-piel="c"] .chip{padding:8px 24px;font-size:13px;border:1px solid var(--fuerte);border-radius:999px;
+  color:var(--tinta);background:var(--sup2)}
+[data-piel="c"] .apariencia{gap:32px;align-content:start}
+[data-piel="c"] .apariencia__tit{font-size:26px;font-weight:500}
+[data-piel="c"] .apariencia__txt{font-size:15px;color:var(--muted)}
+[data-piel="c"] .fichas{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+[data-piel="c"] .ficha{gap:16px;padding:24px;border-radius:16px;
+  transition-property:background-color,box-shadow,transform;transition-duration:160ms}
+[data-piel="c"] .ficha:hover{box-shadow:var(--c-sombra-suave);transition-duration:240ms}
+[data-piel="c"] .ficha[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--acento)}
+[data-piel="c"] .ficha:active{transform:scale(.98);transition-duration:100ms}
+[data-piel="c"] .ficha__nombre{font-size:17px;font-weight:500}
+[data-piel="c"] .ficha__muestras{gap:8px}
+[data-piel="c"] .ficha__c{height:40px;border-radius:16px}
+[data-piel="c"] .ajustes{gap:24px;align-content:start}
+[data-piel="c"] .ajustes__tit{font-size:26px;font-weight:500}
+[data-piel="c"] .ajustes__txt{font-size:15px;color:var(--muted)}
+[data-piel="c"] .ajustes__nota{font-size:13px;color:var(--muted)}
+[data-piel="c"] .ajuste{gap:24px;padding:16px 24px;border-radius:16px}
+[data-piel="c"] .ajuste__t{font-size:15px}
+
+@media (max-width:899px){
+  [data-piel="c"] .barra{gap:8px;padding:0 16px}
+  [data-piel="c"] .barra__fecha{display:none}
+  [data-piel="c"] #tema-texto,#pie-guardado-txt{display:none}
+  [data-piel="c"] .losa__cuerpo{gap:24px;padding:24px}
+  [data-piel="c"] .losa__barra{gap:8px;padding:8px 16px}
+  [data-piel="c"] .est__v{padding:8px 16px;font-size:13px}
+  [data-piel="c"] .pomo{gap:24px;padding:24px}
+  [data-piel="c"] .pomo__anillo{width:200px;height:200px}
+  [data-piel="c"] .pomo__cifra{font-size:26px}
+  [data-piel="c"] .fichas{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  [data-piel="c"] .vacia{padding:32px 0}
+  [data-piel="c"] .der__caja{width:100%}
+}
+</style>
+</head>
+<body data-piel="c" data-tema="claro" data-estado="normal" data-modo="empuja"
+      data-riel="abierto" data-der="cerrado" data-cara="contexto" data-vista="normal" data-pie="visible">
+
+<h1 class="sr">Mimo</h1>
+
+<!-- FAMILIA DE ICONOS: una sola, rejilla de 20, viewBox 24, trazo 1,5, sin relleno.
+     Cada icono se declara UNA vez; los de bloque se piden por identificador al
+     mapa ICONOS del script, que es el campo que en la app vendrá del manifiesto. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-calendario" viewBox="0 0 24 24"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4M8 14h1M12 14h1M16 14h1M8 17h1M12 17h1"/></symbol>
+  <symbol id="i-malla" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+  <symbol id="i-tiempo" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 8v4l3 2"/></symbol>
+  <symbol id="i-estudio" viewBox="0 0 24 24"><path d="M12 6C9.8 4.5 7 4 4 4v14c3 0 5.8.5 8 2 2.2-1.5 5-2 8-2V4c-3 0-5.8.5-8 2zM12 6v14"/></symbol>
+  <symbol id="i-calificaciones" viewBox="0 0 24 24"><path d="M5 20V10M10 20V4M15 20V13M20 20V7"/></symbol>
+  <symbol id="i-apuntes" viewBox="0 0 24 24"><path d="M6 4h11a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2zM6 4v16M10 8h5M10 12h5"/></symbol>
+  <symbol id="i-tareas" viewBox="0 0 24 24"><path d="M4 7l1.5 1.5L8 6M4 12l1.5 1.5L8 11M4 17l1.5 1.5L8 16M11 7h9M11 12h9M11 17h9"/></symbol>
+  <symbol id="i-evaluaciones" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M10.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M9.5 15.5l1 1 2-2.5"/></symbol>
+  <symbol id="i-academia" viewBox="0 0 24 24"><path d="M3 9l9-4 9 4-9 4zM6 11v4c0 1.5 2.7 3 6 3s6-1.5 6-3v-4M21 9v5"/></symbol>
+  <symbol id="i-apariencia" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 8.5-6M8 8h1M8 12h1M11 15h1"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h7M15 7h5M4 12h3M11 12h9M4 17h7M15 17h5M13 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3M9 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3M13 15.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3"/></symbol>
+  <symbol id="i-panel-izq" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM10 5v14"/></symbol>
+  <symbol id="i-panel-der" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM14 5v14"/></symbol>
+  <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<header class="barra">
+  <button class="btn-icono" id="btn-riel" type="button" aria-expanded="true" aria-controls="riel"
+          aria-label="Panel de bloques"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-izq"/></svg></button>
+  <div class="barra__bloque">
+    <span id="bloque-icono" aria-hidden="true"></span>
+    <span class="barra__nombre" id="bloque-nombre">Tiempo</span>
+    <span class="barra__chevron" aria-hidden="true"><svg class="icono" focusable="false"><use href="#i-chevron"/></svg></span>
+  </div>
+  <div class="barra__fin">
+    <span class="barra__fecha">octubre 2026</span>
+    <button class="btn btn--mini barra__tema" id="btn-tema" type="button" aria-pressed="false"><span id="tema-icono" aria-hidden="true"></span><span id="tema-texto">Tema claro</span></button>
+    <button class="btn-icono" id="btn-der" type="button" aria-expanded="false" aria-controls="panel-der"
+            aria-label="Panel contextual"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-der"/></svg></button>
+  </div>
+</header>
+
+<main class="armazon">
+
+  <aside class="riel" id="riel" aria-label="Riel de bloques">
+    <nav class="riel__bloques" id="riel-bloques" aria-label="Bloques instalados"></nav>
+    <button class="riel__mas" id="btn-mas" type="button"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg><span class="riel__nombre">Añadir bloque</span></button>
+    <div class="riel__filete filete"></div>
+    <div class="riel__fijos">
+      <button class="riel__fijo" type="button" data-apariencia><span id="ico-apariencia" aria-hidden="true"></span><span class="riel__nombre">Apariencia</span></button>
+      <button class="riel__fijo" type="button" data-ajustes><span id="ico-ajustes" aria-hidden="true"></span><span class="riel__nombre">Ajustes</span></button>
+    </div>
+  </aside>
+
+  <section class="losa" aria-label="Bloque abierto">
+    <div class="losa__barra">
+      <nav class="estanteria" aria-label="Vistas de Tiempo">
+        <button class="est__v" type="button">Cronómetro</button>
+        <button class="est__v" type="button">Temporizador</button>
+        <button class="est__v" type="button" aria-current="page">Pomodoro</button>
+        <button class="est__v" type="button">Registro</button>
+      </nav>
+    </div>
+    <div class="filete"></div>
+    <div class="losa__cuerpo">
+
+      <div class="vista--bloque" data-vista="normal">
+        <div class="bloque">
+          <p class="bloque__nombre">Tiempo</p>
+        </div>
+        <div class="pomo">
+          <div class="pomo__anillo">
+            <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+              <circle class="pomo__pista" cx="60" cy="60" r="55"></circle>
+              <circle class="pomo__arco" cx="60" cy="60" r="55"></circle>
+            </svg>
+            <div class="pomo__centro">
+              <span class="pomo__cifra">18:42</span>
+              <span class="pomo__fase">Trabajo · 25 min</span>
+            </div>
+          </div>
+          <div class="pomo__lado">
+            <p class="pomo__sesion">Sesión 3 de 4</p>
+            <div class="pomo__acciones">
+              <button class="btn btn--primario" type="button">Empezar</button>
+              <button class="btn" type="button">Reiniciar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vacia">
+        <h2 class="vacia__tit">Elige con qué empiezas</h2>
+        <p class="vacia__txt">Calendario, Malla, Tiempo, Estudio y Calificaciones ya están listos para tu riel.</p>
+        <ul class="chips">
+          <li class="chip">Calendario</li>
+          <li class="chip">Malla</li>
+          <li class="chip">Tiempo</li>
+          <li class="chip">Estudio</li>
+          <li class="chip">Calificaciones</li>
+        </ul>
+        <p class="vacia__nota">Los que ya tienes están en el riel; el panel derecho abre el gabinete para añadir los demás.</p>
+        <button class="btn btn--primario" type="button" data-abrir-gabinete>Abrir el gabinete</button>
+      </div>
+
+      <div class="apariencia">
+        <h2 class="apariencia__tit">Apariencia</h2>
+        <p class="apariencia__txt">Seis temas. Cada uno con su fondo, su superficie, su tinta y su acento.</p>
+        <ul class="fichas">
+          <li><button class="ficha" type="button" aria-pressed="true">
+            <span class="ficha__nombre">Papel</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--papel-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--papel-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--papel-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--papel-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Arena</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--arena-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--arena-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--arena-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--arena-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Marea</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--marea-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--marea-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--marea-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--marea-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Grafito</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--grafito-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--grafito-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--grafito-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--grafito-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Medianoche</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--medianoche-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--medianoche-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--medianoche-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--medianoche-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Alto contraste</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--contraste-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--contraste-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--contraste-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--contraste-acento)"></span>
+            </span>
+          </button></li>
+        </ul>
+      </div>
+
+      <div class="ajustes">
+        <h2 class="ajustes__tit">Ajustes</h2>
+        <p class="ajustes__txt">El pie de página se oculta desde aquí, no desde el pie.</p>
+        <div class="ajuste">
+          <p class="ajuste__t">Pie de página</p>
+          <button class="btn btn--mini" id="btn-pie" type="button" aria-pressed="true">Visible</button>
+        </div>
+        <p class="ajustes__nota">Versión 1.0.0 · el armazón guarda solo; aquí no hay nada que confirmar.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <aside class="der" id="panel-der" aria-label="Panel contextual">
+    <div class="der__caja">
+      <header class="der__cab">
+        <div class="pestanas" role="tablist" aria-label="Panel derecho">
+          <button class="pestana" id="tab-contexto" type="button" role="tab" aria-selected="true"
+                  aria-controls="cara-contexto" data-cara="contexto">Contexto</button>
+          <button class="pestana" id="tab-gabinete" type="button" role="tab" aria-selected="false"
+                  aria-controls="cara-gabinete" data-cara="gabinete">Gabinete</button>
+        </div>
+        <button class="btn-icono der__cerrar" id="btn-cerrar-der" type="button" aria-label="Cerrar el panel contextual"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-cerrar"/></svg></button>
+      </header>
+
+      <div class="der__cara der__cara--contexto" id="cara-contexto" role="tabpanel" aria-labelledby="tab-contexto">
+        <h2 class="ctx__h">Tiempo</h2>
+        <h2 class="ctx__h ctx__h--rotulo">Ahora</h2>
+        <ul class="ctx__lista">
+          <li class="ctx__item"><span class="ctx__t">Modo</span><span class="ctx__meta">Cronómetro</span></li>
+          <li class="ctx__item"><span class="ctx__t">Estado</span><span class="ctx__meta">Parado</span></li>
+        </ul>
+        <h2 class="ctx__h ctx__h--rotulo">Hoy</h2>
+        <ul class="ctx__lista">
+          <li class="ctx__item"><span class="ctx__t">Total</span><span class="ctx__meta">30 min</span></li>
+          <li class="ctx__item"><span class="ctx__t">Sesiones</span><span class="ctx__meta">1</span></li>
+        </ul>
+        <h2 class="ctx__h ctx__h--rotulo">Esta semana</h2>
+        <ul class="ctx__lista">
+          <li class="ctx__item"><span class="ctx__t">Total</span><span class="ctx__meta">30 min</span></li>
+          <li class="ctx__item"><span class="ctx__t">Sesiones</span><span class="ctx__meta">1</span></li>
+        </ul>
+        <h2 class="ctx__h ctx__h--rotulo">Últimas sesiones</h2>
+        <ul class="ctx__lista">
+          <li class="ctx__item"><span class="ctx__t">Sin nombre</span><span class="ctx__meta">30 min · 10-20</span></li>
+        </ul>
+      </div>
+
+      <div class="der__cara der__cara--gabinete" id="cara-gabinete" role="tabpanel" aria-labelledby="tab-gabinete">
+        <p class="gab__intro">Añade un bloque a tu riel.</p>
+        <p class="gab__rotulo">Para añadir</p>
+        <ul class="gab__lista" id="gab-instalar"></ul>
+        <p class="gab__rotulo">En tu riel</p>
+        <ul class="gab__lista gab__instalados" id="gab-instalados"></ul>
+      </div>
+    </div>
+  </aside>
+
+  <div class="velo" id="velo" aria-hidden="true"></div>
+</main>
+
+<footer class="pie" id="pie">
+  <p class="pie__z" id="pie-guardado"><span id="pie-version">v1.0.0</span><span id="pie-guardado-txt"> · guardado hace 2 s</span></p>
+  <p class="pie__z pie__z--centro" id="pie-bloque">Pomodoro · 12:04</p>
+  <p class="pie__z pie__z--fin" id="pie-idioma">es · claro</p>
+</footer>
+
+<script>
+(function () {
+  var body = document.body;
+
+  /* EL MAPA DE ICONOS: un identificador de bloque -> un símbolo de la familia.
+     En la app real vendrá del manifiesto del bloque; instalar uno no toca el
+     armazón, solo añade su fila a BLOQUES. */
+  var ICONOS = {
+    calendario: 'i-calendario', malla: 'i-malla', tiempo: 'i-tiempo',
+    estudio: 'i-estudio', calificaciones: 'i-calificaciones',
+    apuntes: 'i-apuntes', tareas: 'i-tareas', evaluaciones: 'i-evaluaciones',
+    academia: 'i-academia', apariencia: 'i-apariencia', ajustes: 'i-ajustes'
+  };
+
+  var BLOQUES = [
+    { id: 'calendario', nombre: 'Calendario', instalado: true },
+    { id: 'malla', nombre: 'Malla', instalado: true },
+    { id: 'tiempo', nombre: 'Tiempo', instalado: true },
+    { id: 'estudio', nombre: 'Estudio', instalado: true },
+    { id: 'calificaciones', nombre: 'Calificaciones', instalado: true },
+    { id: 'tareas', nombre: 'Tareas', desc: 'Lo que tienes pendiente, con fecha.', instalado: false },
+    { id: 'apuntes', nombre: 'Apuntes', desc: 'Notas por ramo, buscables.', instalado: false },
+    { id: 'evaluaciones', nombre: 'Evaluaciones', desc: 'Fechas y pesos de cada prueba.', instalado: false },
+    { id: 'academia', nombre: 'Academia', desc: 'El conjunto completo de estudio.', etiqueta: 'paquete', instalado: false }
+  ];
+  var ABIERTO = 'tiempo';
+
+  var ESTADOS = ['normal', 'plegado', 'contexto', 'gabinete', 'ambos', 'angosto', 'vacia', 'apariencia'];
+  var TEMAS = ['claro', 'oscuro'];
+  var q = new URLSearchParams(location.search);
+  function uno(v, lista, defecto) {
+    v = String(v || '').toLowerCase();
+    return lista.indexOf(v) >= 0 ? v : defecto;
+  }
+  var est = {
+    estado: uno(q.get('estado'), ESTADOS, 'normal'),
+    tema: uno(q.get('tema'), TEMAS, 'claro')
+  };
+
+  /* el estado de los dos paneles: se deriva del estado de la URL y luego lo
+     mueven los botones; `data-estado` se queda como marcador de la carga. */
+  function panelesDe(e) {
+    return {
+      riel: e === 'plegado' ? 'plegado' : 'abierto',
+      der: (e === 'contexto' || e === 'gabinete' || e === 'ambos' || e === 'angosto') ? 'abierto' : 'cerrado',
+      cara: e === 'gabinete' ? 'gabinete' : 'contexto',
+      vista: e === 'vacia' ? 'vacia' : (e === 'apariencia' ? 'apariencia' : 'normal')
+    };
+  }
+  var ui = panelesDe(est.estado);
+  var pila = [];          /* paneles abiertos, el último arriba */
+  var ultimoFoco = null;
+
+  function icono(id, etiqueta) {
+    var simbolo = ICONOS[id];
+    if (!simbolo) { return ''; }
+    return '<svg class="icono" aria-hidden="true" focusable="false"' +
+      (etiqueta ? ' data-bloque="' + id + '"' : '') + '><use href="#' + simbolo + '"/></svg>';
+  }
+
+  function pintarRiel() {
+    var nav = document.getElementById('riel-bloques');
+    var html = '';
+    for (var i = 0; i < BLOQUES.length; i++) {
+      var b = BLOQUES[i];
+      if (!b.instalado) { continue; }
+      html += '<div class="riel__fila"><button class="riel__bloque" type="button"' +
+        (b.id === ABIERTO ? ' aria-current="page"' : '') + '>' + icono(b.id, true) +
+        '<span class="riel__nombre">' + b.nombre + '</span></button></div>';
+    }
+    nav.innerHTML = html;
+  }
+
+  function pintarGabinete() {
+    var instalar = document.getElementById('gab-instalar');
+    var instalados = document.getElementById('gab-instalados');
+    var a = '', b = '';
+    for (var i = 0; i < BLOQUES.length; i++) {
+      var x = BLOQUES[i];
+      if (x.instalado) {
+        b += '<li class="gab__item"><p class="gab__nombre">' + x.nombre +
+          '</p><button class="btn btn--mini" type="button">Quitar</button></li>';
+      } else {
+        a += '<li class="gab__item">' + icono(x.id, true) +
+          '<p class="gab__nombre">' + x.nombre +
+          (x.etiqueta ? ' <span class="gab__etiqueta">· ' + x.etiqueta + '</span>' : '') +
+          '</p><button class="btn btn--mini" type="button">Instalar</button>' +
+          '<p class="gab__desc">' + x.desc + '</p></li>';
+      }
+    }
+    instalar.innerHTML = a;
+    instalados.innerHTML = b;
+  }
+
+  function pintarCabecera() {
+    document.getElementById('bloque-icono').innerHTML = icono(ABIERTO);
+    document.getElementById('btn-tema').setAttribute('aria-pressed', est.tema === 'oscuro' ? 'true' : 'false');
+    document.getElementById('tema-texto').textContent = est.tema === 'claro' ? 'Tema claro' : 'Tema oscuro';
+    document.getElementById('pie-idioma').textContent = 'es · ' + est.tema;
+  }
+
+  function pintar() {
+    body.setAttribute('data-tema', est.tema);
+    body.setAttribute('data-riel', ui.riel);
+    body.setAttribute('data-der', ui.der);
+    body.setAttribute('data-cara', ui.cara);
+    body.setAttribute('data-vista', ui.vista);
+    document.getElementById('btn-riel').setAttribute('aria-expanded', ui.riel === 'abierto' ? 'true' : 'false');
+    document.getElementById('btn-der').setAttribute('aria-expanded', ui.der === 'abierto' ? 'true' : 'false');
+    var tctx = document.getElementById('tab-contexto');
+    var tgab = document.getElementById('tab-gabinete');
+    tctx.setAttribute('aria-selected', ui.cara === 'contexto' ? 'true' : 'false');
+    tgab.setAttribute('aria-selected', ui.cara === 'gabinete' ? 'true' : 'false');
+    pintarCabecera();
+    var modo = (window.matchMedia('(max-width: 899px)').matches || est.estado === 'angosto')
+      ? 'superpuesto' : 'empuja';
+    body.setAttribute('data-modo', modo);
+  }
+
+  /* el contenido entra con 8 px y opacidad al abrir; el ancho lo hace el CSS */
+  function animar(cual) {
+    var caja = document.querySelector(cual === 'riel' ? '.riel' : '.der__caja');
+    if (!caja) { return; }
+    var clase = cual === 'riel' ? 'entra-izq' : 'entra-der';
+    caja.classList.remove('entra-izq', 'entra-der');
+    void caja.offsetWidth;
+    caja.classList.add(clase);
+  }
+
+  function abrir(cual) {
+    if (cual === 'riel') { ui.riel = 'abierto'; } else { ui.der = 'abierto'; }
+    if (pila.indexOf(cual) < 0) { pila.push(cual); }
+    pintar();
+    animar(cual);
+  }
+
+  function cerrar(cual) {
+    if (cual === 'riel') { ui.riel = 'plegado'; } else { ui.der = 'cerrado'; }
+    var i = pila.indexOf(cual);
+    if (i >= 0) { pila.splice(i, 1); }
+    pintar();
+  }
+
+  function alternar(cual, boton) {
+    ultimoFoco = boton || document.activeElement;
+    var abierto = cual === 'riel' ? ui.riel === 'abierto' : ui.der === 'abierto';
+    if (abierto) { cerrar(cual); } else { abrir(cual); }
+  }
+
+  document.getElementById('btn-riel').addEventListener('click', function () {
+    alternar('riel', this);
+  });
+  document.getElementById('btn-der').addEventListener('click', function () {
+    alternar('der', this);
+  });
+  document.getElementById('btn-cerrar-der').addEventListener('click', function () {
+    var boton = document.getElementById('btn-der');
+    cerrar('der');
+    boton.focus();
+  });
+
+  var pestanas = document.querySelectorAll('.pestana');
+  for (var t = 0; t < pestanas.length; t++) {
+    pestanas[t].addEventListener('click', function () {
+      ui.cara = this.getAttribute('data-cara');
+      if (ui.der !== 'abierto') { abrir('der'); } else { pintar(); }
+    });
+  }
+
+  document.getElementById('btn-tema').addEventListener('click', function () {
+    est.tema = est.tema === 'claro' ? 'oscuro' : 'claro';
+    pintar();
+  });
+
+  var apariencia = document.querySelector('[data-apariencia]');
+  apariencia.addEventListener('click', function () { ui.vista = 'apariencia'; pintar(); });
+  var ajustes = document.querySelector('[data-ajustes]');
+  ajustes.addEventListener('click', function () { ui.vista = 'ajustes'; pintar(); });
+
+  document.getElementById('btn-pie').addEventListener('click', function () {
+    var oculto = body.getAttribute('data-pie') === 'oculto';
+    body.setAttribute('data-pie', oculto ? 'visible' : 'oculto');
+    this.setAttribute('aria-pressed', oculto ? 'true' : 'false');
+    this.textContent = oculto ? 'Visible' : 'Oculto';
+  });
+
+  document.getElementById('btn-mas').addEventListener('click', function () {
+    ui.cara = 'gabinete';
+    abrir('der');
+  });
+  var abrirGabinete = document.querySelector('[data-abrir-gabinete]');
+  abrirGabinete.addEventListener('click', function () {
+    ui.cara = 'gabinete';
+    abrir('der');
+  });
+
+  var velo = document.getElementById('velo');
+  velo.addEventListener('click', function () {
+    var arriba = pila[pila.length - 1];
+    if (!arriba) { return; }
+    cerrar(arriba);
+    var boton = document.getElementById(arriba === 'riel' ? 'btn-riel' : 'btn-der');
+    if (boton) { boton.focus(); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') { return; }
+    var arriba = pila[pila.length - 1];
+    if (!arriba) { return; }
+    e.preventDefault();
+    cerrar(arriba);
+    var boton = document.getElementById(arriba === 'riel' ? 'btn-riel' : 'btn-der');
+    if (boton) { boton.focus(); }
+  });
+
+  document.querySelectorAll('.est__v').forEach(function (v) {
+    v.addEventListener('click', function () {
+      document.querySelectorAll('.est__v').forEach(function (o) { o.removeAttribute('aria-current'); });
+      this.setAttribute('aria-current', 'page');
+    });
+  });
+  document.querySelectorAll('.ficha').forEach(function (f) {
+    f.addEventListener('click', function () {
+      document.querySelectorAll('.ficha').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+      this.setAttribute('aria-pressed', 'true');
+    });
+  });
+
+  /* los dos iconos del riel salen del mismo mapa que los bloques */
+  document.getElementById('tema-icono').innerHTML = icono('apariencia');
+  document.getElementById('ico-apariencia').innerHTML = icono('apariencia');
+  document.getElementById('ico-ajustes').innerHTML = icono('ajustes');
+
+  pintarRiel();
+  pintarGabinete();
+  pintar();
+  if (ui.der === 'abierto') { pila.push('der'); }
+  if (ui.riel === 'abierto') { pila.push('riel'); }
+  document.documentElement.setAttribute('data-listo', '1');
+})();
+</script>
+</body>
+</html>
