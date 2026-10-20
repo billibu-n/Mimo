@@ -1,0 +1,93 @@
+EVIDENCIA — Mimo Nuevo · iteración 4a (Malla con vista de mapa)
+Medido el 2026-10-20, 10:33-10:37 (America/Santiago).
+Navegador: Chromium 155.0.8059.84 headless, CDP en 127.0.0.1:9333. Servidor: python3 -m http.server 8081 en prototipo/.
+Driver: herramientas/cdp.py. Guion de medición: /tmp/medir-iter4a.py (efímero; no se versiona).
+No se modificó ningún fichero del prototipo: solo se crean este fichero y la captura 07.
+Cada línea es una medición: clave: valor | como se midió.
+
+1. NODOS Y CABECERAS DEL MAPA
+nodos .malla-nodo: 84 | document.querySelectorAll('.malla-nodo').length
+cabeceras .malla-mapa__colcab: 12 | document.querySelectorAll('.malla-mapa__colcab').length
+import de datos/malla-ejemplo.json: disparado | document.querySelector('.malla-file') + DataTransfer con File(JSON) + dispatchEvent(new Event('change',{bubbles:true})); recorre el camino real del prototipo (ui.js:750 alElegirArchivo -> MimoMallaImportar.desdeArchivo)
+nota: el input.malla-file es el único camino de importación que ofrece el prototipo (ui.js:740 importar() -> input.click()); no existe un botón de importar por URL.
+
+2. VISTA POR DEFECTO (sin vista guardada)
+localStorage['mimo.bloque.malla.vista'] antes de recargar: null | localStorage.removeItem('mimo.bloque.malla.vista') + location.reload()
+vista por defecto: mapa | document.querySelector('.malla-vista__sel').value
+.malla-mapa presente: true | !!document.querySelector('.malla-mapa')
+tarjetas .malla-curso en la vista por defecto: 0 | document.querySelectorAll('.malla-curso').length
+
+3. SELECCIÓN DEL NODO MA2002
+nodo MA2002 presente: true | !!document.querySelector('[data-codigo="MA2002"]')
+flechas .malla-flecha--entra: 2 | document.querySelectorAll('.malla-flecha--entra').length
+flechas .malla-flecha--sale: 3 | document.querySelectorAll('.malla-flecha--sale').length
+flechas .malla-flecha--resto: 97 | document.querySelectorAll('.malla-flecha--resto').length
+nodo MA2002 aria-pressed: "true" | document.querySelector('[data-codigo="MA2002"]').getAttribute('aria-pressed')
+panel derecho, zona activa: malla | document.querySelector('#panel .panel__zona.on').getAttribute('data-ctx')
+panel derecho, títulos: 5 | document.querySelectorAll('#panel [data-ctx="malla"] h2, #panel [data-ctx="malla"] .panel__h').length
+panel derecho, texto: "DETALLE DEL CURSO MA2002 · CÁLCULO AVANZADO Y APLICACIONES Estado En curso Créditos 6 Semestre Semestre IV PRERREQUISITOS MA2001 Aprobado MA2601 Aprobado DESBLOQUEA IN3171 Bloqueado MA3701 Bloqueado MI3105 Bloqueado NOTAS Nota final 4,5" | (zona [data-ctx="malla"]).innerText normalizado
+
+4. CONTRASTE WCAG (4 estados x claro/oscuro) — color y backgroundColor computados
+método: getComputedStyle(nodo).color y .backgroundColor sobre un nodo de cada clase .malla-nodo--<estado>; razón WCAG 2.x sobre luminancia relativa sRGB ((L1+0,05)/(L2+0,05)). Umbral 4,5:1.
+claro aprobado: 6,10 | color rgb(22,101,52) sobre backgroundColor color(srgb 0.872078 0.94949 0.900627)
+claro curso: 5,85 | color rgb(146,64,14) sobre backgroundColor color(srgb 0.958824 0.905569 0.864941)
+claro disponible: 5,51 | color rgb(29,78,216) sobre backgroundColor color(srgb 0.880314 0.914353 0.98902)
+claro bloqueado: 6,70 | color rgb(71,85,105) sobre backgroundColor color(srgb 0.939216 0.94549 0.95451)
+oscuro aprobado: 7,31 | color rgb(168,218,181) sobre backgroundColor color(srgb 0.192235 0.235137 0.209961)
+oscuro curso: 7,64 | color rgb(253,214,99) sobre backgroundColor color(srgb 0.260314 0.242274 0.18251)
+oscuro disponible: 5,52 | color rgb(138,180,248) sobre backgroundColor color(srgb 0.197176 0.223608 0.264314)
+oscuro bloqueado: 6,95 | color rgb(189,193,198) sobre backgroundColor color(srgb 0.196078 0.201961 0.207843)
+los 8 ratios mínimos: 5,51 (claro disponible) | mínimo de los 8 valores de arriba; los 8 quedan >= 4,5
+tema aplicado: body.tema-claro / body.tema-oscuro | click en document.querySelector('[data-tema="claro"|"oscuro"]') y lectura de body.classList
+
+5. TOGGLE A TARJETAS Y VUELTA A MAPA
+.tarjetas .malla-curso: 84 | document.querySelectorAll('.malla-curso').length tras cambiar .malla-vista__sel a 'tarjetas' + dispatchEvent(new Event('change'))
+localStorage['mimo.bloque.malla.vista']: "tarjetas" | localStorage.getItem('mimo.bloque.malla.vista')
+panel conservado, zona activa: malla | document.querySelector('#panel .panel__zona.on').getAttribute('data-ctx')
+panel conservado, texto: "DETALLE DEL CURSO MA2002 · CÁLCULO AVANZADO Y APLICACIONES Estado En curso Créditos 6 Semestre Semestre IV PRERREQUISITOS MA2001 Aprobado MA2601 Aprobado DESBLO..." | (zona [data-ctx="malla"]).innerText normalizado (mismo texto que en mapa)
+tarjeta seleccionada: MA2002 | document.querySelector('.malla-curso[aria-pressed="true"]').getAttribute('data-codigo')
+vuelta a mapa, nodos: 84 | document.querySelectorAll('.malla-nodo').length
+vuelta a mapa, selección conservada: "true" | document.querySelector('[data-codigo="MA2002"]').getAttribute('aria-pressed')
+vuelta a mapa, flechas entra/sale/resto: 2 / 3 / 97 | querySelectorAll de cada clase tras volver a 'mapa'
+
+6. ANCHOS 1440 / 1200 / 960
+1440: innerWidth 1440, documentElement.scrollWidth 1440, desborda false | Emulation.setDeviceMetricsOverride(width=1440,height=900) + document.documentElement.scrollWidth <= window.innerWidth
+1200: innerWidth 1200, documentElement.scrollWidth 1200, desborda false | idem con width=1200
+960: innerWidth 960, documentElement.scrollWidth 960, desborda false | idem con width=960
+.malla-mapa__scroll se desplaza por dentro (scrollWidth > clientWidth): 2412/864, 2412/624, 2172/576 | .malla-mapa__scroll.scrollWidth y .clientWidth en cada ancho
+
+7. CONSOLA
+excepciones: 0 | pag.eventos filtrando tipo == 'excepcion' (Runtime.exceptionThrown)
+errores de consola: 0 | pag.eventos filtrando tipo == 'consola' y nivel == 'error'
+errores de log: 0 | pag.eventos filtrando tipo == 'log' y nivel == 'error'
+"[i18n] falta la clave": 0 | pag.eventos (consola y log) buscando el texto '[i18n] falta la clave'
+eventos de consola registrados: 2, ninguno de nivel error ni warning | pag.eventos (no se imprime la lista entera, como pide el encargo)
+
+8. DESINSTALAR
+entrada de Malla en la navegación: false | !!document.querySelector('[data-ir="malla"]') tras localStorage['mimo.bloques.instalados']='[]' + location.reload()
+pantalla activa: calendario | document.querySelector('.nav.on').getAttribute('data-ir')
+sección de Malla en el DOM: false | !!document.querySelector('.malla-mapa') || !!document.querySelector('.malla-curso')
+
+9. BANCO SINTÉTICO (secciones + anual) — BANCO, NO DATOS DEL DUEÑO
+fichero del banco: /tmp/banco-mapa.html | efímero, servido en 127.0.0.1:8082; carga CSS y vista-mapa.js de 127.0.0.1:8081; datos inventados (8 cursos, 6 niveles, 2 secciones, 1 anual)
+títulos de sección .malla-mapa__seccion-tit: 2 | document.querySelectorAll('.malla-mapa__seccion-tit').length; textos: "PCPlan comun" y "LICLicenciatura"
+bloques con fondo .malla-mapa__bloque--seccion: 2 | document.querySelectorAll('.malla-mapa__bloque--seccion').length; backgroundColor rgb(241,245,249) en los dos
+nodos anuales .malla-nodo--anual: 1 | document.querySelectorAll('.malla-nodo--anual').length
+grid-column del anual: "2 / span 2" | getComputedStyle(document.querySelector('.malla-nodo--anual')).gridColumn
+ancho del anual: 388 px | getBoundingClientRect().width; columna .malla-mapa__colcab = 188 px y columnGap de .malla-mapa__cols = 12 px; 2*188+12 = 388
+nodos y cabeceras del banco: 8 y 6 | querySelectorAll('.malla-nodo') y '.malla-mapa__colcab'
+desborde del banco a 1440: scrollWidth 1440 <= innerWidth 1440 | Emulation.setDeviceMetricsOverride(width=1440) + scrollWidth/innerWidth
+captura del banco: prototipo/capturas/iter4/07-banco-secciones-anual-1440.png | Page.captureScreenshot a 1440x900 (CDP), PNG 1440x900, 30.551 B
+nota: el banco monta la vista con t(k)=k, así que los textos salen como claves (malla.mapa.pista, malla.creditosCorto, malla.badge.anual); es el comportamiento documentado de vista-mapa.js, no un defecto del prototipo.
+
+10. MEDICIÓN DEL BLOQUE (git)
+git status --short | wc -l antes: 3 | cd ~/workspace/proyectos/mimo-nuevo && git status --short | wc -l a las 10:30 (HANDOFF-2026-10-19-iter4a.md, HANDOFF-2026-10-19-iter4a.md.bak-2026-10-20 y NOTAS.md, los tres sin seguimiento)
+git status --short | wc -l después: 4 | mismo comando a las 10:37 (HANDOFF-2026-10-20-iter4a.md con mtime 10:30:17, su .bak-2026-10-20, NOTAS.md y prototipo/evidencia/); el renombrado del HANDOFF no lo hizo este bloque
+ficheros nuevos del bloque: prototipo/evidencia/iter4a.txt | git status --short lo muestra dentro de '?? prototipo/evidencia/'
+captura nueva: prototipo/capturas/iter4/07-banco-secciones-anual-1440.png | git check-ignore lo confirma ignorado por .gitignore:4 'capturas/'
+ficheros de código modificados: 0 | git status --short sin ninguna línea 'M'
+
+HUECOS
+HUECO: captura 07 fuera del control de versiones | .gitignore:4 ignora capturas/ | git check-ignore -v prototipo/capturas/iter4/07-banco-secciones-anual-1440.png
+HUECO: el banco se midió sin i18n (t(k)=k) | el banco no carga js/i18n.js ni i18n/es.json; los textos de la captura salen como claves | http://127.0.0.1:8082/banco-mapa.html
+HUECO: el import se hizo por DataTransfer sobre input.malla-file, no por el diálogo nativo de ficheros | CDP puede fijar input.files pero no abrir el picker del sistema | DOM.setFileInputFiles no se usó; el camino real del prototipo (change -> desdeArchivo) sí se ejecutó

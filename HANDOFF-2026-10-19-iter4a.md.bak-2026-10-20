@@ -1,0 +1,60 @@
+# HANDOFF — 2026-10-19 · Mimo Nuevo · Iteración 4a (vista mapa) · EN CURSO
+
+## Objetivo
+Añadir a Malla una **vista de mapa** (grafo por niveles, flechas de prerrequisito) como vista por
+defecto, con las tarjetas como alternativa. Sin tocar motor, Academics, harness ni contrato.
+
+## Estado
+- **HECHO**
+  - Fuente canónica de Academics **descargada de GitHub** (`https://github.com/billibu-n/mimo-app`,
+    clon en `/tmp/mimo-explore`, `git pull` → `53cc22d`, 2026-10-19 19:13). Modelo extraído, no
+    adivinado: `estado.secciones` + `seccion` por ramo (`js/comun/03-catalogo.js:71-86`),
+    `anual`/`semestres` (`js/malla/03-dibujo.js:78-95`), trazado de flechas por pasillos
+    (`03-dibujo.js:291-403`).
+  - `prototipo/css/estilos.css`: añadidos los **8 tokens de estado** (`--malla-{aprobado,curso,
+    disponible,bloqueado}-{bg,fg}`) + 10 tokens de estructura/flechas. Contraste precalculado en
+    sRGB: claro 6,09/5,85/5,50/6,70 y oscuro 7,30/7,63/5,53/6,92. **Falta medirlo en navegador.**
+  - `prototipo/bloques/malla/vista-mapa.css`: **completo** (0 hex; solo colores `var(--malla-*)`);
+    define todas las clases que la JS debe producir.
+- **A MEDIAS / NO EMPEZADO**
+  - `vista-mapa.js` (no existe todavía), cambios de `ui.js`, `manifiesto.json`,
+    `prototipo/datos/bloques.json`, `index.html`, `i18n/es.json` + `en.json`,
+    `bloques/malla/estilos.css` (selector de vista).
+  - Verificación y capturas (`prototipo/capturas/iter4/`).
+- **Datos medidos**
+  - `prototipo/datos/malla-ejemplo.json`: 84 cursos, **0 secciones, 0 anuales** (el dueño confirma
+    que se ve vacío justamente por eso).
+  - El dueño aportó `/home/billibu/workspace/respaldo-mimo-2026-10-10.json` (97 KB, formato 2):
+    top-level `catalogo`/`niveles`/`semestres` vacíos, pero **`estado.catalogo` = 87 cursos**,
+    `estado.secciones = []`, **0 anuales**. `importar.js:211-215` lee `estado.catalogo`, así que
+    debe importarse; **falta probarlo**.
+  - Por eso la agrupación por secciones y los anuales se prueban con un **banco de pruebas
+    sintético** (no con los datos del dueño): es honesto y no inventa datos.
+
+## Siguiente paso
+1. Leer `proyectos/mimo-nuevo/BRIEF-4A.md` (diseño exacto, archivos, claves i18n, verificación).
+2. Implementar todo lo que falta y ejecutar la verificación del brief.
+3. Reportar al Lead: contraste medido, capturas, selección, motor 84/84, límites.
+
+## Evidencia
+- `proyectos/mimo-nuevo/BRIEF-4A.md` — encargo completo y criterios.
+- `prototipo/css/estilos.css` (tokens), `prototipo/bloques/malla/vista-mapa.css` (hecho).
+- `/tmp/capturar-malla.py` — captura de la iteración 3, reutilizable como base.
+- `/tmp/test-fidelidad.js` — gate del motor (84/84).
+- Servidor: `http://127.0.0.1:8081/index.html` (NO el 8080), CDP `9333`.
+
+## Decisiones tomadas
+- La vista mapa **no recalcula**: usa `MimoMallaMotor.estados()/requisitosFaltantes()` y
+  `getSemestres()`.
+- Secciones: se leen de `manifiesto.vistas.secciones` (array `{nombre, sigla, niveles|desde-hasta}`);
+  con los datos actuales viene vacío y el mapa dibuja un solo bloque sin fondo.
+- Anual: `grid-column: span 2` + badge `malla.badge.anual`; sin anuales en los datos reales.
+- Flechas: SVG superpuesto, azul = entradas del ramo seleccionado (`--malla-flecha-entra`),
+  ámbar = salidas (`--malla-flecha-sale`), resto atenuado.
+- Persistencia de vista: `localStorage['mimo.bloque.malla.vista']`; por defecto `mapa`.
+
+## Caminos muertos
+- No tocar `motor.js` (lo prohíbe el encargo; el motor ya da todo lo necesario).
+- No copiar CSS de Academics: la hoja nueva usa tokens del prototipo.
+- No usar `malla-ejemplo.json` para demostrar secciones/anuales: no los tiene.
+- No imprimir `pag.eventos` entero (cientos de avisos i18n).
