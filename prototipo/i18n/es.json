@@ -401,10 +401,124 @@
     "academics": { "nombre": "Academics", "desc": "Cinco bloques académicos en un solo encargo." },
     "estudio": { "nombre": "Estudio", "desc": "Sesiones de estudio y notas rápidas." },
     "malla": { "nombre": "Malla", "desc": "Malla curricular: ramos, semestre y créditos." },
-    "tiempo": { "nombre": "Tiempo", "desc": "Horas de estudio por semana y por ramo." },
+    "tiempo": { "nombre": "Tiempo", "desc": "Cronómetro, temporizador, pomodoro y registro de sesiones." },
     "calificaciones": { "nombre": "Calificaciones", "desc": "Resultados de evaluaciones y notas numéricas." },
     "apuntes": { "nombre": "Apuntes", "desc": "Notas de texto libre por ramo o tema." },
     "evaluaciones": { "nombre": "Evaluaciones", "desc": "Pone el ramo y su peso en el calendario." },
     "kit-temas-oscuros": { "nombre": "Kit de temas oscuros", "desc": "Tres temas oscuros: medianoche, negro y deepsea." }
+  }
+,
+
+  "tiempo":   {
+    "titulo": "Tiempo",
+    "sub": "Cronómetro, temporizador y pomodoro, con el registro de lo que dedicas.",
+    "modo": {
+      "leyenda": "Modo de tiempo",
+      "cronometro": "Cronómetro",
+      "temporizador": "Temporizador",
+      "pomodoro": "Pomodoro"
+    },
+    "estado": {
+      "corriendo": "En marcha",
+      "parado": "Parado"
+    },
+    "acc": {
+      "empezar": "Empezar",
+      "pausar": "Pausar",
+      "registrar": "Registrar",
+      "registrarMin": "Registrar {min} min",
+      "registrarBloque": "Registrar el bloque",
+      "reiniciar": "Reiniciar",
+      "cero": "Poner a cero",
+      "parar": "Parar",
+      "quitar": "Quitar la sesión de {min}"
+    },
+    "reloj": {
+      "pistaCrono": "Cuenta el tiempo que dedicas. Al pausar puedes registrarlo.",
+      "pistaTemp": "Cuenta atrás desde {min}.",
+      "pistaPomo": "Fase {fase} · {min}"
+    },
+    "fase": {
+      "trabajo": "Trabajo",
+      "descanso": "Descanso corto",
+      "largo": "Descanso largo"
+    },
+    "ciclo": "{n} de {cada}",
+    "destino": {
+      "titulo": "¿A qué dedicas el tiempo?",
+      "etiqueta": "Nombre",
+      "marcador": "Un ramo, un proyecto, un cliente…",
+      "ayuda": "Lo que escribas aquí va en cada sesión que registres.",
+      "respaldo": "Sin nombre"
+    },
+    "registro": {
+      "titulo": "Registro de hoy",
+      "manual": "Minutos",
+      "boton": "Registrar",
+      "vacio": "Todavía no hay sesiones hoy."
+    },
+    "sesion": {
+      "una": "1 sesión",
+      "varias": "{n} sesiones"
+    },
+    "kpi": {
+      "hoy": "Hoy",
+      "semana": "Esta semana",
+      "total": "Total"
+    },
+    "config": {
+      "titulo": "Configuración del pomodoro",
+      "trabajo": "Trabajo",
+      "corto": "Descanso corto",
+      "largo": "Descanso largo",
+      "cada": "Largo cada"
+    },
+    "campo": {
+      "duracion": "Minutos"
+    },
+    "panel": {
+      "titulo": "Tiempo",
+      "ahora": "Ahora",
+      "modo": "Modo",
+      "estado": "Estado",
+      "fase": "Fase",
+      "bloques": "Bloques de trabajo",
+      "hoy": "Hoy",
+      "semana": "Esta semana",
+      "total": "Total",
+      "sesiones": "Sesiones",
+      "ultimas": "Últimas sesiones",
+      "sinSesiones": "Sin sesiones registradas"
+    },
+    "aviso": {
+      "registrada": "Sesión registrada: {min}",
+      "nadaQueRegistrar": "El reloj no llega a un minuto: no hay nada que registrar.",
+      "minutosInvalidos": "Escribe los minutos que quieres registrar.",
+      "tempFin": "Se acabó el temporizador",
+      "tempFinRegistro": "Se acabó el temporizador · sesión de {min} registrada",
+      "pomoFin": "Se acabó: {fase}",
+      "pomoRegistro": "Bloque de trabajo cumplido · {min} registrados",
+      "pomoDescanso": "Estás en un descanso: no se registra como trabajo.",
+      "quitada": "Sesión quitada del registro.",
+      "noGuarda": "No se pudo guardar el estado",
+      "exportado": "Respaldo listo · {min} · {sesiones}",
+      "importado": "Respaldo importado · {min} · {sesiones}",
+      "importFallo": "No se pudo importar: el texto no es un respaldo de Tiempo válido.",
+      "respaldoVacio": "El cuadro está vacío: pega un respaldo o pulsa Exportar primero."
+    },
+    "respaldo": {
+      "titulo": "Respaldo",
+      "etiqueta": "Texto del respaldo",
+      "marcador": "Pulsa Exportar para sacar el respaldo, o pega aquí uno para importarlo.",
+      "ayuda": "Exportar e importar usan el mismo cuadro. Importar suma lo que traiga el respaldo, no borra lo que ya hay.",
+      "exportar": "Exportar",
+      "importar": "Importar"
+    },
+    "faltaMotor": "Falta el motor del bloque (bloques/tiempo/motor.js): no se pinta ningún dato inventado.",
+    "formato": {
+      "hora": "{h} h",
+      "horas": "{h} h {m} min",
+      "min": "{m} min"
+    }
   }
 }

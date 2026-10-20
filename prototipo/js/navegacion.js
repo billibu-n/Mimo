@@ -55,7 +55,7 @@
   /* Bloques con pantalla propia: id de bloque → clave en window.MimoBloques.
      Solo estos NO usan la pantalla genérica «próximamente»: traen su sección,
      su montaje y su panel contextual. Los demás siguen igual que antes. */
-  var PANTALLAS_PROPIAS = { malla: 'malla' };
+  var PANTALLAS_PROPIAS = { malla: 'malla', tiempo: 'tiempo' };
 
   /* Qué pantallas propias están montadas AHORA (id → true). renderPantallas()
      se ejecuta en cada renderTodo(), así que sin esta marca se llamaría a

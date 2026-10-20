@@ -1,0 +1,159 @@
+/* ============================================================================
+   bloques/tiempo/estilos.css — pantalla del bloque Tiempo (bloque T2)
+
+   Dueño: la UI del bloque (ui.js). Se carga DESPUÉS de los tres CSS del shell.
+
+   Reglas respetadas, las mismas que el bloque Malla:
+   - TODAS las clases llevan prefijo `tiempo-`: no se renombra ni se pisa ningún
+     selector del shell.
+   - CERO colores literales. Ni un #hex, ni un rgb(): todo sale de los tokens del
+     tema (--fg, --ac, --ok, --t-*, --line…). Por eso el modo oscuro no necesita
+     ni una regla propia: el mismo nombre de token vale otro color y el tema
+     decide. Si aquí apareciera un color escrito a mano, sería un defecto.
+   - Medidas de la escala declarada: --e-1..--e-8, --r-sm/md/lg y --t-xs..--t-xl
+     (más --t-crono para el dato destacado del reloj).
+   - Movimiento: una duración (--t) y una curva (--curva), las de la casa.
+
+   Lo que esta hoja NO trae, a propósito: el dibujo del viejo. Del bloque de
+   Academics solo se miró qué controles existían (reloj, modos, registro); la
+   forma es nueva y usa el lenguaje visual de este prototipo.
+   ============================================================================ */
+
+/* --------------------------------------------------------- 1. cabecera */
+
+/* La cabecera es .sec-cab del shell (forma pura); aquí solo se centra la
+   píldora de estado con el título, que es más alta que un botón. */
+.tiempo-cab{align-items:center}
+
+/* Estado del reloj: dice «En marcha» o «Parado» con palabra, no solo con color
+   (AU-109: sin color también se entiende). El color lo pone .pill--ok del shell
+   cuando corre; en reposo se queda con la píldora neutra. */
+.tiempo-pill{white-space:nowrap}
+
+/* ------------------------------------------------- 2. rejilla de la pantalla */
+
+/* Dos columnas cuando caben (reloj a la izquierda, datos a la derecha) y una
+   sola cuando el contenido se estrecha, sin media query: la rejilla decide.
+   Con 280 px de mínimo, a 960 px de ventana el armazón deja menos de 560 px de
+   contenido y las dos columnas no se tocan ni se desbordan. */
+.tiempo-rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));
+                gap:var(--e-4);align-items:start}
+.tiempo-col{display:grid;gap:var(--e-4);min-width:0}
+
+.tiempo-tarjeta{min-width:0;background:var(--sup3);border:1px solid var(--line);
+                border-radius:var(--r-lg);padding:var(--e-4)}
+.tiempo-h{font-size:var(--t-md);font-weight:650;margin-bottom:var(--e-3)}
+
+/* ------------------------------------------------------ 3. selector de modo */
+
+/* Segmentado, no tres botones sueltos: es UNA elección entre tres, y el estado
+   se ve en cuál está encendido (aria-pressed, no solo el color). */
+/* la fila del reloj: modo a la izquierda, estado a la derecha */
+.tiempo-fila{display:flex;align-items:center;justify-content:space-between;
+             gap:var(--e-2);flex-wrap:wrap;margin-bottom:var(--e-4)}
+
+.tiempo-modos{display:inline-flex;gap:2px;flex-wrap:wrap;padding:2px;
+              background:var(--sup2);border:1px solid var(--line);border-radius:999px;
+              max-width:100%}
+.tiempo-modo{font:inherit;font-size:var(--t-sm);color:var(--muted2);background:none;
+             border:0;border-radius:999px;padding:5px var(--e-3);cursor:pointer;
+             transition:background var(--t) var(--curva),color var(--t) var(--curva);
+             min-height:32px}
+.tiempo-modo:hover{color:var(--fg);background:var(--sup3)}
+.tiempo-modo:focus-visible{outline:none;box-shadow:var(--foco)}
+.tiempo-modo[aria-pressed="true"]{background:var(--t-ac);color:var(--ac);font-weight:650}
+
+/* --------------------------------------------------------------- 4. reloj */
+
+.tiempo-reloj__cuerpo{display:grid;gap:var(--e-2);justify-items:center;text-align:center;
+                      padding:var(--e-3) 0 var(--e-1)}
+
+/* El único dato grande de la pantalla. Cifras de ancho fijo para que el reloj no
+   baile al cambiar de segundo (tabular-nums), y una línea de alto fijo para que
+   el bloque no dé saltos cuando pasa de 9:59 a 10:00. */
+.tiempo-cifra{margin:0;font-size:var(--t-crono);font-weight:650;line-height:1.1;
+              letter-spacing:-.01em;color:var(--fg);
+              font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
+              min-height:1.1em}
+
+.tiempo-pista{margin:0;font-size:var(--t-sm);color:var(--muted2);min-height:1.4em;
+              max-width:46ch}
+
+.tiempo-acciones{display:flex;gap:var(--e-2);flex-wrap:wrap;justify-content:center;
+                 margin-top:var(--e-3);width:100%}
+/* a 680 px los dos botones se reparten el ancho: no quedan dos píldoras sueltas */
+@media (max-width:680px){
+  .tiempo-cifra{font-size:var(--t-xl)}
+  .tiempo-acciones .btn{flex:1}
+}
+
+/* ------------------------------------------- 5. campos (duración y pomodoro) */
+
+.tiempo-inline{display:flex;justify-content:center;margin-top:var(--e-3);
+               padding-top:var(--e-3);border-top:1px solid var(--line2)}
+
+.tiempo-config{margin-top:var(--e-4);padding-top:var(--e-4);border-top:1px solid var(--line2)}
+.tiempo-campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
+               gap:var(--e-3)}
+
+.tiempo-campo{display:grid;gap:var(--e-1);min-width:0}
+.tiempo-campo--corto{max-width:132px}
+.tiempo-et{font-size:var(--t-xs);font-weight:600;color:var(--muted2)}
+
+/* El control se identifica con --line-fuerte (un borde decorativo con --line no
+   llega a 3:1 y WCAG 1.4.11 lo pide para los límites de control). */
+.tiempo-entrada{font:inherit;font-size:var(--t-sm);color:var(--fg);background:var(--sup);
+                border:1px solid var(--line-fuerte);border-radius:var(--r-sm);
+                padding:5px var(--e-2);min-width:0;width:100%}
+.tiempo-entrada::placeholder{color:var(--muted)}
+.tiempo-entrada:hover{border-color:var(--muted)}
+.tiempo-entrada:focus-visible{outline:none;border-color:var(--ac);box-shadow:var(--foco)}
+.tiempo-entrada:disabled{opacity:.6;cursor:not-allowed}
+
+.tiempo-ayuda{margin:var(--e-2) 0 0;font-size:var(--t-xs);color:var(--muted2)}
+
+/* ------------------------------------------------------------ 6. registro */
+
+.tiempo-linea{display:flex;align-items:flex-end;gap:var(--e-2);flex-wrap:wrap;
+              margin-bottom:var(--e-3)}
+
+.tiempo-sesiones{list-style:none;margin:0;padding:0;display:grid;gap:var(--e-1)}
+
+/* Una sesión es una fila: nombre a la izquierda (cede y se recorta), hora y
+   minutos a la derecha (no se parten) y el botón de quitar al final. */
+.tiempo-sesion{display:flex;align-items:center;gap:var(--e-2);min-width:0;
+               background:var(--sup2);border:1px solid var(--line2);
+               border-radius:var(--r-sm);padding:var(--e-1) var(--e-2)}
+.tiempo-sesion__t{flex:1;min-width:0;font-size:var(--t-sm);font-weight:600;color:var(--fg);
+                  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tiempo-sesion__meta{font-size:var(--t-xs);color:var(--muted2);white-space:nowrap;
+                     font-variant-numeric:tabular-nums}
+/* 30x30: el objetivo táctil no baja de ahí aunque el aspa se vea pequeña */
+.tiempo-sesion__quitar{font:inherit;font-size:var(--t-md);line-height:1;color:var(--muted2);
+                       background:none;border:0;border-radius:var(--r-sm);
+                       padding:4px 8px;min-width:30px;min-height:30px;cursor:pointer}
+.tiempo-sesion__quitar:hover{background:var(--t-bad);color:var(--bad-fg)}
+.tiempo-sesion__quitar:focus-visible{outline:none;box-shadow:var(--foco)}
+
+.tiempo-vacio{margin:0;background:var(--sup2);border:1px dashed var(--line);
+              border-radius:var(--r-sm);padding:var(--e-3);
+              font-size:var(--t-sm);color:var(--muted2);text-align:center}
+
+/* --------------------------------------------------------- 7. los totales */
+
+/* .kpis y .kpi son del shell (tres cifras iguales para cualquier pantalla);
+   aquí solo se quita el margen inferior para que la rejilla mande. */
+.tiempo-kpis{margin-bottom:0}
+
+/* ---------------------------------------------------------- 8. respaldo */
+
+/* El respaldo se lee y se pega como texto: monoespaciado y sin ajuste de línea
+   para que un JSON no se vuelva ilegible, y redimensionable en vertical porque
+   a veces hay que mirar más de lo que cabe. */
+/* pre-wrap y no pre: un JSON indentado se lee igual, pero sin barra
+   horizontal dentro del cuadro (que era otra pieza que asomar) */
+.tiempo-area{min-height:5.5em;resize:vertical;overflow:auto;white-space:pre-wrap;
+             overflow-wrap:anywhere;
+             font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+             font-size:var(--t-xs);line-height:1.45}
+.tiempo-linea--fin{margin:var(--e-2) 0 0}

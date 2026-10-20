@@ -16,6 +16,10 @@
 <!-- vista de mapa (4a): va después de la hoja del bloque. Solo añade clases
      .malla-* y sus colores son tokens --malla-*; no pisa nada ajeno. -->
 <link rel="stylesheet" href="bloques/malla/vista-mapa.css">
+<!-- el bloque Tiempo entra igual: su hoja va después de las del shell y de las
+     de Malla, y solo pinta clases .tiempo-*. Sin esta línea el bloque monta sin
+     estilo (la pantalla sale pero no se lee). -->
+<link rel="stylesheet" href="bloques/tiempo/estilos.css">
 <!-- el motor de idioma va en la CABECERA: empieza a pedir su JSON mientras se
      parsea el resto de la página, y navegacion.js (al final) le espera. -->
 <script src="js/i18n.js"></script>
@@ -832,6 +836,14 @@
            detalle vacío con rótulos huérfanos. -->
       <div class="panel__zona panel__zona--ctx" data-ctx="malla"></div>
 
+      <!-- ---- contexto: Tiempo (dinámico) ----
+           Misma forma que la zona de Malla: nace vacía y la pinta navegacion.js
+           con lo que devuelve tiempo.panel(). Esta zona es del SHELL, no del
+           bloque (el bloque tiene prohibido tocar #panel); sin ella el panel de
+           Tiempo no tendría dónde ir. Al desinstalar, limpiarPanelCtx('tiempo')
+           la deja vacía otra vez. -->
+      <div class="panel__zona panel__zona--ctx" data-ctx="tiempo"></div>
+
       <!-- ---- contexto: Ajustes ---- -->
       <div class="panel__zona panel__zona--ctx" data-ctx="ajustes">
         <p class="vacio vacio--panel">
@@ -951,6 +963,16 @@
 <script src="bloques/malla/exportar.js"></script>
 <script src="bloques/malla/vista-mapa.js"></script>
 <script src="bloques/malla/ui.js"></script>
+
+<!-- ============================ BLOQUE TIEMPO ============================
+     Mismo orden que Malla: motor → importar → exportar → ui. ui.js cuelga
+     window.MimoBloques.tiempo y navegacion.js (después) solo puede montarlo si
+     ya existe. El motor va ANTES que la UI porque la UI solo pregunta cifras:
+     no calcula ni una. -->
+<script src="bloques/tiempo/motor.js"></script>
+<script src="bloques/tiempo/importar.js"></script>
+<script src="bloques/tiempo/exportar.js"></script>
+<script src="bloques/tiempo/ui.js"></script>
 <script src="js/navegacion.js"></script>
 </body>
 </html>

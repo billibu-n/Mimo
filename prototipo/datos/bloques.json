@@ -163,7 +163,7 @@
       "datos": { "posee": ["tiempo.registro"], "conservarAlQuitar": true },
       "recursos": {
         "icono": "iconos/tiempo.svg",
-        "estilos": [],
+        "estilos": ["bloques/tiempo/estilos.css"],
         "scripts": [
           "bloques/tiempo/motor.js",
           "bloques/tiempo/importar.js",

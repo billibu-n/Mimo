@@ -401,10 +401,124 @@
     "academics": { "nombre": "Academics", "desc": "Five academic blocks in a single order." },
     "estudio": { "nombre": "Study", "desc": "Study sessions and quick notes." },
     "malla": { "nombre": "Curriculum", "desc": "Degree curriculum: courses, semester and credits." },
-    "tiempo": { "nombre": "Time", "desc": "Study hours per week and per course." },
+    "tiempo": { "nombre": "Time", "desc": "Stopwatch, timer, pomodoro and a session log." },
     "calificaciones": { "nombre": "Grades", "desc": "Assessment results and numeric grades." },
     "apuntes": { "nombre": "Notes", "desc": "Free-text notes by course or topic." },
     "evaluaciones": { "nombre": "Assessments", "desc": "Puts the course and its weight on the calendar." },
     "kit-temas-oscuros": { "nombre": "Dark themes kit", "desc": "Three dark themes: midnight, black and deepsea." }
+  }
+,
+
+  "tiempo":   {
+    "titulo": "Time",
+    "sub": "Stopwatch, timer and pomodoro, with a log of where your time goes.",
+    "modo": {
+      "leyenda": "Time mode",
+      "cronometro": "Stopwatch",
+      "temporizador": "Timer",
+      "pomodoro": "Pomodoro"
+    },
+    "estado": {
+      "corriendo": "Running",
+      "parado": "Stopped"
+    },
+    "acc": {
+      "empezar": "Start",
+      "pausar": "Pause",
+      "registrar": "Log it",
+      "registrarMin": "Log {min} min",
+      "registrarBloque": "Log this block",
+      "reiniciar": "Reset",
+      "cero": "Back to zero",
+      "parar": "Stop",
+      "quitar": "Remove the {min} session"
+    },
+    "reloj": {
+      "pistaCrono": "Counts the time you put in. Pause it when you want to log it.",
+      "pistaTemp": "Counting down from {min}.",
+      "pistaPomo": "{fase} phase · {min}"
+    },
+    "fase": {
+      "trabajo": "Work",
+      "descanso": "Short break",
+      "largo": "Long break"
+    },
+    "ciclo": "{n} of {cada}",
+    "destino": {
+      "titulo": "What are you spending the time on?",
+      "etiqueta": "Name",
+      "marcador": "A course, a project, a client…",
+      "ayuda": "Whatever you write here goes on every session you log.",
+      "respaldo": "No name"
+    },
+    "registro": {
+      "titulo": "Today's log",
+      "manual": "Minutes",
+      "boton": "Log it",
+      "vacio": "No sessions logged today yet."
+    },
+    "sesion": {
+      "una": "1 session",
+      "varias": "{n} sessions"
+    },
+    "kpi": {
+      "hoy": "Today",
+      "semana": "This week",
+      "total": "Total"
+    },
+    "config": {
+      "titulo": "Pomodoro settings",
+      "trabajo": "Work",
+      "corto": "Short break",
+      "largo": "Long break",
+      "cada": "Long break every"
+    },
+    "campo": {
+      "duracion": "Minutes"
+    },
+    "panel": {
+      "titulo": "Time",
+      "ahora": "Now",
+      "modo": "Mode",
+      "estado": "State",
+      "fase": "Phase",
+      "bloques": "Work blocks",
+      "hoy": "Today",
+      "semana": "This week",
+      "total": "Total",
+      "sesiones": "Sessions",
+      "ultimas": "Latest sessions",
+      "sinSesiones": "No sessions logged"
+    },
+    "aviso": {
+      "registrada": "Session logged: {min}",
+      "nadaQueRegistrar": "The clock hasn't reached a minute: there is nothing to log.",
+      "minutosInvalidos": "Type the minutes you want to log.",
+      "tempFin": "The timer is done",
+      "tempFinRegistro": "The timer is done · {min} session logged",
+      "pomoFin": "Done: {fase}",
+      "pomoRegistro": "Work block completed · {min} logged",
+      "pomoDescanso": "You are on a break: it is not logged as work.",
+      "quitada": "Session removed from the log.",
+      "noGuarda": "The state could not be saved",
+      "exportado": "Backup ready · {min} · {sesiones}",
+      "importado": "Backup imported · {min} · {sesiones}",
+      "importFallo": "Could not import: the text is not a valid Time backup.",
+      "respaldoVacio": "The box is empty: paste a backup or press Export first."
+    },
+    "respaldo": {
+      "titulo": "Backup",
+      "etiqueta": "Backup text",
+      "marcador": "Press Export to get the backup, or paste one here to import it.",
+      "ayuda": "Export and import use the same box. Import adds whatever the backup brings; it does not erase what is already there.",
+      "exportar": "Export",
+      "importar": "Import"
+    },
+    "faltaMotor": "The block's engine is missing (bloques/tiempo/motor.js): no invented data is drawn.",
+    "formato": {
+      "hora": "{h} h",
+      "horas": "{h} h {m} min",
+      "min": "{m} min"
+    }
   }
 }

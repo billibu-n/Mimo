@@ -1,0 +1,150 @@
+EVIDENCIA — Mimo Nuevo · bloque Tiempo (T2: interfaz)
+Medido el 2026-10-20, 11:15-11:29 (America/Santiago).
+Navegador: Chromium 155.0.8059.84 headless, CDP en 127.0.0.1:9333. Servidor: python3 -m http.server 8081 en prototipo/.
+Driver: herramientas/cdp.py. Guiones de medición: /tmp/t2-medir.py, /tmp/t2-medir2.py, /tmp/t2-ancho.py, /tmp/t2-fotos3.py, /tmp/t2-uno.py (efímeros; no se versionan).
+Cada línea es una medición: clave: valor | como se midió.
+Ninguna cifra de este documento viene del código: todas se leyeron del DOM o del motor en la página servida.
+
+1. CONTEXTO Y ALCANCE
+rama: estado-2026-10-20, commit b934fe0 | git rev-parse --abbrev-ref HEAD / --short HEAD
+ficheros del bloque (nuevos): prototipo/bloques/tiempo/ui.js (1124 líneas) y prototipo/bloques/tiempo/estilos.css (159 líneas) | wc -l
+ficheros del armazón tocados: prototipo/index.html (+22 líneas), prototipo/js/navegacion.js (1 línea: PANTALLAS_PROPIAS gana tiempo:'tiempo'), prototipo/datos/bloques.json (1 línea: recursos.estilos del bloque), prototipo/i18n/es.json y en.json (+116 líneas cada uno) | git diff --stat
+motor, importar y exportar: sin tocar | git status --short no los lista; node prototipo/bloques/tiempo/prueba-motor.js sigue en 14 PASA / 0 FALLA
+decisiones de armazón: index.html carga los cuatro scripts en el orden de Malla (motor → importar → exportar → ui) y añade la zona [data-ctx="tiempo"] del panel | la zona es del shell y no del bloque: CONTRATO-BLOQUES §11.3 prohíbe al bloque tocar #panel, y sin zona el panel de Tiempo no tendría dónde pintarse
+
+2. INSTALACIÓN, NAVEGACIÓN Y MONTAJE (desde cero)
+localStorage vaciado y recarga: sí | localStorage.clear() + location.reload() vía CDP
+instalación: por el gestor real | click en [data-abrir-bloques] (abre #modal-bloques) + click en [data-instalar="tiempo"]
+entrada de Tiempo en la navegación tras instalar: true | !!document.querySelector('[data-ir="tiempo"]')
+pantalla montada: true | !!document.querySelector('.pantalla[data-panel="tiempo"].tiempo-pantalla')
+la raíz del bloque ES la sección que crea el shell: sí | el selector anterior casa porque raiz.classList.add('tiempo-pantalla') se aplica sobre la sección recibida en montar()
+cifra inicial: "00:00:00" | document.querySelector('#tiempo-cifra').textContent
+modos pintados: "Cronómetro:true, Temporizador:false, Pomodoro:false" | querySelectorAll('.tiempo-modo') con textContent + aria-pressed
+panel contextual al montar: "TiempoAhoraModoCronómetroEstadoParadoHoyTotal0 minSesiones0Esta semanaTotal0 minSesiones0Últimas sesionesSin sesiones registradas" | [data-ctx="tiempo"].innerText (los nodos son inline; no hay saltos propios)
+
+3. CRONÓMETRO
+arranque: botón pasa de "Empezar" a "Pausar" | [data-accion="principal"].textContent tras el click
+cifra tras 1,5 s corriendo: "00:00:02" | #tiempo-cifra.textContent
+pausa: cifra congelada en "00:00:02" | click de pausa, lectura a los 0,5 s y otra a los 1,5 s: mismo valor
+estado en la píldora tras pausar: "Parado" | .tiempo-pill.textContent
+"Poner a cero" deja el reloj en 00:00:00 y lo mantiene corriendo: sí | con el cronómetro en marcha (00:00:01), click en [data-accion="cero"] → 00:00:00 inmediato y 00:00:01 a los 1,4 s; cronoEstaCorriendo() = true y el botón sigue en "Pausar"
+
+4. TEMPORIZADOR
+objetivo fijado por la interfaz: 2 min | #objetivo.value='2' + change; MimoTiempoMotor.tempObjetivoSeg()/60 = 2
+cifra en reposo: "02:00" | #tiempo-cifra.textContent
+cifra tras 2,6 s corriendo: "01:57" | #tiempo-cifra.textContent (cuenta atrás, no suma)
+pausa: cifra congelada | dos lecturas separadas 1 s: mismo valor
+pista: "Cuenta atrás desde 2 min." | .tiempo-pista.textContent
+"Reiniciar": vuelve a "02:00" | [data-accion="reiniciar"] + #tiempo-cifra
+el modo elegido sobrevive a la recarga: "temporizador", aria-pressed en "Temporizador" | recarga + MimoTiempoMotor.leer().modo y el botón con aria-pressed="true"
+toast al montar tras recargar: "" (ninguno) | #toasts.innerText
+
+5. POMODORO (fase y persistencia)
+configuración por la interfaz: trabajo 1 min | #pomo-trabajo.value='1' + change; MimoTiempoMotor.pomoConfig().trabajo = 1
+fase al arrancar: "trabajo" | MimoTiempoMotor.pomo().fase
+pista: "Fase Trabajo · 1 min" | .tiempo-pista.textContent
+fase tras 65 s (bloque terminado): "descanso" | espera real de 65 s + MimoTiempoMotor.pomo().fase; el tic lo dispara el latido de la UI cada 250 ms
+sesión que registra el bloque de trabajo: 1 min, ramo null | MimoTiempoMotor.sesiones().slice(-1)[0] → {"minutos":1,...}
+cifra tras el tic: "05:00" (duración del descanso corto, parado) | #tiempo-cifra.textContent
+tras recargar: fase "descanso", cifra "05:00", pista "Fase Descanso corto · 5 min", modo "pomodoro" | recarga + click de nuevo en [data-ir="tiempo"], lecturas del motor y del DOM
+nota: no se usó fijarReloj() para esta prueba | se midió el camino que recorre el usuario (reloj real), no el atajo de pruebas del motor
+
+6. REGISTRO Y PANEL CONTEXTUAL
+registro manual de 30 min: 1 sesión en la lista | #tiempo-minutos='30' + change + [data-accion="registrar-manual"]; .tiempo-sesion.length = 1
+KPI "Hoy": "30 min" | .pantalla[data-panel="tiempo"] .kpi__n (el primero de la pantalla del bloque, no el del calendario)
+panel contextual: "ModoCronómetro / EstadoParado / Total30 min / Sesiones1 / Total30 min / Sesiones1 / Sin nombre30 min · 10-20" | [data-ctx="tiempo"] normalizado; la primera pareja es Hoy y la segunda Esta semana (el mismo día pesa en las dos)
+motor: 30 min | MimoTiempoMotor.sumaMinutos(MimoTiempoMotor.sesiones()) = 30
+toast del registro: "Sesión registrada: 45 min" (en la prueba con 45) | #toasts.innerText
+quitar sesión: lista 1→0, KPI "45 min"→"0 min", motor 45→0 | click en .tiempo-sesion__quitar (data-sesion) + relectura de .tiempo-sesion, .kpi__n de la pantalla y sumaMinutos()
+toast al quitar: "Sesión quitada del registro." | #toasts.innerText
+kpis de la pantalla tras 45 min: ["45 min Hoy", "45 min Esta semana", "45 min Total"] | .pantalla[data-panel="tiempo"] .kpi innerText
+
+7. RESPALDO (exportar y volver a importar por la interfaz)
+exportar: el cuadro se llena con 1194 caracteres | click en [data-accion="exportar"] + [data-campo="respaldo"].value.length
+es el formato del bloque: "2/3" | JSON.parse del cuadro → formato 2, estado.v 3
+toast de exportar: "Respaldo listo · 1 h 10 min · 2 sesiones" (dos sesiones de 45 y 25 min) | #toasts.innerText
+importar el mismo texto: estado idéntico antes y después | JSON.stringify canónico de MimoTiempoMotor.leer() comparado byte a byte: igual
+toast de importar: "Respaldo importado · 31 min · 2 sesiones" (30 min manuales + 1 min del bloque de pomodoro) | #toasts.innerText tras [data-accion="importar"]
+singular: "Respaldo listo · 45 min · 1 sesión" / "Backup ready · 45 min · 1 session" | una sola sesión, en los dos idiomas
+cuadro vacío: avisa y no toca nada | click en [data-accion="importar"] con el cuadro vacío → "El cuadro está vacío: pega un respaldo o pulsa Exportar primero."; sesiones 0 antes y después
+texto inválido: avisa y no toca nada | pegar "no es json" + importar → "No se pudo importar: el texto no es un respaldo de Tiempo válido."; sesiones 0 antes y después
+respaldo de otro bloque (formato 2, sin estado.tiempo): rechazado | pegar JSON válido con estado.malla + importar → mismo aviso; sesiones 0 antes y después
+
+8. CONTRASTE WCAG (8 pares por tema) — color y fondo computados
+método: getComputedStyle(el).color y backgroundColor; si el fondo tiene alfa < 0,95 se compone subiendo por los ancestros; razón WCAG 2.x sobre luminancia relativa sRGB, (L1+0,05)/(L2+0,05); umbral 4,5:1
+claro .tiempo-cifra (--fg sobre --sup3): 14,63 | rgb(30,41,59) sobre rgb(255,255,255)
+claro .tiempo-pista (--muted2 sobre --sup3): 7,58 | rgb(71,85,105) sobre rgb(255,255,255)
+claro .tiempo-modo[aria-pressed="true"] (--ac sobre --t-ac): 4,65 | rgb(37,99,235) sobre rgb(238,243,255)
+claro .btn--solido (--ac-txt sobre --ac-fuerte): 6,70 | rgb(255,255,255) sobre rgb(29,78,216)
+claro .tiempo-sesion__meta (--muted2 sobre --sup2): 6,92 | rgb(71,85,105) sobre rgb(241,245,249)
+claro .tiempo-et (--muted2 sobre --sup3): 7,58 | rgb(71,85,105) sobre rgb(255,255,255)
+claro .tiempo-entrada (--fg sobre --bg): 14,63 | rgb(30,41,59) sobre rgb(255,255,255)
+claro .kpi__l (--muted sobre --sup3): 4,76 | rgb(100,116,139) sobre rgb(255,255,255)
+oscuro .tiempo-cifra: 11,96 | rgb(227,227,227) sobre rgb(36,37,38)
+oscuro .tiempo-pista: 8,49 | rgb(189,193,198) sobre rgb(36,37,38)
+oscuro .tiempo-modo[aria-pressed="true"]: 6,77 | rgb(138,180,248) sobre rgb(31,43,61)
+oscuro .btn--solido: 8,81 | rgb(19,19,20) sobre rgb(138,180,248)
+oscuro .tiempo-sesion__meta: 9,73 | rgb(189,193,198) sobre rgb(24,25,26)
+oscuro .tiempo-et: 8,49 | rgb(189,193,198) sobre rgb(36,37,38)
+oscuro .tiempo-entrada: 12,86 | rgb(227,227,227) sobre rgb(30,31,32)
+oscuro .kpi__l: 7,50 | rgb(176,182,188) sobre rgb(36,37,38)
+mínimo claro: 4,65 (.tiempo-modo activo) | mínimo de los 8 del tema claro; los 8 >= 4,5
+mínimo oscuro: 6,77 (.tiempo-modo activo) | mínimo de los 8 del tema oscuro; los 8 >= 4,5
+tema aplicado: body.tema-claro / body.tema-oscuro | classList sobre body + espera de 300 ms antes de leer los estilos computados
+
+9. ANCHOS 1440 / 1200 / 960
+1440: innerWidth 1440, documentElement.scrollWidth 1440, igual: sí | Emulation.setDeviceMetricsOverride(width=1440,height=900,deviceScaleFactor=1,mobile=false)
+1200: innerWidth 1200, scrollWidth 1200, igual: sí | idem con width=1200
+960: innerWidth 960, scrollWidth 960, igual: sí | idem con width=960
+rejilla a 960: 2 columnas de 428,5 px (tercera pista colapsada a 0 por auto-fit) | getComputedStyle(.tiempo-rejilla).gridTemplateColumns
+nota: a 960 el lateral del shell pasa a cajón (transform -232 px) y el contenido arranca en x=0; la pantalla del bloque no provoca desborde | rects de .lateral y .contenido + scrollWidth == innerWidth
+
+10. IDIOMAS
+claves en i18n/es.json: 431 | aplanado recursivo con puntos (script en /tmp)
+claves en i18n/en.json: 431 | idem
+listas de rutas idénticas: sí | comparación de las dos listas aplanadas, ordenadas por inserción
+claves crudas en pantalla, en inglés: 0 | innerText de la pantalla buscando "tiempo." y "bloque."
+título en inglés: "Time" | #tiempo-titulo.textContent
+modos en inglés: "Stopwatch, Timer, Pomodoro" | textContent de .tiempo-modo
+panel en inglés: "TimeNowModePomodoroStateStoppedPhaseShort breakWork blocks1TodayTotal31 minSessions2..." | [data-ctx="tiempo"].innerText
+cambio de idioma sin remontar: mismo nodo, reloj corriendo y textos ya en inglés | window.__nodo === document.querySelector('.pantalla[data-panel="tiempo"]') → true; cronoEstaCorriendo() true; cifra 00:00:02 → 00:00:03 con la pista "Counts the time you put in..." y el botón "Pause"; el shell llama a refrescar(), no a desmontar/montar
+
+11. DESINSTALACIÓN
+sección de Tiempo en el DOM: false | !document.querySelector('.pantalla[data-panel="tiempo"].tiempo-pantalla') tras click en [data-desinstalar="tiempo"] del gestor
+zona de contexto: 0 hijos, texto "" | [data-ctx="tiempo"] → children.length 0 e innerText ""
+entrada en la navegación: false | !document.querySelector('[data-ir="tiempo"]')
+pantalla activa tras desinstalar: calendario | .nav.on[data-ir] = "calendario" y .pantalla.on[data-panel] = "calendario" tras el click; lo decide el shell, no el bloque
+
+12. CONSOLA (toda la sesión de medición)
+excepciones: 0 | pag.eventos filtrando tipo == 'excepcion' (Runtime.exceptionThrown)
+errores de consola: 0 | pag.eventos filtrando tipo == 'consola' y nivel == 'error'
+avisos de consola: 0 | idem con nivel == 'warning' (incluye el "[i18n] falta la clave" del motor de idioma)
+errores de log: 0 | pag.eventos filtrando tipo == 'log' y nivel error/warning
+fallos de red: 0 | pag.eventos filtrando tipo == 'red-fallo'
+eventos totales registrados: 6, ninguno de nivel error | pag.eventos (no se imprime la lista entera)
+
+13. GIT
+git status --short | wc -l antes de T2: 0 | en la rama estado-2026-10-20, árbol limpio al empezar
+git status --short | wc -l después: 8 | 5 líneas 'M' (index.html, js/navegacion.js, datos/bloques.json, i18n/es.json, i18n/en.json) + 3 líneas '??' (bloques/tiempo/ui.js, bloques/tiempo/estilos.css, evidencia/tiempo-ui.txt); los otros ficheros de esas carpetas ya estaban versionados y no aparecen
+cambios en bloques/malla/: 0 | git status --short no lista nada bajo bloques/malla/
+cambios en motor.js, importar.js, exportar.js, manifiesto.json: 0 | idem
+sin git add, commit ni push: sí | no se ejecutó ninguno
+
+14. CAPTURAS (fuera del control de versiones: .gitignore:4 ignora capturas/)
+prototipo/capturas/tiempo/01-cronometro-1440.png: 101193 B, 1440x900 | Page.captureScreenshot vía cdp.py, tema claro, cronómetro con dos sesiones y el cuadro de respaldo exportado
+prototipo/capturas/tiempo/02-oscuro-1440.png: 102007 B, 1440x900 | idem con body.tema-oscuro
+prototipo/capturas/tiempo/03-960.png: 79039 B, 960x900 | idem a 960 (cajón del shell cerrado)
+prototipo/capturas/tiempo/04-1200.png: 94332 B, 1200x900 | idem a 1200
+las capturas confirman el orden: reloj + registro a la izquierda, resumen + destino + respaldo a la derecha | lectura visual, no medida automática
+
+HUECOS
+HUECO: iconos/tiempo.svg no existe | iconos/ solo tiene mimo.png; la navegación cae en el icono genérico ic-bloque (ICONO_BLOQUE no tiene entrada para tiempo) | ls prototipo/iconos + navegacion.js:175 | es anterior a T2 y afecta igual a otros bloques
+HUECO: no hay iconos de reproducir/pausar en el sprite | no existe ic-play ni ic-pause entre los 22 del sprite, así que los botones del reloj son solo texto | grep de los <symbol> en index.html | decisión forzada, no ocurrencia
+HUECO: el manifiesto declara config tiempo.semana (horas, 20 por defecto) y el motor no la implementa | la interfaz muestra totales de hoy/semana/total, no un objetivo semanal | manifiesto.json vs MimoTiempoMotor (no hay objetivo en el estado) | heredado de T1
+HUECO: el motor no imputa minutos al calendario ni al semestre | ya declarado en el README del bloque; la interfaz no inventa esa cifra
+HUECO: el aviso de fin del temporizador no se midió hasta el final | se midieron cuenta atrás y pausa; terminar el objetivo exige esperar 2 min reales y el tic es el mismo tempTic() cuyo hermano (pomoTic) sí se midió | el camino de aviso queda sin medición de pantalla
+HUECO: descanso largo del pomodoro (tras 4 bloques de trabajo) no medido | exigiría 4 min reales; la regla vive en el motor (prueba-motor.js la cubre) y la UI solo pinta la fase que le da
+HUECO: teclado y prefers-reduced-motion no medidos | no se probó orden de tabulación, anillo de foco ni movimiento reducido | fuera del criterio de T2
+HUECO: importar se probó en el mismo navegador y perfil | no se probó el viaje entre máquinas ni con otro tema activo | el texto exportado no lleva tema ni idioma
+HUECO: reinstalar tras desinstalar y conservar los datos (conservarAlQuitar) no medido | solo se midió que desinstalar no deja sección ni zona con contenido
+HUECO: ancho 680 (media query propia de la hoja) no medido | los tres anchos exigidos son 1440/1200/960; a 680 la cifra baja a --t-xl y los botones se reparten a lo ancho, sin evidencia de pantalla
