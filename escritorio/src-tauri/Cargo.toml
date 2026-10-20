@@ -1,0 +1,20 @@
+[package]
+# El nombre del paquete da el nombre del binario: `target/release/mimo`.
+name = "mimo"
+version = "0.1.0"
+edition = "2021"
+description = "Mimo para escritorio (Tauri 2)"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Sin plugins: el caparazon solo abre la ventana y sirve el frontend. El unico comando es la
+# sonda de medida (`MIMO_SONDA=1`), que necesita serde para recibir su argumento.
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+
+[profile.release]
+# Sin esto, el caparazon se quedaria sin optimizar: funciona, pero arranca y responde mas lento
+# sin ninguna ganancia. Se compila mas lento; el binario, menos. (Medido en el molde del viejo.)
+opt-level = 3

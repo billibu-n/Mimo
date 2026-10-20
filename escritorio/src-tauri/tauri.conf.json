@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Mimo",
+  "version": "0.1.0",
+  "identifier": "cl.mimo.app",
+  "build": {
+    "beforeBuildCommand": "",
+    "frontendDist": "../app"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Mimo",
+        "width": 1280,
+        "height": 900,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "rpm"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "category": "Utility",
+    "shortDescription": "Organizador global con bloques instalables, sin conexion.",
+    "longDescription": "Mimo es un organizador global con bloques instalables: malla, calendario, tareas, estudio y tiempo. Funciona sin conexion y guarda los datos en el equipo, no en un servidor.",
+    "publisher": "Billibu",
+    "license": "MIT",
+    "homepage": "https://github.com/billibu-n/mimo-nuevo"
+  }
+}

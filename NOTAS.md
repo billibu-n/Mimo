@@ -102,13 +102,70 @@ lección que queda: **un «HECHO» solo vale con su commit o su comando detrás*
    este proyecto las haya heredado: ni vivas ni muertas, **HUECO** declarado.
 6. **Higiene**: `capturas/` fuera del control de versiones (¿es intencional?), y falta `LICENSE`.
 
-## 6. Decisiones cerradas que NO se re-litigan
+## 6. Decisiones del dueño (2026-10-20, ronda de migración)
 
-Del plan de la app anterior, siguen valiendo como criterio: **rama + PR, nunca `push` a `main` sin
-OK**; escritorio con **Tauri**, móvil aplazado por rediseño; **fuente única** versionada (1.0.0);
-ventana «Colaborar» solo GitHub, sin correo público; **MIT** como licencia elegida (aún sin fichero
-aquí). Y del contrato: la malla **no recalcula** en la vista mapa (usa
-`MimoMallaMotor.estados()`/`getSemestres()`), y el **cálculo se porta, el dibujo no** (§11.4).
+Estas mandan sobre las anteriores cuando chocan.
+
+**Nuevas, y no se re-litigan:**
+- **El objetivo máximo es una aplicación de escritorio** (salir de la web, entorno propio). Revoca la
+  decisión de la app anterior que daba el escritorio Tauri por *aplazado*: aquí es la meta, no un
+  extra. Motivo del cambio, en palabras del dueño: «poder desalojarse de la web y tener un entorno
+  propio».
+- **Plataforma primero: Linux Fedora, paquete `rpm`.** Los demás sistemas (Windows, macOS) y el
+  teléfono se abordan **cuando la app esté completa**; el móvil exigirá adaptar la interfaz, y eso es
+  una tarea futura, no de esta migración. La arquitectura debe quedar **flexible para globalizar**.
+- **No se copia: se analiza y se incorpora.** Se portan motores, cálculo y funciones; la interfaz y el
+  dibujo se rehacen con lo nuevo.
+- **Existe un bloque-paquete (`academics`)** que es a la vez un conjunto de bloques, y trae sus
+  secciones y configuraciones adicionales.
+- **La app anterior se congela en 1.1.2** y la nueva debe reemplazarla por completo.
+- **La app es global, no académica.** El respaldo real del dueño es **un caso de prueba** para mirar y
+  comprobar el estado, **no el estándar**: la herramienta tiene que servir a cualquiera.
+- **GitHub Pages es solo para que el dueño vea los cambios**; no es un canal de uso. No se retira
+  todavía, se retira cuando la app de escritorio esté completa.
+- **Funciones con red**: comprobar actualizaciones **sí** (contra las Releases del dueño); «Colaborar»
+  se reduce a un enlace a GitHub; **iCal** pasa al armazón.
+
+**Del plan de la app anterior, siguen valiendo como criterio:** rama + PR, nunca `push` a `main` sin
+OK; **fuente única** versionada; ventana «Colaborar» solo GitHub, sin correo público; **MIT** como
+licencia elegida (aún sin fichero aquí). Y del contrato: la malla **no recalcula** en la vista mapa
+(usa `MimoMallaMotor.estados()`/`getSemestres()`), y el **cálculo se porta, el dibujo no** (§11.4).
+
+## 6b. Plan de migración, por rondas
+
+Cada ronda deja evidencia medida en un fichero, como la iteración 4a. El orden sale de las
+dependencias medidas, no del gusto.
+
+| # | Qué | Por qué ahí |
+|---|---|---|
+| 1 | Bloque **`tiempo`** (726 l) + gate de escritorio `rpm` | 0 llamadas a `cursoDe()`: prueba la tubería sin acoplarse |
+| 2 | Bloque **`calificaciones`** (601 l) | Depende del catálogo (`cursoDe()`), que en el nuevo posee Malla: estrena el **puente** |
+| 3 | Bloque **`estudio`** (411 l) | Independiente |
+| 4 | Bloque **`evaluaciones`** (262 l, aporte) | Estrena la mecánica de **aporte** al calendario |
+| 5 | Pack **`academics`** + **4e** (fusión import/export) | El paquete completo; la 4e ya está prometida en el botón de exportar |
+| 6 | Extensiones de Malla: **editor** (529), **PDF** (464), **simulador** (110) | Ya declaradas en el manifiesto, hoy inexistentes |
+| 7 | Armazón: **ajustes** (1.960 l) + **`kit-temas-oscuros`** (7 temas) | Lo que no es bloque |
+| 8 | Empaquetado `rpm` final y retirada de la web | La meta |
+
+## 6c. Ronda 1, en curso (2026-10-20)
+
+| Parte | Estado | Evidencia |
+|---|---|---|
+| **T1** bloque `tiempo`: motor, manifiesto y formato 2 | **HECHO** | 5 ficheros en `prototipo/bloques/tiempo/`; `node prototipo/bloques/tiempo/prueba-motor.js` → **14 PASA / 0 FALLA**, exit 0 |
+| **E1** escritorio Tauri 2, paquete `rpm` | **HECHO** | `escritorio/src-tauri/target/release/bundle/rpm/Mimo-0.1.0-1.x86_64.rpm` (2,9 MiB); los 3 `fetch` responden 200 bajo `tauri://localhost` (`escritorio/evidencia-sonda.json`) |
+| **T2** interfaz, estilos, i18n y registro en el shell | **PENDIENTE** | es el siguiente bloque |
+
+Lo que T1 dejó medido: `motor.js` 629 l sin DOM (`document.`=0, `window`=1), `MimoMalla`=0 (sigue
+independiente de Malla), ida y vuelta exportar→importar con comparación profunda, y el respaldo real
+del dueño importa 10 claves (9 sobreviven) con **54 sesiones rescatadas** (3.838 min). Decisiones de
+portado que hay que conocer: las sesiones viven en `tiempo.registro`; `lunes` se deriva de la fecha y
+no de la semana elegida; la fase corta se llama `descanso`; y **no se alimenta la rejilla
+`sem.minutos` del viejo** (los totales se derivan del registro) — eso queda como HUECO declarado.
+
+**HUECOS de la ronda:** el `rpm` no se pudo **instalar** (no hay root en esta máquina; sí se leyó su
+contenido con `rpm -qlp`); el `identifier` `cl.mimo.app` choca con el bundle de macOS (lo exige el
+contrato, se deja); y `escritorio/app/` es un snapshot anterior a `bloques/tiempo/`, que se refresca
+volviendo a correr `preparar-frontend.sh`.
 
 ## 7. Caminos muertos (heredados; no repetirlos)
 
@@ -125,7 +182,8 @@ aquí). Y del contrato: la malla **no recalcula** en la vista mapa (usa
 ```bash
 cd ~/workspace/proyectos/mimo-nuevo
 git log -1 --format="%h %ad %s" --date=format:"%Y-%m-%d %H:%M"   # -> b79e3d5 ... 20:31
-git status --short                                                # -> solo HANDOFF-... (obsoleto)
-ls prototipo/bloques/malla/vista-mapa.js                          # -> existe, 853 lineas
+git status --short                                                # -> NOTAS, HANDOFF, evidencia (sin commit)
+ls prototipo/evidencia/iter4a.txt                                 # -> existe, 93 lineas de cifras
 cd prototipo && python3 -c "import json;d=json.load(open('i18n/es.json'));print(len(d))"  # -> 17 top
+ls referencia/mimo-app-53cc22d/js                                # -> la app anterior, para portar motores
 ```

@@ -1,0 +1,36 @@
+{
+  "_nota": "Manifiesto v0.3 del bloque Tiempo. Es la copia literal de la entrada `tiempo` de datos/bloques.json (que es la forma canonica del manifiesto) sin los dos campos que son de la ficha del catalogo y no del contrato: `descripcion` y `lanzamiento`. Lo unico anadido es `recursos.scripts`, que estrena la v0.3 (CONTRATO-BLOQUES.md:540) y que el catalogo tambien declara ya en `malla`. Los dos ficheros de interfaz (ui.js, estilos.css) son del bloque T2 y por eso no estan aqui todavia.",
+  "id": "tiempo",
+  "nombre": "Tiempo",
+  "version": "1.0.0",
+  "autor": "Mimo Labs",
+  "licencia": "MIT",
+  "naturaleza": "seccion",
+  "zona": "main",
+  "compatible": ">=0.1.0 <1.0.0",
+  "permisos": ["almacen:propio", "config:tiempo.semana"],
+  "ofrece": ["tiempo.horas"],
+  "necesita": [],
+  "consume": [],
+  "configuraciones": [
+    {
+      "id": "tiempo.semana",
+      "seccion": "propia",
+      "titulo": "Horas objetivo por semana",
+      "campos": [
+        { "tipo": "number", "id": "horas", "default": 20 }
+      ]
+    }
+  ],
+  "datos": { "posee": ["tiempo.registro"], "conservarAlQuitar": true },
+  "recursos": {
+    "icono": "iconos/tiempo.svg",
+    "estilos": [],
+    "scripts": [
+      "bloques/tiempo/motor.js",
+      "bloques/tiempo/importar.js",
+      "bloques/tiempo/exportar.js"
+    ]
+  },
+  "panelContexto": null
+}

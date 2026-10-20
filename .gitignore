@@ -2,3 +2,8 @@
 .DS_Store
 node_modules/
 capturas/
+# Copia de solo lectura de la app anterior (mimo-app @ 53cc22d) para portar motores.
+# No es parte de este proyecto: no se versiona. Ver REFERENCIA.md
+referencia/
+# Frontend generado que consume Tauri (escritorio/app/). Se regenera, no se edita.
+escritorio/app/

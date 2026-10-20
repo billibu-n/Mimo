@@ -161,7 +161,15 @@
         }
       ],
       "datos": { "posee": ["tiempo.registro"], "conservarAlQuitar": true },
-      "recursos": { "icono": "iconos/tiempo.svg", "estilos": [] },
+      "recursos": {
+        "icono": "iconos/tiempo.svg",
+        "estilos": [],
+        "scripts": [
+          "bloques/tiempo/motor.js",
+          "bloques/tiempo/importar.js",
+          "bloques/tiempo/exportar.js"
+        ]
+      },
       "panelContexto": null
     },
 
