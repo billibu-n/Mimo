@@ -254,3 +254,13 @@ tocaría el borde) y plegar el riel solo al abrir el panel (le mueve al usuario 
 Los huecos del boceto **se quedan como están**: el dueño queda avisado por escrito y el boceto se aprueba
 por aspecto e interacción, no por función.
 
+
+**Ronda 92 — el modelo de bloques (dos niveles, decidido el 2026-10-20).** El riel lista
+SECCIONES y cada sección tiene sus BLOQUES instalados: Tiempo trae de fábrica solo Cronómetro y
+Temporizador, y Pomodoro, Registro y Alarmas se instalan y se quitan desde el gabinete del panel
+derecho (el riel no crece con bloques). Se guarda en `localStorage` (`mimo.armazon.v1`) y `?reset=1`
+vuelve a fábrica. Descartado, con el dueño delante: «todo es bloque y un bloque puede contener
+bloques sin límite» (hay que decidir qué pasa al quitar un contenedor con hijos) y «sin secciones»
+(se pierde la navegación ya aprobada). La v5 queda en `c21759e`; la v6 se mide en
+`tablero/evidencia-bloques.txt`. Después, Ronda 93: migrar los motores de `prototipo/` y de
+`referencia/mimo-app-53cc22d/` con el i18n `es`/`en` desde el primer bloque.
