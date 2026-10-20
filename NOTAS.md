@@ -333,3 +333,22 @@ no confía** — el 16/16 era cierto y aun así el bloque tenía un defecto. Se 
 del total calculado, y añadir una **medida 17** que instala los cinco bloques, cambia a `en`, espera 1,30 s y
 exige `desajustes == []` y las siete etiquetas en inglés. Re-medido por el padre: 0 desajustes en los dos
 idiomas.
+
+**Ronda 95 (cont.) — T003 y T004, el sustrato y la Malla (2026-10-20).** T003 entregó el sustrato común en
+`tablero/js/comun/` (siete ficheros, 44 nombres, commit `27c1491`): `almacen.js` con una sola clave
+`mimo.datos.v1` y esquema `{v,armazon,tiempo,idioma,catalogo,malla,ajustes,respaldo,migrado}`, que al arrancar
+**migra** las tres claves viejas (`mimo.armazon.v1`, `mimo.bloque.tiempo`, `mimo.idioma`) sin borrarlas (rescate:
+probado sembrando una sesión, recargando dos veces —no re-migra— y con `?reset=1`); `utilidades.js` con las
+fechas; `catalogo.js`, `select.js`, `avisos.js` (toast y modal propios), `contexto.js` y `respaldo.js` (carpeta
+con File System Access). T004 portó la **Malla** en `js/malla.js` (1.658 líneas, `MimoMallaMotor` puro + UI):
+rejilla por niveles con electivos al final, cadena de estados (aprobado > en curso > disponible por grupos de
+requisitos > bloqueado), anuales de dos pistas, alta/edición/orden que sobreviven a F5, e importar/exportar
+JSON y CSV más el pegado de la foto de la malla. Tres instrumentos quedaron verdes y re-medidos por el padre:
+`medir-tablero` EXIT=0, `medir-tiempo2` 0/17, `medir-malla` 0/16 (commit `afc43e6`).
+
+**Lección de método en T004: el brief también delimita el diseño, no solo los ficheros.** Al no meter
+`comun/almacen.js` en la lista de permitidos, el hijo obedeció y resolvió la persistencia con un **espejo**
+(`E.malla` copiado en `E.ajustes.malla` en cada guardado, repuesto al abrir). Funcionaba y sus medidas pasaban,
+pero dejaba dos verdades. Lo retiré yo en la revisión del diff: `malla` es ahora campo de primer nivel en
+`estadoInicial()`/`normalizar()`, con rescate del espejo una sola vez. Regla para los briefs siguientes: cuando
+una tarea estrena estado persistente, `comun/almacen.js` va en la whitelist, y los espejos están prohibidos.
