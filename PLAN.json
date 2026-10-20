@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T17:59:49-03:00",
+  "updated": "2026-10-20T18:30:44-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -68,7 +68,7 @@
     {
       "id": "T005",
       "title": "Estudio y Calificaciones: barras por ramo, meta semanal, grafico de puntos, y el motor de notas con categorias, minima y eximicion (estudio/ y notas/)",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T001",
         "T003"
