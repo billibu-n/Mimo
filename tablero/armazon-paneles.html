@@ -88,7 +88,7 @@ body[data-pie="oculto"] .pie{display:none}
 .losa__barra{display:flex;align-items:center;flex-wrap:wrap}
 .losa__cuerpo{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden}
 .vistas{display:contents}
-.vista--bloque{display:grid;grid-template-rows:auto 1fr;flex:none;width:100%;margin:auto}
+.vista--bloque{display:grid;grid-template-rows:1fr;flex:none;width:100%;margin:auto}
 .bloque{display:grid}
 .bloque__nombre{margin:0;font-weight:500}
 .estanteria{display:flex;flex-wrap:wrap;align-items:center}
@@ -854,12 +854,12 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     return '';
   }
 
-  function vistaDe(b, activa, seccion) {
+  /* El nombre de la sección NO se repite sobre la ventana central: ya lo dicen
+     la cabecera (a la izquierda) y el riel (resaltado). El dueño lo quitó de ahí
+     el 2026-10-20: el bloque va solo con su contenido. */
+  function vistaDe(b, activa) {
     return '<div class="vista--bloque" data-bloque="' + b.id + '"' +
       (activa ? '' : ' hidden') + '>' +
-      '<div class="bloque"><p class="bloque__nombre"' +
-        atr('seccion.' + seccion.id + '.nombre') + '>' +
-        rot('seccion.' + seccion.id + '.nombre') + '</p></div>' +
       cuerpoDe(b) + '</div>';
   }
 
@@ -876,7 +876,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
       var cb = 'bloque.' + b.id + '.nombre';
       botones += '<button class="est__v" type="button" data-bloque="' + b.id + '"' +
         (b.id === g.sel ? ' aria-current="page"' : '') + atr(cb) + '>' + rot(cb) + '</button>';
-      vistas += vistaDe(b, b.id === g.sel, s);
+      vistas += vistaDe(b, b.id === g.sel);
     }
     nav.innerHTML = botones;
     nav.setAttribute('aria-label', T('estanteria.etiqueta', { seccion: nombreSeccion(s) }));

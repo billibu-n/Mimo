@@ -286,3 +286,13 @@ light»—. Cinco huecos nuevos, declarados: Alarmas se instala pero no avisa; e
 pomodoro es estático; el temporizador va de minuto en minuto; sin sonido ni notificación del sistema; el
 registro apunta al minuto entero. Quedan por migrar Malla, Estudio, Calificaciones, Apuntes, Tareas y
 Evaluaciones, cada una en su entrega.
+
+**Ronda 94 — el rumbo se fija en `TASKS.json` (2026-10-20).** El dueño avisó de una desviación real: se
+estaba puliendo el armazón en vez de migrar motores, y la v7 portó la mitad de Tiempo (faltan el reloj
+editable a mano, el cuarto modo —Recordatorios—, la configuración del pomodoro, la alarma con sonido y el
+censo semanal). Su recuerdo era exacto: en mimo-app el propio reloj es editable, `01-tiempo.js:399` pinta
+`HH:MM:SS` como tres `input`, y en temporizador lo que se escribe es el tiempo que queda. El plan vive en
+`TASKS.json` de este proyecto: 12 tareas, cada una con su fuente (fichero:línea), su criterio medible y su
+estado, con T1 (inventario de paridad) delante de todo y T2 (Tiempo completo) detrás. Regla de oro: sin
+fuente citada no entra nada, y lo que no se pueda migrar se declara HUECO con motivo. También se quitó el
+rótulo de la sección que se repetía sobre la ventana central (T0, hecho y medido: 0 títulos en la losa).
