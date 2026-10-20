@@ -38,6 +38,14 @@
      MimoComun.borrarRamo(cod)          lo borra y limpia las flechas que lo citan
      MimoComun.requisitosDesdeTexto(txt) 'A;B|C' -> {requisitos, requisitos_o}
      MimoComun.recalcularDesbloquea()   inverso de `requisitos`, entero
+
+   LO QUE ANADIO T004 (la reticula ya existe y necesita columnas y semestre)
+     MimoComun.estadoMalla()            siembra y devuelve E.malla (una sola puerta)
+     MimoComun.NIVELES()                columnas de la reticula, 99 al final
+     MimoComun.SECC()                   secciones de la carrera (E.malla.secciones)
+     MimoComun.ramosDeSem(nivel)        ramos EN CURSO de esa columna
+     MimoComun.ramoNuevo(cod)           entrada en curso fabricada desde CAT()
+     MimoComun.agregarRamo(cod)         agrega a en curso sin duplicar y guarda
    ============================================================================ */
 var MimoComun = window.MimoComun = window.MimoComun || {};
 (function (Mimo) {
@@ -169,10 +177,165 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
     recalcularDesbloquea();
   }
 
+  /* ===================== LAS PIEZAS DE LA MALLA (T004) ======================
+     La reticula necesita tres cosas que este fichero no daba: las columnas
+     (NIVELES), las secciones de la carrera (SECC) y el semestre en curso
+     (ramosDeSem / ramoNuevo / agregarRamo). Se portan de
+     `referencia/mimo-app-53cc22d/js/comun/03-catalogo.js:25-105,199-258` con dos
+     cambios de forma, dichos aqui porque son los que se van a encontrar:
+
+       1. La app anterior tenia DOS fuentes de ramos (archivo `D` + usuario `E`).
+          Aqui solo hay `E.catalogo`, asi que NIVELES() mira CAT() y no fusiona.
+       2. `ramosDeSem(sem)` de la referencia recibia un SEMESTRE con su lista de
+          ramos. Aqui no hay semestre elegido: el semestre en curso es la lista
+          `E.malla.ramos`, y `ramosDeSem(nivel)` devuelve solo los de esa columna.
+
+     EL ESTADO DE MALLA VIVE EN `E.malla`. `almacen.js` normaliza campo a campo y
+     descarta lo que no conoce, asi que el namespace se declaro en `estadoInicial()`
+     y en `normalizar()` (lo sumo el Lead al revisar T004: el brief no dejaba tocar
+     `almacen.js` y el hijo lo espejo en `E.ajustes.malla`; ese espejo se rescata una
+     vez en `normalizar()` y ya no se escribe). El motor escribe SIEMPRE por esta
+     puerta: una sola verdad, `E.malla`.
+     ========================================================================= */
+
+  function esObjeto(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+
+  /* La foto de fabrica de `E.malla`. El contrato de T004 la fija con estas siete
+     claves; las desconocidas se caen (una importacion vieja no debe meter basura). */
+  function sembrarMalla(d) {
+    var o = esObjeto(d) ? d : {};
+    return {
+      aprobados: esObjeto(o.aprobados) ? o.aprobados : {},
+      secciones: Array.isArray(o.secciones) ? o.secciones : [],
+      niveles: Array.isArray(o.niveles) ? o.niveles : [],
+      ramos: Array.isArray(o.ramos) ? o.ramos : [],
+      importado: (o.importado === undefined) ? null : o.importado,
+      notas: esObjeto(o.notas) ? o.notas : {},
+      ajustes: esObjeto(o.ajustes) ? o.ajustes : {}
+    };
+  }
+
+  function estadoMalla() {
+    var e = Mimo.leer();
+    if (!esObjeto(e.malla)) {
+      e.malla = sembrarMalla(esObjeto(e.ajustes) ? e.ajustes.malla : null);
+    }
+    return e.malla;
+  }
+
+  // Columna de un ramo: su `nivel`; sin nivel o fuera de rango, electivos (99).
+  function nivelDeRamo(r) {
+    var n = Number(r && r.nivel);
+    if (!isFinite(n) || n <= 0) { return 99; }
+    return n > 99 ? 99 : n;
+  }
+
+  /* LAS COLUMNAS, portadas de comun/03-catalogo.js:25-68. Diferencias declaradas:
+     - las columnas guardadas (`E.malla.niveles`) fijan ORDEN y TITULO; los niveles
+       que aparecen despues se agregan detras, en orden numerico, y si el usuario
+       no guardo ninguna columna se ordenan todas igual que la referencia;
+     - los electivos (99) van SIEMPRE al final, aunque una columna guardada los
+       pusiera en medio: es una regla del encargo, no del dato.
+     - un ramo con `en_malla === false` no se dibuja, pero sigue en el catalogo. */
+  function NIVELES() {
+    var m = estadoMalla();
+    var c = CAT();
+    var titulos = {}, guardados = [], nuevos = [], i, k, n;
+    for (i = 0; i < m.niveles.length; i++) {
+      n = Number(m.niveles[i] && m.niveles[i].nivel);
+      if (!isFinite(n) || n <= 0 || guardados.indexOf(n) >= 0) { continue; }
+      guardados.push(n);
+      if (m.niveles[i].titulo) { titulos[n] = String(m.niveles[i].titulo); }
+    }
+    var por = {};
+    var claves = Object.keys(c);
+    for (i = 0; i < claves.length; i++) {
+      k = claves[i];
+      if (c[k].en_malla === false) { continue; }
+      n = nivelDeRamo(c[k]);
+      (por[n] = por[n] || []).push(k);
+      if (guardados.indexOf(n) < 0 && nuevos.indexOf(n) < 0) { nuevos.push(n); }
+    }
+    nuevos.sort(function (a, b) {
+      if (a === b) { return 0; }
+      if (a === 99) { return 1; }
+      if (b === 99) { return -1; }
+      return a - b;
+    });
+    var orden = guardados.concat(nuevos);
+    var i99 = orden.indexOf(99);
+    if (i99 >= 0) { orden.splice(i99, 1); orden.push(99); }
+    var salida = [];
+    for (i = 0; i < orden.length; i++) {
+      n = orden[i];
+      salida.push({
+        nivel: n,
+        titulo: titulos[n] || (n === 99 ? 'Electivos' : 'Nivel ' + n),
+        ramos: (por[n] || []).slice().sort()
+      });
+    }
+    return salida;
+  }
+
+  function SECC() { return estadoMalla().secciones; }
+
+  /* Los ramos EN CURSO de una columna. Sin argumento devuelve todos: el simulador
+     y el importador necesitan la lista entera. */
+  function ramosDeSem(nivel) {
+    var m = estadoMalla();
+    var filtro = (nivel === undefined || nivel === null || nivel === '') ? null : Number(nivel);
+    var out = [];
+    for (var i = 0; i < m.ramos.length; i++) {
+      var r = m.ramos[i] || {};
+      var n = Number(r.nivel);
+      if (filtro !== null && n !== filtro) { continue; }
+      out.push({
+        codigo: String(r.codigo || '').toUpperCase(),
+        nombre: String(r.nombre || r.codigo || ''),
+        creditos: Number(r.creditos) || 0,
+        nivel: isFinite(n) && n > 0 ? n : 99
+      });
+    }
+    return out;
+  }
+
+  function ramoNuevo(cod) {
+    cod = String(cod || '').replace(/^\s+|\s+$/g, '').toUpperCase();
+    var c = CAT()[cod];
+    if (!c) { return null; }
+    return {
+      codigo: cod,
+      nombre: String(c.nombre || cod),
+      creditos: Number(c.creditos) || 0,
+      nivel: nivelDeRamo(c)
+    };
+  }
+
+  /* Agrega a "en curso" sin duplicar y guarda con aviso. Devuelve la entrada nueva,
+     o null si el ramo no esta en el catalogo o ya estaba en curso (no se inventa ni
+     se duplica: dos entradas del mismo codigo son dos veces el mismo ramo). */
+  function agregarRamo(cod) {
+    var r = ramoNuevo(cod);
+    if (!r) { return null; }
+    var m = estadoMalla();
+    for (var i = 0; i < m.ramos.length; i++) {
+      if (String(m.ramos[i].codigo || '').toUpperCase() === r.codigo) { return null; }
+    }
+    m.ramos.push(r);
+    Mimo.guardar(r.codigo + ' en curso');
+    return r;
+  }
+
   Mimo.CAT = CAT;
   Mimo.invalidarCatalogo = invalidarCatalogo;
   Mimo.ramoEnCatalogo = ramoEnCatalogo;
   Mimo.borrarRamo = borrarRamo;
   Mimo.requisitosDesdeTexto = requisitosDesdeTexto;
   Mimo.recalcularDesbloquea = recalcularDesbloquea;
+  Mimo.estadoMalla = estadoMalla;
+  Mimo.NIVELES = NIVELES;
+  Mimo.SECC = SECC;
+  Mimo.ramosDeSem = ramosDeSem;
+  Mimo.ramoNuevo = ramoNuevo;
+  Mimo.agregarRamo = agregarRamo;
 })(MimoComun);

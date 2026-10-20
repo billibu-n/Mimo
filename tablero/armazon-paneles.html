@@ -428,6 +428,59 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   [data-piel="c"] .vacia{padding:32px 0}
   [data-piel="c"] .der__caja{width:100%}
 }
+  /* ---------------------------- BLOQUE MALLA (T004) ----------------------------
+     La reticula se pinta con rejilla CSS: una pista por nivel, y cada ramo colocado
+     en su pista y su fila (el anual ocupa DOS pistas: ancho doble, como el prototipo).
+     Los colores y las medidas son tokens del armazon: ni un hex, ni un tamano nuevo.
+     Los rotulos los pone js/malla.js; por eso aqui no hay texto. */
+  .malla{display:grid;gap:16px;min-width:0}
+  .malla [hidden]{display:none}
+  .malla__barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .malla__marca{font-size:13px;color:var(--muted)}
+  .malla__resumen{margin:0;font-size:15px;color:var(--muted)}
+  .malla__mapa{--malla-cols:1;position:relative;display:grid;grid-auto-rows:auto;
+    grid-template-columns:repeat(var(--malla-cols),minmax(200px,1fr));gap:8px 16px;
+    overflow-x:auto;overflow-y:hidden;padding:0 0 8px;min-width:0}
+  .malla__vacio{margin:0;font-size:15px;color:var(--muted)}
+  .malla__colcab{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:8px 12px;border:1px solid var(--linea);border-radius:16px;background:var(--sup2)}
+  .malla__coltit{font-size:13px}
+  .malla__colacc{display:flex;gap:8px}
+  .malla__colacc .btn{padding:0 8px}
+  .ramo{display:grid;gap:8px;padding:12px;border:1px solid var(--linea);border-radius:16px;
+    background:var(--sup);min-width:0}
+  .ramo--aprobado{background:var(--sup2);color:var(--muted)}
+  .ramo--curso{box-shadow:inset 0 0 0 2px var(--acento)}
+  .ramo--disponible{border-color:var(--fuerte)}
+  .ramo--bloqueado{opacity:.55}
+  .ramo--anual{border-style:dashed}
+  .ramo__cab{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .ramo__cod{font-size:13px;color:var(--muted);letter-spacing:.04em}
+  .ramo__cred{font-size:13px;color:var(--muted)}
+  .ramo__nom{font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+  .ramo__pie{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .ramo__anual{border:1px solid var(--linea);border-radius:999px;padding:0 8px}
+  .ramo__acciones{display:flex;flex-wrap:wrap;gap:8px}
+  .ramo__acciones .btn{padding:8px 12px;font-size:13px}
+  .malla__flechas{position:absolute;left:0;top:0;pointer-events:none;overflow:visible}
+  .malla__flecha{fill:none;stroke:var(--fuerte);stroke-width:1.5;opacity:.7}
+  .malla__punta{fill:var(--fuerte);stroke:none;opacity:.7}
+  .malla__editor,.malla__panel{display:grid;gap:12px;padding:24px;border:1px solid var(--linea);
+    border-radius:16px;background:var(--sup)}
+  .malla__tit{margin:0;font-size:17px;font-weight:500}
+  .malla__rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .malla__campo{display:grid;gap:8px}
+  .malla__campo--ancho{grid-column:1/-1}
+  .malla__rot{font-size:13px;color:var(--muted)}
+  .malla__pista{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  .malla__texto{width:100%;min-height:120px;resize:vertical;font-family:inherit;font-size:13px}
+  .malla__error{margin:0;font-size:13px;color:var(--acento)}
+  .malla__acciones{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .malla__lista-sim{display:grid;gap:8px;max-height:280px;overflow:auto}
+  .malla__sim-fila{display:flex;align-items:center;gap:8px;padding:8px 12px;
+    border:1px solid var(--linea);border-radius:16px}
+  .malla__sim-cod{font-size:13px;font-variant-numeric:tabular-nums}
+  .malla__sim-est{margin-left:auto;font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body data-piel="c" data-tema="claro" data-estado="normal" data-modo-riel="empuja" data-modo-der="empuja"
@@ -678,6 +731,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 <script src="js/comun/avisos.js"></script>
 <script src="js/comun/contexto.js"></script>
 <script src="js/comun/respaldo.js"></script>
+<!-- malla.js: el bloque Malla (motor y vista). Va despues de comun/*.js, que es
+     de donde lee y escribe, y antes de i18n.js porque su arranque no traduce
+     nada: los rotulos del bloque viven en el propio fichero. -->
+<script src="js/malla.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/tiempo.js"></script>
 <script>
@@ -709,7 +766,13 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     { id: 'temporizador', icono: 'i-arena' },
     { id: 'pomodoro', icono: 'i-pomodoro' },
     { id: 'registro', icono: 'i-tareas' },
-    { id: 'alarmas', icono: 'i-alarma' }
+    { id: 'alarmas', icono: 'i-alarma' },
+    /* El diccionario de T003 no tiene `bloque.malla.nombre` ni `.desc` y T004
+       no puede editar js/i18n.js: el bloque trae aqui su nombre y su
+       descripcion, que es lo que usan `nombreBloque()`/`descBloque()` cuando
+       la clave no existe. Si algun dia el diccionario las trae, mandan ellas. */
+    { id: 'malla', icono: 'i-malla', nombre: 'Malla',
+      desc: 'Ramos por nivel, requisitos, estados y avance de la carrera.' }
   ];
 
   /* LAS SECCIONES: `bloques` es la foto de fábrica (lo instalado al empezar) y
@@ -719,7 +782,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      (`seccion.<id>.nombre`): aquí queda solo lo que es estructura. */
   var SECCIONES = [
     { id: 'calendario', icono: 'i-calendario', bloques: [], catalogo: [] },
-    { id: 'malla', icono: 'i-malla', bloques: [], catalogo: [] },
+    { id: 'malla', icono: 'i-malla', bloques: ['malla'], catalogo: ['malla'] },
     { id: 'tiempo', icono: 'i-tiempo',
       bloques: ['cronometro', 'temporizador'],
       catalogo: ['cronometro', 'temporizador', 'pomodoro', 'registro', 'alarmas'] },
@@ -860,7 +923,27 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   }
   function rot(clave, vars) { return esc(T(clave, vars)); }
   function nombreSeccion(s) { return T('seccion.' + s.id + '.nombre'); }
-  function nombreBloque(b) { return T('bloque.' + b.id + '.nombre'); }
+  /* Una clave que el diccionario NO tiene (un bloque nuevo, p. ej. Malla) no se
+     deja como `data-i18n`: aplicar() escribiria la clave cruda y diagnostico() la
+     contaria como ausente. El bloque trae su propio `nombre`/`desc` y se usa ese
+     texto, sin atributo de idioma. Si la clave existe, manda el diccionario. */
+  function tieneClave(clave) { return T(clave) !== String(clave); }
+  function nombreBloque(b) {
+    var clave = 'bloque.' + b.id + '.nombre';
+    return tieneClave(clave) ? T(clave) : (b.nombre || b.id);
+  }
+  function descBloque(b) {
+    var clave = 'bloque.' + b.id + '.desc';
+    return tieneClave(clave) ? T(clave) : (b.desc || '');
+  }
+  function atrNombre(b) {
+    var clave = 'bloque.' + b.id + '.nombre';
+    return tieneClave(clave) ? atr(clave) : '';
+  }
+  function atrDesc(b) {
+    var clave = 'bloque.' + b.id + '.desc';
+    return tieneClave(clave) ? atr(clave) : '';
+  }
   function claveTema() { return est.tema === 'claro' ? 'tema.botonClaro' : 'tema.botonOscuro'; }
 
   /* EL RIEL: una fila por SECCIÓN. No crece con los bloques: los bloques viven
@@ -889,6 +972,18 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   }
 
   function cuerpoDe(b) {
+    /* MALLA: el cuerpo es un HUECO con ganchos, sin texto y sin logica. Todo lo
+       pinta js/malla.js (que se carga aparte y solo escribe dentro de estos nodos),
+       asi que este armazon no aprende nada del catalogo de ramos. */
+    if (b.id === 'malla') {
+      return '<div class="malla" data-malla="bloque">' +
+        '<div class="malla__barra" data-malla="barra"></div>' +
+        '<p class="malla__resumen" data-malla="resumen" role="status" aria-live="polite"></p>' +
+        '<div class="malla__mapa" data-malla="mapa" role="region"></div>' +
+        '<form class="malla__editor" data-malla="editor" hidden></form>' +
+        '<div class="malla__panel" data-malla="panel" hidden></div>' +
+      '</div>';
+    }
     if (b.id === 'cronometro') {
       return '<div class="pomo"><div class="pomo__lado">' +
         '<div class="pomo__cifra reloj" data-reloj="crono" role="group"' +
@@ -1075,14 +1170,21 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     for (var i = 0; i < g.bloques.length; i++) {
       var b = bloquePorId(g.bloques[i]);
       if (!b) { continue; }
-      var cb = 'bloque.' + b.id + '.nombre';
       botones += '<button class="est__v" type="button" data-bloque="' + b.id + '"' +
-        (b.id === g.sel ? ' aria-current="page"' : '') + atr(cb) + '>' + rot(cb) + '</button>';
+        (b.id === g.sel ? ' aria-current="page"' : '') + atrNombre(b) + '>' +
+        esc(nombreBloque(b)) + '</button>';
       vistas += vistaDe(b, b.id === g.sel);
     }
     nav.innerHTML = botones;
     nav.setAttribute('aria-label', T('estanteria.etiqueta', { seccion: nombreSeccion(s) }));
     document.getElementById('vistas').innerHTML = vistas;
+    /* AQUI, y no antes: la malla se pinta cuando su caja ya existe. Este es el
+       unico sitio que rehace las vistas, asi que da igual quien lo llame (abrir
+       la seccion, cambiar de vista, instalar o quitar): la reticula se vuelve a
+       llenar. Si el bloque no esta instalado no hay caja y su pintar() se va. */
+    if (typeof MimoMallaUI !== 'undefined') {
+      MimoMallaUI.pintar();
+    }
   }
 
   function pintarVacia() {
@@ -1115,8 +1217,8 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     var chips = document.getElementById('vacia-chips');
     var h = '';
     for (var j = 0; j < libres.length; j++) {
-      var cc = 'bloque.' + libres[j].id + '.nombre';
-      h += '<li class="chip"' + atr(cc) + '>' + rot(cc) + '</li>';
+      h += '<li class="chip"' + atrNombre(libres[j]) + '>' +
+        esc(nombreBloque(libres[j])) + '</li>';
     }
     chips.innerHTML = h;
 
@@ -1146,19 +1248,17 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     for (var i = 0; i < s.catalogo.length; i++) {
       var x = bloquePorId(s.catalogo[i]);
       if (!x || g.bloques.indexOf(x.id) >= 0) { continue; }
-      var cxn = 'bloque.' + x.id + '.nombre';
-      var cxd = 'bloque.' + x.id + '.desc';
       a += '<li class="gab__item">' + icono(x, true) +
-        '<p class="gab__nombre"' + atr(cxn) + '>' + rot(cxn) + '</p>' +
+        '<p class="gab__nombre"' + atrNombre(x) + '>' + esc(nombreBloque(x)) + '</p>' +
         '<button class="btn btn--mini" type="button" data-instalar="' + x.id + '"' +
           atr('gab.instalar') + '>' + rot('gab.instalar') + '</button>' +
-        '<p class="gab__desc"' + atr(cxd) + '>' + rot(cxd) + '</p></li>';
+        '<p class="gab__desc"' + atrDesc(x) + '>' + esc(descBloque(x)) + '</p></li>';
     }
     for (var j = 0; j < g.bloques.length; j++) {
       var y = bloquePorId(g.bloques[j]);
       if (!y) { continue; }
-      var cyn = 'bloque.' + y.id + '.nombre';
-      b += '<li class="gab__item"><p class="gab__nombre"' + atr(cyn) + '>' + rot(cyn) + '</p>' +
+      b += '<li class="gab__item"><p class="gab__nombre"' + atrNombre(y) + '>' +
+        esc(nombreBloque(y)) + '</p>' +
         '<button class="btn btn--mini" type="button" data-quitar="' + y.id + '"' +
           atr('gab.quitar') + '>' + rot('gab.quitar') + '</button></li>';
     }
@@ -1185,7 +1285,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     ctxSec.textContent = nombreSeccion(s);
 
     document.getElementById('pie-bloque').innerHTML = b
-      ? '<span' + atr('bloque.' + b.id + '.nombre') + '>' + rot('bloque.' + b.id + '.nombre') +
+      ? '<span' + atrNombre(b) + '>' + esc(nombreBloque(b)) +
         '</span> · <span' + atr(cs) + '>' + rot(cs) + '</span>'
       : '<span' + atr('pie.sinBloques') + '>' + rot('pie.sinBloques') + '</span>';
 
@@ -1232,7 +1332,11 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   function pintarContexto() {
     var M = MimoTiempoMotor;
     var b = bloqueAbierto();
-    ponerValor('ctx-modo', b ? 'bloque.' + b.id + '.nombre' : 'ctx.sinNombre');
+    if (b && !tieneClave('bloque.' + b.id + '.nombre')) {
+      ponerValor('ctx-modo', null, null, nombreBloque(b));
+    } else {
+      ponerValor('ctx-modo', b ? 'bloque.' + b.id + '.nombre' : 'ctx.sinNombre');
+    }
 
     var corriendo = M.cronoEstaCorriendo() || M.tempEstaCorriendo() || M.pomoEstaCorriendo();
     var aMedias = (!M.cronoEstaCorriendo() && M.cronoMs() > 0) ||
@@ -1574,6 +1678,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      El motor lee su almacén y, si la URL trae ?prueba=1, acorta el pomodoro;
      en los dos casos devuelve el cronómetro a cero y parado (gate del bloque). */
   MimoI18n.alCambiar(function () { pintarSeccion(); });
+  /* la malla se escucha una sola vez en el DOM (delegado) y repinta al cambiar
+     de idioma porque sus rotulos no estan en js/i18n.js (HUECO declarado) */
+  MimoMallaUI.iniciar();
   MimoTiempoUI.iniciar({
     t: MimoI18n.t,
     prueba: q.get('prueba') === '1',

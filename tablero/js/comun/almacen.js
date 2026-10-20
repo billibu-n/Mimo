@@ -81,6 +81,7 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
       tiempo: null,
       idioma: 'es',
       catalogo: {},
+      malla: null,
       ajustes: {},
       respaldo: {},
       migrado: { de: [], cuando: null }
@@ -98,6 +99,11 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
     e.tiempo = esObjeto(s.tiempo) ? s.tiempo : null;
     e.idioma = (s.idioma === 'en') ? 'en' : 'es';
     e.catalogo = esObjeto(s.catalogo) ? s.catalogo : {};
+    /* `malla` se sumo en T004. El espejo en `ajustes.malla` lo dejo escrito el
+       hijo cuando este fichero no estaba en su lista de permitidos: se rescata
+       aqui una vez y a partir de ahora manda el campo de primer nivel. */
+    e.malla = esObjeto(s.malla) ? s.malla
+      : (esObjeto(s.ajustes) && esObjeto(s.ajustes.malla) ? s.ajustes.malla : null);
     e.ajustes = esObjeto(s.ajustes) ? s.ajustes : {};
     e.respaldo = esObjeto(s.respaldo) ? s.respaldo : {};
     e.migrado = esObjeto(s.migrado) ? s.migrado : { de: [], cuando: null };
