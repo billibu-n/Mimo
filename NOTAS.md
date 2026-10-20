@@ -153,7 +153,7 @@ dependencias medidas, no del gusto.
 |---|---|---|
 | **T1** bloque `tiempo`: motor, manifiesto y formato 2 | **HECHO** | 5 ficheros en `prototipo/bloques/tiempo/`; `node prototipo/bloques/tiempo/prueba-motor.js` → **14 PASA / 0 FALLA**, exit 0 |
 | **E1** escritorio Tauri 2, paquete `rpm` | **HECHO** | `escritorio/src-tauri/target/release/bundle/rpm/Mimo-0.1.0-1.x86_64.rpm` (2,9 MiB); los 3 `fetch` responden 200 bajo `tauri://localhost` (`escritorio/evidencia-sonda.json`) |
-| **T2** interfaz, estilos, i18n y registro en el shell | **PENDIENTE** | es el siguiente bloque |
+| **T2** interfaz, estilos, i18n y registro en el shell | **HECHO** | 1.124 l de `ui.js`, `estilos.css` sin un hex, 431 claves por idioma sin asimetrías; medido en Chromium: **0 excepciones y 0 avisos**, 16 pares de contraste ≥ 4,5 y los tres anchos sin desborde (`prototipo/evidencia/tiempo-ui.txt`) |
 
 Lo que T1 dejó medido: `motor.js` 629 l sin DOM (`document.`=0, `window`=1), `MimoMalla`=0 (sigue
 independiente de Malla), ida y vuelta exportar→importar con comparación profunda, y el respaldo real
@@ -166,6 +166,14 @@ no de la semana elegida; la fase corta se llama `descanso`; y **no se alimenta l
 contenido con `rpm -qlp`); el `identifier` `cl.mimo.app` choca con el bundle de macOS (lo exige el
 contrato, se deja); y `escritorio/app/` es un snapshot anterior a `bloques/tiempo/`, que se refresca
 volviendo a correr `preparar-frontend.sh`.
+
+De T2: falta `iconos/tiempo.svg` (la navegación cae en `ic-bloque`) y el sprite no tiene play/pausa
+(los botones van solo con texto). Sin medir de punta a punta: el aviso de fin de temporizador, el
+descanso largo del pomodoro, teclado, `prefers-reduced-motion`, el ancho 680 y reinstalar conservando
+datos. **Y el hueco que muerde al paquete:** el catálogo declara `configuraciones: tiempo.semana`
+(horas objetivo por semana, default 20) y `ofrece: tiempo.horas`, pero el motor **no implementa la
+meta semanal** (sí da `minutosSemana` y `agregadosPorRamo`). O se implementa antes de la ronda del
+pack, o se corrige el catálogo: hoy el shell enseñaría un ajuste que no hace nada.
 
 ## 7. Caminos muertos (heredados; no repetirlos)
 
