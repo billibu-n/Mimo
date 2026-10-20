@@ -352,3 +352,21 @@ JSON y CSV más el pegado de la foto de la malla. Tres instrumentos quedaron ver
 pero dejaba dos verdades. Lo retiré yo en la revisión del diff: `malla` es ahora campo de primer nivel en
 `estadoInicial()`/`normalizar()`, con rescate del espejo una sola vez. Regla para los briefs siguientes: cuando
 una tarea estrena estado persistente, `comun/almacen.js` va en la whitelist, y los espejos están prohibidos.
+
+**Ronda 95 (cont.) — T005 Estudio y Calificaciones (2026-10-20, commit `e0a1c98`).** Dos motores nuevos:
+`js/estudio.js` (minutos por ramo y semana, KPIs de dedicación, meta base contra meta propia, prioridad y avisos
+de dedicación con descartar/sumar) y `js/calificaciones.js` (normalizar notas, promedios por categoría, examen
+con peso y reemplazo, nota final, eximición, simulador de «qué necesito»). La aritmética se probó a mano y quedó
+en la evidencia: 6,0 y 4,0 con pesos 60/40 dan 5,2 aprobado; examen al 40 % con 5,0 da 5,12 y necesito 7,2 para
+un 6; mínima 5,5 con examen 2,0 da 3,92 reprobado; sin categorías devuelve nulo y «faltan datos». El diccionario
+pasó de 153 a **238 claves por idioma** con 0 ausentes y 0 desajustes. Instrumento nuevo `tablero/medir-estudio.py`
+(18 medidas). Gates re-medidos por el padre: contador EXIT=0, tiempo2 0/17, malla 0/16, estudio 0/18. El plan va
+**5/12** (T001, T002, T003, T004, T005). HUECOS declarados: sin importar/exportar Excel-CSV, `examen.reemplaza`
+guarda un índice y no remapea al reordenar, `calificaciones.colores` declarado sin usar.
+
+**Cómo se está haciendo la campaña (método, no anécdota).** El padre no escribe los briefs: los encarga a un
+subagente arquitecto que los redacta contra `PLAN.json` + `PARIDAD.md` + la referencia, y el padre solo los valida
+con `verificar-prompt.py` (7/7) y delega. Después de cada bloque el padre **re-mide los instrumentos de todas las
+secciones anteriores** —no solo el nuevo— y commitea. Coste real: nueve subagentes en la sesión, **0,97 USD**, que
+es el muro blando-duro del portero (1,00 USD sumando subagentes): por eso quedan T007, T008, T009, T010, T012 y
+T011 para la sesión siguiente, con los briefs de T007, T008 y T009 **ya escritos y validados 7/7**.
