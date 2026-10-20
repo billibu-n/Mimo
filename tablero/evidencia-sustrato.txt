@@ -1,0 +1,231 @@
+EVIDENCIA — BLOQUE T003 · SUSTRATO COMÚN EN EL ARMAZÓN NUEVO (mimo-nuevo)
+Fecha: 2026-10-20 · sede: ~/workspace/proyectos/mimo-nuevo
+Contrato: harness/encargos/2026-10-20-bloque-t003-sustrato.md
+
+==============================================================================
+1. QUÉ SE ENTREGÓ
+==============================================================================
+
+Siete ficheros nuevos en tablero/js/comun/ (todos IIFE con 'use strict', con
+var y function, sin clases, sin import/export, sin dependencias; todo cuelga de
+window.MimoComun):
+
+  utilidades.js  93 líneas   MESES, dos, aFecha, aISO, hoy, sumaDias,
+                             rangoSemana, copia, esc
+  almacen.js    209 líneas   CLAVE, VERSION, CLAVES_VIEJAS, ALMACEN (marcador
+                             fallo), estadoInicial, migrar, leer, guardar,
+                             reset, fallo
+  catalogo.js   178 líneas   CAT, invalidarCatalogo, ramoEnCatalogo,
+                             borrarRamo, requisitosDesdeTexto,
+                             recalcularDesbloquea
+  select.js     181 líneas   estilizarSelect, estilizarSelects, cerrarSelects
+  avisos.js     193 líneas   mostrarAviso, confirmar, avisar, pedir
+  contexto.js   144 líneas   MENU_CTX, registrarContexto,
+                             abrirMenuContexto, cerrarMenuContexto
+  respaldo.js   261 líneas   RESPALDO, respaldoSoportado,
+                             elegirCarpetaRespaldo, respaldarAhora,
+                             respaldarEstado, respaldoAuto,
+                             quitarCarpetaRespaldo
+
+Tres ficheros tocados:
+
+  armazon-paneles.html  carga los siete (antes de js/i18n.js), monta #aviso y
+                        #aviso-app, añade el CSS del sustrato, y su persistencia
+                        (fabrica/leer/guardar/RESET) pasa por MimoComun.
+  js/tiempo.js          leer() y guardar() hablan con E.tiempo del almacén
+                        único; el motor sigue puro (medida 16: 0 apariciones de
+                        document.).
+  js/i18n.js            arranque() y cambiar() leen/escriben E.idioma; los
+                        diccionarios NO se tocaron (153 claves por idioma).
+
+1b. COMPROBACIÓN EN EJECUCIÓN (no solo que cargue: que responda)
+
+Sobre el tablero real, en un perfil de Chromium nuevo (/tmp/prueba-api.py):
+
+  claves de MimoComun: ["ALMACEN","CAT","CLAVE","CLAVES_VIEJAS","MENU_CTX","MESES",
+    "RESPALDO","VERSION","aFecha","aISO","abrirMenuContexto","avisar","borrarRamo",
+    "cerrarMenuContexto","cerrarSelects","confirmar","copia","dos",
+    "elegirCarpetaRespaldo","esc","estadoInicial","estilizarSelect",
+    "estilizarSelects","fallo","guardar","hoy","invalidarCatalogo","leer","migrar",
+    "mostrarAviso","pedir","quitarCarpetaRespaldo","ramoEnCatalogo","rangoSemana",
+    "recalcularDesbloquea","registrarContexto","requisitosDesdeTexto","reset",
+    "respaldarAhora","respaldarEstado","respaldoAuto","respaldoSoportado","sumaDias"]
+  montajes: [true, true, "aviso", "modal"]
+  utilidades: ["03", "2026-10-26", "20–26 oct", "&lt;b&gt;&amp;&quot;x&lt;/b&gt;", 10]
+  catalogo vacio: [0, {"requisitos": ["MA1001"], "requisitos_o": [["FI2004","IQ2212"]]}]
+  aviso: [true, "hola de prueba", true]
+  confirmar: ["resuelto", true, "abierta", true, "botones", 2, "peligro", true, "cerrada", true]
+  select: ["sel-propio", "Uno", "none", "1"]
+  respaldo: [true, null]
+  fallo almacen: null
+  eventos prohibidos: 0
+
+Lectura: las 44 funciones y constantes del contrato existen con su nombre; los
+dos montajes están en el marcado; el toast se pinta y se apaga; la ventana abre
+con dos botones, el de peligro marcado, y resuelve `true` al aceptar y se cierra;
+el desplegable propio se construye, esconde el `<select>` nativo y queda marcado
+como ya procesado (idempotente); el respaldo dice que este navegador sí puede y
+que no hay carpeta elegida; y no hubo ni un evento de consola.
+
+==============================================================================
+2. LA MIGRACIÓN, QUE ES LO DELICADO
+==============================================================================
+
+Al faltar `mimo.datos.v1` se leen las TRES claves viejas UNA vez, se anidan en
+`armazon` / `tiempo` / `idioma`, se escribe la nueva y las viejas NO SE BORRAN.
+Al existir ya la nueva, la migración no se vuelve a ejecutar. `reset()` borra la
+clave única y deja escrita la foto de fábrica, para que un "restablecer" no
+resucite los datos viejos por la puerta de la migración.
+
+Ninguna escritura se refleja en las claves viejas. Lo comprueba este grep, que
+saca las claves viejas solo en comentarios y en las dos RAMAS DE RESPALDO (para
+cuando un HTML se abra sin cargar comun/almacen.js):
+
+  $ grep -rn "mimo\.armazon\.v1\|mimo\.bloque\.tiempo\|mimo\.idioma" tablero/js tablero/*.html
+  tablero/js/i18n.js:33:  var CLAVE_ALMACEN = 'mimo.idioma';
+  tablero/js/i18n.js:595:     (comentario)
+  tablero/js/tiempo.js:32:   (comentario)
+  tablero/js/tiempo.js:41:  var CLAVE = 'mimo.bloque.tiempo';
+  tablero/js/tiempo.js:247:  (comentario)
+  tablero/armazon-paneles.html:733: (comentario)
+
+  Las dos unicas apariciones que NO son comentario son la 33 de i18n.js y la 41
+  de tiempo.js: son la clave de las ramas de respaldo, que solo se ejecutan si
+  `MimoComun` no existe (una pagina que no cargue comun/almacen.js). Con el
+  sustrato cargado, ni i18n ni Tiempo escriben en las claves viejas.
+
+Prueba de aceptación, literal, sobre el tablero real en un perfil de Chromium
+nuevo (/tmp/prueba-migracion.py: siembra una sesión en `mimo.bloque.tiempo`,
+borra la clave nueva, recarga dos veces y luego prueba ?reset=1):
+
+  1. primera carga: almacen nuevo = True | armazon: False | mirado: {"de": [], "cuando": 1792526692671}
+  2. sembrado: nueva = False | viejas = {'armazon': True, 'tiempo': True, 'idioma': True}
+  3. tras recargar: idioma = en | armazon.seccion = estudio | registro = 1 sesion = {'id': 's-prueba-1', 'fecha': '2026-10-19', 'lunes': '2026-10-19', 'minutos': 15, 'hora': '10:30'}
+     migrado = {"de": ["mimo.armazon.v1", "mimo.bloque.tiempo", "mimo.idioma"], "cuando": 1792526694250}
+     viejas intactas = True | largos = {'armazon': 86, 'tiempo': 156, 'idioma': 2}
+  4. segunda recarga: registro = 1 sesion = {'id': 's-prueba-1', 'fecha': '2026-10-19', 'lunes': '2026-10-19', 'minutos': 15, 'hora': '10:30'} | idioma = en
+     migrado = {"de": ["mimo.armazon.v1", "mimo.bloque.tiempo", "mimo.idioma"], "cuando": 1792526694250} | viejas intactas = True
+  5. tras ?reset=1: armazon = {"v": 1, "seccion": "tiempo", "secciones": {...}} | registro = [] | idioma = es
+  eventos prohibidos en las cuatro cargas: 0
+
+  RESUMEN: la migracion pasa: sesion dentro de mimo.datos.v1, tres claves viejas intactas, segunda recarga sin duplicar ni borrar.
+
+Lectura: la sesión sembrada (id s-prueba-1, 15 min, 2026-10-19) aparece dentro
+de `mimo.datos.v1`; las tres claves viejas conservan su contenido byte a byte
+(`viejas intactas = True`, con sus tres longitudes); la segunda recarga no
+duplica (registro sigue en 1), no borra y no vuelve a migrar (mismo `cuando`);
+y `?reset=1` deja registro vacío sin tocar las viejas.
+
+==============================================================================
+3. NÚMEROS: ANTES Y DESPUÉS
+==============================================================================
+
+El ANTES es una copia literal del estado de partida, servida desde
+/tmp/mimo-nuevo-t003-antes/ (armazon-paneles.html + js/ + sonido/ + iconos/):
+
+  sha256 de la copia ANTES (armazon-paneles.html):
+    876ef4e3803a4f4c82acfc0895e74e3ad8157da1048df6433301cb4b3658b5d9
+  sha256 de partida de js/tiempo.js: 0800261fbb690088659add8aba2dcd15c8a5eaf10c875b9da3ef6e7c9822e34e
+  sha256 de partida de js/i18n.js:   1725e2c5e47a30b4c1e4bd63c876ee1cfdbc43317f1a49ab026270acf8a06401
+
+Gate 1 — python3 tablero/medir-tablero.py (contador de pieles)
+
+  ANTES y DESPUÉS dan lo mismo, cifra por cifra:
+    PIEL C · Materia
+      tamaños     5/5   OK   [13px, 15px, 17px, 26px, 64px]
+      espacios    6/8   OK   [8px, 12px, 16px, 24px, 32px, 48px]
+      radios      2/2   OK   [16px, 999px]
+      duraciones  3/3   OK   [100, 160, 240] ms
+      hex         0/0   OK   [—]
+    Hex fuera de los tokens (toda la hoja): 0
+
+  El CSS nuevo (desplegable, aviso, ventana, menú contextual) NO estrena ni un
+  valor: reutiliza esos tamaños, espacios, radios y duraciones, y no lleva hex.
+
+  RESUMEN literal del DESPUÉS:
+    RESUMEN: las tres pieles dentro de su techo.
+
+Gate 2 — python3 tablero/medir-tiempo2.py (17 medidas)
+
+  ANTES (/tmp/mimo-nuevo-t003-antes, --sin-antes): losa 544.00 · sangría 32.00 ·
+    32 cargas 0 eventos · crono 00:02,50 · claves 153/153 · 17 [OK].
+    RESUMEN: 0 choque(s) de 17 medidas.
+
+  DESPUÉS (tablero del proyecto, con la copia congelada de T002 como su ANTES):
+    losa 1280 ambos : 544.00      (antes 544.00)
+    sangria 1100    : 32.00       (antes 32.00)
+    32 cargas       : 0 eventos prohibidos (de 0)   (antes 0)
+    crono 2,50 s    : 00:02,50 (congelado al pausar: True)   (antes igual)
+    claves i18n     : 153 / 153   (antes 153/153)
+    [OK] 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+
+  RESUMEN literal del DESPUÉS:
+    RESUMEN: 0 choque(s) de 17 medidas.
+
+  EXIT de los dos gates: 0.
+
+  Nota de una medida que saltó y se arregló antes de entregar: la 16 ("el motor
+  no toca el DOM") salió [CHOQUE] con "1 apariciones de document." porque el
+  comentario que escribí en tiempo.js citaba literalmente `document.`. No era
+  código: era el texto del comentario. Se reescribió el comentario ("ni una sola
+  llamada al DOM") y la medida volvió a [OK] con 0 apariciones.
+
+==============================================================================
+4. LO QUE NO SE PORTÓ, Y POR QUÉ (HUECOS DECLARADOS)
+==============================================================================
+
+H1. contexto.js entrega la maquinaria y el registro VACÍO. Los manejadores de
+    cada sección son de T004 (malla), T007 (calendario) y T008 (tareas). Hoy el
+    botón derecho se comporta como el del navegador en toda la pantalla.
+    Cómo se cierra: `MimoComun.registrarContexto('#... .fila[data-x]', fn)`.
+
+H2. catalogo.js funciona sobre `E.catalogo` VACÍO: no hay ramos de fábrica ni
+    cálculo de estados (aprobado / en curso / disponible / bloqueado) ni
+    `NIVELES()`/`SECCIONES`/`asignarSeccion()`, que son el dibujo de la retícula
+    (T004). `ramosQueAbre()` (prioridad de percepción) es de T005. El gancho
+    `invalidarCatalogo()` queda escrito para que T004 limpie ahí su memo de
+    estados y no en cada sitio que toque el catálogo.
+
+H3. utilidades.js no porta el inflector de etiquetas (tabla/singular/plural/
+    normalizar de 01-utilidades.js), ni `formatoTitulo()`, ni el redondeo de
+    notas (aCent/dec1/ver1/ver2): son de Ajustes (T009), del editor de ramos
+    (T004) y de Calificaciones (T005).
+
+H4. respaldo.js no porta la rama de escritorio/Tauri (10a-carpeta-tauri.js y
+    10b-migracion-tauri.js): este tablero corre en navegador y aquí no existe el
+    diálogo del sistema. Tampoco el pintado del estado en Ajustes
+    (`pintarRespaldo`, `pintarEstadoRespaldo`): no hay pantalla de Ajustes hasta
+    T009; `respaldarEstado()` ya devuelve el nombre de la carpeta para entonces.
+
+H5. select.js no transforma los `<select multiple>` ni con `size > 1`: son
+    listas de selección múltiple, no menús. Afecta a los prerrequisitos del
+    editor de ramos (T004).
+
+H6. `?reset=1` restablece el almacén ÚNICO entero (antes solo borraba
+    `mimo.armazon.v1`). Consecuencia medida: la medida 1 sigue haciendo 32
+    cargas con 0 eventos, pero ya no alterna los dos idiomas en esas cargas,
+    porque cada una vuelve al idioma de fábrica ('es'). El inglés se sigue
+    midiendo en las medidas 13 y 17, que dan 0 desajustes. Se elige así porque
+    "restablecer" debe dejar un estado de fábrica de verdad.
+
+H7. El CSS de la ventana, el desplegable, el aviso y el menú contextual es
+    mínimo y vive en armazon-paneles.html (no hay hoja aparte para el sustrato).
+    Cuando T004/T007/T008 necesiten más piezas, se añaden ahí, con los mismos
+    valores contados.
+
+==============================================================================
+5. COSAS QUE CAMBIAN DE SITIO (para quien venga después)
+==============================================================================
+
+- El almacén de trabajo es `localStorage['mimo.datos.v1']`, con las ramas
+  `armazon`, `tiempo`, `idioma`, `catalogo`, `ajustes`, `respaldo` y la marca
+  `migrado` ({de[], cuando}).
+- Para leer: `MimoComun.leer()`. Para escribir: mutar la rama y llamar a
+  `MimoComun.guardar([aviso])`. `guardar()` avisa por el toast si se le pasa
+  texto y llama a `respaldoAuto()` (agrupado a 3 s).
+- Si el navegador no deja escribir, `MimoComun.ALMACEN.fallo` dice el nombre del
+  error (o null) y los cambios viven solo en memoria: el pie del armazón puede
+  leerlo para no mentir con "guardado".
+- Un aviso es `MimoComun.mostrarAviso(txt, ms)`; una pregunta es
+  `MimoComun.confirmar(msg, {peligro:true})` y devuelve una promesa: nunca
+  `confirm()`, que en escritorio bloquea la página.

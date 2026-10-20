@@ -27,8 +27,12 @@
    No se porta nada mas del prototipo: ni su UI (ui.js), ni importar/exportar,
    ni los recordatorios (aqui el bloque Alarmas sigue estatico, HUECO declarado).
 
-   EL ALMACEN ES UNO Y VERSIONADO: localStorage['mimo.bloque.tiempo'] =
-     {v:1, tiempo:{crono, temp, pomodoro, registro[], ...}}
+   EL ALMACEN ES UNO Y VERSIONADO (desde T003): los datos de este motor viven
+   en `E.tiempo` del almacen unico `localStorage['mimo.datos.v1']` que pone
+   `js/comun/almacen.js`; antes vivian solos en `localStorage['mimo.bloque.tiempo']`
+   y esa clave ahora es (1) el origen que la migracion copia UNA vez y (2) el
+   respaldo si esta pagina se abre sin el sustrato comun. La forma del dato no
+   cambia: {crono, temp, pomodoro, registro[], recordatorios[], ...}
    Los cuatro bloques leen y escriben ahi; no hay copias por bloque.
    ============================================================================ */
 var MimoTiempoMotor = (function () {
@@ -238,15 +242,35 @@ var MimoTiempoMotor = (function () {
   }
 
   // Devuelve el objeto VIVO del bloque: quien lo reciba no lo muta; para cambiarlo, guardar().
+  //
+  // DESDE T003 EL CAJON ES EL DEL SUSTRATO COMÚN: este bloque ya no escribe en
+  // `mimo.bloque.tiempo`, sino en `E.tiempo` del almacén único `mimo.datos.v1`
+  // (js/comun/almacen.js). El motor sigue siendo puro (ni una sola llamada al
+  // DOM; la medida 16 lo comprueba): habla
+  // con `MimoComun`, que es una función global, no con el DOM. Lo que hubiera en
+  // la clave vieja se migra una sola vez al abrir y NO se borra.
+  function comun() {
+    if (typeof MimoComun === 'undefined' || !MimoComun) { return null; }
+    if (typeof MimoComun.leer !== 'function') { return null; }
+    return MimoComun;
+  }
+
   function leer() {
     if (_datos) { return _datos; }
     var crudo = null;
-    var al = almacen();
-    if (al) {
-      try {
-        var g = al.getItem(CLAVE);
-        if (g) { crudo = JSON.parse(g); }
-      } catch (e) { crudo = null; }
+    var M = comun();
+    if (M) {
+      try { crudo = M.leer().tiempo; } catch (e) { crudo = null; }
+    } else {
+      // Sin el sustrato común (un HTML que no cargue comun/almacen.js): se lee
+      // la clave vieja, para que este motor siga sirviendo solo.
+      var al = almacen();
+      if (al) {
+        try {
+          var g = al.getItem(CLAVE);
+          if (g) { crudo = JSON.parse(g); }
+        } catch (e) { crudo = null; }
+      }
     }
     if (esObjeto(crudo) && crudo.tiempo !== undefined) { crudo = crudo.tiempo; }
     _datos = normalizar(crudo);
@@ -256,9 +280,17 @@ var MimoTiempoMotor = (function () {
   function guardar(tiempo) {
     if (tiempo !== undefined) { _datos = normalizar(tiempo); }
     else if (!_datos) { _datos = normalizar(null); }
-    var al = almacen();
-    if (al) {
-      try { al.setItem(CLAVE, JSON.stringify({ v: VERSION, tiempo: _datos })); } catch (e) { /* cuota */ }
+    var M = comun();
+    if (M) {
+      try {
+        M.leer().tiempo = _datos;
+        M.guardar();
+      } catch (e) { /* sin almacén: la sesión sigue en memoria */ }
+    } else {
+      var al = almacen();
+      if (al) {
+        try { al.setItem(CLAVE, JSON.stringify({ v: VERSION, tiempo: _datos })); } catch (e) { /* cuota */ }
+      }
     }
     return _datos;
   }

@@ -517,8 +517,7 @@ var MimoI18n = (function () {
     var nuevo = normalizarIdioma(lang);
     if (nuevo === idioma) { aplicar(); return idioma; }
     idioma = nuevo;
-    var al = almacen();
-    if (al) { try { al.setItem(CLAVE_ALMACEN, idioma); } catch (e) { /* sin cuota */ } }
+    guardarIdioma(idioma);
     aplicar();
     avisar();
     return idioma;
@@ -592,10 +591,41 @@ var MimoI18n = (function () {
   }
 
   /* ------------------------------------------------------------- 7. arranque */
-  function arranque() {
-    var guardado = null;
+  /* DESDE T003 EL IDIOMA VIVE EN EL ALMACÉN ÚNICO: `E.idioma` de
+     `mimo.datos.v1` (js/comun/almacen.js), no en `mimo.idioma`. La clave vieja
+     se sigue leyendo como respaldo —y la migración la copia una sola vez— para
+     que este motor funcione también en una página que no cargue el sustrato.
+     Los diccionarios no se tocan: 153 claves por idioma, comprobadas. */
+  function comun() {
+    if (typeof MimoComun === 'undefined' || !MimoComun) { return null; }
+    if (typeof MimoComun.leer !== 'function') { return null; }
+    return MimoComun;
+  }
+
+  function idiomaGuardado() {
+    var M = comun();
+    if (M) {
+      try {
+        var e = M.leer();
+        if (e && (e.idioma === 'es' || e.idioma === 'en')) { return e.idioma; }
+      } catch (err) { /* sin almacén: se cae a la clave vieja */ }
+    }
     var al = almacen();
-    if (al) { try { guardado = al.getItem(CLAVE_ALMACEN); } catch (e) { guardado = null; } }
+    if (al) { try { return al.getItem(CLAVE_ALMACEN); } catch (e) { return null; } }
+    return null;
+  }
+
+  function guardarIdioma(lang) {
+    var M = comun();
+    if (M) {
+      try { M.leer().idioma = lang; M.guardar(); return; } catch (e) { /* cuota */ }
+    }
+    var al = almacen();
+    if (al) { try { al.setItem(CLAVE_ALMACEN, lang); } catch (e) { /* sin cuota */ } }
+  }
+
+  function arranque() {
+    var guardado = idiomaGuardado();
     idioma = normalizarIdioma(guardado || IDIOMA_BASE);
     aplicar();
   }
