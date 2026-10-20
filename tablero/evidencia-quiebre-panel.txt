@@ -63,7 +63,7 @@ angosto     1224,00         352,00          block
 vacia       896,00            0,00          none
 apariencia  896,00            0,00          none
 
-Los seis estados con el panel abierto (contexto, gabinete, ambos, angosto) dan 544,00 de losa y el panel dentro del
+Los cuatro estados con el panel abierto (contexto, gabinete, ambos, angosto) dan 544,00 de losa y el panel dentro del
 flujo (352,00, borde derecho en 1248,00); .velo en none salvo angosto, que fuerza superpuesto como en la v3.
 A 1440 los ocho estados tambien coinciden (0 diferencias): losa 1056,00/704,00, der 352,00/0,00.
 
@@ -144,9 +144,9 @@ Hex fuera de los tokens (toda la hoja): 0
 RESUMEN: las tres pieles dentro de su techo.
 EXIT=0
 
-Sale igual que antes del bloque (pieles A y B a 0, sin reglas propias en este fichero).  Los anchos nuevos van en
-custom properties de .armazon, que el contador no cuenta; el 32 del marco pasa a var(--marco-armazon) y 32px sigue
-declarado en .apariencia y .vacia, asi que el juego de espacios medido no cambia (6 de 8).
+Sale igual que antes del bloque: exit antes 0 · exit despues 0 (pieles A y B a 0, sin reglas propias en este
+fichero).  Los anchos nuevos van en custom properties de .armazon, que el contador no cuenta; el 32 del marco pasa
+a var(--marco-armazon) y 32px sigue declarado en .apariencia y .vacia, asi que el juego de espacios no cambia (6 de 8).
 
 7 · LO QUE SE TOCO ADEMAS DE LA REGLA, DICHO AQUI
 
@@ -160,7 +160,7 @@ declarado en .apariencia y .vacia, asi que el juego de espacios medido no cambia
 
 8 · HUECO
 
-HUECO: ninguno de las cifras de arriba.  Lo que no se midio, se declara:
+HUECO: ninguno en las cifras de arriba.  Lo que no se midio, se declara:
 - No hay capturas: la apariencia no se afirma por ojo, solo por geometria y por display.
 - Todas las cargas son navegaciones nuevas a 900 px de alto: 10 en §1, 32 en §2 (8 estados x 2 anchos x 2 ficheros),
   12 en §4 (6 anchos x 2 ficheros) y 16 en §5.  No se midio con otro alto ni con zoom.
