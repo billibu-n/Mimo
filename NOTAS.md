@@ -189,9 +189,41 @@ pack, o se corrige el catálogo: hoy el shell enseñaría un ajuste que no hace 
 
 ```bash
 cd ~/workspace/proyectos/mimo-nuevo
-git log -1 --format="%h %ad %s" --date=format:"%Y-%m-%d %H:%M"   # -> b79e3d5 ... 20:31
-git status --short                                                # -> NOTAS, HANDOFF, evidencia (sin commit)
-ls prototipo/evidencia/iter4a.txt                                 # -> existe, 93 lineas de cifras
-cd prototipo && python3 -c "import json;d=json.load(open('i18n/es.json'));print(len(d))"  # -> 17 top
-ls referencia/mimo-app-53cc22d/js                                # -> la app anterior, para portar motores
+git log --oneline -4                             # -> cabecera de la rama estado-2026-10-20
+git status --short                               # -> vacio = todo guardado
+ls prototipo/evidencia/iter4a.txt                # -> existe, 93 lineas de cifras
+cd prototipo && node bloques/tiempo/prueba-motor.js   # -> 14 PASA, 0 FALLA
+cd .. && python3 tablero/medir-tablero.py        # -> las tres pieles dentro de su techo
+ls tablero/armazon.html tablero/direcciones.html # -> los dos tableros de diseno
+ls referencia/mimo-app-53cc22d/js                # -> la app anterior, para portar motores
 ```
+
+## 9. Frente de diseño (abierto el 2026-10-20, rama `estado-2026-10-20`)
+
+Se abrió **antes** de seguir migrando bloques, por decisión del dueño: la app actual es «sobria
+aunque funcional», y eso se decide una vez, no siete. Diagnóstico medido del prototipo: **45
+espacios distintos, 7 radios escritos a mano, 46 hex directos y cero movimiento de interfaz**
+(solo dos animaciones de adorno, `12s` y `18s`). La app anterior tenía carácter con **231 hex y 9
+temas**: expresividad comprada con caos.
+
+- **`tablero/direcciones.html`** — tres pieles con los mismos siete componentes. Declaran y cumplen
+  sus techos: **A** Papel y tinta (5 tamaños · 8 espacios · 2 radios · 2 duraciones · 0 hex) · **B**
+  Instrumento (5/8/2/2/0) · **C** Materia (5/8/2/3/0). Contraste mínimo texto-fondo 5,88 · 5,60 ·
+  5,24 en claro y 6,77 · 6,61 · 7,18 en oscuro.
+- **`tablero/armazon.html`** — el **armazón aprobado**: riel de bloques instalados + losa +
+  **estantería que lista las VISTAS del bloque abierto** (Cronómetro · Temporizador · Pomodoro ·
+  Registro), no las secciones. Cinco estados: normal, gabinete, edición, vacía y apariencia; los
+  tres primeros se alcanzan por URL (`?piel=a|b|c&tema=claro|oscuro&estado=…`). Añadir un bloque es
+  un «+» y un botón; quitarlo es el modo edición del riel; el estado vacío enseña el gabinete en vez
+  de un «no hay nada».
+- **`tablero/medir-tablero.py`** — el contador del sistema visual (AU-131): recuenta valores
+  distintos por dimensión, avisa al pasar el techo y **se prueba rompiéndolo** (`--autoprueba`, 4
+  casos en rojo). `--fichero` le permite medir el armazón; sin argumento mide `direcciones.html`.
+- **La apariencia será un bloque, no un fichero**: los temas dejan de ser `<link>` a CSS y pasan a
+  ser **datos** (fondo, superficie, tinta, acento). Ya están declarados seis: Papel, Arena, Marea,
+  Grafito, Medianoche y Alto contraste.
+
+**Decisión pendiente del dueño:** cuál de las tres pieles. **HUECO conocido:** en la piel B el
+filete da 1,31:1 sobre la superficie, así que la pista del anillo del pomodoro se pierde en su
+panel; es un token y se corrige al aplicar la piel elegida. **Nada de esto se ha aplicado al
+prototipo**: el armazón es una muestra aparte y `prototipo/` sigue intacto.
