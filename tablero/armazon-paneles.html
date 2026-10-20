@@ -59,12 +59,16 @@ body[data-pie="oculto"] .pie{display:none}
 .barra__nombre{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .barra__chevron{display:flex;align-items:center;flex:none;color:var(--muted)}
 .barra__fin{display:flex;align-items:center;margin-left:auto;min-width:0}
+.barra__marca{display:flex;align-items:center;justify-content:center;flex:none;padding:0;border:0;
+  background:transparent;cursor:pointer}
+.barra__marca img{display:block;width:32px;height:32px;border-radius:999px}
+.barra__herramientas{display:flex;align-items:center;min-width:0}
 
 .armazon{position:relative;display:flex;align-items:stretch;min-height:0;min-width:0;
   /* los dos paneles y el hueco del armazón: UNA declaración de cada ancho.
      El script los lee de aquí para decidir quién empuja; no se repiten allí. */
   --riel-abierto:256px; --riel-plegado:56px; --der-abierto:352px; --der-cerrado:0px;
-  --marco-armazon:32px; --losa-margen:32px}
+  --marco-armazon:32px; --losa-margen:32px; --sangria-panel:32px}
 .riel{display:flex;flex-direction:column;flex:none;overflow:hidden;min-width:0;width:var(--riel-plegado);
   background:var(--sup);color:var(--tinta);
   transition-property:width;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
@@ -99,7 +103,7 @@ body[data-pie="oculto"] .pie{display:none}
 .btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit}
 .btn:focus-visible,.btn-icono:focus-visible,.riel__bloque:focus-visible,.riel__fijo:focus-visible,
 .riel__mas:focus-visible,.est__v:focus-visible,.pestana:focus-visible,.ficha:focus-visible,
-.btn-icono:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
+.barra__marca:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
 .btn-icono{display:inline-flex;align-items:center;justify-content:center;flex:none;cursor:pointer;
   border:1px solid transparent;background:transparent;color:var(--tinta);padding:0}
 .btn-icono .icono{transition-property:transform;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
@@ -161,8 +165,13 @@ body[data-vista="ajustes"] .vista--bloque{display:none}
 .velo{position:absolute;inset:0;z-index:2;display:none;background:var(--velo)}
 body[data-modo-riel="superpuesto"] .armazon{padding:0}
 body[data-modo-riel="superpuesto"] .losa{margin:0 0 0 var(--riel-plegado)}
-body[data-modo-riel="superpuesto"] .riel{position:absolute;left:0;top:0;bottom:0;z-index:1;box-shadow:var(--sombra)}
-body[data-modo-der="superpuesto"] .der{position:absolute;right:0;top:0;bottom:0;z-index:4;box-shadow:var(--sombra)}
+/* superpuesto = tarjeta: la sangría de 32 px la deja dentro de la ventana, sin
+   tocar el borde.  El panel conserva sus 352 px si caben; si no, se encoge. */
+body[data-modo-riel="superpuesto"] .riel{position:absolute;left:var(--sangria-panel);
+  top:var(--sangria-panel);bottom:var(--sangria-panel);z-index:1;box-shadow:var(--sombra)}
+body[data-modo-der="superpuesto"] .der{position:absolute;right:var(--sangria-panel);
+  top:var(--sangria-panel);bottom:var(--sangria-panel);z-index:4;box-shadow:var(--sombra);
+  max-width:calc(100% - var(--sangria-panel) - var(--sangria-panel))}
 body[data-modo-der="superpuesto"][data-der="abierto"] .velo{display:block}
 /* con el panel derecho superpuesto y el riel en el flujo, el riel va por encima
    del velo: el velo tapa la losa, no el carril, y el riel se puede pulsar. */
@@ -202,6 +211,9 @@ body[data-piel="c"][data-tema="oscuro"]{
 [data-piel="c"] .barra__fecha{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 [data-piel="c"] .barra__fin{gap:16px}
 [data-piel="c"] .barra__tema{gap:8px;color:var(--tinta)}
+[data-piel="c"] .barra__marca{transition-property:transform;transition-duration:160ms}
+[data-piel="c"] .barra__marca:active{transform:scale(.98);transition-duration:100ms}
+[data-piel="c"] .barra__herramientas{gap:8px}
 [data-piel="c"] .btn-icono{width:36px;height:36px;border-radius:999px;transition-property:background-color;transition-duration:160ms}
 [data-piel="c"] .btn-icono:hover{background:var(--sup2);transition-duration:240ms}
 [data-piel="c"] .btn-icono .icono{transition-duration:160ms}
@@ -227,6 +239,7 @@ body[data-piel="c"][data-tema="oscuro"]{
 [data-riel="plegado"] .riel__nombre{display:none}
 
 [data-piel="c"] .losa{margin:0 var(--losa-margen);border-radius:16px}
+body[data-modo-edicion="si"] .losa__barra{box-shadow:inset 0 0 0 2px var(--acento)}
 [data-piel="c"] .losa__barra{gap:16px;padding:16px 24px;font-size:13px}
 [data-piel="c"] .losa__cuerpo{gap:32px;padding:48px}
 [data-piel="c"] .vista--bloque{max-width:760px;row-gap:8px}
@@ -264,6 +277,9 @@ body[data-piel="c"][data-tema="oscuro"]{
 [data-piel="c"] .pestana[aria-selected="true"]{background:var(--sup2);color:var(--tinta)}
 [data-piel="c"] .der__cerrar{margin-left:auto}
 [data-piel="c"] .der__cara{gap:8px;padding:16px 24px}
+/* la tarjeta superpuesta: mismo radio que la losa, y la sombra de la piel */
+body[data-modo-riel="superpuesto"] .riel,
+body[data-modo-der="superpuesto"] .der{border-radius:16px}
 [data-piel="c"] .ctx__h{font-size:17px}
 [data-piel="c"] .ctx__h--rotulo{font-size:13px;margin-top:8px}
 [data-piel="c"] .ctx__lista{gap:8px}
@@ -310,9 +326,12 @@ body[data-piel="c"][data-tema="oscuro"]{
 /* la piel se compacta cuando el riel deja de empujar con el carril abierto:
    el último ancho en que empuja es 904, así que el corte es 903. */
 @media (max-width:903px){
-  [data-piel="c"] .barra{gap:8px;padding:0 16px}
-  [data-piel="c"] .barra__fecha{display:none}
-  [data-piel="c"] #tema-texto,#pie-guardado-txt{display:none}
+  [data-piel="c"] .barra{gap:8px;padding:0 12px}
+  [data-piel="c"] .barra__bloque{display:none}
+  [data-piel="c"] .barra__fin{gap:8px}
+  [data-piel="c"] .btn-icono{width:32px;height:32px}
+  [data-piel="c"] .barra__herramientas{gap:8px}
+  [data-piel="c"] #pie-guardado-txt{display:none}
   [data-piel="c"] .losa__cuerpo{gap:24px;padding:24px}
   [data-piel="c"] .losa__barra{gap:8px;padding:8px 16px}
   [data-piel="c"] .est__v{padding:8px 16px;font-size:13px}
@@ -326,7 +345,8 @@ body[data-piel="c"][data-tema="oscuro"]{
 </style>
 </head>
 <body data-piel="c" data-tema="claro" data-estado="normal" data-modo-riel="empuja" data-modo-der="empuja"
-      data-riel="abierto" data-der="cerrado" data-cara="contexto" data-vista="normal" data-pie="visible">
+      data-riel="abierto" data-der="cerrado" data-cara="contexto" data-vista="normal" data-pie="visible"
+      data-modo-edicion="no">
 
 <h1 class="sr">Mimo</h1>
 
@@ -343,26 +363,36 @@ body[data-piel="c"][data-tema="oscuro"]{
   <symbol id="i-tareas" viewBox="0 0 24 24"><path d="M4 7l1.5 1.5L8 6M4 12l1.5 1.5L8 11M4 17l1.5 1.5L8 16M11 7h9M11 12h9M11 17h9"/></symbol>
   <symbol id="i-evaluaciones" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M10.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M9.5 15.5l1 1 2-2.5"/></symbol>
   <symbol id="i-academia" viewBox="0 0 24 24"><path d="M3 9l9-4 9 4-9 4zM6 11v4c0 1.5 2.7 3 6 3s6-1.5 6-3v-4M21 9v5"/></symbol>
-  <symbol id="i-apariencia" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 8.5-6M8 8h1M8 12h1M11 15h1"/></symbol>
-  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h7M15 7h5M4 12h3M11 12h9M4 17h7M15 17h5M13 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3M9 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3M13 15.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 1 0 0-3"/></symbol>
+  <symbol id="i-paleta" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r="1"/><circle cx="17.5" cy="10.5" r="1"/><circle cx="8.5" cy="7.5" r="1"/><circle cx="6.5" cy="12.5" r="1"/></symbol>
+  <symbol id="i-tuerca" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-panel-izq" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM10 5v14"/></symbol>
   <symbol id="i-panel-der" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM14 5v14"/></symbol>
   <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
   <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-edicion" viewBox="0 0 24 24"><path d="M5 19l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L9 18l-4 1zM14.5 6.5l3 3"/></symbol>
 </svg>
 
 <header class="barra">
   <button class="btn-icono" id="btn-riel" type="button" aria-expanded="true" aria-controls="riel"
           aria-label="Panel de bloques"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-izq"/></svg></button>
+  <button class="barra__marca" id="btn-mimo" type="button" aria-label="Mimo Academics" title="Mimo Academics">
+    <img id="mimo-ic" src="iconos/icon-64.png" alt="" width="32" height="32" decoding="async">
+  </button>
   <div class="barra__bloque">
     <span id="bloque-icono" aria-hidden="true"></span>
     <span class="barra__nombre" id="bloque-nombre">Tiempo</span>
     <span class="barra__chevron" aria-hidden="true"><svg class="icono" focusable="false"><use href="#i-chevron"/></svg></span>
   </div>
   <div class="barra__fin">
-    <span class="barra__fecha">octubre 2026</span>
-    <button class="btn btn--mini barra__tema" id="btn-tema" type="button" aria-pressed="false"><span id="tema-icono" aria-hidden="true"></span><span id="tema-texto">Tema claro</span></button>
+    <time class="barra__fecha" id="barra-fecha"></time>
+    <div class="barra__herramientas" role="group" aria-label="Herramientas de la aplicación">
+      <button class="btn-icono" type="button" data-ajustes aria-label="Ajustes" title="Ajustes"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-tuerca"/></svg></button>
+      <button class="btn-icono" type="button" data-apariencia aria-label="Apariencia" title="Apariencia"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-paleta"/></svg></button>
+      <button class="btn-icono" type="button" data-edicion aria-label="Edición" title="Edición" aria-pressed="false"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-edicion"/></svg></button>
+      <button class="btn-icono" id="btn-mas-cab" type="button" aria-expanded="false" aria-controls="panel-der"
+              aria-label="Más opciones" title="Más opciones"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg></button>
+    </div>
     <button class="btn-icono" id="btn-der" type="button" aria-expanded="false" aria-controls="panel-der"
             aria-label="Panel contextual"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-der"/></svg></button>
   </div>
@@ -373,11 +403,6 @@ body[data-piel="c"][data-tema="oscuro"]{
   <aside class="riel" id="riel" aria-label="Riel de bloques">
     <nav class="riel__bloques" id="riel-bloques" aria-label="Bloques instalados"></nav>
     <button class="riel__mas" id="btn-mas" type="button"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg><span class="riel__nombre">Añadir bloque</span></button>
-    <div class="riel__filete filete"></div>
-    <div class="riel__fijos">
-      <button class="riel__fijo" type="button" data-apariencia><span id="ico-apariencia" aria-hidden="true"></span><span class="riel__nombre">Apariencia</span></button>
-      <button class="riel__fijo" type="button" data-ajustes><span id="ico-ajustes" aria-hidden="true"></span><span class="riel__nombre">Ajustes</span></button>
-    </div>
   </aside>
 
   <section class="losa" aria-label="Bloque abierto">
@@ -490,6 +515,10 @@ body[data-piel="c"][data-tema="oscuro"]{
             </span>
           </button></li>
         </ul>
+        <div class="ajuste">
+          <p class="ajuste__t">Tema de la aplicación</p>
+          <button class="btn btn--mini" id="btn-tema" type="button" aria-pressed="false">Tema claro</button>
+        </div>
       </div>
 
       <div class="ajustes">
@@ -570,7 +599,7 @@ body[data-piel="c"][data-tema="oscuro"]{
     calendario: 'i-calendario', malla: 'i-malla', tiempo: 'i-tiempo',
     estudio: 'i-estudio', calificaciones: 'i-calificaciones',
     apuntes: 'i-apuntes', tareas: 'i-tareas', evaluaciones: 'i-evaluaciones',
-    academia: 'i-academia', apariencia: 'i-apariencia', ajustes: 'i-ajustes'
+    academia: 'i-academia', apariencia: 'i-paleta', ajustes: 'i-tuerca'
   };
 
   var BLOQUES = [
@@ -683,9 +712,12 @@ body[data-piel="c"][data-tema="oscuro"]{
 
   function pintarCabecera() {
     document.getElementById('bloque-icono').innerHTML = icono(ABIERTO);
-    document.getElementById('btn-tema').setAttribute('aria-pressed', est.tema === 'oscuro' ? 'true' : 'false');
-    document.getElementById('tema-texto').textContent = est.tema === 'claro' ? 'Tema claro' : 'Tema oscuro';
+    var tema = document.getElementById('btn-tema');
+    tema.setAttribute('aria-pressed', est.tema === 'oscuro' ? 'true' : 'false');
+    tema.textContent = est.tema === 'claro' ? 'Tema claro' : 'Tema oscuro';
     document.getElementById('pie-idioma').textContent = 'es · ' + est.tema;
+    document.getElementById('btn-mas-cab').setAttribute('aria-expanded',
+      (ui.der === 'abierto' && ui.cara === 'gabinete') ? 'true' : 'false');
   }
 
   function pintar() {
@@ -815,10 +847,75 @@ body[data-piel="c"][data-tema="oscuro"]{
     });
   });
 
-  /* los dos iconos del riel salen del mismo mapa que los bloques */
-  document.getElementById('tema-icono').innerHTML = icono('apariencia');
-  document.getElementById('ico-apariencia').innerHTML = icono('apariencia');
-  document.getElementById('ico-ajustes').innerHTML = icono('ajustes');
+  /* LA FECHA SALE DEL SISTEMA: DD/MM/AA, sin texto escrito a mano. Las cifras
+     son tabulares por CSS (.barra__fecha), para que no baile al cambiar. */
+  function fechaCorta(d) {
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var aa = String(d.getFullYear() % 100).padStart(2, '0');
+    return dd + '/' + mm + '/' + aa;
+  }
+  var hoy = new Date();
+  var fecha = document.getElementById('barra-fecha');
+  fecha.textContent = fechaCorta(hoy);
+  fecha.setAttribute('datetime', hoy.getFullYear() + '-' +
+    String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0'));
+
+  /* EL JUEGO DE LA MARCA: 10 pulsaciones en menos de 20 s sacan el indiferente
+     durante 10 s; entre medias, un icono al azar distinto del que se ve. Copia
+     del juego de la app (js/comun/13-marca-juego.js), sin dependencias. */
+  (function juegoMarca() {
+    var RUTA = 'iconos/';
+    var ORIGINAL = 'icon-64.png';
+    var RARO = 'indifferent_64.png';
+    var AZAR = ['icon-64.png', 'happy_64.png', 'happy2_64.png', 'mimo2_64.png'];
+    var CLICS = 10, VENTANA_MS = 20000, RARO_MS = 10000;
+    var boton = document.getElementById('btn-mimo');
+    var img = document.getElementById('mimo-ic');
+    if (!boton || !img) { return; }
+    var marcas = [], tVuelta = null, enRaro = false;
+    function poner(nombre) { img.src = RUTA + nombre; }
+    function alAzar() {
+      var actual = img.src.split('/').pop();
+      var otros = AZAR.filter(function (n) { return n !== actual; });
+      return otros[Math.floor(Math.random() * otros.length)];
+    }
+    function volverAlOriginal() {
+      enRaro = false;
+      boton.classList.remove('jugando');
+      poner(ORIGINAL);
+    }
+    function mostrarRaro() {
+      enRaro = true;
+      poner(RARO);
+      boton.classList.add('jugando');
+      clearTimeout(tVuelta);
+      tVuelta = setTimeout(volverAlOriginal, RARO_MS);
+    }
+    boton.addEventListener('click', function () {
+      if (enRaro) { clearTimeout(tVuelta); tVuelta = setTimeout(volverAlOriginal, RARO_MS); return; }
+      var ahora = Date.now();
+      marcas.push(ahora);
+      marcas = marcas.filter(function (t) { return ahora - t < VENTANA_MS; });
+      if (marcas.length >= CLICS) { marcas = []; mostrarRaro(); return; }
+      poner(alAzar());
+    });
+    poner(ORIGINAL);
+  })();
+
+  /* EDICIÓN: modo del bloque abierto. Aquí solo marca el marco de la losa; el
+     editor del bloque no es de este armazón (HUECO declarado en la evidencia). */
+  var btnEdicion = document.querySelector('[data-edicion]');
+  btnEdicion.addEventListener('click', function () {
+    var activo = body.getAttribute('data-modo-edicion') === 'si';
+    body.setAttribute('data-modo-edicion', activo ? 'no' : 'si');
+    this.setAttribute('aria-pressed', activo ? 'false' : 'true');
+  });
+
+  document.getElementById('btn-mas-cab').addEventListener('click', function () {
+    ui.cara = 'gabinete';
+    abrir('der');
+  });
 
   /* el quiebre depende del ancho: se recalcula al redimensionar, con escucha
      pasiva y sin bucle (pintar solo escribe atributos y no dispara otro resize). */
