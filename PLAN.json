@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T15:40:00-03:00",
+  "updated": "2026-10-20T15:52:00-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -13,7 +13,7 @@
     {
       "id": "T001",
       "title": "Inventario de paridad: cada capacidad de los dos motores con su fuente y su destino",
-      "status": "pending",
+      "status": "done",
       "depends_on": [],
       "acceptance": "test -f tablero/inventario-paridad.md && [ $(wc -l < tablero/inventario-paridad.md) -le 200 ] && grep -c '^| ' tablero/inventario-paridad.md | awk '{exit !($1>40)}'",
       "budget": {
@@ -38,7 +38,7 @@
     },
     {
       "id": "T003",
-      "title": "Sustrato comun: almacen unico versionado con migracion desde lo que ya guardan los bloques",
+      "title": "Sustrato comun: almacen unico, catalogo, select y avisos propios, utilidades de fecha, menu contextual y respaldo en carpeta (comun/)",
       "status": "pending",
       "depends_on": [
         "T001"
@@ -67,7 +67,7 @@
     },
     {
       "id": "T005",
-      "title": "Estudio y Calificaciones: sus bloques, con las notas cuadrando con el semestre",
+      "title": "Estudio y Calificaciones: barras por ramo, meta semanal, grafico de puntos, y el motor de notas con categorias, minima y eximicion (estudio/ y notas/)",
       "status": "pending",
       "depends_on": [
         "T001",
@@ -82,8 +82,8 @@
     },
     {
       "id": "T006",
-      "title": "Apuntes: notas que sobreviven a recargar y a cambiar de seccion",
-      "status": "pending",
+      "title": "Apuntes — BLOQUEADA: la app anterior no tiene apuntes libres (su carpeta notas/ es de Calificaciones); si se quiere, es funcion NUEVA y necesita OK del dueño",
+      "status": "blocked",
       "depends_on": [
         "T001",
         "T003"
@@ -97,7 +97,7 @@
     },
     {
       "id": "T007",
-      "title": "Tareas: plazos y su aparicion en el dia que toca",
+      "title": "Tareas: tablero de 3 columnas con filtros, anillo de progreso y arrastrar entre columnas (tareas/)",
       "status": "pending",
       "depends_on": [
         "T001",
@@ -112,7 +112,7 @@
     },
     {
       "id": "T008",
-      "title": "Semestre y Calendario: semanas que cuadran con la malla",
+      "title": "Calendario y Semestre: tabla semanal, editor de evento, calendario mes/año/sem, semestres extra e iCal (semestre/ y ajustes/05,07)",
       "status": "pending",
       "depends_on": [
         "T001",
@@ -149,7 +149,6 @@
         "T002",
         "T004",
         "T005",
-        "T006",
         "T007",
         "T008",
         "T009"
@@ -170,7 +169,6 @@
         "T003",
         "T004",
         "T005",
-        "T006",
         "T007",
         "T008",
         "T009",
@@ -189,5 +187,6 @@
     "Que toca: python3 harness/andamiaje/plan.py next --plan proyectos/mimo-nuevo/PLAN.json",
     "Cerrar solo con el gate en verde: plan.py done --id T00X",
     "T000 (quitar el rotulo de la seccion sobre la losa) esta hecho antes del plan: commit e88a350."
-  ]
+  ],
+  "_inventario": "tablero/inventario-paridad.md — 61 filas, 9/9 carpetas, 6 huecos, 6 sin casa; es la lista contra la que se comprueba T011"
 }

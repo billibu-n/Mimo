@@ -297,3 +297,12 @@ censo semanal). Su recuerdo era exacto: en mimo-app el propio reloj es editable,
 T001 (inventario de paridad) delante de todo y T002 (Tiempo completo) detrás. Regla de oro: sin
 fuente citada no entra nada, y lo que no se pueda migrar se declara HUECO con motivo. También se quitó el
 rótulo de la sección que se repetía sobre la ventana central (T0, hecho y medido: 0 títulos en la losa).
+
+**T001 cerrada — el inventario de paridad (2026-10-20).** `tablero/inventario-paridad.md`, 112 líneas y 61
+filas, todas con `fichero:línea` y destino; 9/9 carpetas cubiertas, 0 filas sin verificar, 6 huecos y 6
+«sin casa». Tres hallazgos que corrigen el plan: (1) la carpeta `notas/` de la app anterior **es
+Calificaciones**, no apuntes libres, así que la tarea «Apuntes» era una invención mía y queda **bloqueada**
+hasta que el dueño decida si quiere esa función nueva; (2) `tareas/` va a **Calendario**, no a una sección
+propia; (3) los seis huecos reales son PWA (file:// no registra service worker), puente Tauri, sincronizar
+con servidor local, buscar actualización y colaborar (apuntan al repo viejo) y el guiño de la marca. El
+orden del plan sigue igual: T002 (Tiempo completo) es la siguiente.
