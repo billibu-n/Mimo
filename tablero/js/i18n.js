@@ -59,7 +59,8 @@ var MimoI18n = (function () {
         malla: { nombre: 'Malla' },
         tiempo: { nombre: 'Tiempo' },
         estudio: { nombre: 'Estudio' },
-        calificaciones: { nombre: 'Calificaciones' }
+        calificaciones: { nombre: 'Calificaciones' },
+        tareas: { nombre: 'Tareas' }
       },
       bloque: {
         cronometro: {
@@ -89,6 +90,10 @@ var MimoI18n = (function () {
         calificaciones: {
           nombre: 'Calificaciones',
           desc: 'Categorías, componentes, examen, eximición y nota final por ramo.'
+        },
+        tareas: {
+          nombre: 'Tareas',
+          desc: 'Tablero de hoy, la semana y lo hecho, con filtros y arrastre.'
         }
       },
       vacia: {
@@ -325,6 +330,41 @@ var MimoI18n = (function () {
         empezar: 'Elige un ramo de la lista para ver y editar sus notas.',
         estado: 'Estado',
         umbral: 'Corte'
+      },
+      /* T007: el tablero de Tareas. Claves nuevas y simetricas; no se renombra
+         ni se borra ninguna de las que ya estaban. */
+      tareas: {
+        tablero: 'Tablero de tareas',
+        kpiPendientes: 'Pendientes',
+        kpiHoy: 'Para hoy',
+        kpiPersonal: 'Personales',
+        kpiRamo: 'Con ramo',
+        filtros: 'Filtros del tablero',
+        filtroTodas: 'Todas',
+        filtroPendientes: 'Pendientes',
+        filtroHoy: 'Hoy',
+        filtroRamos: 'Ramos',
+        filtroPersonal: 'Personal',
+        colHoy: 'Hoy',
+        colSemana: 'Esta semana',
+        colHechas: 'Hechas',
+        vacioHoy: 'Nada para hoy.',
+        vacioSemana: 'Nada pendiente esta semana.',
+        vacioHechas: 'Todavía no marcas nada como hecho esta semana.',
+        anillo: 'Progreso de la semana',
+        anilloHecha: 'hecha',
+        anilloHechas: 'hechas',
+        anilloPendiente: 'pendiente',
+        anilloPendientes: 'pendientes',
+        anilloTotal: 'total',
+        marcar: 'Marcar como hecha',
+        desmarcar: 'Devolver a pendientes',
+        hechaEl: 'hecha el {fecha}',
+        vencidaEl: 'vencía el {fecha}',
+        hoy: 'hoy',
+        personal: 'personal',
+        origenNotas: 'notas',
+        origenCalendario: 'calendario'
       }
     },
 
@@ -351,7 +391,8 @@ var MimoI18n = (function () {
         malla: { nombre: 'Grid' },
         tiempo: { nombre: 'Time' },
         estudio: { nombre: 'Study' },
-        calificaciones: { nombre: 'Grades' }
+        calificaciones: { nombre: 'Grades' },
+        tareas: { nombre: 'Tasks' }
       },
       bloque: {
         cronometro: {
@@ -381,6 +422,10 @@ var MimoI18n = (function () {
         calificaciones: {
           nombre: 'Grades',
           desc: 'Categories, components, exam, exemption and final grade per course.'
+        },
+        tareas: {
+          nombre: 'Tasks',
+          desc: 'Today, this week and what is done, with filters and drag.'
         }
       },
       vacia: {
@@ -617,6 +662,39 @@ var MimoI18n = (function () {
         empezar: 'Pick a course from the list to see and edit its grades.',
         estado: 'Status',
         umbral: 'Cut-off'
+      },
+      tareas: {
+        tablero: 'Task board',
+        kpiPendientes: 'Pending',
+        kpiHoy: 'For today',
+        kpiPersonal: 'Personal',
+        kpiRamo: 'With course',
+        filtros: 'Board filters',
+        filtroTodas: 'All',
+        filtroPendientes: 'Pending',
+        filtroHoy: 'Today',
+        filtroRamos: 'Courses',
+        filtroPersonal: 'Personal',
+        colHoy: 'Today',
+        colSemana: 'This week',
+        colHechas: 'Done',
+        vacioHoy: 'Nothing for today.',
+        vacioSemana: 'Nothing pending this week.',
+        vacioHechas: 'Nothing marked as done this week yet.',
+        anillo: 'Week progress',
+        anilloHecha: 'done',
+        anilloHechas: 'done',
+        anilloPendiente: 'pending',
+        anilloPendientes: 'pending',
+        anilloTotal: 'total',
+        marcar: 'Mark as done',
+        desmarcar: 'Return to pending',
+        hechaEl: 'done on {fecha}',
+        vencidaEl: 'due {fecha}',
+        hoy: 'today',
+        personal: 'personal',
+        origenNotas: 'notes',
+        origenCalendario: 'calendar'
       }
     }
   };

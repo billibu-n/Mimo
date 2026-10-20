@@ -21,6 +21,7 @@
                     notas_otros},  // horas y metas del semestre (T005)
          calificaciones: {cats, comps, examen, exim, estado,
                     colores},      // notas por ramo (T005)
+         tareas:   {nuevas, hechas, prioridades},  // tablero de Tareas (T007)
          ajustes:  {},             // T009
          respaldo: {},             // estado del respaldo en carpeta
          migrado:  {de: [...], cuando: ms}   // marca de la migracion, para poder mirarla
@@ -110,6 +111,17 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
         estado: {},           // CODIGO -> 'aprobado' (marca manual; manda sobre el calculo)
         colores: {}           // reservado para el color por categoria
       },
+      /* T007. Las tareas sueltas y sus dos mapas por id. `nuevas` es la lista
+         (una tarea es {id, fecha, hora, texto, ramo, origen}); `hechas` e
+         `prioridades` se indexan por el id de la tarea O del evento, como en la
+         app anterior, para que un evento del calendario se pueda marcar sin
+         duplicarlo. Un namespace de primer nivel: los espejos dentro de
+         `ajustes` siguen prohibidos. */
+      tareas: {
+        nuevas: [],
+        hechas: {},
+        prioridades: {}
+      },
       ajustes: {},
       respaldo: {},
       migrado: { de: [], cuando: null }
@@ -129,6 +141,18 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
       metas_semana: esObjeto(v.metas_semana) ? v.metas_semana : {},
       descartes: esObjeto(v.descartes) ? v.descartes : {},
       notas_otros: esObjeto(v.notas_otros) ? v.notas_otros : {}
+    };
+  }
+
+  /* T007: la lista se garantiza array y los dos mapas, objeto. Las tareas se
+     dejan tal cual (su forma la valida el bloque); aqui solo se impide que un
+     disco roto deje `nuevas` como objeto o `hechas` como lista. */
+  function normalizarTareas(v) {
+    v = esObjeto(v) ? v : {};
+    return {
+      nuevas: Array.isArray(v.nuevas) ? v.nuevas : [],
+      hechas: esObjeto(v.hechas) ? v.hechas : {},
+      prioridades: esObjeto(v.prioridades) ? v.prioridades : {}
     };
   }
 
@@ -162,6 +186,7 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
       : (esObjeto(s.ajustes) && esObjeto(s.ajustes.malla) ? s.ajustes.malla : null);
     e.estudio = normalizarEstudio(s.estudio);
     e.calificaciones = normalizarCalificaciones(s.calificaciones);
+    e.tareas = normalizarTareas(s.tareas);
     e.ajustes = esObjeto(s.ajustes) ? s.ajustes : {};
     e.respaldo = esObjeto(s.respaldo) ? s.respaldo : {};
     e.migrado = esObjeto(s.migrado) ? s.migrado : { de: [], cuando: null };

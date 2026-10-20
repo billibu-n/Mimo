@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T18:30:44-03:00",
+  "updated": "2026-10-20T20:05:31-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -98,7 +98,7 @@
     {
       "id": "T007",
       "title": "Tareas: tablero de 3 columnas con filtros, anillo de progreso y arrastrar entre columnas (tareas/)",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T001",
         "T003"

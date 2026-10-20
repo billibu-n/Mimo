@@ -555,6 +555,65 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   .calif__tabla select{max-width:160px}
   .calif__tabla input[type="date"]{max-width:140px}
   .calif__sim{display:grid;gap:8px;padding:12px;border:1px dashed var(--linea);border-radius:16px}
+
+  /* --------------------------- BLOQUE TAREAS (T007) ---------------------------
+     El tablero de tres columnas. Todo con tokens del armazon y con la escala
+     congelada (13, 15 y 17 px; 8, 12, 16 y 24 de hueco; radio 16 y 999). Ni un
+     hex: el color de estado es --fuerte (hecho) y --acento (lo que reclama
+     atencion), los mismos que ya usan Estudio y Calificaciones. Los rotulos,
+     de js/i18n.js. */
+  .tareas{display:grid;gap:16px;min-width:0}
+  .tareas__kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+  .tareas__barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .tareas__filtro{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;
+    font-family:inherit;font-size:13px;color:var(--tinta);background:var(--sup);
+    border:1px solid var(--linea);border-radius:999px;cursor:pointer}
+  .tareas__filtro:hover{border-color:var(--fuerte)}
+  .tareas__filtro[aria-pressed="true"]{border-color:var(--acento);color:var(--acento)}
+  .tareas__n{font-variant-numeric:tabular-nums}
+  .tareas__anillo{display:flex;align-items:center;gap:16px;padding:16px;
+    border:1px solid var(--linea);border-radius:16px;background:var(--sup)}
+  .tareas__anillo svg{width:64px;height:64px;flex:none}
+  .tareas__pista{fill:none;stroke:var(--linea);stroke-width:14}
+  .tareas__hecho{fill:none;stroke:var(--fuerte);stroke-width:14;stroke-linecap:round;
+    transform:rotate(-90deg);transform-origin:60px 60px}
+  .tareas__pend{fill:none;stroke:var(--acento);stroke-width:14;stroke-linecap:round;
+    transform:rotate(-90deg);transform-origin:60px 60px}
+  .tareas__anillo-txt{fill:var(--tinta);font-size:17px;font-weight:500}
+  .tareas__anillo-sub{fill:var(--muted);font-size:13px}
+  .tareas__leyenda{display:grid;gap:8px;font-size:13px;color:var(--muted)}
+  .tareas__leyenda b{color:var(--tinta);font-variant-numeric:tabular-nums}
+  .tareas__panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .tareas__col{display:grid;gap:8px;align-content:start;padding:16px;min-width:0;
+    border:1px solid var(--linea);border-radius:16px;background:var(--sup)}
+  .tareas__col--sobre{border-color:var(--acento)}
+  .tareas__colTit{margin:0;font-size:15px;font-weight:500}
+  .tareas__lista{display:grid;gap:8px;align-content:start;min-height:64px}
+  .tarea{display:grid;grid-template-columns:auto 1fr;gap:8px;padding:12px;
+    border:1px solid var(--linea);border-radius:16px;background:var(--fondo);cursor:grab}
+  .tarea--arrastrando{opacity:.6}
+  .tarea--hecha{background:var(--sup2)}
+  .tarea--pri-alta{border-left:2px solid var(--acento)}
+  .tarea--pri-media{border-left:2px solid var(--fuerte)}
+  .tarea__check{display:flex;align-items:center;justify-content:center;width:16px;height:16px;
+    padding:0;margin-top:8px;border:1px solid var(--fuerte);border-radius:999px;
+    background:transparent;cursor:pointer}
+  .tarea__check[aria-pressed="true"]{background:var(--fuerte)}
+  .tarea__check .tarea__punto{width:8px;height:8px;background:transparent;border:0}
+  .tarea__check[aria-pressed="true"] .tarea__punto{background:var(--sup)}
+  .tarea__cuerpo{display:grid;gap:8px;min-width:0}
+  .tarea__titulo{margin:0;font-size:15px;font-weight:500;overflow-wrap:anywhere}
+  .tarea--hecha .tarea__titulo{color:var(--muted)}
+  .tarea__meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;
+    font-size:13px;color:var(--muted)}
+  .tarea__ramo{display:inline-flex;align-items:center;gap:8px}
+  .tarea__punto{display:inline-block;width:8px;height:8px;border-radius:999px;
+    background:var(--fuerte)}
+  .tarea__punto--personal{background:transparent;border:1px solid var(--muted)}
+  .tarea__origen{border:1px solid var(--linea);border-radius:999px;padding:0 8px}
+  .tarea__cuando{font-variant-numeric:tabular-nums}
+  .tarea__cuando--vencida{color:var(--acento)}
+  .tareas__vacio{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body data-piel="c" data-tema="claro" data-estado="normal" data-modo-riel="empuja" data-modo-der="empuja"
@@ -817,6 +876,11 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      motor (puro, sin DOM) y su vista; el armazon solo les da la caja. -->
 <script src="js/estudio.js"></script>
 <script src="js/calificaciones.js"></script>
+<!-- tareas.js (T007): el tablero de tres columnas. Va despues de i18n.js porque
+     sus rotulos estan en el diccionario, y al final para no alterar el orden ya
+     medido. Expone `MimoTareasMotor` (puro: no nombra el DOM) y `MimoTareasUI`;
+     el armazon solo le da la caja. -->
+<script src="js/tareas.js"></script>
 <script>
 (function () {
   var body = document.body;
@@ -857,7 +921,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
        diccionario (`bloque.estudio.*` y `bloque.calificaciones.*`), que esta
        ronda si pudo ampliar sin renombrar ninguna clave anterior. */
     { id: 'estudio', icono: 'i-estudio' },
-    { id: 'calificaciones', icono: 'i-calificaciones' }
+    { id: 'calificaciones', icono: 'i-calificaciones' },
+    /* T007. Tareas trae nombre y descripcion del diccionario
+       (`bloque.tareas.*`), anadidos esta ronda sin renombrar los anteriores. */
+    { id: 'tareas', icono: 'i-tareas' }
   ];
 
   /* LAS SECCIONES: `bloques` es la foto de fábrica (lo instalado al empezar) y
@@ -867,6 +934,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      (`seccion.<id>.nombre`): aquí queda solo lo que es estructura. */
   var SECCIONES = [
     { id: 'calendario', icono: 'i-calendario', bloques: [], catalogo: [] },
+    /* T007: su seccion propia, como en la app anterior (el inventario mapea las
+       tres capacidades a "Calendario"). La seccion Calendario sigue vacia para
+       T008; Tareas llega con su bloque ya instalado de fabrica. */
+    { id: 'tareas', icono: 'i-tareas', bloques: ['tareas'], catalogo: ['tareas'] },
     { id: 'malla', icono: 'i-malla', bloques: ['malla'], catalogo: ['malla'] },
     { id: 'tiempo', icono: 'i-tiempo',
       bloques: ['cronometro', 'temporizador'],
@@ -1080,6 +1151,13 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     if (b.id === 'calificaciones') {
       return '<div class="calif" data-calif="bloque" role="region"></div>';
     }
+    /* TAREAS (T007): otra caja vacia. El tablero, sus filtros, el anillo y el
+       arrastre los pinta js/tareas.js dentro; el armazon no conoce una tarea. */
+    if (b.id === 'tareas') {
+      return '<div class="tareas" data-tareas="bloque" role="region"' +
+        ' data-i18n-attr="aria-label:tareas.tablero"' +
+        ' aria-label="' + rot('tareas.tablero') + '"></div>';
+    }
     if (b.id === 'cronometro') {
       return '<div class="pomo"><div class="pomo__lado">' +
         '<div class="pomo__cifra reloj" data-reloj="crono" role="group"' +
@@ -1289,6 +1367,11 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     }
     if (typeof MimoCalificacionesUI !== 'undefined') {
       MimoCalificacionesUI.pintar();
+    }
+    /* T007: el tablero, con el mismo contrato. Su pintar() no hace nada si la
+       caja no existe (bloque sin instalar o vista cerrada). */
+    if (typeof MimoTareasUI !== 'undefined') {
+      MimoTareasUI.pintar();
     }
   }
 
@@ -1790,6 +1873,8 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      (las vistas se repintan enteras y los nodos viejos no dejan escuchas). */
   if (typeof MimoEstudioUI !== 'undefined') { MimoEstudioUI.iniciar(); }
   if (typeof MimoCalificacionesUI !== 'undefined') { MimoCalificacionesUI.iniciar(); }
+  /* T007: el tablero escucha arrastre y clics una sola vez, delegado. */
+  if (typeof MimoTareasUI !== 'undefined') { MimoTareasUI.iniciar(); }
   MimoTiempoUI.iniciar({
     t: MimoI18n.t,
     prueba: q.get('prueba') === '1',

@@ -1,0 +1,142 @@
+EVIDENCIA — T007 · Tareas
+========================
+Fecha: 2026-10-20
+Rama: estado-2026-10-20
+Alcance: el tablero de tres columnas sobre el sustrato de T003, sin tocar la
+estetica congelada. Todo lo que sigue se midio con Chromium sin cabeza sobre
+`file://`, en un puerto libre, y cada instrumento termina el Chromium que
+arranco con `proc.terminate()`. No hay commit.
+
+1. QUE SE ENTREGO
+-----------------
+Nuevos:
+  tablero/js/tareas.js             motor puro + vista del bloque Tareas
+  tablero/medir-tareas.py          18 medidas del bloque (ANTES contra DESPUES)
+  tablero/evidencia-tareas.txt     este fichero
+
+Tocados:
+  tablero/js/comun/almacen.js      namespace `tareas` en estadoInicial() y
+                                   normalizar(), con guardas esObjeto/Array
+  tablero/armazon-paneles.html     script, BLOQUES, SECCIONES, cuerpoDe,
+                                   pintarEstanteria, arranque y CSS del bloque
+  tablero/js/i18n.js               SOLO claves nuevas de Tareas (34 por idioma,
+                                   es/en simetricas); no se borra ni renombra
+                                   ninguna de las 238 que ya estaban
+
+La copia congelada de ANTES es literal: `/tmp/mimo-nuevo-t007-antes/index.html`
+  sha256 9229404834bec2efe8539425aab9377919905d30514b142ec875f9670d49680b
+El armazon de ahora:
+  sha256 096836a96d0a6ffd9ed5cb4a4bbeb95c5ed9f294583b7e4698307c9c8aaad09d
+  tablero/js/tareas.js  sha256 13e2433be410fcb613cc633cce3d87e9e4b600645d234b4fbf6c80b8eb90d9eb
+
+No se toco: js/tiempo.js, js/malla.js, js/estudio.js, js/calificaciones.js,
+referencia/, prototipo/, kit/, herramientas/, plantillas/, PLAN.json,
+PARIDAD.md, NOTAS.md, TASKS.json, ESTADO.md. No se instalo nada, no se uso
+sudo, no se usaron los puertos 3080/8080/8081.
+
+2. LOS CUATRO INSTRUMENTOS QUE YA ESTABAN (sin regresion)
+---------------------------------------------------------
+2.1 `python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html`
+  ANTES y DESPUES: `RESUMEN: las tres pieles dentro de su techo.` EXIT=0
+  PIEL C · Materia
+    tamanos     5/5  OK  [13px, 15px, 17px, 26px, 64px]
+    espacios    6/8  OK  [8px, 12px, 16px, 24px, 32px, 48px]
+    radios      2/2  OK  [16px, 999px]
+    duraciones  3/3  OK  [100, 160, 240] ms
+    hex         0/0  OK  (Hex fuera de los tokens, toda la hoja: 0)
+  El CSS nuevo de Tareas no anadio ni un tamano, hueco, radio, duracion ni hex:
+  usa la escala congelada y los tokens `--tinta`, `--sup`, `--sup2`, `--fondo`,
+  `--linea`, `--fuerte`, `--muted`, `--acento`. El techo de espacios queda en
+  6/8, igual que antes.
+
+2.2 `python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html`
+  ANTES del instrumento (copia congelada de T002): losa 544.00 · sangria 32.00
+    · 32 cargas 0 eventos · claves 120/120
+  ANTES de este bloque (lo medido al empezar T007): claves 238/238
+  DESPUES: losa 544.00 · sangria 32.00 · 32 cargas 0 eventos · claves 272/272
+  `RESUMEN: 0 choque(s) de 17 medidas.` EXIT=0
+  (check 13: 272/272, ausentes 0, desajustes 0; check 17: las cinco vistas de
+  Tiempo siguen traducidas y sin desajustes.)
+
+2.3 `python3 tablero/medir-malla.py --fichero tablero/armazon-paneles.html`
+  ANTES 16/16 · DESPUES 16/16
+  check 16: `238/238` -> `272/272` claves, ausentes=0, desajustes=0
+  `RESUMEN: 0 choque(s) de 16 medidas.` EXIT=0
+
+2.4 `python3 tablero/medir-estudio.py --fichero tablero/armazon-paneles.html`
+  ANTES 18/18 · DESPUES 18/18
+  check 16 (F5 sin reset) ahora lista el namespace nuevo:
+    claves=ajustes,armazon,calificaciones,catalogo,estudio,guardadoEn,idioma,
+           malla,migrado,respaldo,tareas,tiempo,v
+  check 17: 272/272, ausentes 0, desajustes 0
+  `RESUMEN: 0 choque(s) de 18 medidas.` EXIT=0
+
+3. LO QUE MIDE T007 (`python3 tablero/medir-tareas.py`)
+-------------------------------------------------------
+ANTES (copia congelada): motor Tareas undefined, seccion False, caja False,
+  claves 238/238, 0 eventos.
+DESPUES: motor object, vista object, seccion True, caja True,
+  claves 272/272, 0 eventos.
+`RESUMEN: 0 choque(s) de 18 medidas.` EXIT=0
+
+  1  ANTES no tenia motor, seccion ni caja de Tareas
+  2  motor con todas/porFiltro/columnas/anillo/kpis/marcar/soltar;
+     FILTROS = todas,pendientes,hoy,ramos,personal; DESTINOS = hoy,semana,hechas
+  3  columnas: hoy ['a','b'] · semana ['c','d'] · hechas ['e']; la tarea de la
+     semana pasada ('f') no entra en ninguna
+  4  una tarea con hora cae en su dia y muestra la hora (09:30 en Hoy;
+     12:00 en Semana, marcada como vencida si el dia ya paso)
+  5  orden por prioridad dentro de cada columna (alta, media, baja, sin)
+  6  KPIs: 5 pendientes, 2 de hoy, 3 personales, 2 con ramo
+  7  anillo: 1 hecha, 4 pendientes, total 5, 20%
+  8  filtros: todas=6, pendientes=5, hoy=2, ramos=3, personal=3; ramos deja
+     ['a','c','e'] y personal ['b','d'] en las columnas
+  9  soltar en Hoy: fecha=2026-10-20 y la tarjeta pasa a Hoy
+ 10  soltar en Esta semana: fecha=2026-10-19 (el lunes) y la tarjeta entra en
+     Semana
+ 11  soltar en Hechas marca (anillo 2/3/5, 40%); sacar de Hechas desmarca,
+     pone fecha de hoy y la tarjeta vuelve a Hoy
+ 12  el drag&drop REAL del DOM (dragstart + drop sobre la columna) mueve y
+     re-fecha, no solo el metodo del motor
+ 13  recarga: `nuevas`, `hechas` y `prioridades` sobreviven con la misma forma
+ 14  rotulos es/en: 272/272, 0 ausentes, 0 desajustes; en ingles la columna es
+     "This week" y el filtro "All"
+ 15  a 411 px el tablero y sus columnas no desbordan (max=0, doc=0)
+ 16  `grep -c "document\." tablero/js/tareas.js` = 0 (el motor no nombra el
+     objeto global del navegador; la vista toma `window.document` una vez)
+ 17  el armazon registra seccion, bloque, caja y `<script src="js/tareas.js">`;
+     `almacen.js` declara `tareas` y `normalizarTareas`
+ 18  8 aperturas de Tareas (2 idiomas x 2 temas x 2 veces) sin un solo evento
+     prohibido de consola, excepcion o red
+
+4. LO QUE QUEDA COMO HUECO (declarado, no fingido)
+--------------------------------------------------
+  - Crear y editar tareas: `abrirEditor()` y `nuevaTarea()` de la app anterior
+    son del editor de evento de T008. El tablero solo lee y mueve lo que hay.
+  - Mover una tarea con el teclado: el arrastre es de puntero. Marcar/desmarcar
+    SI tiene boton con `aria-pressed`; el movimiento por teclado necesita el
+    editor de T008 y no se reclama aqui.
+  - Prioridades: el motor las lee y ordena, pero esta ronda no trae editor para
+    escribirlas. El mapa `tareas.prioridades` queda listo y probado con datos
+    sembrados por el instrumento.
+  - Tareas de otras semanas: no se pintan en las tres columnas (son Hoy / Esta
+    semana / Hechas). Siguen contando en los filtros y en `todas()`, y su sitio
+    es el calendario semanal de T008.
+  - `origen: 'calendario'` se acepta y se rotula, pero T008 todavia no escribe
+    eventos; hoy solo se ejerce con `origen: 'notas'` y `'manual'`.
+  - Tabla semanal, editor de evento, vista de calendario, semestres e iCal:
+    filas 62-67 del inventario, de T008. No se tocan.
+
+5. REPRODUCIR
+-------------
+  cd /home/billibu/workspace/proyectos/mimo-nuevo
+  python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html
+  python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html
+  python3 tablero/medir-malla.py   --fichero tablero/armazon-paneles.html
+  python3 tablero/medir-estudio.py --fichero tablero/armazon-paneles.html
+  python3 tablero/medir-tareas.py  --fichero tablero/armazon-paneles.html
+  grep -c "document\." tablero/js/tareas.js     # 0
+
+Los cinco salen 0 y el grep sale 0. La copia de ANTES de T007 se recrea con
+`cp -a tablero/armazon-paneles.html /tmp/mimo-nuevo-t007-antes/index.html` y
+copiando `js/`, `iconos/` y `sonido/` al mismo directorio.
