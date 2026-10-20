@@ -264,3 +264,11 @@ bloques sin límite» (hay que decidir qué pasa al quitar un contenedor con hij
 (se pierde la navegación ya aprobada). La v5 queda en `c21759e`; la v6 se mide en
 `tablero/evidencia-bloques.txt`. Después, Ronda 93: migrar los motores de `prototipo/` y de
 `referencia/mimo-app-53cc22d/` con el i18n `es`/`en` desde el primer bloque.
+
+**Ronda 92 — v6 cerrada (2026-10-20).** El riel lista secciones y no crece; Tiempo de fábrica tiene dos
+bloques (Cronómetro y Temporizador) y el gabinete instala y quita Pomodoro, Registro y Alarmas en la
+sección abierta, con `localStorage['mimo.armazon.v1']` y `?reset=1` de vuelta a fábrica. Con dos bloques
+la estantería de vistas cabe en una fila (50,00 px de alto a 1280): el defecto de las dos filas de la v4
+desaparece por diseño, no por retoque. Arreglado también el icono de la app: no era la imagen, era el
+`border-radius:999px` de la cabecera recortando un dibujo que ocupa el cuadrado entero; ahora es un
+marco cuadrado-redondeado de 8 px con `image-rendering:pixelated`.

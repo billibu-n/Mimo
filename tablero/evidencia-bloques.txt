@@ -1,0 +1,187 @@
+TABLERO · BLOQUE D5 · v6: SECCIONES EN EL RIEL, BLOQUES DENTRO DE LA SECCIÓN
+Medido el 2026-10-20, 13:45-13:53 (America/Santiago), sobre tablero/armazon-paneles.html
+Chromium 155.0.8059.84 headless · CDP en 127.0.0.1 puerto libre (39009, 56189, 46227, 53615,
+46157; 3080, 9333 y 9341 sin tocar) · file://, sin servidor · viewport 1280×900 y 1100×900 ·
+deviceScaleFactor 1 · mobile false
+Driver: herramientas/cdp.py · sondas: /tmp/mimo/d5-medir.py, /tmp/mimo/d5-tabla.py,
+/tmp/mimo/d5-cabecera.py, /tmp/mimo/d5-secciones.py, /tmp/mimo/d5-estanteria.py
+Crudo: /tmp/mimo/d5-medidas.json, /tmp/mimo/d5-tabla.json, /tmp/mimo/d5-cabecera.json,
+/tmp/mimo/d5-secciones.json, /tmp/mimo/d5-estanteria.json · capturas: tablero/capturas/v6-*.png
+Cada corrida cierra su Chromium por PID (/tmp/mimo/d5-chromium.pid, d5-tabla-chromium.pid,
+d5-cabecera-chromium.pid, d5-secciones-chromium.pid); no se usa pkill ni patrón.
+Antes = `git show HEAD:tablero/armazon-paneles.html` (v5, 51.954 bytes) en /tmp/mimo/d5-v5-HEAD.html.
+Después = el fichero de trabajo (v6, 62.259 bytes).
+
+0 · LA MEDIDA ANTES/DESPUÉS, CON EL MISMO COMANDO
+
+  antes   cd ~/workspace/proyectos/mimo-nuevo && python3 tablero/medir-tablero.py \
+            --fichero /tmp/mimo/d5-v5-HEAD.html          -> EXIT=0
+  después cd ~/workspace/proyectos/mimo-nuevo && python3 tablero/medir-tablero.py \
+            --fichero tablero/armazon-paneles.html       -> EXIT=0
+  vistas de Tiempo al cargar: antes 4 (.est__v de la v5, 1 sola .vista--bloque estática);
+  después 2 (.est__v y .vista--bloque, una por bloque instalado).
+
+a · EL MODELO, UNA LÍNEA POR PIEZA
+
+- BLOQUES: tabla de 5 piezas, cada una con id, nombre, icono y descripción. Es bloque toda
+  pieza que se instala dentro de una sección: cronometro, temporizador, pomodoro, registro,
+  alarmas. Su icono apunta a un símbolo del sprite (i-cronometro, i-arena, i-pomodoro,
+  i-tareas, i-alarma); la familia de dibujo no cambia (20 px, viewBox 24, trazo 1,5).
+- SECCIONES: tabla de 5 secciones, cada una con id, nombre, icono, `bloques` (la foto de
+  fábrica: lo instalado al empezar) y `catalogo` (lo que el gabinete puede instalar en ella).
+  Tiempo: bloques [cronometro, temporizador]; catálogo [cronometro, temporizador, pomodoro,
+  registro, alarmas]. Las otras cuatro (Calendario, Malla, Estudio, Calificaciones) todavía no
+  tienen piezas: bloques [] y catalogo []; es HUECO declarado, no un fallo escondido.
+- `.riel__bloque` (riel): una fila por SECCIÓN, nunca por bloque. El riel no crece al instalar
+  (medido: 5 filas antes y 5 después de instalar Pomodoro).
+- `.est__v` (estantería): un botón por BLOQUE INSTALADO de la sección abierta; el que está
+  abierto lleva `aria-current="page"`.
+- `.vista--bloque` (losa): una vista por bloque instalado; se pinta de la MISMA lista que la
+  estantería, así que no hay vista sin su bloque. La inactiva va con `hidden`.
+- `instalar(id)` y `quitar(id)`: las dos únicas funciones que mueven el estado. Instalar añade
+  al final y selecciona lo instalado; quitar, si se va la vista abierta, baja la selección a la
+  primera que quede o a nada (entonces la losa enseña el estado vacío).
+- localStorage['mimo.armazon.v1']: el estado durable. Guarda
+  {v:1, seccion:"tiempo", secciones:{tiempo:{bloques:[...], sel:"pomodoro"}, ...}} con una
+  entrada por sección. Al leer se valida contra las tablas: ids que ya no existan se caen y lo
+  que no se entiende vuelve a fábrica.
+- `?reset=1`: borra la clave y deja escrita la foto de fábrica; es la única vuelta atrás.
+- `#cara-gabinete`: instala y quita EN LA SECCIÓN ABIERTA; ofrece `catalogo` menos lo instalado.
+
+b · LA TABLA DE INSTALACIÓN (secuencia medida con clics reales por CDP)
+
+  paso                                   .est__v   aria-current   .vista--bloque   data-vista
+  inicial, sin estado guardado                 2   cronometro                2   normal
+  instalar Pomodoro                            3   pomodoro                  3   normal
+  instalar Registro                            4   registro                  4   normal
+  quitar Pomodoro                              3   registro                  3   normal
+  quitar Registro (quedan 2)                   2   cronometro                2   normal
+  quitar Cronómetro (queda 1)                  1   temporizador              1   normal
+  quitar el último (queda 0)                   0   ninguno                   0   vacia
+  recargar (vacío guardado)                    0   ninguno                   0   vacia
+  ?reset=1                                     2   cronometro                2   normal
+
+  Instalar Pomodoro con la vista abierta: 3 vistas y `aria-current` en Pomodoro en 8,50 ms
+  (t0 en la captura del clic, t3 en el MutationObserver que ve la tercera `.est__v` con
+  aria-current; umbral 240 ms). Quitar Pomodoro con su vista abierta deja 2 vistas y la
+  selección en Cronómetro, la primera que queda.
+  Con los 5 bloques instalados, la estantería ocupa 2 filas (`.estanteria` 92,00 de alto,
+  `.losa__barra` 124,00) y el documento no desborda (`scrollWidth - clientWidth` = 0,00);
+  la v5 ya hacía 2 filas con sus 4 pestañas (tablero/capturas/v5-1280.png).
+
+c · EL ESTADO VACÍO (sección sin bloques)
+
+  Tras quitar el último bloque, con el gabinete abierto:
+    `.est__v`                             0
+    `.vista--bloque`                      0
+    body[data-vista]                      vacia
+    `.vacia` display                      grid
+    #vacia-tit                            "Añade un bloque a Tiempo"
+    #vacia-txt                            "Esta sección está vacía. El gabinete instala aquí:
+                                           Cronómetro, Temporizador, Pomodoro, Registro, Alarmas."
+    #vacia-chips .chip                    5
+    #gab-instalar [data-instalar]         5 (cronometro, temporizador, pomodoro, registro, alarmas)
+    #gab-instalados [data-quitar]          0
+  El botón del estado vacío también se midió: `[data-abrir-gabinete]` llevó el panel de
+  `data-der="cerrado"` a `data-der="abierto"` con `data-cara="gabinete"` y 5 botones Instalar.
+  En una sección que aún no tiene piezas (Malla): `.vacia` grid, título "Añade un bloque a
+  Malla", texto "Esta sección todavía no tiene bloques instalables." y gabinete con 0
+  instalables; volver a Tiempo repone sus 3 bloques y la selección.
+
+d · LA PERSISTENCIA, CON RECARGA REAL (Page.reload)
+
+  antes de recargar:  `.est__v` 3 · aria-current pomodoro
+                      localStorage['mimo.armazon.v1'] =
+                      {"v":1,"seccion":"tiempo","secciones":{"tiempo":{"bloques":
+                      ["cronometro","temporizador","pomodoro"],"sel":"pomodoro"}, ...}}
+  después de Page.reload: `.est__v` 3 · aria-current pomodoro · data-vista normal
+  con ?reset=1:            `.est__v` 2 · aria-current cronometro · la clave queda con la foto
+                           de fábrica (bloques ["cronometro","temporizador"], sel "cronometro")
+  El estado se escribe al instalar, al quitar y al cambiar de sección, no en cada carga.
+
+e · LA REGRESIÓN DE LA v5 (medidas clave re-medidas y cabecera comparada pieza a pieza)
+
+  A 1280, ?estado=contexto: `.losa` 544,00 × 820,00 (left 320,00) · #panel-der 352,00 ·
+    #riel 256,00 · .barra 48,00 · .pie 32,00 · .velo display none.
+  A 1100, ?estado=contexto: #panel-der 352,00 (top 80,00, alto 756,00, right 1068,00) ->
+    sangría 32,00 px; `.losa` 716,00; .velo block (el panel se superpone). Es la misma
+    geometría que la v5 en d4-medidas.json: losa 716,00 y panel 352,00 con right 1068,00.
+  Cabecera, pieza por pieza contra d4-medidas.json: 13/13 idénticas a 1280 y 13/13 a 1100
+    (.barra, #btn-riel, #btn-mimo, #mimo-ic, .barra__bloque, #bloque-nombre, .barra__fecha,
+    .barra__herramientas, [data-ajustes], [data-apariencia], [data-edicion], #btn-mas-cab,
+    #btn-der): mismo rectángulo y mismo aria-label.
+  Fecha "20/10/26" (datetime 2026-10-20, font-variant-numeric tabular-nums) · criatura
+  icon-64.png de 32,00 × 32,00 en x 84,00 · cuatro herramientas con aria-label Ajustes,
+  Apariencia, Edición y Más opciones en .barra__herramientas (168,00 de ancho) · desborde 0.
+
+f · LOS 8 ESTADOS × 2 TEMAS A 1280, SIN UN AVISO DE CONSOLA
+
+  estado      tema    losa      riel     panel    .velo   .est__v   eventos   malos
+  normal      claro   896,00   256,00     0,00    none         2         0       0
+  normal      oscuro  896,00   256,00     0,00    none         2         0       0
+  plegado     claro  1096,00    56,00     0,00    none         2         0       0
+  plegado     oscuro 1096,00    56,00     0,00    none         2         0       0
+  contexto    claro   544,00   256,00   352,00    none         2         0       0
+  contexto    oscuro  544,00   256,00   352,00    none         2         0       0
+  gabinete    claro   544,00   256,00   352,00    none         2         0       0
+  gabinete    oscuro  544,00   256,00   352,00    none         2         0       0
+  ambos       claro   544,00   256,00   352,00    none         2         0       0
+  ambos       oscuro  544,00   256,00   352,00    none         2         0       0
+  angosto     claro  1224,00   256,00   352,00   block         2         0       0
+  angosto     oscuro 1224,00   256,00   352,00   block         2         0       0
+  vacia       claro   896,00   256,00     0,00    none         2         0       0
+  vacia       oscuro  896,00   256,00     0,00    none         2         0       0
+  apariencia  claro   896,00   256,00     0,00    none         2         0       0
+  apariencia  oscuro  896,00   256,00     0,00    none         2         0       0
+  16 cargas, 16 con caja, 0 eventos de consola/excepción/log y 0 fallos de red. En las 16,
+  `.est__v` = 2 = bloques instalados de Tiempo (la vista `vacia` de la URL es forzada y no
+  desinstala nada).
+
+g · EL CONTADOR DE LA PIEL
+
+  cd ~/workspace/proyectos/mimo-nuevo && python3 tablero/medir-tablero.py \
+    --fichero tablero/armazon-paneles.html
+  tamaños 5/5 OK [13px, 15px, 17px, 26px, 64px] · espacios 6/8 OK [8px, 12px, 16px, 24px,
+  32px, 48px] · radios 2/2 OK [16px, 999px] · duraciones 3/3 OK [100, 160, 240] ms ·
+  hex fuera de los tokens 0.
+  RESUMEN: las tres pieles dentro de su techo.  EXIT=0
+
+h · HUECO: lo que no se pudo medir, o no se midió
+
+  HUECO 1 — Las otras cuatro secciones (Calendario, Malla, Estudio, Calificaciones) no tienen
+  bloques ni catálogo todavía: su losa es el estado vacío y su gabinete no ofrece nada. Los
+  motores de esas piezas son la ronda siguiente; no se inventó contenido.
+  HUECO 2 — El cuerpo de los cinco bloques es estático (cifra, fase y botones): Empezar y
+  Reiniciar no cuentan tiempo. El motor de tiempo es la ronda siguiente.
+  HUECO 3 — localStorage se midió dentro de un mismo perfil de Chromium y del origen file://,
+  entre navegaciones y con Page.reload; no se probó con el navegador cerrado y reabierto, con
+  otro perfil, en modo privado ni con el almacén lleno.
+  HUECO 4 — No se midió el caso de dos pestañas a la vez: la última escritura gana y la otra
+  pestaña no se entera (no hay evento `storage`).
+  HUECO 5 — `?estado=vacia` fuerza el estado vacío aunque haya bloques instalados; es el gancho
+  de los 8 estados heredado de la v3/v4. El estado vacío REAL (sección sin bloques) se midió
+  aparte, quitando los bloques por el gabinete.
+  HUECO 6 — No se re-midieron 411 px, el foco/tabulador sobre los botones dinámicos, ni toque
+  real; la latencia de 8,50 ms es de la actualización de la interfaz en la página (clic
+  capturado -> MutationObserver) y no incluye el viaje por CDP.
+  HUECO 7 — La consola se vigiló con Runtime.exceptionThrown, Runtime.consoleAPICalled,
+  Log.entryAdded y Network.loadingFailed; no se miran avisos del navegador fuera de eso.
+
+CAPTURAS
+  tablero/capturas/v6-tiempo-2-bloques.png  (de fábrica: 2 vistas, 1280×900)
+  tablero/capturas/v6-tiempo-3-bloques.png  (con Pomodoro instalado y seleccionado: 3 vistas)
+  tablero/capturas/v6-gabinete.png          (el gabinete ofreciendo Pomodoro, Registro y Alarmas)
+
+i · ARREGLO DEL ICONO DE LA APP (v6, aplicado por el padre el 2026-10-20 13:56)
+
+El dueño reportó la criatura con las esquinas cortadas por el contorno circular. No era la imagen: el
+contenido del PNG de 64 px llega a 2 px del borde (caja opaca 2,4-61,59), y la regla de la cabecera
+recortaba ese cuadrado con un radio del 50 %:
+
+  antes:  .barra__marca img{... width:32px;height:32px;border-radius:999px}
+  despues .barra__marca img{... width:32px;height:32px;border-radius:8px;image-rendering:pixelated}
+
+Medido tras el cambio a 1280 (Chromium, mismas condiciones que §2): `.barra__marca img` 32,00 px de ancho
+y `border-radius` 8px en la esquina superior izquierda; la criatura se ve entera en las capturas. Con dos
+bloques de fábrica la estantería de vistas mide 50,00 px de alto (una fila); en la v4, con cuatro vistas a
+1280, eran 92,00 px (dos filas).

@@ -61,7 +61,10 @@ body[data-pie="oculto"] .pie{display:none}
 .barra__fin{display:flex;align-items:center;margin-left:auto;min-width:0}
 .barra__marca{display:flex;align-items:center;justify-content:center;flex:none;padding:0;border:0;
   background:transparent;cursor:pointer}
-.barra__marca img{display:block;width:32px;height:32px;border-radius:999px}
+/* la criatura ocupa el cuadrado entero de su PNG (su contenido llega a 2 px del borde de 64):
+   un radio circular la recorta por las esquinas. El marco es cuadrado-redondeado y el dibujo
+   va entero; `pixelated` conserva los bordes duros del arte de 64 px al bajarlo a 32. */
+.barra__marca img{display:block;width:32px;height:32px;border-radius:8px;image-rendering:pixelated}
 .barra__herramientas{display:flex;align-items:center;min-width:0}
 
 .armazon{position:relative;display:flex;align-items:stretch;min-height:0;min-width:0;
@@ -84,6 +87,7 @@ body[data-pie="oculto"] .pie{display:none}
   background:var(--sup);color:var(--tinta);box-shadow:var(--sombra)}
 .losa__barra{display:flex;align-items:center;flex-wrap:wrap}
 .losa__cuerpo{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden}
+.vistas{display:contents}
 .vista--bloque{display:grid;grid-template-rows:auto 1fr;flex:none;width:100%;margin:auto}
 .bloque{display:grid}
 .bloque__nombre{margin:0;font-weight:500}
@@ -352,7 +356,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 
 <!-- FAMILIA DE ICONOS: una sola, rejilla de 20, viewBox 24, trazo 1,5, sin relleno.
      Cada icono se declara UNA vez; los de bloque se piden por identificador al
-     mapa ICONOS del script, que es el campo que en la app vendrá del manifiesto. -->
+     mapa BLOQUES del script, que es el campo que en la app vendrá del manifiesto. -->
 <svg class="sprite" aria-hidden="true" focusable="false">
   <symbol id="i-calendario" viewBox="0 0 24 24"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4M8 14h1M12 14h1M16 14h1M8 17h1M12 17h1"/></symbol>
   <symbol id="i-malla" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
@@ -371,6 +375,12 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
   <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-edicion" viewBox="0 0 24 24"><path d="M5 19l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L9 18l-4 1zM14.5 6.5l3 3"/></symbol>
+  <!-- v6: los cuatro dibujos de los bloques de Tiempo. La familia no cambia:
+       rejilla 20, viewBox 24, trazo 1,5, sin relleno. -->
+  <symbol id="i-cronometro" viewBox="0 0 24 24"><path d="M12 6a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 10v4l3 2M9 3h6M12 3v3"/></symbol>
+  <symbol id="i-arena" viewBox="0 0 24 24"><path d="M7 3h10M7 21h10M7 3c0 5 2.5 6 5 9-2.5 3-5 4-5 9M17 3c0 5-2.5 6-5 9 2.5 3 5 4 5 9"/></symbol>
+  <symbol id="i-pomodoro" viewBox="0 0 24 24"><path d="M12 7a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM12 7c0-2 1-3.5 3-4M12 7c-1.5 0-2.5-.5-3-1.5"/></symbol>
+  <symbol id="i-alarma" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 2 8 2 8H4s2-1 2-8M10 20a2 2 0 0 0 4 0"/></symbol>
 </svg>
 
 <header class="barra">
@@ -400,59 +410,30 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 
 <main class="armazon">
 
-  <aside class="riel" id="riel" aria-label="Riel de bloques">
-    <nav class="riel__bloques" id="riel-bloques" aria-label="Bloques instalados"></nav>
+  <aside class="riel" id="riel" aria-label="Riel de secciones">
+    <nav class="riel__bloques" id="riel-bloques" aria-label="Secciones"></nav>
     <button class="riel__mas" id="btn-mas" type="button"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg><span class="riel__nombre">Añadir bloque</span></button>
   </aside>
 
   <section class="losa" aria-label="Bloque abierto">
     <div class="losa__barra">
-      <nav class="estanteria" aria-label="Vistas de Tiempo">
-        <button class="est__v" type="button">Cronómetro</button>
-        <button class="est__v" type="button">Temporizador</button>
-        <button class="est__v" type="button" aria-current="page">Pomodoro</button>
-        <button class="est__v" type="button">Registro</button>
-      </nav>
+      <!-- las vistas salen de los bloques instalados de la sección abierta:
+           este nav lo llena pintarEstanteria(), no hay botones escritos a mano -->
+      <nav class="estanteria" id="estanteria" aria-label="Vistas de la sección"></nav>
     </div>
     <div class="filete"></div>
     <div class="losa__cuerpo">
 
-      <div class="vista--bloque" data-vista="normal">
-        <div class="bloque">
-          <p class="bloque__nombre">Tiempo</p>
-        </div>
-        <div class="pomo">
-          <div class="pomo__anillo">
-            <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-              <circle class="pomo__pista" cx="60" cy="60" r="55"></circle>
-              <circle class="pomo__arco" cx="60" cy="60" r="55"></circle>
-            </svg>
-            <div class="pomo__centro">
-              <span class="pomo__cifra">18:42</span>
-              <span class="pomo__fase">Trabajo · 25 min</span>
-            </div>
-          </div>
-          <div class="pomo__lado">
-            <p class="pomo__sesion">Sesión 3 de 4</p>
-            <div class="pomo__acciones">
-              <button class="btn btn--primario" type="button">Empezar</button>
-              <button class="btn" type="button">Reiniciar</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- una .vista--bloque por bloque INSTALADO de la sección; las dibuja
+           vistaDe(). El envoltorio no tiene caja (display:contents): las vistas
+           siguen siendo hijas de la rejilla del cuerpo. -->
+      <div class="vistas" id="vistas"></div>
 
       <div class="vacia">
-        <h2 class="vacia__tit">Elige con qué empiezas</h2>
-        <p class="vacia__txt">Calendario, Malla, Tiempo, Estudio y Calificaciones ya están listos para tu riel.</p>
-        <ul class="chips">
-          <li class="chip">Calendario</li>
-          <li class="chip">Malla</li>
-          <li class="chip">Tiempo</li>
-          <li class="chip">Estudio</li>
-          <li class="chip">Calificaciones</li>
-        </ul>
-        <p class="vacia__nota">Los que ya tienes están en el riel; el panel derecho abre el gabinete para añadir los demás.</p>
+        <h2 class="vacia__tit" id="vacia-tit">Esta sección está vacía</h2>
+        <p class="vacia__txt" id="vacia-txt">El gabinete instala bloques en esta sección.</p>
+        <ul class="chips" id="vacia-chips"></ul>
+        <p class="vacia__nota" id="vacia-nota">El riel lista secciones; los bloques viven dentro de la sección abierta.</p>
         <button class="btn btn--primario" type="button" data-abrir-gabinete>Abrir el gabinete</button>
       </div>
 
@@ -547,7 +528,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
       </header>
 
       <div class="der__cara der__cara--contexto" id="cara-contexto" role="tabpanel" aria-labelledby="tab-contexto">
-        <h2 class="ctx__h">Tiempo</h2>
+        <h2 class="ctx__h" id="ctx-seccion">Tiempo</h2>
         <h2 class="ctx__h ctx__h--rotulo">Ahora</h2>
         <ul class="ctx__lista">
           <li class="ctx__item"><span class="ctx__t">Modo</span><span class="ctx__meta">Cronómetro</span></li>
@@ -570,10 +551,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
       </div>
 
       <div class="der__cara der__cara--gabinete" id="cara-gabinete" role="tabpanel" aria-labelledby="tab-gabinete">
-        <p class="gab__intro">Añade un bloque a tu riel.</p>
-        <p class="gab__rotulo">Para añadir</p>
+        <p class="gab__intro" id="gab-intro">Instala bloques en esta sección.</p>
+        <p class="gab__rotulo" id="gab-rotulo-instalar">Para instalar en esta sección</p>
         <ul class="gab__lista" id="gab-instalar"></ul>
-        <p class="gab__rotulo">En tu riel</p>
+        <p class="gab__rotulo" id="gab-rotulo-instalados">En esta sección</p>
         <ul class="gab__lista gab__instalados" id="gab-instalados"></ul>
       </div>
     </div>
@@ -592,28 +573,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 (function () {
   var body = document.body;
 
-  /* EL MAPA DE ICONOS: un identificador de bloque -> un símbolo de la familia.
-     En la app real vendrá del manifiesto del bloque; instalar uno no toca el
-     armazón, solo añade su fila a BLOQUES. */
-  var ICONOS = {
-    calendario: 'i-calendario', malla: 'i-malla', tiempo: 'i-tiempo',
-    estudio: 'i-estudio', calificaciones: 'i-calificaciones',
-    apuntes: 'i-apuntes', tareas: 'i-tareas', evaluaciones: 'i-evaluaciones',
-    academia: 'i-academia', apariencia: 'i-paleta', ajustes: 'i-tuerca'
-  };
-
-  var BLOQUES = [
-    { id: 'calendario', nombre: 'Calendario', instalado: true },
-    { id: 'malla', nombre: 'Malla', instalado: true },
-    { id: 'tiempo', nombre: 'Tiempo', instalado: true },
-    { id: 'estudio', nombre: 'Estudio', instalado: true },
-    { id: 'calificaciones', nombre: 'Calificaciones', instalado: true },
-    { id: 'tareas', nombre: 'Tareas', desc: 'Lo que tienes pendiente, con fecha.', instalado: false },
-    { id: 'apuntes', nombre: 'Apuntes', desc: 'Notas por ramo, buscables.', instalado: false },
-    { id: 'evaluaciones', nombre: 'Evaluaciones', desc: 'Fechas y pesos de cada prueba.', instalado: false },
-    { id: 'academia', nombre: 'Academia', desc: 'El conjunto completo de estudio.', etiqueta: 'paquete', instalado: false }
-  ];
-  var ABIERTO = 'tiempo';
+  /* EL MODELO DE DOS NIVELES. El riel lista SECCIONES; cada sección tiene sus
+     BLOQUES instalados y su catálogo instalable. BLOQUES es la tabla de piezas
+     (id, nombre, icono y descripción); el icono apunta a un símbolo del sprite.
+     Añadir una pieza es añadir su fila: el armazón no se toca. */
 
   var ESTADOS = ['normal', 'plegado', 'contexto', 'gabinete', 'ambos', 'angosto', 'vacia', 'apariencia'];
   var TEMAS = ['claro', 'oscuro'];
@@ -626,6 +589,101 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     estado: uno(q.get('estado'), ESTADOS, 'normal'),
     tema: uno(q.get('tema'), TEMAS, 'claro')
   };
+
+  /* LAS PIEZAS: cinco bloques de tiempo, cada uno con su dibujo del sprite. */
+  var BLOQUES = [
+    { id: 'cronometro', nombre: 'Cronómetro', icono: 'i-cronometro',
+      desc: 'Cuenta el tiempo hacia arriba.' },
+    { id: 'temporizador', nombre: 'Temporizador', icono: 'i-arena',
+      desc: 'Cuenta hacia atrás y avisa al llegar a cero.' },
+    { id: 'pomodoro', nombre: 'Pomodoro', icono: 'i-pomodoro',
+      desc: 'Trabajo y descanso en ciclos de 25 minutos.' },
+    { id: 'registro', nombre: 'Registro', icono: 'i-tareas',
+      desc: 'Las sesiones que ya hiciste, con su duración.' },
+    { id: 'alarmas', nombre: 'Alarmas', icono: 'i-alarma',
+      desc: 'Avisos a una hora concreta del día.' }
+  ];
+
+  /* LAS SECCIONES: `bloques` es la foto de fábrica (lo instalado al empezar) y
+     `catalogo` lo que el gabinete puede instalar EN esa sección. Instalar y
+     quitar mueven una copia en memoria; la tabla no se muta. */
+  var SECCIONES = [
+    { id: 'calendario', nombre: 'Calendario', icono: 'i-calendario',
+      bloques: [], catalogo: [] },
+    { id: 'malla', nombre: 'Malla', icono: 'i-malla',
+      bloques: [], catalogo: [] },
+    { id: 'tiempo', nombre: 'Tiempo', icono: 'i-tiempo',
+      bloques: ['cronometro', 'temporizador'],
+      catalogo: ['cronometro', 'temporizador', 'pomodoro', 'registro', 'alarmas'] },
+    { id: 'estudio', nombre: 'Estudio', icono: 'i-estudio',
+      bloques: [], catalogo: [] },
+    { id: 'calificaciones', nombre: 'Calificaciones', icono: 'i-calificaciones',
+      bloques: [], catalogo: [] }
+  ];
+  var SECCION_INICIAL = 'tiempo';
+  var CLAVE = 'mimo.armazon.v1';
+
+  /* LA FOTO DE FÁBRICA: la única verdad de `?reset=1`. */
+  function fabrica() {
+    var o = { v: 1, seccion: SECCION_INICIAL, secciones: {} };
+    for (var i = 0; i < SECCIONES.length; i++) {
+      var s = SECCIONES[i];
+      o.secciones[s.id] = { bloques: s.bloques.slice(), sel: s.bloques[0] || null };
+    }
+    return o;
+  }
+
+  /* LO GUARDADO: se valida contra las tablas (ids que ya no existan se caen) y
+     lo que no se entiende no se inventa: se vuelve a fábrica. */
+  function leer() {
+    var base = fabrica();
+    var crudo = null;
+    try { crudo = localStorage.getItem(CLAVE); } catch (e) { crudo = null; }
+    if (!crudo) { return base; }
+    var d;
+    try { d = JSON.parse(crudo); } catch (e) { return base; }
+    if (!d || d.v !== 1) { return base; }
+    for (var i = 0; i < SECCIONES.length; i++) {
+      var s = SECCIONES[i];
+      var g = d.secciones && d.secciones[s.id];
+      if (!g || !Array.isArray(g.bloques)) { continue; }
+      var ids = [];
+      for (var j = 0; j < g.bloques.length; j++) {
+        var id = g.bloques[j];
+        if (s.catalogo.indexOf(id) >= 0 && ids.indexOf(id) < 0) { ids.push(id); }
+      }
+      base.secciones[s.id] = { bloques: ids, sel: ids.indexOf(g.sel) >= 0 ? g.sel : (ids[0] || null) };
+    }
+    for (var k = 0; k < SECCIONES.length; k++) {
+      if (SECCIONES[k].id === d.seccion) { base.seccion = d.seccion; break; }
+    }
+    return base;
+  }
+
+  function guardar() {
+    try { localStorage.setItem(CLAVE, JSON.stringify(app)); } catch (e) { /* sin almacén: la sesión sigue */ }
+  }
+
+  /* ?reset=1: borra la clave y deja escrita la foto de fábrica. */
+  var RESET = q.get('reset') === '1';
+  if (RESET) {
+    try { localStorage.removeItem(CLAVE); } catch (e) { /* nada que borrar */ }
+  }
+  var app = leer();
+  if (RESET) { guardar(); }
+
+  function bloquePorId(id) {
+    for (var i = 0; i < BLOQUES.length; i++) { if (BLOQUES[i].id === id) { return BLOQUES[i]; } }
+    return null;
+  }
+  function seccionPorId(id) {
+    for (var i = 0; i < SECCIONES.length; i++) { if (SECCIONES[i].id === id) { return SECCIONES[i]; } }
+    return SECCIONES[0];
+  }
+  function seccionAbierta() { return seccionPorId(app.seccion); }
+  function estadoSeccion() { return app.secciones[app.seccion]; }
+  function bloqueAbierto() { return bloquePorId(estadoSeccion().sel); }
+  function instalados() { return estadoSeccion().bloques; }
 
   /* el estado de los dos paneles: se deriva del estado de la URL y luego lo
      mueven los botones; `data-estado` se queda como marcador de la carga. */
@@ -669,49 +727,154 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     return { riel: riel, der: der };
   }
 
-  function icono(id, etiqueta) {
-    var simbolo = ICONOS[id];
-    if (!simbolo) { return ''; }
+  function icono(entidad, conDato) {
+    if (!entidad || !entidad.icono) { return ''; }
     return '<svg class="icono" aria-hidden="true" focusable="false"' +
-      (etiqueta ? ' data-bloque="' + id + '"' : '') + '><use href="#' + simbolo + '"/></svg>';
+      (conDato ? ' data-bloque="' + entidad.id + '"' : '') +
+      '><use href="#' + entidad.icono + '"/></svg>';
   }
 
+  /* EL RIEL: una fila por SECCIÓN. No crece con los bloques: los bloques viven
+     dentro de la sección abierta y se ven en la losa. */
   function pintarRiel() {
     var nav = document.getElementById('riel-bloques');
     var html = '';
-    for (var i = 0; i < BLOQUES.length; i++) {
-      var b = BLOQUES[i];
-      if (!b.instalado) { continue; }
-      html += '<div class="riel__fila"><button class="riel__bloque" type="button"' +
-        (b.id === ABIERTO ? ' aria-current="page"' : '') + '>' + icono(b.id, true) +
-        '<span class="riel__nombre">' + b.nombre + '</span></button></div>';
+    for (var i = 0; i < SECCIONES.length; i++) {
+      var s = SECCIONES[i];
+      html += '<div class="riel__fila"><button class="riel__bloque" type="button" data-seccion="' +
+        s.id + '"' + (s.id === app.seccion ? ' aria-current="page"' : '') + '>' +
+        icono(s) + '<span class="riel__nombre">' + s.nombre + '</span></button></div>';
     }
     nav.innerHTML = html;
   }
 
-  function pintarGabinete() {
-    var instalar = document.getElementById('gab-instalar');
-    var instalados = document.getElementById('gab-instalados');
-    var a = '', b = '';
-    for (var i = 0; i < BLOQUES.length; i++) {
-      var x = BLOQUES[i];
-      if (x.instalado) {
-        b += '<li class="gab__item"><p class="gab__nombre">' + x.nombre +
-          '</p><button class="btn btn--mini" type="button">Quitar</button></li>';
-      } else {
-        a += '<li class="gab__item">' + icono(x.id, true) +
-          '<p class="gab__nombre">' + x.nombre +
-          (x.etiqueta ? ' <span class="gab__etiqueta">· ' + x.etiqueta + '</span>' : '') +
-          '</p><button class="btn btn--mini" type="button">Instalar</button>' +
-          '<p class="gab__desc">' + x.desc + '</p></li>';
+  /* UNA VISTA POR BLOQUE INSTALADO. El cuerpo de cada pieza es su dibujo de
+     esta iteración: el motor de tiempo es la ronda siguiente. */
+  function panelTiempo(cifra, fase, acciones) {
+    return '<div class="pomo"><div class="pomo__lado">' +
+      '<p class="pomo__cifra">' + cifra + '</p>' +
+      '<p class="pomo__fase">' + fase + '</p>' +
+      (acciones ? '<div class="pomo__acciones">' +
+        '<button class="btn btn--primario" type="button">Empezar</button>' +
+        '<button class="btn" type="button">Reiniciar</button></div>' : '') +
+      '</div></div>';
+  }
+
+  function cuerpoDe(b) {
+    if (b.id === 'pomodoro') {
+      return '<div class="pomo">' +
+        '<div class="pomo__anillo">' +
+          '<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">' +
+            '<circle class="pomo__pista" cx="60" cy="60" r="55"></circle>' +
+            '<circle class="pomo__arco" cx="60" cy="60" r="55"></circle>' +
+          '</svg>' +
+          '<div class="pomo__centro">' +
+            '<span class="pomo__cifra">18:42</span>' +
+            '<span class="pomo__fase">Trabajo · 25 min</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pomo__lado">' +
+          '<p class="pomo__sesion">Sesión 3 de 4</p>' +
+          '<div class="pomo__acciones">' +
+            '<button class="btn btn--primario" type="button">Empezar</button>' +
+            '<button class="btn" type="button">Reiniciar</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    if (b.id === 'cronometro') { return panelTiempo('00:00', 'Cronómetro · parado', true); }
+    if (b.id === 'temporizador') { return panelTiempo('05:00', 'Temporizador · 5 min', true); }
+    if (b.id === 'registro') { return panelTiempo('0', 'Registro · sesiones de hoy', false); }
+    if (b.id === 'alarmas') { return panelTiempo('--:--', 'Alarmas · ninguna programada', false); }
+    return '';
+  }
+
+  function vistaDe(b, activa, seccion) {
+    return '<div class="vista--bloque" data-bloque="' + b.id + '"' +
+      (activa ? '' : ' hidden') + '>' +
+      '<div class="bloque"><p class="bloque__nombre">' + seccion.nombre + '</p></div>' +
+      cuerpoDe(b) + '</div>';
+  }
+
+  /* LA ESTANTERÍA y las vistas se pintan de la MISMA lista: los bloques
+     instalados de la sección abierta. Ninguna vista sin su bloque. */
+  function pintarEstanteria() {
+    var s = seccionAbierta();
+    var g = estadoSeccion();
+    var nav = document.getElementById('estanteria');
+    var botones = '', vistas = '';
+    for (var i = 0; i < g.bloques.length; i++) {
+      var b = bloquePorId(g.bloques[i]);
+      if (!b) { continue; }
+      botones += '<button class="est__v" type="button" data-bloque="' + b.id + '"' +
+        (b.id === g.sel ? ' aria-current="page"' : '') + '>' + b.nombre + '</button>';
+      vistas += vistaDe(b, b.id === g.sel, s);
+    }
+    nav.innerHTML = botones;
+    nav.setAttribute('aria-label', 'Vistas de ' + s.nombre);
+    document.getElementById('vistas').innerHTML = vistas;
+  }
+
+  function pintarVacia() {
+    var s = seccionAbierta();
+    var g = estadoSeccion();
+    var libres = [];
+    for (var i = 0; i < s.catalogo.length; i++) {
+      if (g.bloques.indexOf(s.catalogo[i]) < 0) {
+        var b = bloquePorId(s.catalogo[i]);
+        if (b) { libres.push(b.nombre); }
       }
     }
-    instalar.innerHTML = a;
-    instalados.innerHTML = b;
+    document.getElementById('vacia-tit').textContent = 'Añade un bloque a ' + s.nombre;
+    document.getElementById('vacia-txt').textContent = libres.length
+      ? 'Esta sección está vacía. El gabinete instala aquí: ' + libres.join(', ') + '.'
+      : 'Esta sección todavía no tiene bloques instalables.';
+    var chips = document.getElementById('vacia-chips');
+    var h = '';
+    for (var j = 0; j < libres.length; j++) { h += '<li class="chip">' + libres[j] + '</li>'; }
+    chips.innerHTML = h;
+    document.getElementById('vacia-nota').textContent = libres.length
+      ? 'El riel lista secciones; los bloques viven dentro de la sección abierta.'
+      : 'El riel lista secciones. Cuando lleguen sus motores, aparecerán aquí.';
+  }
+
+  /* EL GABINETE: instala y quita EN LA SECCIÓN ABIERTA. Ofrece el catálogo
+     menos lo instalado; la lista de instalados es la misma que pinta la losa. */
+  function pintarGabinete() {
+    var s = seccionAbierta();
+    var g = estadoSeccion();
+    document.getElementById('gab-intro').textContent = 'Instala bloques en ' + s.nombre + '.';
+    document.getElementById('gab-rotulo-instalar').textContent = 'Para instalar en ' + s.nombre;
+    document.getElementById('gab-rotulo-instalados').textContent = 'En ' + s.nombre;
+    var a = '', b = '';
+    for (var i = 0; i < s.catalogo.length; i++) {
+      var x = bloquePorId(s.catalogo[i]);
+      if (!x || g.bloques.indexOf(x.id) >= 0) { continue; }
+      a += '<li class="gab__item">' + icono(x, true) +
+        '<p class="gab__nombre">' + x.nombre + '</p>' +
+        '<button class="btn btn--mini" type="button" data-instalar="' + x.id + '">Instalar</button>' +
+        '<p class="gab__desc">' + x.desc + '</p></li>';
+    }
+    for (var j = 0; j < g.bloques.length; j++) {
+      var y = bloquePorId(g.bloques[j]);
+      if (!y) { continue; }
+      b += '<li class="gab__item"><p class="gab__nombre">' + y.nombre + '</p>' +
+        '<button class="btn btn--mini" type="button" data-quitar="' + y.id + '">Quitar</button></li>';
+    }
+    document.getElementById('gab-instalar').innerHTML = a ||
+      '<li><p class="gab__desc">No quedan bloques por instalar en esta sección.</p></li>';
+    document.getElementById('gab-instalados').innerHTML = b ||
+      '<li><p class="gab__desc">Ninguno todavía.</p></li>';
   }
 
   function pintarCabecera() {
-    document.getElementById('bloque-icono').innerHTML = icono(ABIERTO);
+    var s = seccionAbierta();
+    var b = bloqueAbierto();
+    document.getElementById('bloque-icono').innerHTML = icono(s);
+    document.getElementById('bloque-nombre').textContent = s.nombre;
+    document.getElementById('ctx-seccion').textContent = s.nombre;
+    document.getElementById('pie-bloque').textContent =
+      (b ? b.nombre : 'Sin bloques') + ' · ' + s.nombre;
     var tema = document.getElementById('btn-tema');
     tema.setAttribute('aria-pressed', est.tema === 'oscuro' ? 'true' : 'false');
     tema.textContent = est.tema === 'claro' ? 'Tema claro' : 'Tema oscuro';
@@ -720,12 +883,19 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
       (ui.der === 'abierto' && ui.cara === 'gabinete') ? 'true' : 'false');
   }
 
+  /* LA VISTA EFECTIVA: apariencia y ajustes mandan; si no, la sección sin
+     bloques enseña su estado vacío. */
+  function vistaEfectiva() {
+    if (ui.vista === 'apariencia' || ui.vista === 'ajustes' || ui.vista === 'vacia') { return ui.vista; }
+    return estadoSeccion().bloques.length ? 'normal' : 'vacia';
+  }
+
   function pintar() {
     body.setAttribute('data-tema', est.tema);
     body.setAttribute('data-riel', ui.riel);
     body.setAttribute('data-der', ui.der);
     body.setAttribute('data-cara', ui.cara);
-    body.setAttribute('data-vista', ui.vista);
+    body.setAttribute('data-vista', vistaEfectiva());
     document.getElementById('btn-riel').setAttribute('aria-expanded', ui.riel === 'abierto' ? 'true' : 'false');
     document.getElementById('btn-der').setAttribute('aria-expanded', ui.der === 'abierto' ? 'true' : 'false');
     var tctx = document.getElementById('tab-contexto');
@@ -737,6 +907,39 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     body.setAttribute('data-modo-riel', modos.riel);
     body.setAttribute('data-modo-der', modos.der);
   }
+
+  function pintarSeccion() {
+    pintarRiel();
+    pintarEstanteria();
+    pintarVacia();
+    pintarGabinete();
+    pintar();
+  }
+
+  /* INSTALAR: añade al final, selecciona lo instalado y guarda. Quitar: si se
+     va la vista abierta, la selección cae en la primera que quede o en nada
+     (entonces la losa enseña el estado vacío). */
+  function instalar(id) {
+    var s = seccionAbierta();
+    var g = estadoSeccion();
+    if (s.catalogo.indexOf(id) < 0 || g.bloques.indexOf(id) >= 0) { return; }
+    g.bloques.push(id);
+    g.sel = id;
+    ui.vista = 'normal';
+    guardar();
+    pintarSeccion();
+  }
+
+  function quitar(id) {
+    var g = estadoSeccion();
+    var i = g.bloques.indexOf(id);
+    if (i < 0) { return; }
+    g.bloques.splice(i, 1);
+    if (g.sel === id) { g.sel = g.bloques[0] || null; }
+    guardar();
+    pintarSeccion();
+  }
+
 
   /* el contenido entra con 8 px y opacidad al abrir; el ancho lo hace el CSS */
   function animar(cual) {
@@ -834,11 +1037,43 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     if (boton) { boton.focus(); }
   });
 
-  document.querySelectorAll('.est__v').forEach(function (v) {
-    v.addEventListener('click', function () {
-      document.querySelectorAll('.est__v').forEach(function (o) { o.removeAttribute('aria-current'); });
-      this.setAttribute('aria-current', 'page');
-    });
+  /* SELECCIÓN DE VISTA: un solo oyente sobre la estantería; los botones se
+     rehacen al instalar y al quitar. */
+  document.getElementById('estanteria').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-bloque]');
+    if (!b) { return; }
+    var g = estadoSeccion();
+    var id = b.getAttribute('data-bloque');
+    if (g.bloques.indexOf(id) < 0) { return; }
+    g.sel = id;
+    guardar();
+    pintarEstanteria();
+    pintarCabecera();
+  });
+
+  /* EL RIEL CAMBIA DE SECCIÓN; el gabinete instala y quita EN LA ABIERTA. */
+  document.getElementById('riel-bloques').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-seccion]');
+    if (!b) { return; }
+    var id = b.getAttribute('data-seccion');
+    if (id === app.seccion) { return; }
+    app.seccion = id;
+    var g = estadoSeccion();
+    if (g.bloques.indexOf(g.sel) < 0) { g.sel = g.bloques[0] || null; }
+    ui.vista = 'normal';
+    guardar();
+    pintarSeccion();
+  });
+
+  document.getElementById('gab-instalar').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-instalar]');
+    if (!b) { return; }
+    instalar(b.getAttribute('data-instalar'));
+  });
+  document.getElementById('gab-instalados').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-quitar]');
+    if (!b) { return; }
+    quitar(b.getAttribute('data-quitar'));
   });
   document.querySelectorAll('.ficha').forEach(function (f) {
     f.addEventListener('click', function () {
@@ -921,9 +1156,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      pasiva y sin bucle (pintar solo escribe atributos y no dispara otro resize). */
   window.addEventListener('resize', pintar, { passive: true });
 
-  pintarRiel();
-  pintarGabinete();
-  pintar();
+  pintarSeccion();
   if (ui.der === 'abierto') { pila.push('der'); }
   if (ui.riel === 'abierto') { pila.push('riel'); }
   document.documentElement.setAttribute('data-listo', '1');
