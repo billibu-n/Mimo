@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T17:15:08-03:00",
+  "updated": "2026-10-20T17:59:49-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -53,7 +53,7 @@
     {
       "id": "T004",
       "title": "Malla del semestre: reticula, ramos y estados portados del prototipo y de la referencia",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T001",
         "T003"
