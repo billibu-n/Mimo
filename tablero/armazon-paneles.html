@@ -103,8 +103,22 @@ body[data-pie="oculto"] .pie{display:none}
 .pomo__lado{display:grid;min-width:0}
 .pomo__acciones{display:flex;flex-wrap:wrap}
 .pomo__cifra,.pomo__fase,.pomo__sesion{margin:0}
+/* El reloj editable: tres input que heredan la tipografia de la cifra. No se
+   escribe ningun tamano ni color nuevo; el ancho va en `ch` y el fondo es el
+   del bloque, para que se lea como texto y se pueda teclear encima. */
+.pomo__cifra.reloj{display:inline-flex;align-items:baseline;justify-content:center}
+.reloj__parte{font:inherit;color:inherit;background:transparent;border:0;padding:0;width:2ch;
+  text-align:center;appearance:textfield;-moz-appearance:textfield}
+.reloj__parte::-webkit-inner-spin-button,.reloj__parte::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.reloj__sep{font:inherit;color:inherit}
+.campo-reloj{font:inherit;color:var(--tinta);background:var(--sup);border:1px solid var(--linea);
+  padding:8px;border-radius:inherit}
+/* Alarmas es el cuarto modo (Recordatorios): su vista no tiene reloj ni los
+   controles del reloj; se ocultan por si algun dia comparten losa. */
+[data-modo-tiempo="alarmas"] [data-reloj],[data-modo-tiempo="alarmas"] [data-controles]{display:none}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit}
+.btn[disabled]{opacity:.4;cursor:default}
 .btn:focus-visible,.btn-icono:focus-visible,.riel__bloque:focus-visible,.riel__fijo:focus-visible,
 .riel__mas:focus-visible,.est__v:focus-visible,.pestana:focus-visible,.ficha:focus-visible,
 .barra__marca:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
@@ -575,6 +589,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   <p class="pie__z pie__z--fin" id="pie-idioma">es · claro</p>
 </footer>
 
+<audio id="audio-alarma" src="sonido/alarma.mp3" preload="auto"></audio>
 <script src="js/i18n.js"></script>
 <script src="js/tiempo.js"></script>
 <script>
@@ -783,11 +798,26 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   function cuerpoDe(b) {
     if (b.id === 'cronometro') {
       return '<div class="pomo"><div class="pomo__lado">' +
-        '<p class="pomo__cifra" data-tiempo="crono-cifra">00:00,00</p>' +
+        '<div class="pomo__cifra reloj" data-reloj="crono" role="group"' +
+          ' data-i18n-attr="aria-label:reloj.etiquetaCrono">' +
+          '<input class="reloj__parte" type="text" inputmode="numeric" maxlength="2"' +
+            ' value="00" data-tiempo="crono-h" data-i18n-attr="aria-label:reloj.h">' +
+          '<span class="reloj__sep" aria-hidden="true">:</span>' +
+          '<input class="reloj__parte" type="text" inputmode="numeric" maxlength="2"' +
+            ' value="00" data-tiempo="crono-m" data-i18n-attr="aria-label:reloj.m">' +
+          '<span class="reloj__sep" aria-hidden="true">:</span>' +
+          '<input class="reloj__parte" type="text" inputmode="numeric" maxlength="2"' +
+            ' value="00" data-tiempo="crono-s" data-i18n-attr="aria-label:reloj.s">' +
+        '</div>' +
+        '<span class="sr" data-tiempo="crono-cifra">00:00,00</span>' +
         '<p class="pomo__fase" data-tiempo="crono-estado"' + atr('crono.parado') + '>' +
           rot('crono.parado') + '</p>' +
-        '<div class="pomo__acciones">' +
+        '<div class="pomo__acciones" data-controles>' +
           botonAccion('crono-empezar', 'crono.empezar', true, true) +
+          botonAccion('crono-pausa', 'crono.pausar', false, false) +
+          botonAccion('crono-parar', 'crono.parar', false, false) +
+        '</div>' +
+        '<div class="pomo__acciones">' +
           botonAccion('crono-guardar', 'crono.guardar', false, false) +
           botonAccion('crono-reiniciar', 'crono.reiniciar', false, false) +
         '</div>' +
@@ -796,13 +826,29 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     if (b.id === 'temporizador') {
       var v = { dur: T('unidad.min', { n: 5 }) };
       return '<div class="pomo"><div class="pomo__lado">' +
-        '<p class="pomo__cifra" data-tiempo="temp-cifra">05:00</p>' +
+        '<div class="pomo__cifra reloj" data-reloj="temp" role="group"' +
+          ' data-i18n-attr="aria-label:reloj.etiquetaTemp">' +
+          '<input class="reloj__parte" type="text" inputmode="numeric" maxlength="2"' +
+            ' value="00" data-tiempo="temp-h" data-i18n-attr="aria-label:reloj.h">' +
+          '<span class="reloj__sep" aria-hidden="true">:</span>' +
+          '<input class="reloj__parte" type="text" inputmode="numeric" maxlength="2"' +
+            ' value="05" data-tiempo="temp-m" data-i18n-attr="aria-label:reloj.m">' +
+          '<span class="reloj__sep" aria-hidden="true">:</span>' +
+          '<input class="reloj__parte" type="text" inputmode="numeric" maxlength="2"' +
+            ' value="00" data-tiempo="temp-s" data-i18n-attr="aria-label:reloj.s">' +
+        '</div>' +
+        '<span class="sr" data-tiempo="temp-cifra">05:00</span>' +
         '<p class="pomo__fase" data-tiempo="temp-estado"' + atr('temp.fase', v) + '>' +
           rot('temp.fase', v) + '</p>' +
         '<p class="sr" role="status" data-tiempo="temp-live"></p>' +
-        '<div class="pomo__acciones">' +
+        '<div class="pomo__acciones" data-controles>' +
           botonAccion('temp-empezar', 'temp.empezar', true, true) +
+          botonAccion('temp-pausa', 'temp.pausar', false, false) +
+          botonAccion('temp-parar', 'temp.parar', false, false) +
+        '</div>' +
+        '<div class="pomo__acciones">' +
           botonAccion('temp-reiniciar', 'temp.reiniciar', false, false) +
+          botonAccion('temp-descartar', 'temp.descartar', false, false) +
         '</div>' +
         '<div class="pomo__acciones">' +
           '<button class="btn btn--mini" type="button" data-accion="temp-menos"' +
@@ -830,9 +876,40 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
         '<div class="pomo__lado">' +
           '<p class="pomo__sesion" data-tiempo="pomo-sesion"' + atr('pomo.sesion', vs) + '>' +
             rot('pomo.sesion', vs) + '</p>' +
-          '<div class="pomo__acciones">' +
+          '<div class="pomo__acciones" data-controles>' +
             botonAccion('pomo-empezar', 'pomo.empezar', true, true) +
+            botonAccion('pomo-pausa', 'pomo.pausar', false, false) +
+            botonAccion('pomo-parar', 'pomo.parar', false, false) +
+          '</div>' +
+          '<div class="pomo__acciones">' +
             botonAccion('pomo-reiniciar', 'pomo.reiniciar', false, false) +
+          '</div>' +
+          /* Estas etiquetas viven en una plantilla que se REGENERA al cambiar de
+             idioma (pintarSeccion). Un aplicar() posterior no llegaria a tiempo:
+             el cambio de idioma aplica el diccionario y despues repinta. Por eso
+             el texto se pinta ya traducido con rot(), igual que el censo, y
+             atr() deja la clave para que un aplicar() suelto siga sirviendo. */
+          '<div class="pomo__acciones" data-pomo-config>' +
+            '<label class="pomo__fase"><span' + atr('pomo.trabajoMin') + '>' +
+              rot('pomo.trabajoMin') + '</span> ' +
+              '<input class="campo-reloj" type="number" min="1" max="99" step="1"' +
+                ' data-pomo="trabajo" aria-label="' + rot('pomo.trabajoMin') + '"' +
+                ' data-i18n-attr="aria-label:pomo.trabajoMin"></label>' +
+            '<label class="pomo__fase"><span' + atr('pomo.cortoMin') + '>' +
+              rot('pomo.cortoMin') + '</span> ' +
+              '<input class="campo-reloj" type="number" min="1" max="99" step="1"' +
+                ' data-pomo="corto" aria-label="' + rot('pomo.cortoMin') + '"' +
+                ' data-i18n-attr="aria-label:pomo.cortoMin"></label>' +
+            '<label class="pomo__fase"><span' + atr('pomo.largoMin') + '>' +
+              rot('pomo.largoMin') + '</span> ' +
+              '<input class="campo-reloj" type="number" min="1" max="99" step="1"' +
+                ' data-pomo="largo" aria-label="' + rot('pomo.largoMin') + '"' +
+                ' data-i18n-attr="aria-label:pomo.largoMin"></label>' +
+            '<label class="pomo__fase"><span' + atr('pomo.cadaN') + '>' +
+              rot('pomo.cadaN') + '</span> ' +
+              '<input class="campo-reloj" type="number" min="1" max="99" step="1"' +
+                ' data-pomo="cada" aria-label="' + rot('pomo.cadaN') + '"' +
+                ' data-i18n-attr="aria-label:pomo.cadaN"></label>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -843,12 +920,44 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
         '<p class="pomo__fase" data-tiempo="reg-fase"' + atr('reg.fase') + '>' +
           rot('reg.fase') + '</p>' +
         '<ul class="ctx__lista" data-tiempo="reg-lista"></ul>' +
+        /* Este nodo NO lleva data-i18n: su texto no es el rotulo «Censo de la
+           semana», es el total calculado que escribe js/tiempo.js en cada
+           pintado. Dejar la clave aqui hacia que diagnostico() comparase el
+           total con el rotulo y lo contase como desajuste. */
+        '<p class="pomo__fase" data-tiempo="reg-censo-total">' +
+          rot('reg.censoTotalVacio') + '</p>' +
+        '<ul class="ctx__lista" data-tiempo="reg-censo"></ul>' +
       '</div></div>';
     }
     if (b.id === 'alarmas') {
+      var dias = '';
+      for (var k = 0; k < 7; k++) {
+        dias += '<option value="' + k + '"' + atr('rec.dia' + k) + '>' +
+          rot('rec.dia' + k) + '</option>';
+      }
       return '<div class="pomo"><div class="pomo__lado">' +
-        '<p class="pomo__cifra">--:--</p>' +
-        '<p class="pomo__fase"' + atr('alarmas.fase') + '>' + rot('alarmas.fase') + '</p>' +
+        '<p class="pomo__fase" data-tiempo="rec-fase"' + atr('rec.fase', { n: 0 }) + '>' +
+          rot('rec.fase', { n: 0 }) + '</p>' +
+        '<p class="sr" role="status" data-tiempo="rec-live"></p>' +
+        '<ul class="ctx__lista" data-tiempo="rec-lista"></ul>' +
+        '<div class="pomo__acciones">' +
+          /* Igual que en Pomodoro: esta plantilla se regenera al cambiar de
+             idioma, asi que el rotulo se pinta traducido aqui mismo. */
+          '<label class="pomo__fase"><span' + atr('rec.dia') + '>' +
+            rot('rec.dia') + '</span> ' +
+            '<select class="campo-reloj" data-rec="dia">' + dias + '</select></label>' +
+          '<label class="pomo__fase"><span' + atr('rec.hora') + '>' +
+            rot('rec.hora') + '</span> ' +
+            '<input class="campo-reloj" type="time" data-rec="hora" value="08:00"></label>' +
+          '<label class="pomo__fase"><span' + atr('rec.sonido') + '>' +
+            rot('rec.sonido') + '</span> ' +
+            '<input type="checkbox" data-rec="sonido" checked></label>' +
+        '</div>' +
+        '<div class="pomo__acciones">' +
+          '<input class="campo-reloj" type="text" maxlength="120" data-rec="texto"' +
+            ' data-i18n-attr="placeholder:rec.texto" placeholder="Texto del recordatorio">' +
+          botonAccion('rec-agregar', 'rec.agregar', true, false) +
+        '</div>' +
       '</div></div>';
     }
     return '';
@@ -1101,7 +1210,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     pintar();
     /* la losa se acaba de rehacer: las cifras y los rótulos vivos se reponen
        desde el motor, sin esperar al siguiente tic */
-    if (typeof MimoTiempoUI !== 'undefined') { MimoTiempoUI.pintar(); }
+    if (typeof MimoTiempoUI !== 'undefined') {
+      MimoTiempoUI.pintar();
+      MimoTiempoUI.fijarVista(estadoSeccion().sel);
+    }
   }
 
   /* INSTALAR: añade al final, selecciona lo instalado y guarda. Quitar: si se
@@ -1253,6 +1365,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     /* la estantería acaba de rehacer las vistas: sus cifras se reponen ya, sin
        esperar a que haya un temporizador corriendo */
     MimoTiempoUI.pintar();
+    MimoTiempoUI.fijarVista(id);
   });
 
   /* EL RIEL CAMBIA DE SECCIÓN; el gabinete instala y quita EN LA ABIERTA. */

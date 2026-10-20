@@ -161,6 +161,7 @@ var MimoI18n = (function () {
         pausado: 'Cronómetro · pausado',
         empezar: 'Empezar',
         pausar: 'Pausar',
+        parar: 'Parar',
         reiniciar: 'Reiniciar',
         guardar: 'Guardar sesión'
       },
@@ -172,6 +173,8 @@ var MimoI18n = (function () {
         aviso: 'El temporizador llegó a cero.',
         empezar: 'Empezar',
         pausar: 'Pausar',
+        parar: 'Parar',
+        descartar: 'Descartar aviso',
         reiniciar: 'Reiniciar',
         menos: 'Un minuto menos',
         mas: 'Un minuto más'
@@ -183,7 +186,12 @@ var MimoI18n = (function () {
         sesion: 'Sesión {n} de {cada}',
         empezar: 'Empezar',
         pausar: 'Pausar',
-        reiniciar: 'Reiniciar'
+        parar: 'Parar',
+        reiniciar: 'Reiniciar',
+        trabajoMin: 'Trabajo',
+        cortoMin: 'Descanso corto',
+        largoMin: 'Descanso largo',
+        cadaN: 'Cada N trabajos'
       },
       unidad: { min: '{n} min', seg: '{n} s', decimal: ',' },
       reg: {
@@ -191,7 +199,36 @@ var MimoI18n = (function () {
         sesion: 'Sesión {hora}',
         meta: '{min} min · {fecha}',
         min: '{min} min',
-        sinSesiones: 'Sin sesiones todavía.'
+        sinSesiones: 'Sin sesiones todavía.',
+        censoDia: '{min} min · {n} sesiones',
+        censoTotal: 'Total de la semana: {min} min',
+        censoTotalVacio: 'Censo de la semana'
+      },
+      rec: {
+        titulo: 'Recordatorios',
+        fase: 'Recordatorios · {n}',
+        texto: 'Texto del recordatorio',
+        dia: 'Día',
+        hora: 'Hora',
+        sonido: 'Con sonido',
+        agregar: 'Añadir',
+        quitar: 'Quitar',
+        vacio: 'Sin recordatorios todavía.',
+        aviso: 'Recordatorio: {texto}',
+        dia0: 'Domingo',
+        dia1: 'Lunes',
+        dia2: 'Martes',
+        dia3: 'Miércoles',
+        dia4: 'Jueves',
+        dia5: 'Viernes',
+        dia6: 'Sábado'
+      },
+      reloj: {
+        h: 'Horas',
+        m: 'Minutos',
+        s: 'Segundos',
+        etiquetaCrono: 'Reloj editable del cronómetro',
+        etiquetaTemp: 'Reloj editable del temporizador'
       },
       alarmas: { fase: 'Alarmas · ninguna programada' }
     },
@@ -321,6 +358,7 @@ var MimoI18n = (function () {
         pausado: 'Stopwatch · paused',
         empezar: 'Start',
         pausar: 'Pause',
+        parar: 'Stop',
         reiniciar: 'Reset',
         guardar: 'Save session'
       },
@@ -332,6 +370,8 @@ var MimoI18n = (function () {
         aviso: 'The timer reached zero.',
         empezar: 'Start',
         pausar: 'Pause',
+        parar: 'Stop',
+        descartar: 'Dismiss alert',
         reiniciar: 'Reset',
         menos: 'One minute less',
         mas: 'One minute more'
@@ -343,7 +383,12 @@ var MimoI18n = (function () {
         sesion: 'Session {n} of {cada}',
         empezar: 'Start',
         pausar: 'Pause',
-        reiniciar: 'Reset'
+        parar: 'Stop',
+        reiniciar: 'Reset',
+        trabajoMin: 'Work',
+        cortoMin: 'Short break',
+        largoMin: 'Long break',
+        cadaN: 'Every N work blocks'
       },
       unidad: { min: '{n} min', seg: '{n} s', decimal: '.' },
       reg: {
@@ -351,7 +396,36 @@ var MimoI18n = (function () {
         sesion: 'Session {hora}',
         meta: '{min} min · {fecha}',
         min: '{min} min',
-        sinSesiones: 'No sessions yet.'
+        sinSesiones: 'No sessions yet.',
+        censoDia: '{min} min · {n} sessions',
+        censoTotal: 'Week total: {min} min',
+        censoTotalVacio: 'Week census'
+      },
+      rec: {
+        titulo: 'Reminders',
+        fase: 'Reminders · {n}',
+        texto: 'Reminder text',
+        dia: 'Day',
+        hora: 'Time',
+        sonido: 'With sound',
+        agregar: 'Add',
+        quitar: 'Remove',
+        vacio: 'No reminders yet.',
+        aviso: 'Reminder: {texto}',
+        dia0: 'Sunday',
+        dia1: 'Monday',
+        dia2: 'Tuesday',
+        dia3: 'Wednesday',
+        dia4: 'Thursday',
+        dia5: 'Friday',
+        dia6: 'Saturday'
+      },
+      reloj: {
+        h: 'Hours',
+        m: 'Minutes',
+        s: 'Seconds',
+        etiquetaCrono: 'Editable stopwatch clock',
+        etiquetaTemp: 'Editable timer clock'
       },
       alarmas: { fase: 'Alarms · none scheduled' }
     }

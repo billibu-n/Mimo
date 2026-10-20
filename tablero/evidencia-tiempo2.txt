@@ -1,0 +1,283 @@
+BLOQUE T002 — TIEMPO COMPLETO EN EL ARMAZÓN NUEVO
+=================================================
+Fecha: 2026-10-20 (America/Santiago)
+Sede: /home/billibu/workspace/proyectos/mimo-nuevo
+Alcance: tablero/ (armazón nuevo). No se tocó referencia/, prototipo/, kit/
+ni herramientas/. Sin instalaciones, sin sudo, sin commit.
+
+QUÉ SE PORTÓ DE LA REFERENCIA
+-----------------------------
+1. El reloj editable de los dos relojes de cuenta:
+   - Cronómetro: tres campos hh/mm/ss escriben lo ACUMULADO.
+   - Temporizador: los mismos tres campos escriben lo QUE QUEDA.
+   - Ida y vuelta: se edita a mano, se vuelve a editar y el motor conserva
+     el valor; las centésimas siguen en el nodo .sr para las medidas.
+2. El cuarto modo `recordatorios`: alta por día de la semana (0=domingo) y
+   hora HH:MM, texto y sonido opcional; lista con borrado; aviso una sola
+   vez por minuto, con o sin cronómetro en marcha.
+3. El ciclo pomodoro con configuración propia (trabajo, corto, largo y cada
+   N trabajos), persistida en el almacén, y encadenado SOLO: al terminar una
+   fase arranca la siguiente sin pulsar nada.
+4. La alarma suena UNA vez al cruzar el cero y el aviso se descarta sin
+   registrar sesión (el temporizador no apunta sesiones; el cronómetro y el
+   pomodoro sí).
+5. El censo semanal: siete días (lunes a domingo), minutos y sesiones por
+   día, total que cuadra con la suma de las sesiones de la semana.
+6. Play, pausa y parar como tres acciones separadas, con `disabled` real en
+   cada estado (el play de antes hacía de pausa).
+7. El sonido: copia literal de `sonido/alarma.mp3` (mismo sha256), disparada
+   por la interfaz; el motor no reproduce nada.
+
+QUÉ SE DESCARTÓ Y POR QUÉ
+-------------------------
+- `Notification` del navegador: exige permiso y no se puede probar en el
+  banco sin depender de una decisión del usuario. Queda el aviso en pantalla
+  y el sonido local.
+- `AudioContext` para sintetizar el pitido: se sustituye por el mp3 literal
+  de la referencia, que ya existe y se puede verificar por hash.
+- `setInterval` dentro del motor: el motor sigue siendo cálculo puro; el
+  tic lo pone la interfaz y llama a `tempTic()`/`pomoTic()`.
+- Ejecución en segundo plano (service worker, bandeja): una página estática
+  no la garantiza; los recordatorios avisan mientras la página está abierta.
+  Se declara como HUECO, no se simula.
+- El play que alternaba marcha/pausa: se sustituye por acciones explícitas
+  (`*-empezar`, `*-pausa`, `*-parar`) para que los estados deshabilitados
+  sean comprobables.
+
+ESTRUCTURA
+----------
+- `tablero/js/tiempo.js` (1119 líneas, 45.039 bytes): primer IIFE = motor
+  puro (sin `document`, sin `Audio`, sin `Notification`); segundo IIFE =
+  `MimoTiempoUI`, que toma el documento UNA vez con el alias `D`. El motor
+  se puede probar sin pantalla.
+- `tablero/armazon-paneles.html` (1475 líneas, 81.5 KB): tres `input`
+  hh/mm/ss en Cronómetro y Temporizador; formulario y lista en Alarmas;
+  cuatro campos de configuración en Pomodoro; censo en Registro; `<audio>`
+  con `sonido/alarma.mp3`.
+- `tablero/js/i18n.js` (616 líneas, 20.280 bytes): 153 claves por idioma
+  (antes 120), con `rec.dia0..6`, `reloj.h/m/s`, `pomo.*Min`, `reg.censo*`.
+- `tablero/sonido/alarma.mp3`: 429.590 bytes, sha256
+  e6aea3b3d43b2381e50bcf7faa1543aa8571d3898ef1c3596fa8f44f96db0fef,
+  idéntico al de `referencia/mimo-app-53cc22d/sonido/alarma.mp3`.
+- `tablero/medir-tiempo2.py` (508 líneas): instrumento repetible; mide la
+  copia congelada de /tmp como ANTES y el fichero que se le pase como
+  DESPUÉS; puerto libre, Chromium sin cabeza, cierre por pid guardado.
+
+ANTES / DESPUÉS (mismas sondas, misma máquina)
+----------------------------------------------
+                              ANTES        DESPUÉS
+losa a 1280, estado ambos     544,00       544,00
+sangría a 1100                 32,00        32,00
+32 cargas (8 estados x 2 temas x 2 idiomas)
+  eventos prohibidos              0            0
+cronómetro a los 2,50 s    00:02,50     00:02,50
+congelado al pausar            sí           sí
+claves i18n (es/en)        120 / 120    153 / 153
+tamaños Piel C               5/5          5/5
+espacios Piel C              6/8          6/8
+radios Piel C                2/2          2/2
+duraciones Piel C            3/3          3/3
+hex fuera de tokens             0            0
+
+La copia ANTES está congelada en `/tmp/mimo-nuevo-t002-antes/index.html`
+(sha256 d95ae4ecaa45d5e7fda85f4eec00a423bd4e6bfc68168d50a96c293ff2605083),
+con su `js/` y el enlace `iconos`; las dos medidas salen del mismo
+instrumento y de la misma máquina.
+
+El contador visual (`medir-tablero.py`) da el mismo resultado en el ANTES y
+en el DESPUÉS: no se añadió ningún tamaño, espacio, radio, duración ni hex.
+La losa y la sangría no se movieron. Los tres `input` usan `width: 2ch`,
+fondo transparente y heredan la tipografía de la cifra; el formulario de
+recordatorios usa `padding: 8px`, un valor que ya existía. Pausa y Parar se
+ven atenuados cuando no se pueden pulsar con `.btn[disabled]{opacity:.4}`
+(mismo criterio que `.btn-control:disabled` de la referencia); no añade
+tamaño, color ni duración.
+
+LAS DOCE MEDIDAS (salida literal, resumida)
+-------------------------------------------
+[OK]  1. 32 cargas sin un solo evento — 0 prohibidos
+[OK]  2. losa 544,00 a 1280 — 544.00
+[OK]  3. sangría 32,00 a 1100 — 32.00
+[OK]  4. cronómetro 00:02,50 y congelado al pausar — 00:02,50
+[OK]  5. reloj editable hh/mm/ss (ida y vuelta) — crono 90000/45000,
+          temp 120000/30000, cifra 01:30,00
+[OK]  6. cuatro modos; Recordatorios sin reloj ni controles —
+          cronómetro/temporizador/pomodoro/alarmas visibles; modo
+          recordatorios; reloj=0 controles=0 dentro de Alarmas
+[OK]  7. pomodoro: config guardada y ciclo encadenado — cfg 1/1/2/2;
+          trabajo -> descanso con `corriendo=True`; 2 trabajos -> largo,
+          1 trabajo -> corto
+[OK]  8. alarma suena una vez y el aviso se descarta sin registrar —
+          plays=1, aviso visible y luego vacío, sesiones 1->1
+[OK]  9. censo semanal: siete días y la suma cuadra — total=35, suma=35,
+          días=7, semana=35, DOM 35/35
+[OK] 10. recordatorio a día y hora, sin cronómetro de por medio —
+          marcha=False, live="Recordatorio: Aviso de prueba",
+          repetidos=0, filas=1
+[OK] 11. play/pausa/parar con estados deshabilitados — crono
+          [False,True,True] -> [True,False,False] -> [False,True,True];
+          temporizador [False,True,True]
+[OK] 12. 8 vistas a 411 sin desbordar — max=0 [0,0,0,0,0,0,0,0]
+
+Extra a 411 con los cinco bloques instalados (cronómetro, temporizador,
+pomodoro, alarmas y registro): las cinco vistas dan `document.scrollWidth -
+clientWidth = 0` y `vista.scrollWidth - clientWidth = 0` (ancho 307).
+
+Comprobaciones no deseadas:
+[OK] 13. claves es/en iguales y 0 ausentes — 153/153 (antes 120)
+[OK] 14. alarma.mp3 es copia literal — 429590 bytes, sha e6aea3b3...
+[OK] 15. el instrumento cierra su Chromium por pid — puerto libre y
+          `proc.terminate()` sobre el pid guardado
+[OK] 16. el motor no toca el DOM — 0 apariciones de `document.`
+
+`grep -c "document\\." tablero/js/tiempo.js` = 0.
+`grep -c "Audio\\|Notification" tablero/js/tiempo.js` = 0.
+`grep -c "pkill\\|pgrep" tablero/medir-tiempo2.py` = 0.
+`MimoI18n.claves()` = 153/153; `diagnostico()` sin ausentes ni desajustes
+en es y en.
+
+CONTROLES NUEVOS: EXCEPCIÓN DECLARADA
+-------------------------------------
+Se añadieron los tres campos hh/mm/ss, las acciones pausa/parar, el
+formulario de recordatorios y los cuatro campos de configuración del
+pomodoro. Son controles nuevos, no un rediseño: la losa (544,00), la
+sangría (32,00) y los recuentos de la Piel C quedan iguales. El único
+cambio de forma visible es el reloj: pasa de mm:ss,cc a hh:mm:ss editable;
+las centésimas se conservan en el nodo `.sr` que leen las medidas.
+
+CÓMO SE REPITE
+--------------
+    cd /home/billibu/workspace/proyectos/mimo-nuevo
+    python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html
+    python3 tablero/medir-tiempo2.py
+    python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html
+    python3 tablero/medir-tiempo2.py --sin-antes --fichero tablero/armazon-paneles.html
+
+La última orden, ejecutada, imprime:
+    RESUMEN: 0 choque(s) de 16 medidas.
+y sale 0. La variante sin argumentos mide el mismo fichero por defecto y da
+el mismo resultado. `--sin-antes` salta la copia congelada para iterar.
+
+HUECOS
+------
+- No se verificó el sonido de oído: Chromium corre sin cabeza y con
+  `--mute-audio`. Se verificó que `play()` se llama UNA vez y que el fichero
+  es byte a byte el de la referencia. La reproducción real depende del
+  permiso de audio del navegador; si lo bloquea, queda el aviso visual.
+- Los recordatorios solo avisan con la página abierta. No hay service worker
+  ni segundo plano; no se finge que lo haya.
+- Las 8 vistas a 411 se midieron con la foto de fábrica. Además se
+  comprobaron las cinco vistas con todos los bloques instalados a 411: cero
+  desborde en las cinco (ancho 307). No quedó hueco de ancho.
+- El censo es siempre la semana en curso (lunes a domingo); no hay navegación
+  a semanas anteriores.
+- El contador de trabajos del pomodoro se reinicia al cambiar el día local;
+  el descanso largo sale cada N trabajos de ese día.
+- `?prueba=1` sigue siendo un gancho de banco (escala 1000 ms por minuto y
+  config 2/2/3/4); no se eliminó para no romper las medidas existentes.
+- `PARIDAD.md`, `PLAN.json` y `tablero/inventario-paridad.md` ya figuraban
+  modificados en `git status` al empezar este bloque; no se abrieron ni se
+  editaron aquí. No se hizo commit, add ni push.
+
+BLOQUE T002-b — LAS ETIQUETAS NUEVAS SE TRADUCEN AL PINTAR
+==========================================================
+Fecha: 2026-10-20 (America/Santiago)
+Alcance: `tablero/`. Sin commit, sin add, sin push. Sin instalaciones.
+
+EL DEFECTO (medido por el Lead con su sonda)
+--------------------------------------------
+Con los cinco bloques instalados (cronómetro, temporizador, pomodoro,
+alarmas y registro) y cambio en caliente a `en`:
+  ANTES   diagnostico().desajustes = 1 en es  (reg.censoTotalVacio)
+                                   = 8 en en  (las siete etiquetas nuevas
+                                               y el nodo del censo)
+Las siete etiquetas no se traducían nunca:
+  pomo.trabajoMin "Trabajo", pomo.cortoMin "Descanso corto",
+  pomo.largoMin "Descanso largo", pomo.cadaN "Cada N trabajos",
+  rec.dia "Día", rec.hora "Hora", rec.sonido "Con sonido".
+
+Causa: eran literales en español con `data-i18n` dentro de plantillas que
+`cambiar()` regenera DESPUÉS de `aplicar()`. `aplicar()` traduce el DOM
+viejo; el repintado vuelve a sembrar las etiquetas en español y ya nadie
+las corrige. La medida 13 daba verde en vacío porque hace `?reset=1` sin
+instalar los bloques: esos nodos no existen cuando mira.
+
+QUÉ SE CAMBIÓ (y por qué)
+-------------------------
+1. `tablero/armazon-paneles.html`
+   - Las siete etiquetas se pintan ya traducidas al construir la
+     plantilla: `atr(clave)` deja la clave y `rot(clave)` el texto, igual
+     que el censo. Los cuatro campos del pomodoro llevan además su
+     `aria-label` traducido en el pintado.
+   - El nodo del total del censo (`data-tiempo="reg-censo-total"`) pierde
+     `data-i18n="reg.censoTotalVacio"`: su texto no es ese rótulo, es el
+     total calculado que escribe `js/tiempo.js`. Dejar la clave hacía que
+     `diagnostico()` comparase total y rótulo y lo contase como desajuste.
+2. `tablero/medir-tiempo2.py`
+   - Medida 13: el nombre y el detalle dicen ya «0 desajustes» y los
+     cuentan en es y en. Las claves ya se medían; el vacío del banco, no.
+   - Medida 17 NUEVA: limpia, `?reset=1`, instala registro, alarmas,
+     pomodoro y temporizador (con el cronómetro de fábrica son cinco),
+     mide es, cambia a en y espera 1,30 s (cruza el tic de 50 ms); exige
+     `desajustes == []` en los dos idiomas y las siete etiquetas en
+     inglés. Sin instalar bloques no puede dar verde.
+3. `tablero/js/tiempo.js` (excepción declarada del contrato)
+   - `pintarRecordatorios()` escribía `rec-fase` con `valor()` y no
+     actualizaba `data-i18n-vars`: con un recordatorio vivo el nodo se
+     queda con `{n:0}` y `diagnostico()` lo cuenta como desajuste (medido
+     con la 17 nueva: 1 en es y 1 en en). Es un defecto DENTRO del motor;
+     se cambia a `rotulo()`, que deja texto y parámetros a la vez. Una
+     línea, sin cambios de aspecto.
+
+MEDICIÓN (mismo comando ANTES y DESPUÉS)
+----------------------------------------
+El ANTES de esta tabla es el DESPUÉS de T002 con los cinco bloques
+instalados (la sonda del Lead), no la copia congelada de /tmp.
+
+                          ANTES        DESPUÉS
+desajustes es               1            0
+desajustes en               8            0
+claves i18n (es/en)     153/153      153/153
+losa a 1280, ambos      544,00       544,00
+sangría a 1100           32,00        32,00
+32 cargas, prohibidos        0            0
+
+Comando: `python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html`
+La variante sin argumentos mide el mismo fichero y da el mismo resultado.
+
+Salida literal de las dos medidas que cambian:
+[OK] 13. claves es/en iguales, 0 ausentes y 0 desajustes — 153/153 desajustes es=0 en=0 (antes 120)
+[OK] 17. etiquetas nuevas traducidas con los cinco bloques y un tic — vistas=5 es_desajustes=0 en_desajustes=0 trabajoMin=Work cortoMin=Short break largoMin=Long break cadaN=Every N work blocks dia=Day hora=Time sonido=With sound
+RESUMEN: 0 choque(s) de 17 medidas.   (EXIT=0)
+
+Las siete etiquetas en inglés:
+  Trabajo           -> Work
+  Descanso corto    -> Short break
+  Descanso largo    -> Long break
+  Cada N trabajos   -> Every N work blocks
+  Día               -> Day
+  Hora              -> Time
+  Con sonido        -> With sound
+
+Nota sobre «Hora»: el contrato pedía «Hour»; el diccionario del disco
+(`js/i18n.js:409`) dice «Time». Manda el disco: se mide contra «Time».
+Si el Lead quiere «Hour», es un cambio de una línea en `js/i18n.js` que
+este bloque no toca.
+
+Gate ubicuo:
+RESUMEN: las tres pieles dentro de su techo.   (EXIT=0)
+Piel C: tamaños 5/5, espacios 6/8, radios 2/2, duraciones 3/3, hex fuera
+de tokens 0. La losa y la sangría no se movieron.
+
+HUECOS
+------
+- El `placeholder` de «Texto del recordatorio» (`data-i18n-attr=
+  "placeholder:rec.texto"`) sigue naciendo en español en la plantilla
+  regenerada. No es una de las siete etiquetas y el instrumento no lo
+  mide; queda declarado.
+- Los `aria-label` de los relojes (`reloj.h/m/s`, `temp.menos/mas`)
+  también llevan `data-i18n-attr` sobre plantilla regenerada: fuera del
+  alcance de este bloque y no medidos.
+- El sonido sigue sin verificarse de oído (Chromium con `--mute-audio`),
+  igual que en T002.
+

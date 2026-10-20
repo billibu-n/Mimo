@@ -46,7 +46,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 ## Las tareas, con su fuente
 
-### T001 — Quitar el nombre de la seccion sobre la ventana central
+### T0 — Quitar el nombre de la seccion sobre la ventana central
 
 **Hecho** el 2026-10-20 (commit `e88a350`), antes de que existiera el plan.
 
@@ -57,7 +57,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* armazon-paneles.html: vistaDe() ya no pinta el rotulo; la vista es de una sola fila
 
-### T002 — Inventario de paridad: cada funcion de los dos motores, con su destino
+### T001 — Inventario de paridad: cada funcion de los dos motores, con su destino
 
 *Fuente:* referencia/mimo-app-53cc22d/js/*/ · prototipo/bloques/*/ · prototipo/js/
 
@@ -69,7 +69,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* tablero/inventario-paridad.md con una fila por funcion o capacidad: fuente (fichero:linea), seccion del riel donde cae, o motivo por el que no se migra
 
-### T003 — Tiempo completo, igual que en mimo-app
+### T002 — Tiempo completo, igual que en mimo-app
 
 *Fuente:* referencia/mimo-app-53cc22d/js/tiempo/01-tiempo.js:388-423 (reloj editable: tres input hh/mm/ss; en temporizador se edita el tiempo que queda, en cronometro el acumulado) · referencia/mimo-app-53cc22d/js/tiempo/01-tiempo.js:111-160 (los cuatro modos y su vista) · referencia/mimo-app-53cc22d/js/tiempo/01-tiempo.js:427-435 (play, pausa y parar con sus estados deshabilitados) · referencia/mimo-app-53cc22d/js/tiempo/01-tiempo.js:37-59 (configuracion del pomodoro: trabajo, descanso corto, descanso largo, cada N) · referencia/mimo-app-53cc22d/js/tiempo/01-tiempo.js (alarmaTiempo, registrarMinutos, sesionesDeLaSemana, recordatorios) · prototipo/bloques/tiempo/motor.js (calculo puro ya portado y probado)
 
@@ -85,7 +85,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Riesgo:* el reloj editable cambia el control de la tarjeta; la estetica se mantiene y se mide antes/despues
 
-### T004 — Sustrato comun: almacen, catalogo, fechas y fusión sin pérdida
+### T003 — Sustrato comun: almacen, catalogo, fechas y fusión sin pérdida
 
 *Fuente:* referencia/mimo-app-53cc22d/js/comun/04-almacen.js · referencia/mimo-app-53cc22d/js/comun/
 
@@ -96,7 +96,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* un solo almacen versionado para todos los bloques, con migracion desde lo que ya guardan los motores portados
 
-### T005 — Malla del semestre
+### T004 — Malla del semestre
 
 *Fuente:* prototipo/bloques/malla/ (2908 lineas: motor, ui, prueba-motor, importar, exportar) · referencia/mimo-app-53cc22d/js/malla/ (2161 lineas)
 
@@ -107,7 +107,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* el bloque Malla con su reticula, sus ramos y sus estados, dentro de la seccion Malla
 
-### T006 — Estudio y Calificaciones
+### T005 — Estudio y Calificaciones
 
 *Fuente:* referencia/mimo-app-53cc22d/js/estudio/ (411 lineas) · referencia/mimo-app-53cc22d/js/malla/ (calificaciones)
 
@@ -118,17 +118,18 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* los bloques de Estudio y de Calificaciones en sus secciones
 
-### T007 — Apuntes
+### T006 — Apuntes (SUPERADA POR T012 — no ejecutar)
 
-*Fuente:* referencia/mimo-app-53cc22d/js/notas/ (601 lineas)
+*Fuente:* ninguna. La app anterior **no tiene** apuntes libres: su carpeta `notas/` es
+Calificaciones (`notas/01-motor.js` = notas por categoria con eximicion), y en el inventario
+(T001) esta capacidad quedo como «sin casa» a la espera de decision del dueno.
 
-*Tiene que cumplir:*
-- Toda capacidad de notas/ tendra equivalente o HUECO
-- Una nota escrita debera sobrevivir a recargar y a cambiar de seccion
+*Estado:* **bloqueada y superada** el 2026-10-20. El dueno decidio que los apuntes son una
+**funcion nueva**, no una migracion: se registra como **T012**, con almacen propio y sin fuente
+que citar. T006 no se ejecuta ni se desbloquea: queda como registro del error del plan original
+(dar por hecha una migracion que nunca existio).
 
-*Entrega:* el bloque de Apuntes con sus notas y su buscador si lo tenia
-
-### T008 — Tareas
+### T007 — Tareas
 
 *Fuente:* referencia/mimo-app-53cc22d/js/tareas/ (206 lineas)
 
@@ -138,7 +139,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* el bloque de Tareas con sus plazos
 
-### T009 — Semestre y Calendario
+### T008 — Semestre y Calendario
 
 *Fuente:* referencia/mimo-app-53cc22d/js/semestre/ (548 lineas) · referencia/mimo-app-53cc22d/js/comun/ (fechas)
 
@@ -148,7 +149,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* el calendario del semestre con sus semanas y la seccion Semestre
 
-### T010 — Ajustes y Apariencia
+### T009 — Ajustes y Apariencia
 
 *Fuente:* referencia/mimo-app-53cc22d/js/ajustes/ (1960 lineas, 10 ficheros) · tablero/armazon.html (iteracion anterior: Fondo, Superficie, Acento, Piel y el modo edicion)
 
@@ -158,7 +159,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* Ajustes con todas sus secciones, no solo tema, pie e idioma
 
-### T011 — Idioma completo
+### T010 — Idioma completo
 
 *Fuente:* referencia/mimo-app-53cc22d/js/idioma/ (538 lineas) · prototipo/i18n/es.json, en.json · tablero/js/i18n.js (120 claves por idioma hoy)
 
@@ -168,7 +169,7 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 
 *Entrega:* diccionarios completos de las secciones migradas, con 0 claves sin traducir en los dos idiomas
 
-### T012 — Cierre de paridad y entrega
+### T011 — Cierre de paridad y entrega
 
 *Fuente:* la app anterior abierta al lado, seccion por seccion
 
@@ -178,6 +179,25 @@ La aplicacion nueva, con el armazon de bloques instalables, con TODO lo que ya f
 - Un recorrido completo de la app nueva, seccion por seccion, sin un aviso de consola
 
 *Entrega:* tablero/paridad-final.md: la lista de comprobacion completa, con cada funcion de mimo-app marcada como migrada, distinta a proposito o hueco
+
+### T012 — Apuntes libres (FUNCION NUEVA, pedido del dueno 2026-10-20)
+
+*Fuente:* **ninguna en la app anterior.** No es migracion y no se cita fichero: lo pidio el dueno
+el 2026-10-20, y el inventario (T001) ya habia comprobado que `notas/` es Calificaciones. Se marca
+como pedido del dueno para que nadie lo confunda con paridad.
+
+*Tiene que cumplir:*
+- Seccion **nueva** en el riel (sera la **sexta**), con su bloque de **notas libres**, almacen
+  propio (clave nueva, versionada) y busqueda dentro de las notas
+- Una nota escrita debera sobrevivir a recargar y a cambiar de seccion
+- La busqueda debera encontrar por titulo y por cuerpo, y decir cuantas coincidencias hay
+- Con seis secciones, la losa debera seguir midiendo 544,00 a 1280 y 32,00 de sangria a 1100:
+  seis filas de riel no pueden romper el techo (`python3 tablero/medir-tablero.py --fichero
+  tablero/armazon-paneles.html` en EXIT=0, y las 8 vistas a 411 sin desbordar)
+- Depende de **T003** (el almacen unico): no inventa un segundo almacen paralelo
+
+*Entrega:* la sexta seccion del riel con su bloque de Apuntes (notas + buscador), su almacen y sus
+claves es/en
 
 ## Lo que NO es esta app
 

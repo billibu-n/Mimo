@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T15:52:00-03:00",
+  "updated": "2026-10-20T15:54:57-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -25,7 +25,7 @@
     {
       "id": "T002",
       "title": "Tiempo completo: reloj editable a mano, Recordatorios, config de pomodoro, alarma con sonido, censo semanal y controles play/pausa/parar",
-      "status": "pending",
+      "status": "in-progress",
       "depends_on": [
         "T001"
       ],
@@ -82,7 +82,7 @@
     },
     {
       "id": "T006",
-      "title": "Apuntes — BLOQUEADA: la app anterior no tiene apuntes libres (su carpeta notas/ es de Calificaciones); si se quiere, es funcion NUEVA y necesita OK del dueño",
+      "title": "Apuntes — BLOQUEADA: la app anterior no tiene apuntes libres (su carpeta notas/ es de Calificaciones); si se quiere, es funcion NUEVA y necesita OK del dueño (SUPERADA POR T012 — pedido del dueno: es funcion nueva; no ejecutar)",
       "status": "blocked",
       "depends_on": [
         "T001",
@@ -180,6 +180,21 @@
         "maxUsd": 0.2
       },
       "assigned_to": "reviewer"
+    },
+    {
+      "id": "T012",
+      "title": "Apuntes libres — FUNCION NUEVA pedida por el dueno (sin fuente en la app anterior: su notas/ es Calificaciones): sexta seccion del riel con bloque de notas, almacen propio y busqueda; la losa aguanta con seis secciones a 1100 y a 411 sin romper el techo",
+      "status": "pending",
+      "depends_on": [
+        "T001",
+        "T003"
+      ],
+      "acceptance": "python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html | grep -q 'las tres pieles dentro de su techo' && python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html | grep -q '0 choque'",
+      "budget": {
+        "maxCalls": 190,
+        "maxUsd": 0.24
+      },
+      "assigned_to": "coder"
     }
   ],
   "_como_usar": [

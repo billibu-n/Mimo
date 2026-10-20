@@ -306,3 +306,30 @@ hasta que el dueño decida si quiere esa función nueva; (2) `tareas/` va a **Ca
 propia; (3) los seis huecos reales son PWA (file:// no registra service worker), puente Tauri, sincronizar
 con servidor local, buscar actualización y colaborar (apuntan al repo viejo) y el guiño de la marca. El
 orden del plan sigue igual: T002 (Tiempo completo) es la siguiente.
+
+**Ronda 95 — T002 Tiempo completo, y el padre cazó una regresión que el hijo no veía (2026-10-20).** T002 se
+ejecutó con el brief `harness/encargos/2026-10-20-bloque-t002-tiempo-completo.md` (7/7, EXIT=0). Lo que entró:
+el reloj editable (tres `input` hh/mm/ss; en temporizador escribe lo que queda, en cronómetro lo acumulado), el
+cuarto modo **Recordatorios** sobre el bloque `alarmas` (que era el HUECO declarado), la configuración del
+pomodoro (trabajo, corto, largo, cada N) con el ciclo encadenándose solo, la alarma con el mp3 literal de la
+referencia (429.590 B, sha256 `e6aea3b3…`), el censo semanal de siete días y play/pausa/parar como tres
+acciones con sus `disabled` — como la referencia (`01-tiempo.js:427-435`), que ya los tenía separados: el
+«play que hacía de pausa» era la desviación de la v7, no al revés. El motor sigue siendo cálculo puro (0
+apariciones de `document.`); el sonido y el DOM son de la interfaz. Instrumento nuevo y versionado:
+`tablero/medir-tiempo2.py` (`--fichero`, puerto libre por socket, cierre por PID guardado, 17 medidas,
+`RESUMEN: 0 choque(s)`).
+
+Lo importante de la ronda es **cómo se cerró**. El hijo entregó 16/16 en verde y el padre reprodujo esa cifra
+corriendo el instrumento él mismo. Pero al medir con otra familia (`/tmp/mimo/d6-medidas.py`) y con una sonda
+propia (`/tmp/mimo/lead-probe-r95.py`) salió lo que la medida 13 del instrumento no podía ver: con los cinco
+bloques instalados y un tic de 50 ms por medio, **siete etiquetas nuevas seguían en español con el idioma en
+inglés** (`pomo.trabajoMin`, `cortoMin`, `largoMin`, `cadaN`, `rec.dia`, `rec.hora`, `rec.sonido`) y el
+diagnóstico daba un desajuste por el total del censo hasta en español. La v7 daba `desajustes: []`. Causa:
+literales en español con `data-i18n` dentro de plantillas que el tic regenera; `aplicar()` corre antes del
+repintado. Lección de método, que es la de siempre: **una medida que se da en vacío miente** (la 13 hacía
+`?reset=1` y cambiaba de idioma sin instalar los bloques, así que esos nodos no existían); y **el padre mide,
+no confía** — el 16/16 era cierto y aun así el bloque tenía un defecto. Se arregló en un bloque corto
+(`t002b-i18n-etiquetas.md`, 7/7): pintar con `rot()`/`atr()` al construir la plantilla, quitar el `data-i18n`
+del total calculado, y añadir una **medida 17** que instala los cinco bloques, cambia a `en`, espera 1,30 s y
+exige `desajustes == []` y las siete etiquetas en inglés. Re-medido por el padre: 0 desajustes en los dos
+idiomas.

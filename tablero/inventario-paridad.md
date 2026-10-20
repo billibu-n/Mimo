@@ -103,7 +103,7 @@ Mapa de las capacidades de usuario de los dos motores (referencia + prototipo) c
 | puente Tauri (carpeta, migración) | la nueva no es app de escritorio | no migrar; queda en la referencia |
 | buscar actualización + colaborar | apuntan al repo `mimo-app` viejo | T9 reapuntando a `mimo-nuevo`, o HUECO |
 | barra lateral retráctil 3 modos | el armazón nuevo tiene riel+gabinete fijos | HUECO, salvo que Ajustes quiera el modo |
-| apuntes libres (bloque "Apuntes", T6) | en mimo-app no hay apuntes libres: la carpeta `notas/` es de calificaciones | decidir el Lead: bloque nuevo o se nutre de `notas/` |
+| apuntes libres (bloque "Apuntes") | en mimo-app no hay apuntes libres: la carpeta `notas/` es de calificaciones | **decidido (2026-10-20):** el dueño lo quiere como FUNCION NUEVA, no migrada → **T012** (sexta seccion del riel, almacen propio y busqueda); T006 queda superada |
 | marca-juego (icono easter egg) | guiño cosmético, no capacidad de usuario | no migrar |
 
 ## Cierre
