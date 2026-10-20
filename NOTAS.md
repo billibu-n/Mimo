@@ -272,3 +272,17 @@ la estantería de vistas cabe en una fila (50,00 px de alto a 1280): el defecto 
 desaparece por diseño, no por retoque. Arreglado también el icono de la app: no era la imagen, era el
 `border-radius:999px` de la cabecera recortando un dibujo que ocupa el cuadrado entero; ahora es un
 marco cuadrado-redondeado de 8 px con `image-rendering:pixelated`.
+
+**Ronda 93, primera entrega — v7 (2026-10-20, `20fa481`).** Los cuatro bloques de Tiempo funcionan de
+verdad sobre el motor de `prototipo/bloques/tiempo/motor.js` (cálculo puro y almacén único versionado
+`mimo.bloque.tiempo`), portado a `tablero/js/tiempo.js`; se descartó el de la app anterior (726 líneas
+acopladas a DOM, `setInterval`, `Notification` y `AudioContext`). Medido por el padre con reloj real: el
+cronómetro marca `00:02,50` a los 2,50 s y pausa congela; el temporizador avisa una sola vez al llegar a
+cero; el pomodoro completa trabajo→descanso sumando sesión; el registro sobrevive a recargar. El i18n va
+en `tablero/js/i18n.js` (diccionarios dentro del JS porque bajo `file://` el `fetch` de un JSON da CORS):
+120 claves por idioma, 0 ausentes, cambio en caliente, `<html lang>` y `localStorage` persistidos —medido
+por el padre a 1280: «Calendar, Grid, Time, Study, Grades, Add block, Stopwatch, Timer, Settings, en ·
+light»—. Cinco huecos nuevos, declarados: Alarmas se instala pero no avisa; el arco del anillo del
+pomodoro es estático; el temporizador va de minuto en minuto; sin sonido ni notificación del sistema; el
+registro apunta al minuto entero. Quedan por migrar Malla, Estudio, Calificaciones, Apuntes, Tareas y
+Evaluaciones, cada una en su entrega.
