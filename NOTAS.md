@@ -223,7 +223,29 @@ temas**: expresividad comprada con caos.
   ser **datos** (fondo, superficie, tinta, acento). Ya están declarados seis: Papel, Arena, Marea,
   Grafito, Medianoche y Alto contraste.
 
-**Decisión pendiente del dueño:** cuál de las tres pieles. **HUECO conocido:** en la piel B el
-filete da 1,31:1 sobre la superficie, así que la pista del anillo del pomodoro se pierde en su
-panel; es un token y se corrige al aplicar la piel elegida. **Nada de esto se ha aplicado al
-prototipo**: el armazón es una muestra aparte y `prototipo/` sigue intacto.
+**El quiebre de la losa, medido** (`tablero/evidencia-quiebre.txt`, 2026-10-20 13:08; 26 cargas, 6 de
+borde y 2 de botón, más el desempate del padre): con el panel derecho abierto la losa vale
+**`ancho − 736`** (13 de 13 anchos ≥ 900, rectángulos de Chromium, no restas) y con los paneles cerrados
+`ancho − 384`. Hay **dos suelos y dos umbrales**, y no coinciden (164 px de diferencia): **1256** px para
+que la losa conserve los 520 del encargo (a 1257 → 521,00; a 1255 → 519,00) y **1092** px para que no
+recorte nada (a 1093 → 357,00 sin recorte; a 1091 → 355,00 con `.losa__cuerpo` 356/355). El quiebre de hoy
+está en **899**, así que **entre 900 y 1255 la losa se ahoga sin avisar**: a 1100 mide 364,00 con el pomo
+en 268,00; a 950, 214,00 con el anillo recortado (356/214); a 900, 164,00. A 1100 el panel **empuja**
+(716,00 → 364,00, `.velo` none): el defecto se reproduce con el botón, no solo por URL.
+
+**Los huecos declarados del boceto son ocho, no cinco** (§12 de `evidencia-paneles.txt`, a-h): además de
+«Instalar no instala», «las fichas no cambian tema» y «Ajustes vacío», la URL no se reescribe, el riel
+queda bajo el velo en superpuesto, no hay trampa de foco en los paneles, el tema oscuro apaga la sombra y
+el riel mide 256. Los tres primeros son de **comportamiento con confirmación falsa** (la ficha mueve su
+anillo y parece que cambió el tema): se declaran al dueño antes de que toque botones.
+
+**Decisión tomada:** la piel es la **C · Materia** (aprobada por el dueño el 2026-10-20; el `armazon.html`
+de tres pieles queda como comparador, no como propuesta). **HUECO conocido de la piel B, si se comparara:**
+el filete da 1,31:1 sobre la superficie y la pista del anillo del pomodoro se pierde en su panel; en la C
+no aplica. **Nada de esto se ha aplicado al prototipo**: el armazón es una muestra aparte y `prototipo/`
+sigue intacto.
+
+**Decisión pendiente del dueño (una sola, ya con números):** dónde deja de empujar el panel derecho. Hay
+dos suelos medidos, 520 (lo que pide el encargo) y 356 (lo mínimo que el contenido necesita), y dan dos
+quiebres distintos, 1256 y 1092. La recomendación del Lead está en la pregunta de esta ronda; no se toca
+la regla de los 899 hasta que el dueño responda.
