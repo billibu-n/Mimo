@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T16:58:48-03:00",
+  "updated": "2026-10-20T17:15:08-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -39,7 +39,7 @@
     {
       "id": "T003",
       "title": "Sustrato comun: almacen unico, catalogo, select y avisos propios, utilidades de fecha, menu contextual y respaldo en carpeta (comun/)",
-      "status": "in-progress",
+      "status": "done",
       "depends_on": [
         "T001"
       ],
