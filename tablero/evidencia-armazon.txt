@@ -1,0 +1,149 @@
+EVIDENCIA — Mimo Nuevo · bloque D2b (armazón: la vista en columna y el aire del anillo)
+Medido el 2026-10-20, 12:05-12:33 (America/Santiago).
+Navegador: Chromium 155.0.8059.84 headless, CDP en 127.0.0.1:9477; sin servidor: file:///home/billibu/workspace/proyectos/mimo-nuevo/tablero/armazon.html?piel=a|b|c&tema=claro|oscuro&estado=normal|gabinete|edicion|vacia|apariencia
+Driver: herramientas/cdp.py. Guion de medición: /tmp/mimo/medir.py (efímero, no se versiona).
+Ficheros tocados en este bloque: tablero/armazon.html (solo CSS de colocación), las 15 de tablero/capturas/ y este fichero. Ningún token, ningún valor declarado por piel, ningún texto ni componente nuevo.
+Cada línea es una medición: clave: valor | como se midió.
+
+1. LAS DOS MEDIDAS QUE PEDÍA EL ENCARGO, ANTES Y DESPUÉS
+Las cifras «antes» salen de la misma sonda ejecutada sobre el armazon.html anterior al arreglo (python3 /tmp/mimo/medir.py baseline, 6 combinaciones, exit 0).
+ancho de la vista .vista--bloque, normal, 1440x900: antes a 1062 · b 1090 · c 952 px | getBoundingClientRect().width de .vista--bloque con Emulation.setDeviceMetricsOverride(1440,900)
+ancho de la vista .vista--bloque, normal, 1440x900: después a 720 · b 880 · c 760 px | idem; es el ancho máximo declarado por piel en armazon.html ([data-piel] .vista--bloque{max-width})
+ancho del panel .pomo, normal, 1440x900: antes a 1062 · b 1090 · c 952 px | getBoundingClientRect().width de .pomo
+ancho del panel .pomo, normal, 1440x900: después a 505,92 · b 407,78 · c 356 px | idem; ahora se ajusta a su contenido (justify-self:center) en vez de estirarse a la losa
+alto del panel .pomo: antes a 617 · b 218 · c 498 px | getBoundingClientRect().height de .pomo
+alto del panel .pomo: después a 268 · b 218 · c 484 px | idem
+nota sobre el «anillo cortado» de la piel B: medido a 1440x900, en B el anillo ya tenía 24 px de aire por los cuatro lados antes del arreglo; lo que sí se medía era el panel estirado a 1090 px con el anillo en la esquina izquierda (derecha: 896 px de vacío dentro del panel) y la tarjeta tocando el filete de las pestañas. El arreglo quita el estirón y separa la tarjeta del filete; en la piel A el anillo sí tocaba el borde de su panel (izquierda: 0 px) y ahora tiene 24.
+
+2. HUECO VERTICAL EN EL ESTADO NORMAL (1440x900, claro; oscuro da lo mismo)
+libre = alto interior de .losa__cuerpo (clientHeight menos padding superior e inferior); columna = alto de la caja de la vista visible; arriba = vista.top - (cuerpo.top + padding-top); abajo = (cuerpo.bottom - padding-bottom) - vista.bottom. Todo con getBoundingClientRect y getComputedStyle.
+A: libre 694 · columna 369 · hueco 325 · arriba 162,5 · abajo 162,5 · diferencia entre márgenes 0 px | la sonda de arriba
+B: libre 736 · columna 308 · hueco 428 · arriba 214 · abajo 214 · diferencia entre márgenes 0 px | la sonda de arriba
+C: libre 600 · columna 594 · hueco 6 · arriba 3 · abajo 3 · diferencia entre márgenes 0 px | la sonda de arriba
+Antes del arreglo los tres pares eran 0 / 0: la vista llevaba flex:1 y ocupaba todo el alto libre (libre = columna en las tres pieles), así que el bloque y el panel colgaban de arriba y el vacío quedaba entre las pestañas y el panel — el «pegado abajo con un vacío grande encima» del encargo.
+En C el contenido mide 594 y el área libre 600: no sobra alto, así que el par es 3 / 3 (iguales, diferencia 0). No hay hueco que repartir; no se fuerza.
+
+3. AIRE DEL ANILLO: LAS CUATRO DISTANCIAS, POR PIEL Y TEMA (1440x900)
+distancia = lado del rect de .pomo__anillo contra el borde interior del panel .pomo (su rect menos border-width en ese lado); es el aire entre el borde interior del panel y la caja del anillo.
+A/claro: izquierda 24 · arriba 24 · derecha 261,92 · abajo 24 px | sonda; las cuatro > 0
+A/oscuro: izquierda 24 · arriba 24 · derecha 261,92 · abajo 24 px | sonda; las cuatro > 0
+B/claro: izquierda 24 · arriba 24 · derecha 213,78 · abajo 24 px | sonda; las cuatro > 0
+B/oscuro: izquierda 24 · arriba 24 · derecha 213,78 · abajo 24 px | sonda; las cuatro > 0
+C/claro: izquierda 48 · arriba 48 · derecha 48 · abajo 176 px | sonda; las cuatro > 0
+C/oscuro: izquierda 48 · arriba 48 · derecha 48 · abajo 176 px | sonda; las cuatro > 0
+Antes: a 0 / 198,5 / 842 / 198,5 · b 24 / 24 / 896 / 24 · c 346 / 51,5 / 346 / 186,5 | misma fórmula sobre el fichero anterior. En A la izquierda era 0 (el anillo tocaba el borde de su panel); en B la derecha era 896 porque el panel se estiraba.
+Caja del anillo (sin cambios, es valor declarado por piel): a 220x220 · b 168x168 · c 260x260 px | getBoundingClientRect de .pomo__anillo
+Caja del anillo después: a 220x220 · b 168x168 · c 260x260 px | idem
+
+4. LOS CINCO ESTADOS: 15 DE 15, CON TAMAÑO VISIBLE
+estado alcanzado y con caja > 0: 15/15 (piel x estado) y 30/30 contando los dos temas | abrir la URL con ?piel&tema&estado, leer body[data-estado] y el rect del elemento visible; se considera visible si ancho y alto > 0,5 px
+ancho x alto del elemento visible (claro; oscuro idéntico):
+A: normal 720x369 · gabinete 368x793 · edicion 286x43 · vacia 720x300 · apariencia 720x309 px | rect del elemento visible de cada estado (.vista--bloque, .gabinete, .riel__edicion, .vacia, .apariencia)
+B: normal 880x308 · gabinete 380x801 · edicion 294x41 · vacia 880x260 · apariencia 880x268 px | rect del elemento visible de cada estado (.vista--bloque, .gabinete, .riel__edicion, .vacia, .apariencia)
+C: normal 760x594 · gabinete 408x755 · edicion 272x50 · vacia 760x417 · apariencia 760x385 px | rect del elemento visible de cada estado (.vista--bloque, .gabinete, .riel__edicion, .vacia, .apariencia)
+nota: en gabinete y edicion la vista del estado es el panel lateral (el gabinete y el riel de edición), no la columna del bloque; por eso su ancho no es el de la columna.
+
+5. ANCHOS 1280 Y 411 · DESBORDE MÁXIMO
+desborde horizontal: documentElement.scrollWidth - clientWidth; vertical: scrollHeight - clientHeight, tras setDeviceMetricsOverride
+1280: desborde horizontal máximo 0 px en los 15 (piel x estado) | idem
+1280: desborde vertical 0 px en los 15 | idem
+411: desborde horizontal máximo 0 px en los 15 (piel x estado) | idem
+411: desborde vertical en 15 de 15: a/normal 80, a/gabinete 80, a/edicion 80, a/vacia 80, a/apariencia 80, b/normal 80, b/gabinete 80, b/edicion 80, b/vacia 80, b/apariencia 80, c/normal 230, c/gabinete 230, c/edicion 343, c/vacia 80, c/apariencia 266 px | idem; es el documento que crece en móvil (la armazón no recorta: el alto del documento es el del contenido)
+visible en los 30 (dos anchos x 15): 30/30 con caja > 0 | idem
+
+6. CONTRASTE MÍNIMO POR PIEL Y TEMA (30 combinaciones = 15 estados x 2 temas)
+método: color de texto computado y fondo compuesto subiendo por el DOM hasta el primer backgroundColor opaco, mezclando por alfa sobre blanco; razón WCAG 2.x sobre luminancia relativa sRGB. Umbral 4,5:1 en texto y 3:1 en borde.
+A/claro: texto 6 (p.gab__desc «Lo que tienes pendiente,», 12 px) · borde 4,98 (button.btn.btn--mini) | peor de los cinco estados
+A/oscuro: texto 6,77 (button.btn.btn--primario «Empezar», 14 px) · borde 5,92 (button.btn.btn--mini) | peor de los cinco estados
+B/claro: texto 6,36 (p.controles__et «Controles de la muestra», 12 px) · borde 1,31 (div.pomo) | peor de los cinco estados
+B/oscuro: texto 6,96 (span.pomo__fase «Trabajo · 25 min», 11 px) · borde 1,31 (div.pomo) | peor de los cinco estados
+C/claro: texto 5,3 (button.est__v «Cronómetro», 15 px) · borde 4,34 (button.btn.btn--mini) | peor de los cinco estados
+C/oscuro: texto 6,82 (button.est__v «Cronómetro», 15 px) · borde 5,26 (button.btn.btn--mini) | peor de los cinco estados
+los 30 mínimos de texto: el más bajo 5,3 (C/claro, button.est__v) y todos >= 4,5 | mínimo de la tabla de arriba
+los 30 mínimos de borde: el más bajo 1,31 (B, div.pomo, --linea sobre --sup, en los dos temas); los demás >= 4,34 | mínimo de la tabla de arriba. El de B es el filete de la tarjeta, no el borde de un control, y ya estaba antes del bloque (mismo 1,31 medido sobre el fichero anterior); no se toca porque el color es un token y el encargo prohíbe cambiarlos. Ver HUECOS.
+
+7. CONSOLA
+excepciones, errores y avisos de consola: 0 en los 30 (15 estados x 2 temas) y 0 en los 30 de los dos anchos | Runtime.exceptionThrown y Runtime.consoleAPICalled registrados desde antes de navegar
+eventos de consola registrados en total: 0 | idem
+
+8. LOS CINCO RECUENTOS POR PIEL Y LA AUTOPRUEBA DEL MEDIDOR
+Comando: python3 tablero/medir-tablero.py --fichero tablero/armazon.html (salida literal al final de este fichero, sección 10).
+A: tamaños 5/5 · espacios 7/8 · radios 2/2 · duraciones 2/2 · hex fuera de :root 0/0
+B: tamaños 5/5 · espacios 7/8 · radios 1/2 · duraciones 2/2 · hex 0/0
+C: tamaños 5/5 · espacios 7/8 · radios 2/2 · duraciones 3/3 · hex 0/0
+RESUMEN: las tres pieles dentro de su techo; exit 0 | el propio medidor
+autoprueba: python3 tablero/medir-tablero.py --autoprueba -> 7 casos, 4 rojos vistos, 0 fallos, exit 0 | el propio medidor
+
+9. LAS 15 CAPTURAS
+tomadas con Page.captureScreenshot (PNG) sobre la URL de cada estado, con la ventana emulada a 1440x900 (12) y 411x940 (3), sin scroll.
+a-edicion-1440-claro.png: 1440x900 · 57938 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+a-gabinete-1440-oscuro.png: 1440x900 · 92596 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+a-normal-1440-claro.png: 1440x900 · 51807 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+a-normal-411-claro.png: 411x940 · 43688 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+a-vacia-1440-claro.png: 1440x900 · 44843 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+b-edicion-1440-claro.png: 1440x900 · 52065 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+b-gabinete-1440-oscuro.png: 1440x900 · 87121 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+b-normal-1440-claro.png: 1440x900 · 49662 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+b-normal-411-claro.png: 411x940 · 45367 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+b-vacia-1440-claro.png: 1440x900 · 42903 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+c-edicion-1440-claro.png: 1440x900 · 76991 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+c-gabinete-1440-oscuro.png: 1440x900 · 115753 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+c-normal-1440-claro.png: 1440x900 · 69249 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+c-normal-411-claro.png: 411x940 · 51212 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+c-vacia-1440-claro.png: 1440x900 · 58566 bytes | Image.size y os.path.getsize; no está en blanco (todas > 40 KB)
+
+10. SALIDA LITERAL DEL MEDIDOR DEL PROYECTO
+(se pega al final de este fichero: --fichero y --autoprueba con su código de salida)
+
+11. HUECOS
+1) B: el filete de la tarjeta del pomo da 1,31:1 contra el fondo de la losa (--linea sobre --sup), por debajo de 3:1. Es un filete de separación, no el borde de un control (los controles dan >= 4,34), y no se toca porque exige cambiar un token. Declarado, no escondido.
+2) B: el «anillo cortado» no se reproduce en la medida a 1440x900 (las cuatro distancias eran 24 > 0 antes del arreglo). Lo medido y arreglado en B es el panel estirado (1090 px) con el anillo en la esquina y la tarjeta pegada al filete de las pestañas. Si el dueño lo vio en otra anchura, falta el dato de esa anchura.
+3) C: a 1440x900 no le sobra alto (594 de contenido en 600 de área libre), así que el par de márgenes es 3/3 y no hay hueco que repartir. La columna de 760 y la tarjeta de 356 sí se ven.
+4) 411: el documento crece (la armazón no recorta) y desborda en vertical; es el comportamiento esperado en móvil, el desborde horizontal es 0.
+
+== python3 tablero/medir-tablero.py --fichero tablero/armazon.html
+TABLERO: tablero/armazon.html
+PIEL A · Papel y tinta
+  tamaños     5/5   OK              [12px, 14px, 16px, 28px, 56px]
+  espacios    7/8   OK              [4px, 8px, 12px, 16px, 24px, 32px, 48px]
+  radios      2/2   OK              [2px, 999px]
+  duraciones  2/2   OK              [100, 140] ms
+  hex         0/0   OK              [—]
+
+PIEL B · Instrumento
+  tamaños     5/5   OK              [11px, 13px, 15px, 22px, 40px]
+  espacios    7/8   OK              [4px, 8px, 12px, 16px, 20px, 24px, 32px]
+  radios      1/2   OK              [4px]
+  duraciones  2/2   OK              [90, 120] ms
+  hex         0/0   OK              [—]
+
+PIEL C · Materia
+  tamaños     5/5   OK              [13px, 15px, 17px, 26px, 64px]
+  espacios    7/8   OK              [8px, 12px, 16px, 24px, 32px, 48px, 64px]
+  radios      2/2   OK              [16px, 999px]
+  duraciones  3/3   OK              [100, 160, 240] ms
+  hex         0/0   OK              [—]
+
+Hex fuera de los tokens (toda la hoja): 0
+
+RESUMEN: las tres pieles dentro de su techo.
+EXIT=0
+
+== python3 tablero/medir-tablero.py --autoprueba
+AU-1 · escala dentro de techo          esperado=verde  medido=verde  OK
+AU-2 · un tamaño de más en A           esperado=ROJO  medido=ROJO  OK
+AU-3 · hex fuera de los tokens         esperado=ROJO  medido=ROJO  OK
+AU-4 · comentarios que parecen valores esperado=verde  medido=verde  OK
+AU-5 · nueve espacios en B             esperado=ROJO  medido=ROJO  OK
+AU-6 · armazón dentro de techo (data-piel) esperado=verde  medido=verde  OK
+AU-7 · nueve espacios en C (data-piel) esperado=ROJO  medido=ROJO  OK
+
+Casos: 7 · rojos vistos: 4 · fallos: 0
+EXIT_AUT=0
+
+== git status --short (después)
+ M tablero/LEEME.md
+ M tablero/medir-tablero.py
+?? tablero/armazon.html
+?? tablero/evidencia-armazon.txt
+lineas: 4

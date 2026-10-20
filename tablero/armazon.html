@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mimo · armazón</title>
+<style>
+/* ============================================================================
+   TOKENS — el único sitio de este fichero donde se escribe un color.
+   Las pieles A, B y C son las de direcciones.html, copiadas tal cual: claro y
+   oscuro. Los seis temas de la app son DATOS para la pantalla de apariencia.
+   ============================================================================ */
+:root{
+  /* controles de la muestra (fuera del armazón) */
+  --tab-fondo:#ecebe7; --tab-sup:#faf9f7; --tab-tinta:#1b1b1b; --tab-muted:#5c5c5c;
+  --tab-linea:#cfccc7; --tab-linea-fuerte:#6f6c67;
+  --tab-osc-fondo:#0f0f10; --tab-osc-sup:#18181a; --tab-osc-tinta:#ececec;
+  --tab-osc-muted:#a8a8a8; --tab-osc-linea:#2c2c2f; --tab-osc-linea-fuerte:#8a8a8e;
+  --tab-bg:var(--tab-fondo); --tab-bg-sup:var(--tab-sup);
+
+  /* A · Papel y tinta */
+  --a-fondo:#f6f1e7; --a-sup:#fdfaf2; --a-sup2:#efe8da;
+  --a-tinta:#1d1a16; --a-muted:#5e5548;
+  --a-linea:#d8cfbe; --a-linea-fuerte:#6b6152;
+  --a-acento:#7c2d26; --a-acento-txt:#fff9ef;
+  --a-serif:ui-serif, Georgia, 'Times New Roman', serif;
+  --a-sans:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --a-osc-fondo:#17140f; --a-osc-sup:#1f1b15; --a-osc-sup2:#272219;
+  --a-osc-tinta:#f1e9da; --a-osc-muted:#b9ad99;
+  --a-osc-linea:#3b352b; --a-osc-linea-fuerte:#a99d88;
+  --a-osc-acento:#d98f82; --a-osc-acento-txt:#1d1a16;
+
+  /* B · Instrumento */
+  --b-fondo:#f4f5f6; --b-sup:#ffffff; --b-sup2:#e9ebed;
+  --b-tinta:#191b1d; --b-muted:#4c5157;
+  --b-linea:#dfe1e3; --b-linea-fuerte:#6b7178;
+  --b-acento:#191b1d; --b-acento-txt:#ffffff;
+  --b-sans:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --b-mono:ui-monospace, Menlo, Consolas, monospace;
+  --b-osc-fondo:#101214; --b-osc-sup:#171a1d; --b-osc-sup2:#202428;
+  --b-osc-tinta:#e9ecef; --b-osc-muted:#a7aeb4;
+  --b-osc-linea:#2b3035; --b-osc-linea-fuerte:#8b9298;
+  --b-osc-acento:#e9ecef; --b-osc-acento-txt:#101214;
+
+  /* C · Materia */
+  --c-fondo:#f2ede6; --c-sup:#faf7f2; --c-sup2:#e8e1d6;
+  --c-tinta:#211e19; --c-muted:#615950;
+  --c-linea:#d9d1c4; --c-linea-fuerte:#6f665a;
+  --c-acento:#b23c10; --c-acento-txt:#fff8f2;
+  --c-sans:'Century Gothic', 'Avenir Next', 'URW Gothic', system-ui, sans-serif;
+  --c-sombra:0 10px 30px rgba(60,42,20,.10);
+  --c-sombra-suave:0 2px 10px rgba(60,42,20,.10);
+  --c-sombra-osc:none;
+  --c-osc-fondo:#141210; --c-osc-sup:#1d1a16; --c-osc-sup2:#27231e;
+  --c-osc-tinta:#f4eee4; --c-osc-muted:#b5aa9a;
+  --c-osc-linea:#332e28; --c-osc-linea-fuerte:#a2947f;
+  --c-osc-acento:#f4915f; --c-osc-acento-txt:#1a1512;
+
+  /* temas de la app: una ficha, cuatro valores */
+  --papel-fondo:#FAF9F6; --papel-sup:#FFFFFF; --papel-tinta:#16130F; --papel-acento:#A03A22;
+  --arena-fondo:#F6F1E7; --arena-sup:#FFFDF8; --arena-tinta:#2A241C; --arena-acento:#7A5B2E;
+  --marea-fondo:#F1F5F7; --marea-sup:#FFFFFF; --marea-tinta:#10202A; --marea-acento:#0E6E7A;
+  --grafito-fondo:#17181A; --grafito-sup:#202225; --grafito-tinta:#ECEDEE; --grafito-acento:#9BB7FF;
+  --medianoche-fondo:#0E1220; --medianoche-sup:#171C2E; --medianoche-tinta:#E4E8F5; --medianoche-acento:#6FE3C4;
+  --contraste-fondo:#000000; --contraste-sup:#0A0A0A; --contraste-tinta:#FFFFFF; --contraste-acento:#FFD400;
+}
+body[data-tema="oscuro"]{
+  --tab-bg:var(--tab-osc-fondo);
+  --tab-bg-sup:var(--tab-osc-sup);
+  --tab-tinta:var(--tab-osc-tinta);
+  --tab-muted:var(--tab-osc-muted);
+  --tab-linea:var(--tab-osc-linea);
+  --tab-linea-fuerte:var(--tab-osc-linea-fuerte);
+}
+
+/* ============================================================================
+   ARMAZÓN COMÚN — estructura. El aspecto (tamaños, espacios, radios,
+   duraciones) lo pone cada piel en su bloque.
+   ============================================================================ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh}
+h1,h2,p,ul{margin:0}
+ul{list-style:none; padding:0}
+[hidden]{display:none!important}
+.sprite{position:absolute; width:0; height:0; overflow:hidden}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap}
+
+/* controles de la muestra (fuera del armazón) */
+.controles{display:flex; flex-wrap:wrap; align-items:center; gap:16px; padding:8px 16px;
+  background:var(--tab-bg-sup); color:var(--tab-tinta);
+  border-bottom:1px solid var(--tab-linea-fuerte); font:12px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.controles__et{margin:0; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--tab-muted)}
+.grupo{display:inline-flex; border:1px solid var(--tab-linea-fuerte); border-radius:999px; overflow:hidden}
+.grupo button{font:inherit; font-size:12px; padding:4px 12px; border:0; background:transparent; color:var(--tab-muted); cursor:pointer;
+  transition-property:background-color,color; transition-duration:100ms}
+.grupo button:hover{color:var(--tab-tinta)}
+.grupo button[aria-pressed="true"]{background:var(--tab-tinta); color:var(--tab-bg-sup)}
+.grupo button:focus-visible{outline:2px solid var(--tab-linea-fuerte); outline-offset:-2px}
+
+/* estructura del armazón */
+.armazon{display:grid; min-height:calc(100vh - 49px); align-items:stretch}
+.riel{display:flex; flex-direction:column; min-width:0; background:var(--sup); color:var(--tinta)}
+.riel:focus{outline:2px solid var(--acento); outline-offset:2px}
+.riel__bloques,.riel__fijos{display:flex; flex-direction:column; min-width:0}
+.riel__fila{display:flex; align-items:center; min-width:0}
+.riel__bloque{flex:1; display:flex; align-items:center; text-align:left; border:0; background:transparent; color:inherit; cursor:pointer; min-width:0}
+.riel__nombre{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.riel__mas,.riel__fijo{display:flex; align-items:center; width:100%; text-align:left; cursor:pointer}
+.riel__edicion{display:none; align-items:center; justify-content:space-between}
+.riel__rotulo{margin:0; font-weight:600}
+.asa{display:none; color:var(--muted); flex:none}
+.asa .icono{stroke-width:2.5}
+.riel__x{display:none; align-items:center; justify-content:center; flex:none; cursor:pointer; padding:0}
+[data-estado="edicion"] .asa,[data-estado="edicion"] .riel__x{display:inline-flex}
+[data-estado="edicion"] .riel__mas{display:none}
+[data-estado="edicion"] .riel__edicion{display:flex}
+[data-estado="edicion"] .riel__bloque{cursor:grab}
+[data-estado="edicion"] .riel__bloque{flex:1}
+.filete{display:block; height:1px; background:var(--linea); border:0}
+.losa{position:relative; display:flex; flex-direction:column; min-width:0; overflow:hidden; background:var(--sup); color:var(--tinta); box-shadow:var(--sombra)}
+.losa__barra{display:flex; align-items:center; flex-wrap:wrap}
+.losa__marca{font-weight:700; color:var(--tinta); letter-spacing:.02em}
+.losa__fecha,.losa__tema{color:var(--muted); font-variant-numeric:tabular-nums}
+.losa__tema strong{color:var(--tinta); font-weight:600}
+.losa__ajustes{margin-left:auto}
+.losa__cuerpo{display:flex; flex-direction:column; flex:1; min-width:0}
+/* la vista se apoya en una columna: ancho máximo por piel (declarado en su
+   bloque) y centrada en la losa, en horizontal y en vertical. `margin:auto`
+   no se vuelve negativo, así que cuando no sobra alto no recorta nada. */
+.vista--bloque{display:grid; grid-template-rows:auto 1fr; flex:none; width:100%; margin:auto}
+.bloque{display:grid}
+.bloque__nombre{margin:0; font-weight:600}
+.estanteria{display:flex; flex-wrap:wrap; align-items:center}
+.est__v{border:0; border-bottom:2px solid transparent; background:transparent; cursor:pointer; color:var(--muted)}
+.pomo{display:grid; align-items:center; justify-self:center; max-width:100%}
+.pomo__anillo{position:relative}
+.pomo__anillo svg{display:block; width:100%; height:100%}
+.pomo__pista,.pomo__arco{fill:none}
+.pomo__pista{stroke:var(--linea)}
+.pomo__arco{stroke:var(--acento); stroke-dasharray:245 82; transform:rotate(-90deg); transform-origin:60px 60px}
+.pomo__centro{position:absolute; inset:0; display:grid; place-content:center; text-align:center}
+.pomo__lado{display:grid; align-content:center}
+.pomo__acciones{display:flex; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-family:inherit}
+.btn:focus-visible{outline:2px solid var(--acento); outline-offset:2px}
+.btn--icono{display:inline-flex; align-items:center; justify-content:center; padding:0}
+.icono{display:block; width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
+
+/* gabinete sobre la losa */
+.velo{position:absolute; inset:0; z-index:4; display:none; background:transparent}
+.gabinete{position:absolute; z-index:5; display:none; flex-direction:column; overflow-y:auto; background:var(--sup)}
+[data-estado="gabinete"] .gabinete{display:flex}
+[data-estado="gabinete"] .velo{display:block}
+.gab__cab{display:flex; align-items:center; justify-content:space-between}
+.gab__titulo{margin:0; font-weight:600}
+.gab__intro{margin:0; color:var(--muted)}
+.gab__lista{display:grid}
+.gab__item{display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; background:var(--sup2)}
+.gab__texto{min-width:0}
+.gab__nombre{margin:0; font-weight:600}
+.gab__desc{margin:0; color:var(--muted)}
+.gab__rotulo{margin:0; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600}
+.gab__instalados .gab__item{grid-template-columns:minmax(0,1fr) auto; background:transparent}
+.gab__etiqueta{color:var(--muted)}
+
+/* vacía y apariencia */
+.vacia,.apariencia{display:none; width:100%; margin:auto}
+[data-estado="vacia"] .vacia,[data-estado="apariencia"] .apariencia{display:grid}
+[data-estado="vacia"] .vista--bloque,[data-estado="apariencia"] .vista--bloque{display:none}
+[data-estado="vacia"] .riel__bloques{display:none}
+[data-estado="vacia"] .vacia,[data-estado="apariencia"] .apariencia{flex:none}
+.chips{display:flex; flex-wrap:wrap}
+.fichas{display:grid}
+.ficha{display:grid; width:100%; text-align:left; cursor:pointer; font-family:inherit; color:inherit; background:transparent}
+.ficha__nombre{font-weight:600}
+.ficha__muestras{display:flex}
+.ficha__c{flex:1; display:block; outline:1px solid var(--linea); outline-offset:-1px}
+
+/* movimiento: la entrada la pone cada piel; reduced-motion la apaga */
+@keyframes entra-a{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+@keyframes entra-b{from{opacity:0; transform:translateX(-4px)} to{opacity:1; transform:none}}
+@keyframes entra-c{from{opacity:0; transform:translateY(8px) scale(.99)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .entra{animation:none!important}
+  .armazon *{transition:none!important}
+}
+
+/* ============================================================================
+   PIEL A · PAPEL Y TINTA — serif en las cifras, filetes, ningún volumen.
+   ============================================================================ */
+[data-piel="a"]{
+  --fondo:var(--a-fondo); --sup:var(--a-sup); --sup2:var(--a-sup2);
+  --tinta:var(--a-tinta); --muted:var(--a-muted);
+  --linea:var(--a-linea); --fuerte:var(--a-linea-fuerte);
+  --acento:var(--a-acento); --acento-txt:var(--a-acento-txt);
+  --sans:var(--a-sans); --dato:var(--a-serif); --sombra:none;
+  font-family:var(--sans); color:var(--tinta); background:var(--fondo);
+}
+body[data-piel="a"][data-tema="oscuro"]{
+  --fondo:var(--a-osc-fondo); --sup:var(--a-osc-sup); --sup2:var(--a-osc-sup2);
+  --tinta:var(--a-osc-tinta); --muted:var(--a-osc-muted);
+  --linea:var(--a-osc-linea); --fuerte:var(--a-osc-linea-fuerte);
+  --acento:var(--a-osc-acento); --acento-txt:var(--a-osc-acento-txt);
+}
+[data-piel="a"] .armazon{grid-template-columns:264px minmax(0,1fr); gap:16px; padding:16px}
+[data-piel="a"] .riel{gap:8px; padding:16px; border:1px solid var(--fuerte); border-radius:2px}
+[data-piel="a"] .riel__bloques{gap:4px}
+[data-piel="a"] .riel__fijos{gap:4px}
+[data-piel="a"] .riel__bloque{gap:8px; padding:8px 12px; font-size:14px; border-radius:2px; transition-property:background-color,color; transition-duration:100ms}
+[data-piel="a"] .riel__bloque:hover{background:var(--sup2); transition-duration:140ms}
+[data-piel="a"] .riel__bloque[aria-current="page"]{background:var(--sup2); box-shadow:inset 2px 0 0 var(--acento)}
+[data-piel="a"] .riel__mas{gap:8px; padding:8px 12px; font-size:14px; border:1px solid var(--fuerte); border-radius:2px; background:transparent; color:var(--muted); transition-property:background-color,color; transition-duration:100ms}
+[data-piel="a"] .riel__mas:hover{background:var(--sup2); color:var(--tinta); transition-duration:140ms}
+[data-piel="a"] .riel__fijo{gap:8px; padding:8px 12px; font-size:14px; border:0; border-radius:2px; background:transparent; color:var(--muted); transition-property:background-color,color; transition-duration:100ms}
+[data-piel="a"] .riel__fijo:hover{background:var(--sup2); color:var(--tinta); transition-duration:140ms}
+[data-piel="a"] .riel__filete{margin:8px 0}
+[data-piel="a"] .riel__edicion{gap:8px; padding:8px 12px}
+[data-piel="a"] .riel__rotulo{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+[data-piel="a"] .asa{width:16px; height:16px; margin-right:4px}
+[data-piel="a"] .riel__x{width:26px; height:26px; margin-left:4px; border:1px solid var(--fuerte); border-radius:999px; background:transparent; color:var(--muted); transition-duration:100ms}
+[data-piel="a"] .riel__x:hover{background:var(--sup2); color:var(--tinta); transition-duration:140ms}
+[data-piel="a"] .losa{border:1px solid var(--fuerte); border-radius:2px}
+[data-piel="a"] .losa__barra{gap:16px; padding:12px 16px; font-size:12px}
+[data-piel="a"] .losa__marca{font-size:16px}
+[data-piel="a"] .losa__cuerpo{padding:32px; gap:24px}
+[data-piel="a"] .vista--bloque,[data-piel="a"] .vacia,[data-piel="a"] .apariencia{max-width:720px}
+[data-piel="a"] .vista--bloque{row-gap:24px}
+[data-piel="a"] .bloque{gap:12px}
+[data-piel="a"] .bloque__nombre{font-family:var(--dato); font-size:16px}
+[data-piel="a"] .estanteria{gap:24px}
+[data-piel="a"] .est__v{padding:8px 0; font-size:14px; transition-property:color,border-color; transition-duration:100ms}
+[data-piel="a"] .est__v:hover{color:var(--tinta); transition-duration:140ms}
+[data-piel="a"] .est__v[aria-current="page"]{color:var(--tinta); border-bottom-color:var(--acento)}
+[data-piel="a"] .pomo{grid-template-columns:auto minmax(0,1fr); gap:48px; padding:24px}
+[data-piel="a"] .pomo__anillo{width:220px; height:220px}
+[data-piel="a"] .pomo__pista,[data-piel="a"] .pomo__arco{stroke-width:2}
+[data-piel="a"] .pomo__centro{gap:4px}
+[data-piel="a"] .pomo__cifra{font-family:var(--dato); font-size:56px; line-height:1; font-variant-numeric:tabular-nums}
+[data-piel="a"] .pomo__fase{font-size:12px; color:var(--muted)}
+[data-piel="a"] .pomo__lado{gap:16px}
+[data-piel="a"] .pomo__sesion{font-size:14px; color:var(--muted); letter-spacing:.04em}
+[data-piel="a"] .pomo__acciones{gap:8px}
+[data-piel="a"] .btn{gap:8px; padding:8px 16px; font-size:14px; border:1px solid var(--fuerte); border-radius:2px; background:transparent; color:var(--tinta); transition-property:background-color,border-color,color; transition-duration:100ms}
+[data-piel="a"] .btn:hover{background:var(--sup2); transition-duration:140ms}
+[data-piel="a"] .btn:active{background:var(--linea)}
+[data-piel="a"] .btn--primario{background:var(--acento); border-color:var(--acento); color:var(--acento-txt)}
+[data-piel="a"] .btn--primario:hover{background:var(--acento); opacity:.9}
+[data-piel="a"] .btn--primario:active{background:var(--acento); opacity:.82}
+[data-piel="a"] .btn--mini{padding:4px 12px; font-size:12px}
+[data-piel="a"] .btn--icono{width:34px; height:34px; padding:0; border:1px solid transparent; border-radius:999px; background:transparent; color:var(--tinta); transition-duration:100ms}
+[data-piel="a"] .btn--icono:hover{background:var(--sup2); transition-duration:140ms}
+[data-piel="a"] .gabinete{top:12px; right:12px; bottom:12px; width:368px; gap:12px; padding:24px; border:1px solid var(--fuerte); border-radius:2px}
+[data-piel="a"] .gab__cab{gap:16px}
+[data-piel="a"] .gab__titulo{font-family:var(--dato); font-size:28px}
+[data-piel="a"] .gab__intro{font-size:14px}
+[data-piel="a"] .gab__lista{gap:8px}
+[data-piel="a"] .gab__item{gap:12px; padding:12px; border-radius:2px}
+[data-piel="a"] .gab__instalados .gab__item{padding:8px 12px}
+[data-piel="a"] .gab__nombre{font-size:14px}
+[data-piel="a"] .gab__desc{font-size:12px}
+[data-piel="a"] .gab__rotulo{font-size:12px}
+[data-piel="a"] .gab__etiqueta{font-size:12px}
+[data-piel="a"] .gab__instalados .gab__nombre{font-size:14px}
+[data-piel="a"] .vacia{gap:24px; align-content:center; justify-items:start; padding:32px 0}
+[data-piel="a"] .vacia__tit{font-family:var(--dato); font-size:28px; font-weight:600}
+[data-piel="a"] .vacia__txt{font-size:14px; color:var(--muted)}
+[data-piel="a"] .vacia__nota{font-size:12px; color:var(--muted)}
+[data-piel="a"] .chips{gap:8px}
+[data-piel="a"] .chip{padding:4px 12px; font-size:12px; border:1px solid var(--fuerte); border-radius:999px; color:var(--tinta); background:var(--sup2)}
+[data-piel="a"] .vacia .btn{margin-top:8px}
+[data-piel="a"] .apariencia{gap:24px; align-content:start}
+[data-piel="a"] .apariencia__tit{font-family:var(--dato); font-size:28px; font-weight:600}
+[data-piel="a"] .apariencia__txt{font-size:14px; color:var(--muted)}
+[data-piel="a"] .fichas{grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+[data-piel="a"] .ficha{gap:12px; padding:16px; border:1px solid var(--fuerte); border-radius:2px; transition-duration:100ms}
+[data-piel="a"] .ficha:hover{background:var(--sup2); transition-duration:140ms}
+[data-piel="a"] .ficha[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--acento)}
+[data-piel="a"] .ficha__nombre{font-size:14px}
+[data-piel="a"] .ficha__muestras{gap:4px}
+[data-piel="a"] .ficha__c{height:32px; border-radius:2px}
+[data-piel="a"] .entra{animation:entra-a 140ms ease-out both}
+@media (max-width:899px){
+  [data-piel="a"] .armazon{gap:12px; padding:12px}
+  [data-piel="a"] .riel{gap:8px; padding:12px}
+  [data-piel="a"] .losa__cuerpo{padding:24px; gap:16px}
+  [data-piel="a"] .losa__barra{gap:12px; padding:8px 12px}
+  [data-piel="a"] .estanteria{gap:16px}
+  [data-piel="a"] .pomo{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:24px; padding:16px 0}
+  [data-piel="a"] .pomo__anillo{width:180px; height:180px}
+  [data-piel="a"] .pomo__cifra{font-size:28px}
+  [data-piel="a"] .pomo__lado{justify-items:center}
+  [data-piel="a"] .pomo__acciones{justify-content:center}
+  [data-piel="a"] .gabinete{top:8px; right:8px; bottom:8px; left:8px; width:auto; padding:16px; gap:12px}
+  [data-piel="a"] .fichas{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* ============================================================================
+   PIEL B · INSTRUMENTO — monoespaciada en los datos, rampa de neutros, cajas.
+   ============================================================================ */
+[data-piel="b"]{
+  --fondo:var(--b-fondo); --sup:var(--b-sup); --sup2:var(--b-sup2);
+  --tinta:var(--b-tinta); --muted:var(--b-muted);
+  --linea:var(--b-linea); --fuerte:var(--b-linea-fuerte);
+  --acento:var(--b-acento); --acento-txt:var(--b-acento-txt);
+  --sans:var(--b-sans); --mono:var(--b-mono); --sombra:none;
+  font-family:var(--sans); color:var(--tinta); background:var(--fondo);
+}
+body[data-piel="b"][data-tema="oscuro"]{
+  --fondo:var(--b-osc-fondo); --sup:var(--b-osc-sup); --sup2:var(--b-osc-sup2);
+  --tinta:var(--b-osc-tinta); --muted:var(--b-osc-muted);
+  --linea:var(--b-osc-linea); --fuerte:var(--b-osc-linea-fuerte);
+  --acento:var(--b-osc-acento); --acento-txt:var(--b-osc-acento-txt);
+}
+[data-piel="b"] .armazon{grid-template-columns:272px minmax(0,1fr); gap:12px; padding:12px}
+[data-piel="b"] .riel{gap:4px; padding:12px; border:1px solid var(--fuerte); border-radius:4px}
+[data-piel="b"] .riel__bloques{gap:4px}
+[data-piel="b"] .riel__fijos{gap:4px}
+[data-piel="b"] .riel__bloque{gap:12px; padding:8px 12px; font-size:13px; border:1px solid transparent; border-radius:4px; transition-property:background-color,border-color,color; transition-duration:90ms}
+[data-piel="b"] .riel__bloque:hover{background:var(--sup2); border-color:var(--linea); transition-duration:120ms}
+[data-piel="b"] .riel__bloque[aria-current="page"]{background:var(--sup2); border-color:var(--fuerte)}
+[data-piel="b"] .riel__mas{gap:8px; padding:8px 12px; font-size:13px; border:1px dashed var(--fuerte); border-radius:4px; background:transparent; color:var(--muted); transition-property:background-color,color; transition-duration:90ms}
+[data-piel="b"] .riel__mas:hover{background:var(--sup2); color:var(--tinta); transition-duration:120ms}
+[data-piel="b"] .riel__fijo{gap:8px; padding:8px 12px; font-size:13px; border:1px solid transparent; border-radius:4px; background:transparent; color:var(--muted); transition-property:background-color,color; transition-duration:90ms}
+[data-piel="b"] .riel__fijo:hover{background:var(--sup2); color:var(--tinta); transition-duration:120ms}
+[data-piel="b"] .riel__filete{margin:8px 0}
+[data-piel="b"] .riel__edicion{gap:12px; padding:8px 12px}
+[data-piel="b"] .riel__rotulo{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+[data-piel="b"] .asa{width:16px; height:16px; margin-right:4px}
+[data-piel="b"] .riel__x{width:24px; height:24px; margin-left:4px; border:1px solid var(--fuerte); border-radius:4px; background:transparent; color:var(--muted); transition-duration:90ms}
+[data-piel="b"] .riel__x:hover{background:var(--sup2); color:var(--tinta); transition-duration:120ms}
+[data-piel="b"] .losa{border:1px solid var(--fuerte); border-radius:4px}
+[data-piel="b"] .losa__barra{gap:16px; padding:8px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.06em}
+[data-piel="b"] .losa__marca{font-size:15px}
+[data-piel="b"] .losa__cuerpo{padding:20px; gap:20px}
+[data-piel="b"] .vista--bloque,[data-piel="b"] .vacia,[data-piel="b"] .apariencia{max-width:880px}
+[data-piel="b"] .vista--bloque{row-gap:20px}
+[data-piel="b"] .bloque{gap:8px}
+[data-piel="b"] .bloque__nombre{font-size:15px; letter-spacing:.06em; text-transform:uppercase}
+[data-piel="b"] .estanteria{gap:4px}
+[data-piel="b"] .est__v{padding:8px 12px; font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--fuerte); border-radius:4px; transition-property:color,background-color; transition-duration:90ms}
+[data-piel="b"] .est__v:hover{color:var(--tinta); background:var(--sup2); transition-duration:120ms}
+[data-piel="b"] .est__v[aria-current="page"]{color:var(--tinta); background:var(--sup2)}
+[data-piel="b"] .pomo{align-self:center; grid-template-columns:auto minmax(0,1fr); gap:24px; padding:24px; background:var(--sup2); border:1px solid var(--linea); border-radius:4px}
+[data-piel="b"] .pomo__anillo{width:168px; height:168px}
+[data-piel="b"] .pomo__pista,[data-piel="b"] .pomo__arco{stroke-width:4}
+[data-piel="b"] .pomo__centro{gap:4px}
+[data-piel="b"] .pomo__cifra{font-family:var(--mono); font-size:40px; font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
+[data-piel="b"] .pomo__fase{font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+[data-piel="b"] .pomo__lado{gap:12px}
+[data-piel="b"] .pomo__sesion{font-family:var(--mono); font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+[data-piel="b"] .pomo__acciones{gap:8px}
+[data-piel="b"] .btn{gap:8px; padding:8px 12px; font-size:13px; border:1px solid var(--fuerte); border-radius:4px; background:var(--sup); color:var(--tinta); transition-property:background-color,border-color,color; transition-duration:90ms}
+[data-piel="b"] .btn:hover{background:var(--sup2); transition-duration:120ms}
+[data-piel="b"] .btn:active{background:var(--linea)}
+[data-piel="b"] .btn--primario{background:var(--acento); border-color:var(--acento); color:var(--acento-txt)}
+[data-piel="b"] .btn--primario:hover{background:var(--acento); opacity:.9}
+[data-piel="b"] .btn--primario:active{background:var(--acento); opacity:.82}
+[data-piel="b"] .btn--mini{padding:4px 8px; font-size:11px}
+[data-piel="b"] .btn--icono{width:32px; height:32px; padding:0; border:1px solid transparent; border-radius:4px; background:transparent; color:var(--tinta); transition-duration:90ms}
+[data-piel="b"] .btn--icono:hover{background:var(--sup2); transition-duration:120ms}
+[data-piel="b"] .gabinete{top:12px; right:12px; bottom:12px; width:380px; gap:12px; padding:16px; border:1px solid var(--fuerte); border-radius:4px}
+[data-piel="b"] .gab__cab{gap:12px}
+[data-piel="b"] .gab__titulo{font-size:22px; letter-spacing:.04em; text-transform:uppercase}
+[data-piel="b"] .gab__intro{font-size:13px}
+[data-piel="b"] .gab__lista{gap:8px}
+[data-piel="b"] .gab__item{gap:12px; padding:12px; border-radius:4px}
+[data-piel="b"] .gab__nombre{font-size:13px}
+[data-piel="b"] .gab__desc{font-size:11px}
+[data-piel="b"] .gab__rotulo{font-family:var(--mono); font-size:11px}
+[data-piel="b"] .gab__etiqueta{font-family:var(--mono); font-size:11px}
+[data-piel="b"] .gab__instalados .gab__nombre{font-family:var(--mono); font-size:13px}
+[data-piel="b"] .vacia{gap:16px; align-content:center; justify-items:start; padding:32px 0}
+[data-piel="b"] .vacia__tit{font-size:22px; letter-spacing:.02em}
+[data-piel="b"] .vacia__txt{font-size:13px; color:var(--muted)}
+[data-piel="b"] .vacia__nota{font-size:11px; color:var(--muted)}
+[data-piel="b"] .chips{gap:8px}
+[data-piel="b"] .chip{padding:4px 8px; font-family:var(--mono); font-size:11px; border:1px solid var(--fuerte); border-radius:4px; color:var(--tinta); background:var(--sup2)}
+[data-piel="b"] .vacia .btn{margin-top:8px}
+[data-piel="b"] .apariencia{gap:20px; align-content:start}
+[data-piel="b"] .apariencia__tit{font-size:22px; letter-spacing:.02em}
+[data-piel="b"] .apariencia__txt{font-size:13px; color:var(--muted)}
+[data-piel="b"] .fichas{grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px}
+[data-piel="b"] .ficha{gap:8px; padding:16px; border:1px solid var(--fuerte); border-radius:4px; transition-duration:90ms}
+[data-piel="b"] .ficha:hover{background:var(--sup2); transition-duration:120ms}
+[data-piel="b"] .ficha[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--acento)}
+[data-piel="b"] .ficha__nombre{font-size:13px}
+[data-piel="b"] .ficha__muestras{gap:4px}
+[data-piel="b"] .ficha__c{height:24px; border-radius:4px}
+[data-piel="b"] .entra{animation:entra-b 120ms linear both}
+@media (max-width:899px){
+  [data-piel="b"] .armazon{gap:12px; padding:12px}
+  [data-piel="b"] .riel{gap:4px; padding:12px}
+  [data-piel="b"] .losa__cuerpo{padding:16px; gap:16px}
+  [data-piel="b"] .losa__barra{gap:12px; padding:8px 12px}
+  [data-piel="b"] .estanteria{gap:4px}
+  [data-piel="b"] .pomo{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:24px; padding:24px 16px}
+  [data-piel="b"] .pomo__anillo{width:160px; height:160px}
+  [data-piel="b"] .pomo__lado{justify-items:center}
+  [data-piel="b"] .pomo__acciones{justify-content:center}
+  [data-piel="b"] .gabinete{top:8px; right:8px; bottom:8px; left:8px; width:auto; padding:16px; gap:12px}
+  [data-piel="b"] .fichas{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* ============================================================================
+   PIEL C · MATERIA — un solo radio grande, elevación por superficie, aire.
+   ============================================================================ */
+[data-piel="c"]{
+  --fondo:var(--c-fondo); --sup:var(--c-sup); --sup2:var(--c-sup2);
+  --tinta:var(--c-tinta); --muted:var(--c-muted);
+  --linea:var(--c-linea); --fuerte:var(--c-linea-fuerte);
+  --acento:var(--c-acento); --acento-txt:var(--c-acento-txt);
+  --sans:var(--c-sans); --dato:var(--c-sans);
+  --sombra:var(--c-sombra); --sombra-suave:var(--c-sombra-suave);
+  font-family:var(--sans); color:var(--tinta); background:var(--fondo);
+}
+body[data-piel="c"][data-tema="oscuro"]{
+  --fondo:var(--c-osc-fondo); --sup:var(--c-osc-sup); --sup2:var(--c-osc-sup2);
+  --tinta:var(--c-osc-tinta); --muted:var(--c-osc-muted);
+  --linea:var(--c-osc-linea); --fuerte:var(--c-osc-linea-fuerte);
+  --acento:var(--c-osc-acento); --acento-txt:var(--c-osc-acento-txt);
+  --sombra:var(--c-sombra-osc); --sombra-suave:none;
+}
+[data-piel="c"] .armazon{grid-template-columns:296px minmax(0,1fr); gap:32px; padding:32px}
+[data-piel="c"] .riel{gap:8px; padding:24px; border-radius:16px; box-shadow:var(--sombra)}
+[data-piel="c"] .riel__bloques{gap:8px}
+[data-piel="c"] .riel__fijos{gap:8px}
+[data-piel="c"] .riel__bloque{gap:16px; padding:16px 24px; font-size:15px; border:0; border-radius:999px; transition-property:background-color,color; transition-duration:160ms}
+[data-piel="c"] .riel__bloque:hover{background:var(--sup2); transition-duration:240ms}
+[data-piel="c"] .riel__bloque[aria-current="page"]{background:var(--sup2); color:var(--tinta)}
+[data-piel="c"] .riel__mas{gap:16px; padding:16px 24px; font-size:15px; border:1px solid var(--fuerte); border-radius:999px; background:transparent; color:var(--muted); transition-property:background-color,color; transition-duration:160ms}
+[data-piel="c"] .riel__mas:hover{background:var(--sup2); color:var(--tinta); transition-duration:240ms}
+[data-piel="c"] .riel__fijo{gap:16px; padding:16px 24px; font-size:15px; border:0; border-radius:999px; background:transparent; color:var(--muted); transition-property:background-color,color; transition-duration:160ms}
+[data-piel="c"] .riel__fijo:hover{background:var(--sup2); color:var(--tinta); transition-duration:240ms}
+[data-piel="c"] .riel__filete{margin:16px 0}
+[data-piel="c"] .riel__edicion{gap:16px; padding:8px 24px}
+[data-piel="c"] .riel__rotulo{font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+[data-piel="c"] .asa{width:16px; height:16px; margin-right:8px}
+[data-piel="c"] .riel__x{width:32px; height:32px; margin-left:8px; border:1px solid var(--fuerte); border-radius:999px; background:transparent; color:var(--muted); transition-duration:160ms}
+[data-piel="c"] .riel__x:hover{background:var(--sup2); color:var(--tinta); transition-duration:240ms}
+[data-piel="c"] .riel__x:active{transform:scale(.98); transition-duration:100ms}
+[data-piel="c"] .losa{border-radius:16px; box-shadow:var(--sombra)}
+[data-piel="c"] .losa__barra{gap:24px; padding:24px 32px; font-size:13px}
+[data-piel="c"] .losa__marca{font-size:17px; font-weight:600}
+[data-piel="c"] .losa__cuerpo{padding:48px; gap:32px}
+[data-piel="c"] .vista--bloque,[data-piel="c"] .vacia,[data-piel="c"] .apariencia{max-width:760px}
+[data-piel="c"] .vista--bloque{row-gap:8px}
+[data-piel="c"] .bloque{gap:16px}
+[data-piel="c"] .bloque__nombre{font-size:17px; font-weight:500}
+[data-piel="c"] .estanteria{gap:8px; padding:8px; background:var(--sup2); border-radius:999px}
+[data-piel="c"] .est__v{padding:8px 24px; font-size:15px; border:0; border-radius:999px; transition-property:background-color,color,box-shadow; transition-duration:160ms}
+[data-piel="c"] .est__v:hover{color:var(--tinta); background:var(--sup); transition-duration:240ms}
+[data-piel="c"] .est__v[aria-current="page"]{color:var(--tinta); background:var(--sup); box-shadow:var(--sombra-suave)}
+[data-piel="c"] .pomo{grid-template-columns:minmax(0,1fr); justify-items:center; text-align:center; gap:32px; padding:48px; background:var(--fondo); border-radius:16px}
+[data-piel="c"] .pomo__anillo{width:260px; height:260px}
+[data-piel="c"] .pomo__pista,[data-piel="c"] .pomo__arco{stroke-width:6}
+[data-piel="c"] .pomo__pista{stroke:var(--sup2)}
+[data-piel="c"] .pomo__arco{stroke-linecap:round}
+[data-piel="c"] .pomo__centro{gap:8px}
+[data-piel="c"] .pomo__cifra{font-size:64px; font-weight:300; line-height:1; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+[data-piel="c"] .pomo__fase{font-size:15px; color:var(--muted)}
+[data-piel="c"] .pomo__lado{gap:24px; justify-items:center}
+[data-piel="c"] .pomo__sesion{font-size:15px; color:var(--muted)}
+[data-piel="c"] .pomo__acciones{gap:16px; justify-content:center}
+[data-piel="c"] .btn{gap:16px; padding:16px 24px; font-size:17px; border:1px solid var(--fuerte); border-radius:999px; background:transparent; color:var(--tinta); transition-property:background-color,border-color,color,transform; transition-duration:160ms}
+[data-piel="c"] .btn:hover{background:var(--sup2); transition-duration:240ms}
+[data-piel="c"] .btn:active{transform:scale(.98); transition-duration:100ms}
+[data-piel="c"] .btn--primario{background:var(--acento); border-color:var(--acento); color:var(--acento-txt)}
+[data-piel="c"] .btn--primario:hover{background:var(--acento); opacity:.92}
+[data-piel="c"] .btn--primario:active{background:var(--acento); opacity:.82}
+[data-piel="c"] .btn--mini{padding:8px 16px; font-size:13px}
+[data-piel="c"] .btn--icono{width:42px; height:42px; padding:0; border:1px solid transparent; border-radius:999px; background:transparent; color:var(--tinta); transition-duration:160ms}
+[data-piel="c"] .btn--icono:hover{background:var(--sup2); transition-duration:240ms}
+[data-piel="c"] .btn--icono:active{transform:scale(.98); transition-duration:100ms}
+[data-piel="c"] .gabinete{top:16px; right:16px; bottom:16px; width:408px; gap:12px; padding:16px; border:1px solid var(--fuerte); border-radius:16px; box-shadow:var(--sombra)}
+[data-piel="c"] .gab__cab{gap:24px}
+[data-piel="c"] .gab__titulo{font-size:26px; font-weight:500}
+[data-piel="c"] .gab__intro{font-size:15px}
+[data-piel="c"] .gab__lista{gap:8px}
+[data-piel="c"] .gab__item{gap:12px; padding:8px 12px; border-radius:16px}
+[data-piel="c"] .gab__instalados .gab__item{padding:8px 12px}
+[data-piel="c"] .gab__nombre{font-size:15px; font-weight:500}
+[data-piel="c"] .gab__desc{font-size:13px}
+[data-piel="c"] .gab__rotulo{font-size:13px}
+[data-piel="c"] .gab__etiqueta{font-size:13px}
+[data-piel="c"] .gab__instalados .gab__nombre{font-size:15px}
+[data-piel="c"] .vacia{gap:32px; align-content:center; justify-items:center; text-align:center; padding:64px 0}
+[data-piel="c"] .vacia__tit{font-size:26px; font-weight:500}
+[data-piel="c"] .vacia__txt{font-size:15px; color:var(--muted)}
+[data-piel="c"] .vacia__nota{font-size:13px; color:var(--muted)}
+[data-piel="c"] .chips{gap:8px; justify-content:center}
+[data-piel="c"] .chip{padding:8px 24px; font-size:13px; border:1px solid var(--fuerte); border-radius:999px; color:var(--tinta); background:var(--sup2)}
+[data-piel="c"] .vacia .btn{margin-top:8px}
+[data-piel="c"] .apariencia{gap:32px; align-content:start}
+[data-piel="c"] .apariencia__tit{font-size:26px; font-weight:500}
+[data-piel="c"] .apariencia__txt{font-size:15px; color:var(--muted)}
+[data-piel="c"] .fichas{grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px}
+[data-piel="c"] .ficha{gap:16px; padding:24px; border:0; border-radius:16px; background:var(--fondo); transition-property:background-color,box-shadow,transform; transition-duration:160ms}
+[data-piel="c"] .ficha:hover{box-shadow:var(--sombra-suave); transition-duration:240ms}
+[data-piel="c"] .ficha[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--acento)}
+[data-piel="c"] .ficha:active{transform:scale(.98); transition-duration:100ms}
+[data-piel="c"] .ficha__nombre{font-size:17px; font-weight:500}
+[data-piel="c"] .ficha__muestras{gap:8px}
+[data-piel="c"] .ficha__c{height:40px; border-radius:16px}
+[data-piel="c"] .entra{animation:entra-c 240ms cubic-bezier(.2,.8,.2,1) both}
+@media (max-width:899px){
+  [data-piel="c"] .armazon{gap:16px; padding:16px}
+  [data-piel="c"] .riel{gap:8px; padding:16px}
+  [data-piel="c"] .riel__bloque{gap:12px; padding:16px}
+  [data-piel="c"] .losa__cuerpo{padding:24px; gap:24px}
+  [data-piel="c"] .losa__barra{gap:16px; padding:16px 24px}
+  [data-piel="c"] .estanteria{gap:8px; padding:8px}
+  [data-piel="c"] .pomo{gap:24px; padding:24px}
+  [data-piel="c"] .pomo__anillo{width:200px; height:200px}
+  [data-piel="c"] .pomo__cifra{font-size:26px}
+  [data-piel="c"] .gabinete{top:8px; right:8px; bottom:8px; left:8px; width:auto; padding:16px; gap:16px}
+  [data-piel="c"] .fichas{grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px}
+  [data-piel="c"] .vacia{padding:32px 0}
+}
+
+/* estados del armazón: el riel de edición es más ancho */
+[data-estado="edicion"] .armazon{grid-template-columns:320px minmax(0,1fr)}
+@media (max-width:899px){
+  [data-piel] .armazon,[data-estado="edicion"] .armazon{grid-template-columns:minmax(0,1fr)}
+  .riel__bloques,.riel__fijos{display:grid; grid-template-columns:repeat(2,minmax(0,1fr))}
+  .riel__filete{display:none}
+  [data-estado="edicion"] .riel__bloques{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body data-piel="a" data-tema="claro" data-estado="normal">
+
+<h1 class="sr">Mimo</h1>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-cal" viewBox="0 0 24 24"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-malla" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+  <symbol id="i-tiempo" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 8v4l3 2"/></symbol>
+  <symbol id="i-estudio" viewBox="0 0 24 24"><path d="M12 6C9.8 4.5 7 4 4 4v14c3 0 5.8.5 8 2 2.2-1.5 5-2 8-2V4c-3 0-5.8.5-8 2zM12 6v14"/></symbol>
+  <symbol id="i-calif" viewBox="0 0 24 24"><path d="M5 20V10M10 20V4M15 20V13M20 20V7"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-apariencia" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 4v16"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h6M14 7h6M4 12h10M18 12h2M4 17h3M11 17h9"/><path d="M12 5v4M16 10v4M9 15v4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-asa" viewBox="0 0 24 24"><path d="M9 7h.01M9 12h.01M9 17h.01M15 7h.01M15 12h.01M15 17h.01"/></symbol>
+  <symbol id="i-hecho" viewBox="0 0 24 24"><path d="M5 12l5 5L19 7"/></symbol>
+  <symbol id="i-abrir" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-paquete" viewBox="0 0 24 24"><path d="M12 3l8 4v10l-8 4-8-4V7zM4 7l8 4 8-4M12 11v10"/></symbol>
+</svg>
+
+<header class="controles">
+  <p class="controles__et">Controles de la muestra</p>
+  <div class="grupo" role="group" aria-label="Piel">
+    <button type="button" data-piel-btn="a" aria-pressed="true" title="A · Papel y tinta">A</button>
+    <button type="button" data-piel-btn="b" aria-pressed="false" title="B · Instrumento">B</button>
+    <button type="button" data-piel-btn="c" aria-pressed="false" title="C · Materia">C</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Tema">
+    <button type="button" data-tema-btn="claro" aria-pressed="true">Claro</button>
+    <button type="button" data-tema-btn="oscuro" aria-pressed="false">Oscuro</button>
+  </div>
+  <div class="grupo" role="group" aria-label="Estado">
+    <button type="button" data-estado-btn="normal" aria-pressed="true">Normal</button>
+    <button type="button" data-estado-btn="gabinete" aria-pressed="false">Gabinete</button>
+    <button type="button" data-estado-btn="edicion" aria-pressed="false">Edición</button>
+    <button type="button" data-estado-btn="vacia" aria-pressed="false">Vacía</button>
+    <button type="button" data-estado-btn="apariencia" aria-pressed="false">Apariencia</button>
+  </div>
+</header>
+
+<main class="armazon">
+
+  <aside class="riel" tabindex="-1" aria-label="Riel de bloques">
+    <div class="riel__edicion">
+      <p class="riel__rotulo">Ordenar bloques</p>
+      <button class="btn btn--primario btn--mini" type="button" data-hecho>Hecho</button>
+    </div>
+    <nav class="riel__bloques" aria-label="Bloques instalados">
+      <div class="riel__fila" data-bloque="calendario">
+        <span class="asa" aria-hidden="true"><svg class="icono"><use href="#i-asa"/></svg></span>
+        <button class="riel__bloque" type="button"><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg><span class="riel__nombre">Calendario</span></button>
+        <button class="riel__x" type="button" aria-label="Quitar Calendario"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="riel__fila" data-bloque="malla">
+        <span class="asa" aria-hidden="true"><svg class="icono"><use href="#i-asa"/></svg></span>
+        <button class="riel__bloque" type="button"><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg><span class="riel__nombre">Malla</span></button>
+        <button class="riel__x" type="button" aria-label="Quitar Malla"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="riel__fila" data-bloque="tiempo">
+        <span class="asa" aria-hidden="true"><svg class="icono"><use href="#i-asa"/></svg></span>
+        <button class="riel__bloque" type="button" aria-current="page"><svg class="icono" aria-hidden="true"><use href="#i-tiempo"/></svg><span class="riel__nombre">Tiempo</span></button>
+        <button class="riel__x" type="button" aria-label="Quitar Tiempo"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="riel__fila" data-bloque="estudio">
+        <span class="asa" aria-hidden="true"><svg class="icono"><use href="#i-asa"/></svg></span>
+        <button class="riel__bloque" type="button"><svg class="icono" aria-hidden="true"><use href="#i-estudio"/></svg><span class="riel__nombre">Estudio</span></button>
+        <button class="riel__x" type="button" aria-label="Quitar Estudio"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="riel__fila" data-bloque="calificaciones">
+        <span class="asa" aria-hidden="true"><svg class="icono"><use href="#i-asa"/></svg></span>
+        <button class="riel__bloque" type="button"><svg class="icono" aria-hidden="true"><use href="#i-calif"/></svg><span class="riel__nombre">Calificaciones</span></button>
+        <button class="riel__x" type="button" aria-label="Quitar Calificaciones"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+    </nav>
+    <button class="riel__mas" type="button" data-abrir><svg class="icono" aria-hidden="true"><use href="#i-mas"/></svg><span>Añadir bloque</span></button>
+    <div class="riel__filete filete"></div>
+    <div class="riel__fijos">
+      <button class="riel__fijo" type="button" data-apariencia><svg class="icono" aria-hidden="true"><use href="#i-apariencia"/></svg><span>Apariencia</span></button>
+      <button class="riel__fijo" type="button"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span>Ajustes</span></button>
+    </div>
+  </aside>
+
+  <section class="losa" aria-label="Bloque abierto">
+    <header class="losa__barra">
+      <span class="losa__marca">Mimo</span>
+      <span class="losa__fecha">octubre 2026</span>
+      <span class="losa__tema">Tema <strong>claro</strong></span>
+      <button class="btn btn--icono losa__ajustes" type="button" aria-label="Ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
+    </header>
+    <div class="filete"></div>
+
+    <div class="losa__cuerpo">
+
+      <div class="vista--bloque" data-vista="normal">
+        <div class="bloque">
+          <p class="bloque__nombre">Tiempo</p>
+          <nav class="estanteria" aria-label="Vistas de Tiempo">
+            <button class="est__v" type="button">Cronómetro</button>
+            <button class="est__v" type="button">Temporizador</button>
+            <button class="est__v" type="button" aria-current="page">Pomodoro</button>
+            <button class="est__v" type="button">Registro</button>
+          </nav>
+          <div class="filete"></div>
+        </div>
+        <div class="pomo">
+          <div class="pomo__anillo">
+            <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+              <circle class="pomo__pista" cx="60" cy="60" r="55"></circle>
+              <circle class="pomo__arco" cx="60" cy="60" r="55"></circle>
+            </svg>
+            <div class="pomo__centro">
+              <span class="pomo__cifra">18:42</span>
+              <span class="pomo__fase">Trabajo · 25 min</span>
+            </div>
+          </div>
+          <div class="pomo__lado">
+            <p class="pomo__sesion">Sesión 3 de 4</p>
+            <div class="pomo__acciones">
+              <button class="btn btn--primario" type="button">Empezar</button>
+              <button class="btn" type="button">Reiniciar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vacia" data-vista="vacia">
+        <h2 class="vacia__tit">Elige con qué empiezas</h2>
+        <p class="vacia__txt">Calendario, Malla, Tiempo, Estudio y Calificaciones ya están listos para tu riel.</p>
+        <ul class="chips">
+          <li class="chip">Calendario</li>
+          <li class="chip">Malla</li>
+          <li class="chip">Tiempo</li>
+          <li class="chip">Estudio</li>
+          <li class="chip">Calificaciones</li>
+        </ul>
+        <p class="vacia__nota">Los que ya tienes están en el riel; el «+» abre el gabinete para añadir los demás.</p>
+        <button class="btn btn--primario" type="button" data-abrir>Abrir el gabinete</button>
+      </div>
+
+      <div class="apariencia" data-vista="apariencia">
+        <h2 class="apariencia__tit">Apariencia</h2>
+        <p class="apariencia__txt">Seis temas. Cada uno con su fondo, su superficie, su tinta y su acento.</p>
+        <ul class="fichas">
+          <li><button class="ficha" type="button" aria-pressed="true">
+            <span class="ficha__nombre">Papel</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--papel-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--papel-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--papel-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--papel-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Arena</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--arena-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--arena-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--arena-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--arena-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Marea</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--marea-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--marea-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--marea-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--marea-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Grafito</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--grafito-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--grafito-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--grafito-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--grafito-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Medianoche</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--medianoche-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--medianoche-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--medianoche-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--medianoche-acento)"></span>
+            </span>
+          </button></li>
+          <li><button class="ficha" type="button" aria-pressed="false">
+            <span class="ficha__nombre">Alto contraste</span>
+            <span class="ficha__muestras">
+              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--contraste-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--contraste-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--contraste-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--contraste-acento)"></span>
+            </span>
+          </button></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="velo" aria-hidden="true"></div>
+
+    <aside class="gabinete" role="dialog" aria-modal="false" aria-labelledby="gab-titulo">
+      <header class="gab__cab">
+        <h2 class="gab__titulo" id="gab-titulo">Gabinete</h2>
+        <button class="btn btn--icono gab__cerrar" type="button" aria-label="Cerrar el gabinete"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </header>
+      <p class="gab__intro">Añade un bloque a tu riel.</p>
+      <p class="gab__rotulo">Para añadir</p>
+      <ul class="gab__lista">
+        <li class="gab__item">
+          <svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg>
+          <div class="gab__texto"><p class="gab__nombre">Tareas</p><p class="gab__desc">Lo que tienes pendiente, con fecha.</p></div>
+          <button class="btn btn--mini" type="button">Instalar</button>
+        </li>
+        <li class="gab__item">
+          <svg class="icono" aria-hidden="true"><use href="#i-estudio"/></svg>
+          <div class="gab__texto"><p class="gab__nombre">Apuntes</p><p class="gab__desc">Notas por ramo, buscables.</p></div>
+          <button class="btn btn--mini" type="button">Instalar</button>
+        </li>
+        <li class="gab__item">
+          <svg class="icono" aria-hidden="true"><use href="#i-calif"/></svg>
+          <div class="gab__texto"><p class="gab__nombre">Evaluaciones</p><p class="gab__desc">Fechas y pesos de cada prueba.</p></div>
+          <button class="btn btn--mini" type="button">Instalar</button>
+        </li>
+        <li class="gab__item">
+          <svg class="icono" aria-hidden="true"><use href="#i-paquete"/></svg>
+          <div class="gab__texto"><p class="gab__nombre">Academia <span class="gab__etiqueta">· paquete</span></p><p class="gab__desc">El conjunto completo de estudio.</p></div>
+          <button class="btn btn--mini" type="button">Instalar</button>
+        </li>
+        <li class="gab__item">
+          <svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg>
+          <div class="gab__texto"><p class="gab__nombre">Estadísticas</p><p class="gab__desc">Tus horas y tu avance, en cifras.</p></div>
+          <button class="btn btn--mini" type="button">Instalar</button>
+        </li>
+      </ul>
+      <p class="gab__rotulo">En tu riel</p>
+      <ul class="gab__lista gab__instalados">
+        <li class="gab__item"><p class="gab__nombre">Calendario</p><button class="btn btn--mini" type="button">Quitar</button></li>
+        <li class="gab__item"><p class="gab__nombre">Malla</p><button class="btn btn--mini" type="button">Quitar</button></li>
+        <li class="gab__item"><p class="gab__nombre">Tiempo</p><button class="btn btn--mini" type="button">Quitar</button></li>
+        <li class="gab__item"><p class="gab__nombre">Estudio</p><button class="btn btn--mini" type="button">Quitar</button></li>
+        <li class="gab__item"><p class="gab__nombre">Calificaciones</p><button class="btn btn--mini" type="button">Quitar</button></li>
+      </ul>
+    </aside>
+
+  </section>
+</main>
+
+<script>
+(function(){
+  var body = document.body;
+  var PIELES = ['a', 'b', 'c'];
+  var TEMAS = ['claro', 'oscuro'];
+  var ESTADOS = ['normal', 'gabinete', 'edicion', 'vacia', 'apariencia'];
+  var q = new URLSearchParams(location.search);
+  function uno(valor, lista, defecto) {
+    var v = String(valor || '').toLowerCase();
+    return lista.indexOf(v) >= 0 ? v : defecto;
+  }
+  var est = {
+    piel: uno(q.get('piel'), PIELES, 'a'),
+    tema: uno(q.get('tema'), TEMAS, 'claro'),
+    estado: uno(q.get('estado'), ESTADOS, 'normal')
+  };
+  var ultimoFoco = null;
+  var alto = window;
+
+  function sincronizar(sel, clave, valor) {
+    var botones = document.querySelectorAll(sel);
+    for (var i = 0; i < botones.length; i++) {
+      botones[i].setAttribute('aria-pressed', botones[i].getAttribute('data-' + clave + '-btn') === valor ? 'true' : 'false');
+    }
+  }
+
+  function animar() {
+    var previo = document.querySelector('.entra');
+    if (previo) { previo.classList.remove('entra'); }
+    var el = null;
+    if (est.estado === 'gabinete') { el = document.querySelector('.gabinete'); }
+    else if (est.estado === 'edicion') { el = document.querySelector('.riel__bloques'); }
+    else { el = document.querySelector('[data-vista="' + est.estado + '"]'); }
+    if (!el) { return; }
+    void el.offsetWidth;
+    el.classList.add('entra');
+  }
+
+  function pintar() {
+    body.setAttribute('data-piel', est.piel);
+    body.setAttribute('data-tema', est.tema);
+    body.setAttribute('data-estado', est.estado);
+    sincronizar('[data-piel-btn]', 'piel', est.piel);
+    sincronizar('[data-tema-btn]', 'tema', est.tema);
+    sincronizar('[data-estado-btn]', 'estado', est.estado);
+    document.querySelector('.losa__tema strong').textContent = est.tema;
+    var bloques = document.querySelectorAll('.riel__bloque');
+    for (var i = 0; i < bloques.length; i++) {
+      var fila = bloques[i].parentElement;
+      if (fila && fila.getAttribute('data-bloque') === 'tiempo') {
+        bloques[i].setAttribute('aria-current', 'page');
+      } else {
+        bloques[i].removeAttribute('aria-current');
+      }
+    }
+    animar();
+  }
+
+  function set(clave, valor) {
+    var antes = est.estado;
+    if (est[clave] === valor && clave !== 'estado') { return; }
+    est[clave] = valor;
+    pintar();
+    if (clave === 'estado' && valor === 'gabinete') {
+      var cerrar = document.querySelector('.gab__cerrar');
+      if (cerrar) { cerrar.focus(); }
+    }
+    if (clave === 'estado' && antes === 'gabinete' && valor !== 'gabinete') {
+      var destino = (ultimoFoco && document.contains(ultimoFoco) && ultimoFoco.offsetParent !== null)
+        ? ultimoFoco : document.querySelector('.riel');
+      if (destino) { destino.focus(); }
+    }
+  }
+
+  function abrirGabinete(origen) {
+    ultimoFoco = origen || document.activeElement;
+    set('estado', 'gabinete');
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && est.estado === 'gabinete') {
+      e.preventDefault();
+      set('estado', 'normal');
+    }
+  });
+
+  var velo = document.querySelector('.velo');
+  velo.addEventListener('click', function(){ set('estado', 'normal'); });
+
+  document.querySelector('.gab__cerrar').addEventListener('click', function(){ set('estado', 'normal'); });
+
+  var abrir = document.querySelectorAll('[data-abrir]');
+  for (var j = 0; j < abrir.length; j++) {
+    abrir[j].addEventListener('click', function(){ abrirGabinete(this); });
+  }
+
+  document.querySelector('[data-apariencia]').addEventListener('click', function(){ set('estado', 'apariencia'); });
+  document.querySelector('[data-hecho]').addEventListener('click', function(){ set('estado', 'normal'); });
+
+  var pielBtns = document.querySelectorAll('[data-piel-btn]');
+  for (var k = 0; k < pielBtns.length; k++) {
+    pielBtns[k].addEventListener('click', function(){ set('piel', this.getAttribute('data-piel-btn')); });
+  }
+  var temaBtns = document.querySelectorAll('[data-tema-btn]');
+  for (var m = 0; m < temaBtns.length; m++) {
+    temaBtns[m].addEventListener('click', function(){ set('tema', this.getAttribute('data-tema-btn')); });
+  }
+  var estadoBtns = document.querySelectorAll('[data-estado-btn]');
+  for (var n = 0; n < estadoBtns.length; n++) {
+    estadoBtns[n].addEventListener('click', function(){ set('estado', this.getAttribute('data-estado-btn')); });
+  }
+
+  var fichas = document.querySelectorAll('.ficha');
+  for (var p = 0; p < fichas.length; p++) {
+    fichas[p].addEventListener('click', function(){
+      for (var i = 0; i < fichas.length; i++) { fichas[i].setAttribute('aria-pressed', 'false'); }
+      this.setAttribute('aria-pressed', 'true');
+    });
+  }
+
+  pintar();
+  if (est.estado === 'gabinete') {
+    var cerrarInicial = document.querySelector('.gab__cerrar');
+    if (cerrarInicial) { cerrarInicial.focus(); }
+  }
+  document.documentElement.setAttribute('data-listo', '1');
+})();
+</script>
+</body>
+</html>

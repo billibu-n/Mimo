@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""medir-tablero.py — contador del sistema visual del tablero de Mimo D1.
+"""medir-tablero.py — contador del sistema visual del tablero de Mimo D1/D2.
 
-Barre el CSS de tablero/direcciones.html, quita los comentarios y, para cada
-dirección, cuenta cuántos VALORES DISTINTOS usa de tamaños, espacios, radios,
-duraciones y colores hex. Los hex solo pueden vivir en los bloques :root de
-tokens: fuera de ellos el techo es 0. Sale 1 si alguna dirección pasa su techo.
+Barre el CSS de un tablero (direcciones.html o armazon.html), quita los
+comentarios y, para cada dirección o piel, cuenta cuántos VALORES DISTINTOS usa
+de tamaños, espacios, radios, duraciones y colores hex. Los hex solo pueden
+vivir en los bloques :root de tokens: fuera de ellos el techo es 0. Sale 1 si
+alguna dirección o piel pasa su techo.
+
+Marca la dirección o la piel con [data-dir="a"] o [data-piel="a"]; las dos
+convenciones se miden igual.
 
 Uso:
-  python3 medir-tablero.py                 # mide el tablero
-  python3 medir-tablero.py --autoprueba    # 5 casos; uno OBLIGADO en rojo
+  python3 medir-tablero.py                          # mide direcciones.html
+  python3 medir-tablero.py --fichero armazon.html   # mide otro tablero
+  python3 medir-tablero.py --autoprueba             # casos; uno en rojo
 """
 
 import os
@@ -111,6 +116,17 @@ def normaliza_tiempo(t):
     return None
 
 
+RE_MARCA = re.compile(r'\[data-(dir|piel)="([abc])"\]')
+
+
+def marca(css):
+    """'dirección' o 'piel' según cómo se marque el CSS. None si no hay marca."""
+    m = RE_MARCA.search(quitar_comentarios(css))
+    if not m:
+        return None
+    return "piel" if m.group(1) == "piel" else "dirección"
+
+
 def analizar(css):
     """Devuelve {dir: {'tamanos': set, ...}, 'comun': {...}, 'hex_global': set}."""
     css = quitar_comentarios(css)
@@ -121,8 +137,8 @@ def analizar(css):
     for selector, cuerpo in reglas(css):
         if selector.strip().lower() == ":root":
             continue  # el cajón de tokens no se mide
-        m = re.search(r'\[data-dir="([abc])"\]', selector)
-        destino = cuenta[m.group(1)] if m else cuenta["comun"]
+        m = RE_MARCA.search(selector)
+        destino = cuenta[m.group(2)] if m else cuenta["comun"]
         for prop, valor in declaraciones(cuerpo):
             for h in RE_HEX.findall(valor):
                 hex_global.add(h.lower())
@@ -175,19 +191,21 @@ def formatea(conjunto):
 def evaluar(css):
     """Devuelve (texto, rojo). rojo=True si se pasa algún techo."""
     cuenta, hex_global = analizar(css)
+    tipo = marca(css)
+    titulo = "PIEL" if tipo == "piel" else "DIRECCIÓN"
     lineas = []
     rojo = False
     for d in ("a", "b", "c"):
-        lineas.append("DIRECCIÓN %s" % NOMBRES[d])
+        lineas.append("%s %s" % (titulo, NOMBRES[d]))
         for clave, etiqueta in ETIQUETAS:
             n = len(cuenta[d][clave])
             techo = TECHOS[d][clave]
-            marca = "OK" if n <= techo else "PASA EL TECHO"
+            veredicto = "OK" if n <= techo else "PASA EL TECHO"
             if n > techo:
                 rojo = True
             sufijo = " ms" if clave == "duraciones" and n else ""
             lineas.append("  %-10s %2d/%-2d  %-14s  [%s]%s"
-                          % (etiqueta, n, techo, marca, formatea(cuenta[d][clave]), sufijo))
+                          % (etiqueta, n, techo, veredicto, formatea(cuenta[d][clave]), sufijo))
         lineas.append("")
     if hex_global:
         rojo = True
@@ -201,6 +219,10 @@ def evaluar(css):
 
 
 def css_del_fichero(ruta):
+    if not os.path.isabs(ruta) and not os.path.exists(ruta):
+        candidato = os.path.join(AQUI, ruta)
+        if os.path.exists(candidato):
+            ruta = candidato
     with open(ruta, "r", encoding="utf-8") as f:
         texto = f.read()
     if ruta.endswith(".html"):
@@ -219,6 +241,13 @@ CASO_BASE = """
 [data-dir="c"] .x{font-size:17px; padding:16px; border-radius:16px; transition-duration:240ms}
 """
 
+CASO_PIEL = """
+:root{ --x:#123456; }
+[data-piel="a"] .x{font-size:12px; font-size:14px; padding:4px 8px; border-radius:2px; transition-duration:100ms}
+[data-piel="b"] .x{font-size:11px; padding:4px; border-radius:4px; transition-duration:90ms}
+[data-piel="c"] .x{font-size:13px; padding:8px; border-radius:16px; transition-duration:160ms}
+"""
+
 CASOS = [
     ("AU-1 · escala dentro de techo", CASO_BASE, False),
     ("AU-2 · un tamaño de más en A",
@@ -235,6 +264,10 @@ CASOS = [
      False),
     ("AU-5 · nueve espacios en B",
      CASO_BASE + '[data-dir="b"] .y{padding:4px 8px 12px 16px 20px 24px 32px 40px 44px}\n',
+     True),
+    ("AU-6 · armazón dentro de techo (data-piel)", CASO_PIEL, False),
+    ("AU-7 · nueve espacios en C (data-piel)",
+     CASO_PIEL + '[data-piel="c"] .y{padding:4px 12px 20px 24px 28px 36px 44px 64px 80px}\n',
      True),
 ]
 
@@ -267,14 +300,16 @@ def main():
     for i, a in enumerate(sys.argv):
         if a in ("--fichero", "-f") and i + 1 < len(sys.argv):
             ruta = sys.argv[i + 1]
-    texto, rojo = evaluar(css_del_fichero(ruta))
+    css = css_del_fichero(ruta)
+    texto, rojo = evaluar(css)
     print("TABLERO: %s" % ruta)
     print(texto)
     print("")
+    piezas = "pieles" if marca(css) == "piel" else "direcciones"
     if rojo:
-        print("RESUMEN: hay una dirección por encima de su techo.")
+        print("RESUMEN: hay una de las tres %s por encima de su techo." % piezas)
         return 1
-    print("RESUMEN: las tres direcciones dentro de su techo.")
+    print("RESUMEN: las tres %s dentro de su techo." % piezas)
     return 0
 
 
