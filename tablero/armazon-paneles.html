@@ -385,8 +385,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 
 <header class="barra">
   <button class="btn-icono" id="btn-riel" type="button" aria-expanded="true" aria-controls="riel"
-          aria-label="Panel de bloques"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-izq"/></svg></button>
-  <button class="barra__marca" id="btn-mimo" type="button" aria-label="Mimo Academics" title="Mimo Academics">
+          aria-label="Panel de bloques" data-i18n-attr="aria-label:cab.panelIzq"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-izq"/></svg></button>
+  <button class="barra__marca" id="btn-mimo" type="button" aria-label="Mimo Academics" title="Mimo Academics"
+          data-i18n-attr="aria-label:cab.marca;title:cab.marca">
     <img id="mimo-ic" src="iconos/icon-64.png" alt="" width="32" height="32" decoding="async">
   </button>
   <div class="barra__bloque">
@@ -396,26 +397,27 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   </div>
   <div class="barra__fin">
     <time class="barra__fecha" id="barra-fecha"></time>
-    <div class="barra__herramientas" role="group" aria-label="Herramientas de la aplicación">
-      <button class="btn-icono" type="button" data-ajustes aria-label="Ajustes" title="Ajustes"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-tuerca"/></svg></button>
-      <button class="btn-icono" type="button" data-apariencia aria-label="Apariencia" title="Apariencia"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-paleta"/></svg></button>
-      <button class="btn-icono" type="button" data-edicion aria-label="Edición" title="Edición" aria-pressed="false"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-edicion"/></svg></button>
+    <div class="barra__herramientas" role="group" aria-label="Herramientas de la aplicación"
+         data-i18n-attr="aria-label:cab.herramientas">
+      <button class="btn-icono" type="button" data-ajustes aria-label="Ajustes" title="Ajustes" data-i18n-attr="aria-label:cab.ajustes;title:cab.ajustes"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-tuerca"/></svg></button>
+      <button class="btn-icono" type="button" data-apariencia aria-label="Apariencia" title="Apariencia" data-i18n-attr="aria-label:cab.apariencia;title:cab.apariencia"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-paleta"/></svg></button>
+      <button class="btn-icono" type="button" data-edicion aria-label="Edición" title="Edición" aria-pressed="false" data-i18n-attr="aria-label:cab.edicion;title:cab.edicion"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-edicion"/></svg></button>
       <button class="btn-icono" id="btn-mas-cab" type="button" aria-expanded="false" aria-controls="panel-der"
-              aria-label="Más opciones" title="Más opciones"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg></button>
+              aria-label="Más opciones" title="Más opciones" data-i18n-attr="aria-label:cab.mas;title:cab.mas"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg></button>
     </div>
     <button class="btn-icono" id="btn-der" type="button" aria-expanded="false" aria-controls="panel-der"
-            aria-label="Panel contextual"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-der"/></svg></button>
+            aria-label="Panel contextual" data-i18n-attr="aria-label:cab.panelDer"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-panel-der"/></svg></button>
   </div>
 </header>
 
 <main class="armazon">
 
-  <aside class="riel" id="riel" aria-label="Riel de secciones">
-    <nav class="riel__bloques" id="riel-bloques" aria-label="Secciones"></nav>
-    <button class="riel__mas" id="btn-mas" type="button"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg><span class="riel__nombre">Añadir bloque</span></button>
+  <aside class="riel" id="riel" aria-label="Riel de secciones" data-i18n-attr="aria-label:riel.etiqueta">
+    <nav class="riel__bloques" id="riel-bloques" aria-label="Secciones" data-i18n-attr="aria-label:riel.secciones"></nav>
+    <button class="riel__mas" id="btn-mas" type="button"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-mas"/></svg><span class="riel__nombre" data-i18n="riel.anadir">Añadir bloque</span></button>
   </aside>
 
-  <section class="losa" aria-label="Bloque abierto">
+  <section class="losa" aria-label="Bloque abierto" data-i18n-attr="aria-label:losa.etiqueta">
     <div class="losa__barra">
       <!-- las vistas salen de los bloques instalados de la sección abierta:
            este nav lo llena pintarEstanteria(), no hay botones escritos a mano -->
@@ -430,131 +432,135 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
       <div class="vistas" id="vistas"></div>
 
       <div class="vacia">
-        <h2 class="vacia__tit" id="vacia-tit">Esta sección está vacía</h2>
-        <p class="vacia__txt" id="vacia-txt">El gabinete instala bloques en esta sección.</p>
+        <h2 class="vacia__tit" id="vacia-tit" data-i18n="vacia.titulo">Añade un bloque a Tiempo</h2>
+        <p class="vacia__txt" id="vacia-txt" data-i18n="vacia.textoNo">Esta sección todavía no tiene bloques instalables.</p>
         <ul class="chips" id="vacia-chips"></ul>
-        <p class="vacia__nota" id="vacia-nota">El riel lista secciones; los bloques viven dentro de la sección abierta.</p>
-        <button class="btn btn--primario" type="button" data-abrir-gabinete>Abrir el gabinete</button>
+        <p class="vacia__nota" id="vacia-nota" data-i18n="vacia.notaNo">El riel lista secciones. Cuando lleguen sus motores, aparecerán aquí.</p>
+        <button class="btn btn--primario" type="button" data-abrir-gabinete data-i18n="vacia.abrir">Abrir el gabinete</button>
       </div>
 
       <div class="apariencia">
-        <h2 class="apariencia__tit">Apariencia</h2>
-        <p class="apariencia__txt">Seis temas. Cada uno con su fondo, su superficie, su tinta y su acento.</p>
+        <h2 class="apariencia__tit" data-i18n="apariencia.titulo">Apariencia</h2>
+        <p class="apariencia__txt" data-i18n="apariencia.texto">Seis temas. Cada uno con su fondo, su superficie, su tinta y su acento.</p>
         <ul class="fichas">
           <li><button class="ficha" type="button" aria-pressed="true">
-            <span class="ficha__nombre">Papel</span>
+            <span class="ficha__nombre" data-i18n="apariencia.papel">Papel</span>
             <span class="ficha__muestras">
-              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--papel-fondo)"></span>
-              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--papel-sup)"></span>
-              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--papel-tinta)"></span>
-              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--papel-acento)"></span>
+              <span class="ficha__c" role="img" aria-label="Fondo" data-i18n-attr="aria-label:apariencia.fondo" style="background:var(--papel-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" data-i18n-attr="aria-label:apariencia.superficie" style="background:var(--papel-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" data-i18n-attr="aria-label:apariencia.tinta" style="background:var(--papel-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" data-i18n-attr="aria-label:apariencia.acento" style="background:var(--papel-acento)"></span>
             </span>
           </button></li>
           <li><button class="ficha" type="button" aria-pressed="false">
-            <span class="ficha__nombre">Arena</span>
+            <span class="ficha__nombre" data-i18n="apariencia.arena">Arena</span>
             <span class="ficha__muestras">
-              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--arena-fondo)"></span>
-              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--arena-sup)"></span>
-              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--arena-tinta)"></span>
-              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--arena-acento)"></span>
+              <span class="ficha__c" role="img" aria-label="Fondo" data-i18n-attr="aria-label:apariencia.fondo" style="background:var(--arena-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" data-i18n-attr="aria-label:apariencia.superficie" style="background:var(--arena-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" data-i18n-attr="aria-label:apariencia.tinta" style="background:var(--arena-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" data-i18n-attr="aria-label:apariencia.acento" style="background:var(--arena-acento)"></span>
             </span>
           </button></li>
           <li><button class="ficha" type="button" aria-pressed="false">
-            <span class="ficha__nombre">Marea</span>
+            <span class="ficha__nombre" data-i18n="apariencia.marea">Marea</span>
             <span class="ficha__muestras">
-              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--marea-fondo)"></span>
-              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--marea-sup)"></span>
-              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--marea-tinta)"></span>
-              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--marea-acento)"></span>
+              <span class="ficha__c" role="img" aria-label="Fondo" data-i18n-attr="aria-label:apariencia.fondo" style="background:var(--marea-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" data-i18n-attr="aria-label:apariencia.superficie" style="background:var(--marea-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" data-i18n-attr="aria-label:apariencia.tinta" style="background:var(--marea-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" data-i18n-attr="aria-label:apariencia.acento" style="background:var(--marea-acento)"></span>
             </span>
           </button></li>
           <li><button class="ficha" type="button" aria-pressed="false">
-            <span class="ficha__nombre">Grafito</span>
+            <span class="ficha__nombre" data-i18n="apariencia.grafito">Grafito</span>
             <span class="ficha__muestras">
-              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--grafito-fondo)"></span>
-              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--grafito-sup)"></span>
-              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--grafito-tinta)"></span>
-              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--grafito-acento)"></span>
+              <span class="ficha__c" role="img" aria-label="Fondo" data-i18n-attr="aria-label:apariencia.fondo" style="background:var(--grafito-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" data-i18n-attr="aria-label:apariencia.superficie" style="background:var(--grafito-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" data-i18n-attr="aria-label:apariencia.tinta" style="background:var(--grafito-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" data-i18n-attr="aria-label:apariencia.acento" style="background:var(--grafito-acento)"></span>
             </span>
           </button></li>
           <li><button class="ficha" type="button" aria-pressed="false">
-            <span class="ficha__nombre">Medianoche</span>
+            <span class="ficha__nombre" data-i18n="apariencia.medianoche">Medianoche</span>
             <span class="ficha__muestras">
-              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--medianoche-fondo)"></span>
-              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--medianoche-sup)"></span>
-              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--medianoche-tinta)"></span>
-              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--medianoche-acento)"></span>
+              <span class="ficha__c" role="img" aria-label="Fondo" data-i18n-attr="aria-label:apariencia.fondo" style="background:var(--medianoche-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" data-i18n-attr="aria-label:apariencia.superficie" style="background:var(--medianoche-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" data-i18n-attr="aria-label:apariencia.tinta" style="background:var(--medianoche-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" data-i18n-attr="aria-label:apariencia.acento" style="background:var(--medianoche-acento)"></span>
             </span>
           </button></li>
           <li><button class="ficha" type="button" aria-pressed="false">
-            <span class="ficha__nombre">Alto contraste</span>
+            <span class="ficha__nombre" data-i18n="apariencia.contraste">Alto contraste</span>
             <span class="ficha__muestras">
-              <span class="ficha__c" role="img" aria-label="Fondo" style="background:var(--contraste-fondo)"></span>
-              <span class="ficha__c" role="img" aria-label="Superficie" style="background:var(--contraste-sup)"></span>
-              <span class="ficha__c" role="img" aria-label="Tinta" style="background:var(--contraste-tinta)"></span>
-              <span class="ficha__c" role="img" aria-label="Acento" style="background:var(--contraste-acento)"></span>
+              <span class="ficha__c" role="img" aria-label="Fondo" data-i18n-attr="aria-label:apariencia.fondo" style="background:var(--contraste-fondo)"></span>
+              <span class="ficha__c" role="img" aria-label="Superficie" data-i18n-attr="aria-label:apariencia.superficie" style="background:var(--contraste-sup)"></span>
+              <span class="ficha__c" role="img" aria-label="Tinta" data-i18n-attr="aria-label:apariencia.tinta" style="background:var(--contraste-tinta)"></span>
+              <span class="ficha__c" role="img" aria-label="Acento" data-i18n-attr="aria-label:apariencia.acento" style="background:var(--contraste-acento)"></span>
             </span>
           </button></li>
         </ul>
         <div class="ajuste">
-          <p class="ajuste__t">Tema de la aplicación</p>
-          <button class="btn btn--mini" id="btn-tema" type="button" aria-pressed="false">Tema claro</button>
+          <p class="ajuste__t" data-i18n="apariencia.temaTitulo">Tema de la aplicación</p>
+          <button class="btn btn--mini" id="btn-tema" type="button" aria-pressed="false" data-i18n="tema.botonClaro">Tema claro</button>
         </div>
       </div>
 
       <div class="ajustes">
-        <h2 class="ajustes__tit">Ajustes</h2>
-        <p class="ajustes__txt">El pie de página se oculta desde aquí, no desde el pie.</p>
+        <h2 class="ajustes__tit" data-i18n="ajustes.titulo">Ajustes</h2>
+        <p class="ajustes__txt" data-i18n="ajustes.texto">El pie de página se oculta desde aquí, no desde el pie.</p>
         <div class="ajuste">
-          <p class="ajuste__t">Pie de página</p>
-          <button class="btn btn--mini" id="btn-pie" type="button" aria-pressed="true">Visible</button>
+          <p class="ajuste__t" data-i18n="ajustes.pie">Pie de página</p>
+          <button class="btn btn--mini" id="btn-pie" type="button" aria-pressed="true" data-i18n="ajustes.visible">Visible</button>
         </div>
-        <p class="ajustes__nota">Versión 1.0.0 · el armazón guarda solo; aquí no hay nada que confirmar.</p>
+        <p class="ajustes__nota" data-i18n="ajustes.nota">Versión 1.0.0 · el armazón guarda solo; aquí no hay nada que confirmar.</p>
+        <div class="ajuste">
+          <p class="ajuste__t" data-i18n="ajustes.idioma">Idioma</p>
+          <button class="btn btn--mini" id="btn-idioma" type="button" aria-pressed="false" data-i18n="idioma.cambiar">English</button>
+        </div>
       </div>
 
     </div>
   </section>
 
-  <aside class="der" id="panel-der" aria-label="Panel contextual">
+  <aside class="der" id="panel-der" aria-label="Panel contextual" data-i18n-attr="aria-label:panel.etiqueta">
     <div class="der__caja">
       <header class="der__cab">
-        <div class="pestanas" role="tablist" aria-label="Panel derecho">
+        <div class="pestanas" role="tablist" aria-label="Panel derecho" data-i18n-attr="aria-label:panel.etiqueta">
           <button class="pestana" id="tab-contexto" type="button" role="tab" aria-selected="true"
-                  aria-controls="cara-contexto" data-cara="contexto">Contexto</button>
+                  aria-controls="cara-contexto" data-cara="contexto" data-i18n="panel.contexto">Contexto</button>
           <button class="pestana" id="tab-gabinete" type="button" role="tab" aria-selected="false"
-                  aria-controls="cara-gabinete" data-cara="gabinete">Gabinete</button>
+                  aria-controls="cara-gabinete" data-cara="gabinete" data-i18n="panel.gabinete">Gabinete</button>
         </div>
-        <button class="btn-icono der__cerrar" id="btn-cerrar-der" type="button" aria-label="Cerrar el panel contextual"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-cerrar"/></svg></button>
+        <button class="btn-icono der__cerrar" id="btn-cerrar-der" type="button" aria-label="Cerrar el panel contextual" data-i18n-attr="aria-label:panel.cerrar"><svg class="icono" aria-hidden="true" focusable="false"><use href="#i-cerrar"/></svg></button>
       </header>
 
+      <!-- los VALORES de este panel los escribe pintarContexto() desde el mismo
+           almacen que los bloques; los rotulos llevan su clave de idioma -->
       <div class="der__cara der__cara--contexto" id="cara-contexto" role="tabpanel" aria-labelledby="tab-contexto">
-        <h2 class="ctx__h" id="ctx-seccion">Tiempo</h2>
-        <h2 class="ctx__h ctx__h--rotulo">Ahora</h2>
+        <h2 class="ctx__h" id="ctx-seccion" data-i18n="seccion.tiempo.nombre">Tiempo</h2>
+        <h2 class="ctx__h ctx__h--rotulo" data-i18n="ctx.ahora">Ahora</h2>
         <ul class="ctx__lista">
-          <li class="ctx__item"><span class="ctx__t">Modo</span><span class="ctx__meta">Cronómetro</span></li>
-          <li class="ctx__item"><span class="ctx__t">Estado</span><span class="ctx__meta">Parado</span></li>
+          <li class="ctx__item"><span class="ctx__t" data-i18n="ctx.modo">Modo</span><span class="ctx__meta" id="ctx-modo">Cronómetro</span></li>
+          <li class="ctx__item"><span class="ctx__t" data-i18n="ctx.estado">Estado</span><span class="ctx__meta" id="ctx-estado">Parado</span></li>
         </ul>
-        <h2 class="ctx__h ctx__h--rotulo">Hoy</h2>
+        <h2 class="ctx__h ctx__h--rotulo" data-i18n="ctx.hoy">Hoy</h2>
         <ul class="ctx__lista">
-          <li class="ctx__item"><span class="ctx__t">Total</span><span class="ctx__meta">30 min</span></li>
-          <li class="ctx__item"><span class="ctx__t">Sesiones</span><span class="ctx__meta">1</span></li>
+          <li class="ctx__item"><span class="ctx__t" data-i18n="ctx.total">Total</span><span class="ctx__meta" id="ctx-hoy-total">0 min</span></li>
+          <li class="ctx__item"><span class="ctx__t" data-i18n="ctx.sesiones">Sesiones</span><span class="ctx__meta" id="ctx-hoy-sesiones">0</span></li>
         </ul>
-        <h2 class="ctx__h ctx__h--rotulo">Esta semana</h2>
+        <h2 class="ctx__h ctx__h--rotulo" data-i18n="ctx.semana">Esta semana</h2>
         <ul class="ctx__lista">
-          <li class="ctx__item"><span class="ctx__t">Total</span><span class="ctx__meta">30 min</span></li>
-          <li class="ctx__item"><span class="ctx__t">Sesiones</span><span class="ctx__meta">1</span></li>
+          <li class="ctx__item"><span class="ctx__t" data-i18n="ctx.total">Total</span><span class="ctx__meta" id="ctx-sem-total">0 min</span></li>
+          <li class="ctx__item"><span class="ctx__t" data-i18n="ctx.sesiones">Sesiones</span><span class="ctx__meta" id="ctx-sem-sesiones">0</span></li>
         </ul>
-        <h2 class="ctx__h ctx__h--rotulo">Últimas sesiones</h2>
-        <ul class="ctx__lista">
-          <li class="ctx__item"><span class="ctx__t">Sin nombre</span><span class="ctx__meta">30 min · 10-20</span></li>
-        </ul>
+        <h2 class="ctx__h ctx__h--rotulo" data-i18n="ctx.ultimas">Últimas sesiones</h2>
+        <ul class="ctx__lista" id="ctx-ultimas"></ul>
       </div>
 
       <div class="der__cara der__cara--gabinete" id="cara-gabinete" role="tabpanel" aria-labelledby="tab-gabinete">
-        <p class="gab__intro" id="gab-intro">Instala bloques en esta sección.</p>
-        <p class="gab__rotulo" id="gab-rotulo-instalar">Para instalar en esta sección</p>
+        <p class="gab__intro" id="gab-intro" data-i18n="gab.intro">Instala bloques en esta sección.</p>
+        <p class="gab__rotulo" id="gab-rotulo-instalar" data-i18n="gab.instalarEn">Para instalar en esta sección</p>
         <ul class="gab__lista" id="gab-instalar"></ul>
-        <p class="gab__rotulo" id="gab-rotulo-instalados">En esta sección</p>
+        <p class="gab__rotulo" id="gab-rotulo-instalados" data-i18n="gab.enSeccion">En esta sección</p>
         <ul class="gab__lista gab__instalados" id="gab-instalados"></ul>
       </div>
     </div>
@@ -564,11 +570,13 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 </main>
 
 <footer class="pie" id="pie">
-  <p class="pie__z" id="pie-guardado"><span id="pie-version">v1.0.0</span><span id="pie-guardado-txt"> · guardado hace 2 s</span></p>
+  <p class="pie__z" id="pie-guardado"><span id="pie-version">v1.0.0</span><span id="pie-guardado-txt" data-i18n="pie.guardado"> · guardado hace 2 s</span></p>
   <p class="pie__z pie__z--centro" id="pie-bloque">Pomodoro · 12:04</p>
   <p class="pie__z pie__z--fin" id="pie-idioma">es · claro</p>
 </footer>
 
+<script src="js/i18n.js"></script>
+<script src="js/tiempo.js"></script>
 <script>
 (function () {
   var body = document.body;
@@ -590,35 +598,30 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     tema: uno(q.get('tema'), TEMAS, 'claro')
   };
 
-  /* LAS PIEZAS: cinco bloques de tiempo, cada uno con su dibujo del sprite. */
+  /* LAS PIEZAS: cinco bloques de tiempo, cada uno con su dibujo del sprite.
+     El nombre y la descripción NO están aquí: salen de js/i18n.js
+     (`bloque.<id>.nombre` y `bloque.<id>.desc`), así que se traducen solos. */
   var BLOQUES = [
-    { id: 'cronometro', nombre: 'Cronómetro', icono: 'i-cronometro',
-      desc: 'Cuenta el tiempo hacia arriba.' },
-    { id: 'temporizador', nombre: 'Temporizador', icono: 'i-arena',
-      desc: 'Cuenta hacia atrás y avisa al llegar a cero.' },
-    { id: 'pomodoro', nombre: 'Pomodoro', icono: 'i-pomodoro',
-      desc: 'Trabajo y descanso en ciclos de 25 minutos.' },
-    { id: 'registro', nombre: 'Registro', icono: 'i-tareas',
-      desc: 'Las sesiones que ya hiciste, con su duración.' },
-    { id: 'alarmas', nombre: 'Alarmas', icono: 'i-alarma',
-      desc: 'Avisos a una hora concreta del día.' }
+    { id: 'cronometro', icono: 'i-cronometro' },
+    { id: 'temporizador', icono: 'i-arena' },
+    { id: 'pomodoro', icono: 'i-pomodoro' },
+    { id: 'registro', icono: 'i-tareas' },
+    { id: 'alarmas', icono: 'i-alarma' }
   ];
 
   /* LAS SECCIONES: `bloques` es la foto de fábrica (lo instalado al empezar) y
      `catalogo` lo que el gabinete puede instalar EN esa sección. Instalar y
      quitar mueven una copia en memoria; la tabla no se muta. */
+  /* El nombre de cada sección también sale del diccionario
+     (`seccion.<id>.nombre`): aquí queda solo lo que es estructura. */
   var SECCIONES = [
-    { id: 'calendario', nombre: 'Calendario', icono: 'i-calendario',
-      bloques: [], catalogo: [] },
-    { id: 'malla', nombre: 'Malla', icono: 'i-malla',
-      bloques: [], catalogo: [] },
-    { id: 'tiempo', nombre: 'Tiempo', icono: 'i-tiempo',
+    { id: 'calendario', icono: 'i-calendario', bloques: [], catalogo: [] },
+    { id: 'malla', icono: 'i-malla', bloques: [], catalogo: [] },
+    { id: 'tiempo', icono: 'i-tiempo',
       bloques: ['cronometro', 'temporizador'],
       catalogo: ['cronometro', 'temporizador', 'pomodoro', 'registro', 'alarmas'] },
-    { id: 'estudio', nombre: 'Estudio', icono: 'i-estudio',
-      bloques: [], catalogo: [] },
-    { id: 'calificaciones', nombre: 'Calificaciones', icono: 'i-calificaciones',
-      bloques: [], catalogo: [] }
+    { id: 'estudio', icono: 'i-estudio', bloques: [], catalogo: [] },
+    { id: 'calificaciones', icono: 'i-calificaciones', bloques: [], catalogo: [] }
   ];
   var SECCION_INICIAL = 'tiempo';
   var CLAVE = 'mimo.armazon.v1';
@@ -734,6 +737,24 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
       '><use href="#' + entidad.icono + '"/></svg>';
   }
 
+  /* EL IDIOMA: aquí no se escribe ni un rótulo. `atr()` deja la clave y sus
+     parámetros EN el nodo —así aplicar() lo repinta en caliente— y `rot()`
+     devuelve el texto ya traducido y escapado. Las claves viven en js/i18n.js.
+     Regla: data-i18n va SOLO en nodos de texto (nunca en uno que lleve un
+     icono dentro), porque aplicar() escribe textContent. */
+  var T = MimoI18n.t;
+  function esc(v) {
+    return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function atr(clave, vars) {
+    return ' data-i18n="' + clave + '"' + (vars
+      ? " data-i18n-vars='" + JSON.stringify(vars).replace(/"/g, '&quot;') + "'" : '');
+  }
+  function rot(clave, vars) { return esc(T(clave, vars)); }
+  function nombreSeccion(s) { return T('seccion.' + s.id + '.nombre'); }
+  function nombreBloque(b) { return T('bloque.' + b.id + '.nombre'); }
+  function claveTema() { return est.tema === 'claro' ? 'tema.botonClaro' : 'tema.botonOscuro'; }
+
   /* EL RIEL: una fila por SECCIÓN. No crece con los bloques: los bloques viven
      dentro de la sección abierta y se ven en la losa. */
   function pintarRiel() {
@@ -741,27 +762,59 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     var html = '';
     for (var i = 0; i < SECCIONES.length; i++) {
       var s = SECCIONES[i];
+      var cn = 'seccion.' + s.id + '.nombre';
       html += '<div class="riel__fila"><button class="riel__bloque" type="button" data-seccion="' +
         s.id + '"' + (s.id === app.seccion ? ' aria-current="page"' : '') + '>' +
-        icono(s) + '<span class="riel__nombre">' + s.nombre + '</span></button></div>';
+        icono(s) + '<span class="riel__nombre"' + atr(cn) + '>' + rot(cn) + '</span></button></div>';
     }
     nav.innerHTML = html;
   }
 
-  /* UNA VISTA POR BLOQUE INSTALADO. El cuerpo de cada pieza es su dibujo de
-     esta iteración: el motor de tiempo es la ronda siguiente. */
-  function panelTiempo(cifra, fase, acciones) {
-    return '<div class="pomo"><div class="pomo__lado">' +
-      '<p class="pomo__cifra">' + cifra + '</p>' +
-      '<p class="pomo__fase">' + fase + '</p>' +
-      (acciones ? '<div class="pomo__acciones">' +
-        '<button class="btn btn--primario" type="button">Empezar</button>' +
-        '<button class="btn" type="button">Reiniciar</button></div>' : '') +
-      '</div></div>';
+  /* UNA VISTA POR BLOQUE INSTALADO. Los cuatro bloques de Tiempo llevan los
+     ganchos que lee js/tiempo.js: [data-tiempo] para las cifras y los rótulos
+     vivos, [data-accion] para los botones. Alarmas sigue siendo un dibujo
+     (HUECO declarado: su motor no entra en esta ronda). */
+  function botonAccion(accion, clave, primario, alterna) {
+    return '<button class="btn' + (primario ? ' btn--primario' : '') + '" type="button"' +
+      ' data-accion="' + accion + '"' + atr(clave) +
+      (alterna ? ' aria-pressed="false"' : '') + '>' + rot(clave) + '</button>';
   }
 
   function cuerpoDe(b) {
+    if (b.id === 'cronometro') {
+      return '<div class="pomo"><div class="pomo__lado">' +
+        '<p class="pomo__cifra" data-tiempo="crono-cifra">00:00,00</p>' +
+        '<p class="pomo__fase" data-tiempo="crono-estado"' + atr('crono.parado') + '>' +
+          rot('crono.parado') + '</p>' +
+        '<div class="pomo__acciones">' +
+          botonAccion('crono-empezar', 'crono.empezar', true, true) +
+          botonAccion('crono-guardar', 'crono.guardar', false, false) +
+          botonAccion('crono-reiniciar', 'crono.reiniciar', false, false) +
+        '</div>' +
+      '</div></div>';
+    }
+    if (b.id === 'temporizador') {
+      var v = { dur: T('unidad.min', { n: 5 }) };
+      return '<div class="pomo"><div class="pomo__lado">' +
+        '<p class="pomo__cifra" data-tiempo="temp-cifra">05:00</p>' +
+        '<p class="pomo__fase" data-tiempo="temp-estado"' + atr('temp.fase', v) + '>' +
+          rot('temp.fase', v) + '</p>' +
+        '<p class="sr" role="status" data-tiempo="temp-live"></p>' +
+        '<div class="pomo__acciones">' +
+          botonAccion('temp-empezar', 'temp.empezar', true, true) +
+          botonAccion('temp-reiniciar', 'temp.reiniciar', false, false) +
+        '</div>' +
+        '<div class="pomo__acciones">' +
+          '<button class="btn btn--mini" type="button" data-accion="temp-menos"' +
+            ' data-i18n-attr="aria-label:temp.menos">− 1 min</button>' +
+          '<button class="btn btn--mini" type="button" data-accion="temp-mas"' +
+            ' data-i18n-attr="aria-label:temp.mas">+ 1 min</button>' +
+        '</div>' +
+      '</div></div>';
+    }
     if (b.id === 'pomodoro') {
+      var vp = { dur: T('unidad.min', { n: 25 }) };
+      var vs = { n: 1, cada: 4 };
       return '<div class="pomo">' +
         '<div class="pomo__anillo">' +
           '<svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">' +
@@ -769,30 +822,44 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
             '<circle class="pomo__arco" cx="60" cy="60" r="55"></circle>' +
           '</svg>' +
           '<div class="pomo__centro">' +
-            '<span class="pomo__cifra">18:42</span>' +
-            '<span class="pomo__fase">Trabajo · 25 min</span>' +
+            '<span class="pomo__cifra" data-tiempo="pomo-cifra">25:00</span>' +
+            '<span class="pomo__fase" data-tiempo="pomo-fase"' + atr('pomo.trabajo', vp) + '>' +
+              rot('pomo.trabajo', vp) + '</span>' +
           '</div>' +
         '</div>' +
         '<div class="pomo__lado">' +
-          '<p class="pomo__sesion">Sesión 3 de 4</p>' +
+          '<p class="pomo__sesion" data-tiempo="pomo-sesion"' + atr('pomo.sesion', vs) + '>' +
+            rot('pomo.sesion', vs) + '</p>' +
           '<div class="pomo__acciones">' +
-            '<button class="btn btn--primario" type="button">Empezar</button>' +
-            '<button class="btn" type="button">Reiniciar</button>' +
+            botonAccion('pomo-empezar', 'pomo.empezar', true, true) +
+            botonAccion('pomo-reiniciar', 'pomo.reiniciar', false, false) +
           '</div>' +
         '</div>' +
       '</div>';
     }
-    if (b.id === 'cronometro') { return panelTiempo('00:00', 'Cronómetro · parado', true); }
-    if (b.id === 'temporizador') { return panelTiempo('05:00', 'Temporizador · 5 min', true); }
-    if (b.id === 'registro') { return panelTiempo('0', 'Registro · sesiones de hoy', false); }
-    if (b.id === 'alarmas') { return panelTiempo('--:--', 'Alarmas · ninguna programada', false); }
+    if (b.id === 'registro') {
+      return '<div class="pomo"><div class="pomo__lado">' +
+        '<p class="pomo__cifra" data-tiempo="reg-total">0</p>' +
+        '<p class="pomo__fase" data-tiempo="reg-fase"' + atr('reg.fase') + '>' +
+          rot('reg.fase') + '</p>' +
+        '<ul class="ctx__lista" data-tiempo="reg-lista"></ul>' +
+      '</div></div>';
+    }
+    if (b.id === 'alarmas') {
+      return '<div class="pomo"><div class="pomo__lado">' +
+        '<p class="pomo__cifra">--:--</p>' +
+        '<p class="pomo__fase"' + atr('alarmas.fase') + '>' + rot('alarmas.fase') + '</p>' +
+      '</div></div>';
+    }
     return '';
   }
 
   function vistaDe(b, activa, seccion) {
     return '<div class="vista--bloque" data-bloque="' + b.id + '"' +
       (activa ? '' : ' hidden') + '>' +
-      '<div class="bloque"><p class="bloque__nombre">' + seccion.nombre + '</p></div>' +
+      '<div class="bloque"><p class="bloque__nombre"' +
+        atr('seccion.' + seccion.id + '.nombre') + '>' +
+        rot('seccion.' + seccion.id + '.nombre') + '</p></div>' +
       cuerpoDe(b) + '</div>';
   }
 
@@ -806,12 +873,13 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     for (var i = 0; i < g.bloques.length; i++) {
       var b = bloquePorId(g.bloques[i]);
       if (!b) { continue; }
+      var cb = 'bloque.' + b.id + '.nombre';
       botones += '<button class="est__v" type="button" data-bloque="' + b.id + '"' +
-        (b.id === g.sel ? ' aria-current="page"' : '') + '>' + b.nombre + '</button>';
+        (b.id === g.sel ? ' aria-current="page"' : '') + atr(cb) + '>' + rot(cb) + '</button>';
       vistas += vistaDe(b, b.id === g.sel, s);
     }
     nav.innerHTML = botones;
-    nav.setAttribute('aria-label', 'Vistas de ' + s.nombre);
+    nav.setAttribute('aria-label', T('estanteria.etiqueta', { seccion: nombreSeccion(s) }));
     document.getElementById('vistas').innerHTML = vistas;
   }
 
@@ -822,20 +890,39 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     for (var i = 0; i < s.catalogo.length; i++) {
       if (g.bloques.indexOf(s.catalogo[i]) < 0) {
         var b = bloquePorId(s.catalogo[i]);
-        if (b) { libres.push(b.nombre); }
+        if (b) { libres.push(b); }
       }
     }
-    document.getElementById('vacia-tit').textContent = 'Añade un bloque a ' + s.nombre;
-    document.getElementById('vacia-txt').textContent = libres.length
-      ? 'Esta sección está vacía. El gabinete instala aquí: ' + libres.join(', ') + '.'
-      : 'Esta sección todavía no tiene bloques instalables.';
+    var nombres = [];
+    for (var k = 0; k < libres.length; k++) { nombres.push(nombreBloque(libres[k])); }
+
+    var tit = document.getElementById('vacia-tit');
+    var vt = { seccion: nombreSeccion(s) };
+    tit.setAttribute('data-i18n', 'vacia.titulo');
+    tit.setAttribute('data-i18n-vars', JSON.stringify(vt));
+    tit.textContent = T('vacia.titulo', vt);
+
+    var txt = document.getElementById('vacia-txt');
+    var vx = { lista: nombres.join(', ') };
+    var claveTx = libres.length ? 'vacia.textoSi' : 'vacia.textoNo';
+    txt.setAttribute('data-i18n', claveTx);
+    if (libres.length) { txt.setAttribute('data-i18n-vars', JSON.stringify(vx)); }
+    else { txt.removeAttribute('data-i18n-vars'); }
+    txt.textContent = T(claveTx, vx);
+
     var chips = document.getElementById('vacia-chips');
     var h = '';
-    for (var j = 0; j < libres.length; j++) { h += '<li class="chip">' + libres[j] + '</li>'; }
+    for (var j = 0; j < libres.length; j++) {
+      var cc = 'bloque.' + libres[j].id + '.nombre';
+      h += '<li class="chip"' + atr(cc) + '>' + rot(cc) + '</li>';
+    }
     chips.innerHTML = h;
-    document.getElementById('vacia-nota').textContent = libres.length
-      ? 'El riel lista secciones; los bloques viven dentro de la sección abierta.'
-      : 'El riel lista secciones. Cuando lleguen sus motores, aparecerán aquí.';
+
+    var nota = document.getElementById('vacia-nota');
+    var claveNota = libres.length ? 'vacia.notaSi' : 'vacia.notaNo';
+    nota.setAttribute('data-i18n', claveNota);
+    nota.removeAttribute('data-i18n-vars');
+    nota.textContent = T(claveNota);
   }
 
   /* EL GABINETE: instala y quita EN LA SECCIÓN ABIERTA. Ofrece el catálogo
@@ -843,44 +930,141 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   function pintarGabinete() {
     var s = seccionAbierta();
     var g = estadoSeccion();
-    document.getElementById('gab-intro').textContent = 'Instala bloques en ' + s.nombre + '.';
-    document.getElementById('gab-rotulo-instalar').textContent = 'Para instalar en ' + s.nombre;
-    document.getElementById('gab-rotulo-instalados').textContent = 'En ' + s.nombre;
+    var vs = { seccion: nombreSeccion(s) };
+    var intro = document.getElementById('gab-intro');
+    intro.setAttribute('data-i18n-vars', JSON.stringify(vs));
+    intro.textContent = T('gab.intro', vs);
+    var rotIns = document.getElementById('gab-rotulo-instalar');
+    rotIns.setAttribute('data-i18n-vars', JSON.stringify(vs));
+    rotIns.textContent = T('gab.instalarEn', vs);
+    var rotEn = document.getElementById('gab-rotulo-instalados');
+    rotEn.setAttribute('data-i18n-vars', JSON.stringify(vs));
+    rotEn.textContent = T('gab.enSeccion', vs);
     var a = '', b = '';
     for (var i = 0; i < s.catalogo.length; i++) {
       var x = bloquePorId(s.catalogo[i]);
       if (!x || g.bloques.indexOf(x.id) >= 0) { continue; }
+      var cxn = 'bloque.' + x.id + '.nombre';
+      var cxd = 'bloque.' + x.id + '.desc';
       a += '<li class="gab__item">' + icono(x, true) +
-        '<p class="gab__nombre">' + x.nombre + '</p>' +
-        '<button class="btn btn--mini" type="button" data-instalar="' + x.id + '">Instalar</button>' +
-        '<p class="gab__desc">' + x.desc + '</p></li>';
+        '<p class="gab__nombre"' + atr(cxn) + '>' + rot(cxn) + '</p>' +
+        '<button class="btn btn--mini" type="button" data-instalar="' + x.id + '"' +
+          atr('gab.instalar') + '>' + rot('gab.instalar') + '</button>' +
+        '<p class="gab__desc"' + atr(cxd) + '>' + rot(cxd) + '</p></li>';
     }
     for (var j = 0; j < g.bloques.length; j++) {
       var y = bloquePorId(g.bloques[j]);
       if (!y) { continue; }
-      b += '<li class="gab__item"><p class="gab__nombre">' + y.nombre + '</p>' +
-        '<button class="btn btn--mini" type="button" data-quitar="' + y.id + '">Quitar</button></li>';
+      var cyn = 'bloque.' + y.id + '.nombre';
+      b += '<li class="gab__item"><p class="gab__nombre"' + atr(cyn) + '>' + rot(cyn) + '</p>' +
+        '<button class="btn btn--mini" type="button" data-quitar="' + y.id + '"' +
+          atr('gab.quitar') + '>' + rot('gab.quitar') + '</button></li>';
     }
     document.getElementById('gab-instalar').innerHTML = a ||
-      '<li><p class="gab__desc">No quedan bloques por instalar en esta sección.</p></li>';
+      '<li><p class="gab__desc"' + atr('gab.noQuedan') + '>' + rot('gab.noQuedan') + '</p></li>';
     document.getElementById('gab-instalados').innerHTML = b ||
-      '<li><p class="gab__desc">Ninguno todavía.</p></li>';
+      '<li><p class="gab__desc"' + atr('gab.ninguno') + '>' + rot('gab.ninguno') + '</p></li>';
   }
 
   function pintarCabecera() {
     var s = seccionAbierta();
     var b = bloqueAbierto();
+    var cs = 'seccion.' + s.id + '.nombre';
     document.getElementById('bloque-icono').innerHTML = icono(s);
-    document.getElementById('bloque-nombre').textContent = s.nombre;
-    document.getElementById('ctx-seccion').textContent = s.nombre;
-    document.getElementById('pie-bloque').textContent =
-      (b ? b.nombre : 'Sin bloques') + ' · ' + s.nombre;
+
+    var nom = document.getElementById('bloque-nombre');
+    nom.setAttribute('data-i18n', cs);
+    nom.removeAttribute('data-i18n-vars');
+    nom.textContent = nombreSeccion(s);
+
+    var ctxSec = document.getElementById('ctx-seccion');
+    ctxSec.setAttribute('data-i18n', cs);
+    ctxSec.removeAttribute('data-i18n-vars');
+    ctxSec.textContent = nombreSeccion(s);
+
+    document.getElementById('pie-bloque').innerHTML = b
+      ? '<span' + atr('bloque.' + b.id + '.nombre') + '>' + rot('bloque.' + b.id + '.nombre') +
+        '</span> · <span' + atr(cs) + '>' + rot(cs) + '</span>'
+      : '<span' + atr('pie.sinBloques') + '>' + rot('pie.sinBloques') + '</span>';
+
     var tema = document.getElementById('btn-tema');
     tema.setAttribute('aria-pressed', est.tema === 'oscuro' ? 'true' : 'false');
-    tema.textContent = est.tema === 'claro' ? 'Tema claro' : 'Tema oscuro';
-    document.getElementById('pie-idioma').textContent = 'es · ' + est.tema;
+    tema.setAttribute('data-i18n', claveTema());
+    tema.textContent = T(claveTema());
+
+    var vi = { idioma: MimoI18n.idiomaActual(), tema: T(est.tema === 'claro' ? 'tema.claro' : 'tema.oscuro') };
+    var pieId = document.getElementById('pie-idioma');
+    pieId.setAttribute('data-i18n', 'pie.idioma');
+    pieId.setAttribute('data-i18n-vars', JSON.stringify(vi));
+    pieId.textContent = T('pie.idioma', vi);
+
     document.getElementById('btn-mas-cab').setAttribute('aria-expanded',
       (ui.der === 'abierto' && ui.cara === 'gabinete') ? 'true' : 'false');
+  }
+
+  /* EL PANEL DE CONTEXTO no tiene estado propio: lee el mismo almacén que los
+     bloques. Modo y estado del bloque abierto, y los totales del registro. */
+
+  /* DD-MM desde una fecha ISO (la del registro). Ojo: NO es fechaCorta(), que
+     recibe un Date para la cabecera. */
+  function cortaISO(iso) {
+    var t = String(iso || '').split('-');
+    return t.length === 3 ? (t[2] + '-' + t[1]) : String(iso || '');
+  }
+  function ponerValor(id, clave, vars, plano) {
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    if (!clave) {
+      el.removeAttribute('data-i18n');
+      el.removeAttribute('data-i18n-vars');
+      if (el.textContent !== plano) { el.textContent = plano; }
+      return;
+    }
+    el.setAttribute('data-i18n', clave);
+    if (vars) { el.setAttribute('data-i18n-vars', JSON.stringify(vars)); }
+    else { el.removeAttribute('data-i18n-vars'); }
+    var txt = T(clave, vars);
+    if (el.textContent !== txt) { el.textContent = txt; }
+  }
+
+  function pintarContexto() {
+    var M = MimoTiempoMotor;
+    var b = bloqueAbierto();
+    ponerValor('ctx-modo', b ? 'bloque.' + b.id + '.nombre' : 'ctx.sinNombre');
+
+    var corriendo = M.cronoEstaCorriendo() || M.tempEstaCorriendo() || M.pomoEstaCorriendo();
+    var aMedias = (!M.cronoEstaCorriendo() && M.cronoMs() > 0) ||
+      (!M.tempEstaCorriendo() && M.tempRestanteMs() > 0 &&
+        M.tempRestanteMs() < M.tempObjetivoSeg() * 1000) ||
+      (!M.pomoEstaCorriendo() && M.pomo().restante !== null &&
+        M.pomo().restante !== undefined && M.pomo().restante > 0);
+    ponerValor('ctx-estado', corriendo ? 'ctx.enMarcha' : (aMedias ? 'ctx.pausado' : 'ctx.parado'));
+
+    var d = M.hoy();
+    var lun = M.lunesDe(d);
+    ponerValor('ctx-hoy-total', 'reg.min', { min: M.minutosDia(d) });
+    ponerValor('ctx-hoy-sesiones', null, null, String(M.sesionesDeDia(d).length));
+    ponerValor('ctx-sem-total', 'reg.min', { min: M.minutosSemana(lun) });
+    ponerValor('ctx-sem-sesiones', null, null, String(M.sesionesDeSemana(lun).length));
+
+    var ult = document.getElementById('ctx-ultimas');
+    if (!ult) { return; }
+    var todas = M.sesiones().slice().sort(function (x, y) {
+      var kx = x.fecha + ' ' + x.hora;
+      var ky = y.fecha + ' ' + y.hora;
+      return kx < ky ? 1 : (kx > ky ? -1 : 0);
+    }).slice(0, 3);
+    var filas = '';
+    for (var i = 0; i < todas.length; i++) {
+      var s = todas[i];
+      var vh = { hora: String(s.hora) };
+      var vf = { min: s.minutos, fecha: cortaISO(s.fecha) };
+      filas += '<li class="ctx__item"><span class="ctx__t"' + atr('reg.sesion', vh) + '>' +
+        rot('reg.sesion', vh) + '</span><span class="ctx__meta"' + atr('reg.meta', vf) + '>' +
+        rot('reg.meta', vf) + '</span></li>';
+    }
+    ult.innerHTML = filas || '<li class="ctx__item"><span class="ctx__t"' +
+      atr('ctx.sinSesiones') + '>' + rot('ctx.sinSesiones') + '</span></li>';
   }
 
   /* LA VISTA EFECTIVA: apariencia y ajustes mandan; si no, la sección sin
@@ -903,6 +1087,7 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     tctx.setAttribute('aria-selected', ui.cara === 'contexto' ? 'true' : 'false');
     tgab.setAttribute('aria-selected', ui.cara === 'gabinete' ? 'true' : 'false');
     pintarCabecera();
+    pintarContexto();
     var modos = modosDePanel();
     body.setAttribute('data-modo-riel', modos.riel);
     body.setAttribute('data-modo-der', modos.der);
@@ -914,6 +1099,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     pintarVacia();
     pintarGabinete();
     pintar();
+    /* la losa se acaba de rehacer: las cifras y los rótulos vivos se reponen
+       desde el motor, sin esperar al siguiente tic */
+    if (typeof MimoTiempoUI !== 'undefined') { MimoTiempoUI.pintar(); }
   }
 
   /* INSTALAR: añade al final, selecciona lo instalado y guarda. Quitar: si se
@@ -936,6 +1124,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     if (i < 0) { return; }
     g.bloques.splice(i, 1);
     if (g.sel === id) { g.sel = g.bloques[0] || null; }
+    /* el bloque se va con su temporizador parado: no queda nada corriendo
+       dentro de una vista que ya no existe */
+    MimoTiempoUI.detener(id);
     guardar();
     pintarSeccion();
   }
@@ -1005,7 +1196,17 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     var oculto = body.getAttribute('data-pie') === 'oculto';
     body.setAttribute('data-pie', oculto ? 'visible' : 'oculto');
     this.setAttribute('aria-pressed', oculto ? 'true' : 'false');
-    this.textContent = oculto ? 'Visible' : 'Oculto';
+    var clavePie = oculto ? 'ajustes.visible' : 'ajustes.oculto';
+    this.setAttribute('data-i18n', clavePie);
+    this.textContent = T(clavePie);
+  });
+
+  document.getElementById('btn-idioma').addEventListener('click', function () {
+    var otro = MimoI18n.idiomaActual() === 'es' ? 'en' : 'es';
+    /* cambiar() aplica el marcado, guarda la preferencia y avisa: el oyente
+       registrado al arrancar vuelve a pintar la losa en el idioma nuevo. */
+    MimoI18n.cambiar(otro);
+    this.setAttribute('aria-pressed', otro === 'en' ? 'true' : 'false');
   });
 
   document.getElementById('btn-mas').addEventListener('click', function () {
@@ -1049,6 +1250,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     guardar();
     pintarEstanteria();
     pintarCabecera();
+    /* la estantería acaba de rehacer las vistas: sus cifras se reponen ya, sin
+       esperar a que haya un temporizador corriendo */
+    MimoTiempoUI.pintar();
   });
 
   /* EL RIEL CAMBIA DE SECCIÓN; el gabinete instala y quita EN LA ABIERTA. */
@@ -1061,6 +1265,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     var g = estadoSeccion();
     if (g.bloques.indexOf(g.sel) < 0) { g.sel = g.bloques[0] || null; }
     ui.vista = 'normal';
+    /* al cambiar de sección no puede quedar un temporizador de la anterior
+       contando en segundo plano */
+    MimoTiempoUI.detener();
     guardar();
     pintarSeccion();
   });
@@ -1155,6 +1362,17 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   /* el quiebre depende del ancho: se recalcula al redimensionar, con escucha
      pasiva y sin bucle (pintar solo escribe atributos y no dispara otro resize). */
   window.addEventListener('resize', pintar, { passive: true });
+
+  /* EL IDIOMA Y LOS BLOQUES DE TIEMPO ARRANCAN AQUÍ. El diccionario ya está
+     aplicado por js/i18n.js; al cambiar de idioma se repinta la losa entera.
+     El motor lee su almacén y, si la URL trae ?prueba=1, acorta el pomodoro;
+     en los dos casos devuelve el cronómetro a cero y parado (gate del bloque). */
+  MimoI18n.alCambiar(function () { pintarSeccion(); });
+  MimoTiempoUI.iniciar({
+    t: MimoI18n.t,
+    prueba: q.get('prueba') === '1',
+    alCambiar: pintarContexto
+  });
 
   pintarSeccion();
   if (ui.der === 'abierto') { pila.push('der'); }
