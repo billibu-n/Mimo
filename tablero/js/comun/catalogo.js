@@ -46,6 +46,9 @@
      MimoComun.ramosDeSem(nivel)        ramos EN CURSO de esa columna
      MimoComun.ramoNuevo(cod)           entrada en curso fabricada desde CAT()
      MimoComun.agregarRamo(cod)         agrega a en curso sin duplicar y guarda
+
+   LO QUE ANADIO T005 (la prioridad de percepcion del estudio)
+     MimoComun.ramosQueAbre(cod)        cuantos ramos dependen de este, en cadena
    ============================================================================ */
 var MimoComun = window.MimoComun = window.MimoComun || {};
 (function (Mimo) {
@@ -326,6 +329,33 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
     return r;
   }
 
+  /* Cuantos ramos dependen de este, transitivamente, hasta el final de la
+     carrera (T005). Es la ramificacion hacia delante: recorre `desbloquea` sin
+     repetir nodos y no se cuenta a si mismo. Se usa para la prioridad de
+     percepcion del estudio: un ramo que abre muchos es mas critico.
+     Portado de `referencia/mimo-app-53cc22d/js/comun/03-catalogo.js:121`. */
+  function ramosQueAbre(cod) {
+    var c = CAT();
+    var clave = String(cod || '').toUpperCase();
+    var visto = {};
+    var pila = (c[clave] && c[clave].desbloquea) ? c[clave].desbloquea.slice() : [];
+    visto[clave] = true;
+    while (pila.length) {
+      var k = String(pila.pop() || '').toUpperCase();
+      if (visto[k]) { continue; }
+      var r = c[k];
+      if (!r || r.en_malla === false) { continue; }
+      visto[k] = true;
+      if (r.desbloquea) {
+        r.desbloquea.forEach(function (x) {
+          var kk = String(x || '').toUpperCase();
+          if (!visto[kk]) { pila.push(kk); }
+        });
+      }
+    }
+    return Object.keys(visto).length - 1;
+  }
+
   Mimo.CAT = CAT;
   Mimo.invalidarCatalogo = invalidarCatalogo;
   Mimo.ramoEnCatalogo = ramoEnCatalogo;
@@ -338,4 +368,5 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
   Mimo.ramosDeSem = ramosDeSem;
   Mimo.ramoNuevo = ramoNuevo;
   Mimo.agregarRamo = agregarRamo;
+  Mimo.ramosQueAbre = ramosQueAbre;
 })(MimoComun);

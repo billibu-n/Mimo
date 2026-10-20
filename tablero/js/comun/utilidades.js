@@ -15,8 +15,12 @@
      el editor de ramos, se porta con el, no antes.
    - `formatoTitulo()` y `esc` de titulos: dependen del ajuste de formato de
      titulos, que es de Ajustes (T009). Aqui va el `esc` pelado.
-   - `aCent`/`dec1`/`ver1`/`ver2`: redondeo de notas, se porta con
-     Calificaciones (T005).
+
+   EL REDONDEO DE NOTAS (T005). Se porta de
+   `referencia/mimo-app-53cc22d/js/comun/01-utilidades.js:211-214` tal cual,
+   porque las notas de la app anterior se leian asi: media decima hacia arriba
+   con `dec1(aCent(x))`. Cambiar el redondeo aqui cambiaria las notas ya
+   guardadas, que es justo lo que el contrato de paridad prohibe.
 
    LA FECHA ES LOCAL, NO UTC. `aISO` compone con getFullYear/getMonth/getDate.
    Antes usaba toISOString(), que es UTC: en Chile eso descuadraba la fecha y
@@ -33,6 +37,10 @@
      MimoComun.rangoSemana(lunes)        '20–26 oct' o '27 sep – 3 oct'
      MimoComun.copia(x)                  copia profunda por JSON
      MimoComun.esc(s)                    & < > " ' escapados
+     MimoComun.aCent(x)                  nota -> centesimas (entero)
+     MimoComun.dec1(c)                   centesimas -> decimas, media arriba
+     MimoComun.ver1(x)                   nota a un decimal; null -> '—'
+     MimoComun.ver2(x)                   nota a dos decimales; null -> '—'
    ============================================================================ */
 var MimoComun = window.MimoComun = window.MimoComun || {};
 (function (Mimo) {
@@ -88,6 +96,22 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
   Mimo.hoy = hoy;
   Mimo.sumaDias = sumaDias;
   Mimo.rangoSemana = rangoSemana;
+  // Redondeo del usuario: un decimal, media hacia arriba, con enteros en
+  // centesimas. `aCent` lleva la nota a centesimas y `dec1` la baja a decimas
+  // sin el error de coma flotante de toFixed (0.35 -> 0.4, no 0.3).
+  function aCent(x) { return Math.round(Number(x) * 100); }
+  function dec1(c) { return Math.floor((c + 5) / 10) / 10; }
+  function ver1(x) {
+    return (x === null || x === undefined) ? '—' : dec1(aCent(x)).toFixed(1);
+  }
+  function ver2(x) {
+    return (x === null || x === undefined) ? '—' : (aCent(x) / 100).toFixed(2);
+  }
+
   Mimo.copia = copia;
   Mimo.esc = esc;
+  Mimo.aCent = aCent;
+  Mimo.dec1 = dec1;
+  Mimo.ver1 = ver1;
+  Mimo.ver2 = ver2;
 })(MimoComun);

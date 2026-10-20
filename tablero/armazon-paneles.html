@@ -481,6 +481,80 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     border:1px solid var(--linea);border-radius:16px}
   .malla__sim-cod{font-size:13px;font-variant-numeric:tabular-nums}
   .malla__sim-est{margin-left:auto;font-size:13px;color:var(--muted)}
+
+  /* ------------------- BLOQUE ESTUDIO Y CALIFICACIONES (T005) -------------------
+     Dos bloques, un solo juego de piezas: la caja, el KPI, la tabla y la pastilla
+     de estado. Todo con tokens del armazon y con la escala que ya existe (13, 15
+     y 17 px; 8, 12, 16 y 24 de hueco; radio 16 y 999). Ni un hex: el color de los
+     ramos en las barras y en los puntos lo pone js/estudio.js desde la paleta de
+     tokens. Los rotulos, de js/i18n.js. */
+  .estudio,.calif{display:grid;gap:16px;min-width:0}
+  .estudio__kpis,.calif__cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+  .kpi{display:grid;gap:8px;padding:12px;border:1px solid var(--linea);border-radius:16px;background:var(--sup)}
+  .kpi__cifra{font-size:17px;font-weight:500;font-variant-numeric:tabular-nums}
+  .kpi__rot{font-size:13px;color:var(--muted);line-height:1.4}
+  .estudio__panel,.calif__caja{display:grid;gap:12px;padding:16px;border:1px solid var(--linea);
+    border-radius:16px;background:var(--sup);min-width:0}
+  .estudio__tit,.calif__tit{margin:0;font-size:15px;font-weight:500}
+  .estudio__pista,.calif__pista{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  .estudio__leyenda{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--muted)}
+  .estudio__lg{display:inline-flex;align-items:center;gap:8px}
+  .estudio__punto{display:inline-block;width:8px;height:8px;border-radius:999px;background:var(--tinta)}
+  .estudio__punto--base{background:transparent;border:1px solid var(--muted)}
+  .estudio__punto--propia{background:var(--acento)}
+  .estudio__punto--objetivo{background:transparent;border:1px dashed var(--acento)}
+  .estudio__lienzo{position:relative;display:flex;align-items:flex-end;gap:8px;height:180px;
+    overflow-x:auto;padding:8px 0 0;border-bottom:1px solid var(--linea)}
+  .estudio__semana{position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+    align-items:center;gap:8px;min-width:24px;height:160px;flex:1 1 0}
+  .estudio__pila{display:flex;flex-direction:column-reverse;width:100%;max-width:32px;
+    border-radius:16px 16px 0 0;overflow:hidden}
+  .estudio__seg{display:block;width:100%}
+  .estudio__tot,.estudio__etq{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .estudio__semana--actual .estudio__etq{color:var(--acento)}
+  .estudio__semana--pasada .estudio__tot{color:var(--fuerte)}
+  .estudio__linea{position:absolute;left:0;right:0;border-top:1px dashed var(--muted);
+    font-size:13px;color:var(--muted);padding-left:8px;pointer-events:none}
+  .estudio__propia{position:absolute;top:0;left:0;right:0;border-top:1px solid var(--acento);pointer-events:none}
+  .estudio__puntos{width:100%;overflow-x:auto}
+  .estudio__meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:0}
+  .estudio__campo-rot,.calif__campo-rot{display:inline-flex;align-items:center;gap:8px;
+    font-size:13px;color:var(--muted)}
+  .estudio__campo,.calif__campo{font-family:inherit;font-size:13px;padding:8px;border:1px solid var(--linea);
+    border-radius:16px;background:var(--fondo);color:var(--tinta);min-width:0}
+  .estudio__campo--num,.calif__campo--num{width:72px;text-align:right;font-variant-numeric:tabular-nums}
+  .estudio__scroll{overflow-x:auto;min-width:0}
+  .estudio__tabla,.calif__tabla{width:100%;border-collapse:collapse;font-size:13px}
+  .estudio__tabla th,.estudio__tabla td,.calif__tabla th,.calif__tabla td{padding:8px;
+    border-bottom:1px solid var(--linea);text-align:left;vertical-align:middle;white-space:nowrap}
+  .estudio__tabla thead th,.calif__tabla thead th{font-weight:500;color:var(--muted)}
+  .estudio__fila--actual{background:var(--sup2)}
+  .estudio__rango{font-size:13px;color:var(--muted)}
+  .estudio__num,.calif__num{text-align:right;font-variant-numeric:tabular-nums}
+  .estudio__aviso{display:grid;gap:8px;padding:12px;border:1px solid var(--fuerte);border-radius:16px}
+  .estudio__aviso-t{margin:0;font-size:15px}
+  .estudio__acciones{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .estudio__acciones .btn{padding:8px 12px;font-size:13px}
+  .calif__lista{display:grid;gap:8px}
+  .calif__item{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px;
+    padding:12px;border:1px solid var(--linea);border-radius:16px;background:var(--sup);
+    color:var(--tinta);font:inherit;text-align:left;cursor:pointer}
+  .calif__item:hover{border-color:var(--fuerte)}
+  .calif__item--sel{box-shadow:inset 0 0 0 2px var(--acento)}
+  .calif__item-cod{font-size:13px;color:var(--muted)}
+  .calif__item-nom{font-size:15px;overflow-wrap:anywhere}
+  .calif__nota{font-size:17px;font-variant-numeric:tabular-nums}
+  .calif__estado{font-size:13px;border-radius:999px;padding:0 8px;border:1px solid var(--linea)}
+  .calif__estado--ok{color:var(--fuerte)}
+  .calif__estado--bad{color:var(--acento)}
+  .calif__estado--warn,.calif__estado--n{color:var(--muted)}
+  .calif__detalle{display:grid;gap:16px;min-width:0}
+  .calif__ramo{margin:0;font-size:17px;font-weight:500;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .calif__ramo-cod{font-size:13px;color:var(--muted);letter-spacing:.04em}
+  .calif__fila{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:0}
+  .calif__tabla select{max-width:160px}
+  .calif__tabla input[type="date"]{max-width:140px}
+  .calif__sim{display:grid;gap:8px;padding:12px;border:1px dashed var(--linea);border-radius:16px}
 </style>
 </head>
 <body data-piel="c" data-tema="claro" data-estado="normal" data-modo-riel="empuja" data-modo-der="empuja"
@@ -737,6 +811,12 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
 <script src="js/malla.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/tiempo.js"></script>
+<!-- estudio.js y calificaciones.js (T005): los dos bloques nuevos. Van despues
+     de i18n.js porque sus rotulos SI estan en el diccionario, y despues de
+     tiempo.js para no alterar el orden que ya estaba medido. Cada uno expone su
+     motor (puro, sin DOM) y su vista; el armazon solo les da la caja. -->
+<script src="js/estudio.js"></script>
+<script src="js/calificaciones.js"></script>
 <script>
 (function () {
   var body = document.body;
@@ -772,7 +852,12 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
        descripcion, que es lo que usan `nombreBloque()`/`descBloque()` cuando
        la clave no existe. Si algun dia el diccionario las trae, mandan ellas. */
     { id: 'malla', icono: 'i-malla', nombre: 'Malla',
-      desc: 'Ramos por nivel, requisitos, estados y avance de la carrera.' }
+      desc: 'Ramos por nivel, requisitos, estados y avance de la carrera.' },
+    /* T005. Estudio y Calificaciones traen su nombre y su descripcion del
+       diccionario (`bloque.estudio.*` y `bloque.calificaciones.*`), que esta
+       ronda si pudo ampliar sin renombrar ninguna clave anterior. */
+    { id: 'estudio', icono: 'i-estudio' },
+    { id: 'calificaciones', icono: 'i-calificaciones' }
   ];
 
   /* LAS SECCIONES: `bloques` es la foto de fábrica (lo instalado al empezar) y
@@ -786,8 +871,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     { id: 'tiempo', icono: 'i-tiempo',
       bloques: ['cronometro', 'temporizador'],
       catalogo: ['cronometro', 'temporizador', 'pomodoro', 'registro', 'alarmas'] },
-    { id: 'estudio', icono: 'i-estudio', bloques: [], catalogo: [] },
-    { id: 'calificaciones', icono: 'i-calificaciones', bloques: [], catalogo: [] }
+    { id: 'estudio', icono: 'i-estudio', bloques: ['estudio'], catalogo: ['estudio'] },
+    { id: 'calificaciones', icono: 'i-calificaciones',
+      bloques: ['calificaciones'], catalogo: ['calificaciones'] }
   ];
   var SECCION_INICIAL = 'tiempo';
 
@@ -983,6 +1069,16 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
         '<form class="malla__editor" data-malla="editor" hidden></form>' +
         '<div class="malla__panel" data-malla="panel" hidden></div>' +
       '</div>';
+    }
+    /* ESTUDIO y CALIFICACIONES (T005): la caja y nada mas. Los dos ficheros
+       nuevos pintan dentro; el armazon no sabe que es una meta, una categoria ni
+       una nota. Mismo corte que Malla: si el bloque no esta instalado no hay
+       caja y su pintar() se va sin hacer nada. */
+    if (b.id === 'estudio') {
+      return '<div class="estudio" data-estudio="bloque" role="region"></div>';
+    }
+    if (b.id === 'calificaciones') {
+      return '<div class="calif" data-calif="bloque" role="region"></div>';
     }
     if (b.id === 'cronometro') {
       return '<div class="pomo"><div class="pomo__lado">' +
@@ -1184,6 +1280,15 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
        llenar. Si el bloque no esta instalado no hay caja y su pintar() se va. */
     if (typeof MimoMallaUI !== 'undefined') {
       MimoMallaUI.pintar();
+    }
+    /* T005: mismo criterio para los dos bloques nuevos. Se llaman siempre; cada
+       pintar() comprueba que su caja exista, asi que instalar, quitar, cambiar de
+       vista o de idioma no necesita ningun caso especial aqui. */
+    if (typeof MimoEstudioUI !== 'undefined') {
+      MimoEstudioUI.pintar();
+    }
+    if (typeof MimoCalificacionesUI !== 'undefined') {
+      MimoCalificacionesUI.pintar();
     }
   }
 
@@ -1681,6 +1786,10 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   /* la malla se escucha una sola vez en el DOM (delegado) y repinta al cambiar
      de idioma porque sus rotulos no estan en js/i18n.js (HUECO declarado) */
   MimoMallaUI.iniciar();
+  /* T005: los dos bloques nuevos escuchan una sola vez, delegado en el documento
+     (las vistas se repintan enteras y los nodos viejos no dejan escuchas). */
+  if (typeof MimoEstudioUI !== 'undefined') { MimoEstudioUI.iniciar(); }
+  if (typeof MimoCalificacionesUI !== 'undefined') { MimoCalificacionesUI.iniciar(); }
   MimoTiempoUI.iniciar({
     t: MimoI18n.t,
     prueba: q.get('prueba') === '1',

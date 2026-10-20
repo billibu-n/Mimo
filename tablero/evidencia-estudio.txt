@@ -1,0 +1,222 @@
+EVIDENCIA — T005 · Estudio y Calificaciones
+============================================
+Fecha: 2026-10-20
+Rama: estado-2026-10-20
+Alcance: bloque T005 sobre el sustrato de T003, sin tocar la estetica congelada.
+Todo lo que sigue se midio con Chromium sin cabeza sobre `file://`, con
+`?reset=1`, en un puerto libre, y cada instrumento termina el Chromium que
+arranco con `proc.terminate()`.
+
+1. QUE SE ENTREGO
+-----------------
+Nuevos:
+  tablero/js/estudio.js            motor + vista del bloque Estudio
+  tablero/js/calificaciones.js     motor + vista del bloque Calificaciones
+  tablero/medir-estudio.py         18 medidas del bloque (ANTES contra DESPUES)
+  tablero/evidencia-estudio.txt    este fichero
+
+Tocados:
+  tablero/armazon-paneles.html     scripts, BLOQUES, SECCIONES, cuerpoDe,
+                                   pintarEstanteria, arranque y CSS del bloque
+  tablero/js/i18n.js               solo se anaden claves (es y en, simetricas)
+  tablero/js/comun/almacen.js      namespaces `estudio` y `calificaciones`
+  tablero/js/comun/catalogo.js     MimoComun.ramosQueAbre(cod)
+  tablero/js/comun/utilidades.js   aCent, dec1, ver1, ver2
+
+No se toco: js/malla.js, medir-malla.py, kit/, herramientas/, plantillas/,
+estado de la sede. No hay commit.
+
+2. LOS CUATRO INSTRUMENTOS
+--------------------------
+2.1 medir-tablero.py  (pieles y tokens)
+  ANTES:  Hex fuera de los tokens (toda la hoja): 0
+          RESUMEN: las tres pieles dentro de su techo.
+  DESPUES:
+    PIEL C · Materia
+      tamanos     5/5   OK  [13px, 15px, 17px, 26px, 64px]
+      espacios    6/8   OK  [8px, 12px, 16px, 24px, 32px, 48px]
+      radios      2/2   OK  [16px, 999px]
+      duraciones  3/3   OK  [100, 160, 240] ms
+      hex         0/0   OK
+    Hex fuera de los tokens (toda la hoja): 0
+    RESUMEN: las tres pieles dentro de su techo.        EXIT=0
+
+2.2 medir-tiempo2.py  (bloque Tiempo, 17 medidas)
+  ANTES:  losa 544.00 · sangria 32.00 · 32 cargas: 0 eventos
+          claves i18n 120/120 · RESUMEN: 0 choque(s) de 17 medidas.
+  DESPUES: losa 544.00 · sangria 32.00 · 32 cargas: 0 eventos prohibidos
+          claves i18n 238/238
+          [OK] 4. cronometro 00:02,50 y congelado al pausar
+          [OK] 13. claves es/en iguales, 0 ausentes y 0 desajustes
+                  238/238 desajustes es=0 en=0 (antes 120)
+          RESUMEN: 0 choque(s) de 17 medidas.         EXIT=0
+
+2.3 medir-malla.py  (bloque Malla, 16 medidas)
+  ANTES:  RESUMEN: 0 choque(s) de 16 medidas. · 153/153 claves
+  DESPUES: losa 544.00 · sangria 32.00 · 32 cargas: 0 prohibidos
+          [OK] 4. 8 vistas a 411 sin desbordar
+          [OK] 15. 0 apariciones de document. en malla.js
+          [OK] 16. 238/238 claves, ausentes=0 desajustes=0
+          RESUMEN: 0 choque(s) de 16 medidas.         EXIT=0
+
+2.4 medir-estudio.py  (bloque T005, 18 medidas)
+  ANTES (copia congelada, sha256 1c7e05da...c9430d73):
+    motor estudio   : undefined · cajas 0
+    motor calif     : undefined · cajas 0
+    tras abrir las dos secciones: 0 cajas
+  DESPUES (sha256 92294048...0d49680b):
+    [OK]  1. Estudio y Calificaciones existen, pintan su caja y su motor
+             ramos=3 · kpis=5 · puntos=16 · calif items=3
+    [OK]  2. los dos motores no nombran el DOM y su vista vive aparte
+             estudio.js=0 · calificaciones.js=0
+    [OK]  3. 1h + 1h sin repartir = 2h; meta propia 5 manda sobre 3
+             prev=2.50h act=2.00h sin=1.00h meta 3.0/5.0 propia=True
+    [OK]  4. barras: 16 columnas y cada total/meta igual al motor
+             16 columnas, 0 desajustes
+    [OK]  5. KPIs: total 4h 30m, promedio 2,3 h, 0/16 sobre meta
+             ['4h 30m','2,3 h','0 / 16','2h','1h']
+    [OK]  6. puntos: 16 semanas con sus horas y la linea de objetivo
+             16 puntos, 0 desajustes, objetivo 2.0/2.0
+    [OK]  7. editar en la vista: '1h 30m' = 90 min y meta base 2
+             (la propia sigue en 5)
+    [OK]  8. dedicacion corta: dos avisos, descartar quita uno y sumar 45m
+             avisos=2 [MA1001, MA2001] tras descartar=1 sumado MA2001=45
+    [OK]  9. normalizarNota
+             [2.2, 7, null, 4, 1, null, 1.1]
+    [OK] 10. categorias 60/40 con 6,0 y 4,0: presentacion 5,2, aprobado
+             promCat=6.00 P=5.20 DOM p=5.2000 nf=5.2000
+    [OK] 11. examen 40%: sin nota 'a examen'; con 5,0 final 5,12
+             nec(6,0)=7,2 · DOM nf=5.1200 nec=2.2000 (nec para la minima 4,0)
+    [OK] 12. eximicion presentacion >= 5: cumple, final 5,2, eximido
+    [OK] 13. minima 4,0 por defecto; con 5,5 y final 3,92: reprobado
+    [OK] 14. ramo sin categorias: P y final null, 'faltan datos'
+    [OK] 15. examen que reemplaza un componente:
+             f(0)=0,96 f(1)=1,72 nec(6,0)=6,63
+    [OK] 16. F5 sin reset: minutos, notas y los dos namespaces siguen ahi
+             min MA1001=60 MA2001=45 nota=6 P=5.2
+             claves=ajustes,armazon,calificaciones,catalogo,estudio,
+                    guardadoEn,idioma,malla,migrado,respaldo,tiempo,v
+    [OK] 17. claves es/en iguales, 0 ausentes, 0 desajustes, KPI traducido
+             238/238
+    [OK] 18. 8 aperturas (2 idiomas x 2 temas x 2 secciones) sin eventos
+             0 prohibidos de 0
+    RESUMEN: 0 choque(s) de 18 medidas.             EXIT=0
+
+  i18n aditivo: 150 nombres de clave unicos antes, 218 despues, 68 nuevos y
+  0 perdidos. Hojas: 153 antes, 238 despues.
+
+3. LAS NOTAS, CALCULADAS A MANO
+-------------------------------
+Caso A — promedio ponderado.
+  Categorias: Controles peso 0,6 · Tareas peso 0,4.
+  Componentes: Control 1 = 6,0 (Controles) · Tarea 1 = 4,0 (Tareas), peso 1.
+  prom(Controles) = 6,0        prom(Tareas) = 4,0
+  P = (0,6*6,0 + 0,4*4,0) / (0,6 + 0,4) = (3,6 + 1,6) / 1 = 5,2
+  Examen apagado -> final = P = 5,2; minima 4,0 -> aprobado.
+  Medido: P=5.20 final=5.2000 estado=aprobado.  [OK]
+
+Caso B — examen con peso 0,4.
+  Examen activo, sin reemplazo, nota de examen 5,0.
+  final = (1-0,4)*5,2 + 0,4*5,0 = 3,12 + 2,00 = 5,12 -> 5,1
+  Sin nota de examen -> final null y estado 'a examen'.
+  examenPara(6,0): f(0)=3,12 f(1)=3,52 pendiente 0,4
+                    (6,00 - 3,12) / 0,4 = 2,88 / 0,4 = 7,2
+  examenPara(minima 4,0): (4,00 - 3,12) / 0,4 = 2,2
+  Medido: nf(5)=5.119999... -> 5.12; nec(6)=7.2000; DOM nf=5.1200
+  y nec=2.2000.  [OK]
+
+Caso C — eximicion.
+  Condicion: presentacion >= 5,0, modo 'todas'.
+  P = 5,2 >= 5,0 -> cumple. final = P = 5,2. estado 'eximido'.
+  Medido: cumple=True actual=5.2 nf=5.2 DOM=eximido.  [OK]
+
+Caso D — nota minima 5,5.
+  Examen 0,4 con nota 2,0: final = 3,12 + 0,4*2,0 = 3,92.
+  dec1(aCent(3,92)) = 3,9 < 5,5 -> reprobado.
+  Medido: nf=3.92 estado=reprobado enVista=5.5.  [OK]
+
+Caso E — ramo sin categorias.
+  P = null (no hay categorias con promedio), final = null.
+  Estado: 'faltan datos'. Nunca un cero.
+  Medido: P=None nf=None DOM p="" estado='faltan datos'.  [OK]
+
+Caso F — normalizarNota.
+   22   -> 2,2   (mientras >= 10 se divide: 22/10)
+   112  -> 1,1   (112/10=11,2; /10=1,12 -> 1,1)
+   7,5  -> 7,0   (tope 7)
+   3,95 -> 3,95 -> 4,0 (un decimal)
+   0    -> 1,0   (suelo 1)
+   1,05 -> 1,1
+   ''   -> null
+  Medido: [2.2, 7, null, 4, 1, null, 1.1].  [OK]
+
+Caso G — examen que reemplaza al componente de la categoria del 60%.
+  P(ex) = 0,6*ex + 0,4*4,0 = 0,6*ex + 1,6
+  final = 0,6*P + 0,4*ex = 0,36*ex + 0,96 + 0,4*ex = 0,76*ex + 0,96
+  f(0) = 0,96      f(1) = 1,72
+  examenPara(6,0) = (6,00 - 0,96) / 0,76 = 6,63157...
+  Medido: f0=0.96 f1=1.72 nec=6.6315789473684.  [OK]
+  (La formula es la de la app anterior: si el examen reemplaza un componente,
+   ese componente pasa a valer lo que saque el examen, y ademas el examen pesa
+   su 0,4 en la final. Se porta tal cual; no se "arregla" en silencio.)
+
+4. EL ESTUDIO, CALCULADO A MANO
+-------------------------------
+Ventana: 16 semanas que terminan en el lunes de esta semana.
+  Semana anterior: MA1001 = 150 min = 2,5 h.
+  Semana actual:   MA1001 = 60 min + 60 min sin repartir.
+  horasAsignadas(actual) = 1,0 h
+  horasSemana(actual)    = 1,0 + 1,0 = 2,0 h
+  kpis.total             = 2,5 + 2,0 = 4,5 h -> "4h 30m"
+  kpis.registradas       = 2
+  kpis.promedio          = 4,5 / 2 = 2,25 -> "2,3 h"
+  kpis.sobre             = 0 (2,5 < 3 y 2,0 < meta propia 5)
+  meta base 3; meta propia de la semana actual 5 -> metaDe(actual)=5.
+  Cambiar la base a 2 deja metaDe(anterior)=2 y metaDe(actual)=5.
+  Dedicacion corta: MA1001 1h contra 4h y MA2001 0h contra 10h -> 2 avisos.
+  Descartar MA1001 deja 1 aviso; sumar 45m a MA2001 deja MA2001=45 min.
+  (OTROS guarda lo registrado sin repartir; al repartir 45 min baja de 60 a 15,
+   que es exactamente lo que queda sin ramo.)
+  Medido en las comprobaciones 3 a 8.  [OK]
+
+5. PERSISTENCIA Y DICCIONARIO
+-----------------------------
+  F5 sin reset: `mimo.datos.v1` conserva `estudio` y `calificaciones` de primer
+  nivel, los minutos (60 y 45) y la nota (6). Comprobacion 16.  [OK]
+  El namespace vive en `comun/almacen.js` (`estadoInicial` y `normalizar`); no
+  hay espejo en `ajustes`, y lo que no se declara alli se pierde al recargar.
+  i18n: 238/238 claves en es y en, 0 ausentes, 0 desajustes con la vista
+  pintada. Comprobacion 17.  [OK]
+
+6. HUECOS DECLARADOS (nada de esto se afirma)
+---------------------------------------------
+H1. No se porta la importacion/exportacion de horas ni de notas (Excel/CSV),
+    `usarMetaMaxima` ni `FORMATOS_HORA` de la app anterior: el contrato de T005
+    pide la vista y el motor, no la migracion de ficheros.
+H2. `examen.reemplaza` se guarda como INDICE del componente, igual que en la
+    app anterior. Si se reordena o se borra un componente, el reemplazo no se
+    remapea: queda apuntando al indice. Es una limitacion portada, no medida.
+H3. `calificaciones.colores` se declara en el namespace pero no se usa: el
+    estudio deriva el color del codigo con la paleta de tokens y las notas usan
+    tokens. Se conserva la forma para no romper datos de la app anterior.
+H4. El aviso de "queda poco tiempo" solo mira ramos con meta propia semanal
+    (`metas_ramo[cod].horas`); la meta base sola no genera aviso por ramo. Es
+    lo que pide el contrato ("con su meta"), pero conviene saberlo.
+H5. La marca manual de estado solo admite `aprobado` (como la app anterior);
+    no hay marcas manuales de reprobado ni de eximido.
+H6. `medir-estudio.py` usa `ramoEnCatalogo` para sembrar tres ramos de prueba;
+    el bloque no escribe nunca en el catalogo. El instrumento no sustituye a
+    los otros tres: los cuatro se corren y los cuatro deben dar 0 choques.
+
+7. ESTADO GIT DE LO TOCADO
+--------------------------
+$ git status --short tablero/
+ M tablero/armazon-paneles.html
+ M tablero/js/comun/almacen.js
+ M tablero/js/comun/catalogo.js
+ M tablero/js/comun/utilidades.js
+ M tablero/js/i18n.js
+?? tablero/js/calificaciones.js
+?? tablero/js/estudio.js
+?? tablero/evidencia-estudio.txt
+?? tablero/medir-estudio.py

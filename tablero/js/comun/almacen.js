@@ -16,10 +16,22 @@
          tiempo:   {...} | null,   // crono, temp, pomodoro, registro, recordatorios
          idioma:   'es' | 'en',
          catalogo: {},             // ramos propios; los de fabrica llegan en T004
+         malla:    {...} | null,   // reticula, semestre y aprobados (T004)
+         estudio:  {minutos, metas, metas_ramo, metas_semana, descartes,
+                    notas_otros},  // horas y metas del semestre (T005)
+         calificaciones: {cats, comps, examen, exim, estado,
+                    colores},      // notas por ramo (T005)
          ajustes:  {},             // T009
          respaldo: {},             // estado del respaldo en carpeta
          migrado:  {de: [...], cuando: ms}   // marca de la migracion, para poder mirarla
        }
+
+   LOS DOS NAMESPACES DE T005 (estudio y calificaciones) van aqui porque el
+   almacen es la UNICA puerta: un estado de primer nivel que no figure en
+   `estadoInicial()`/`normalizar()` se pierde al recargar (no se escribe, o se
+   escribe y `normalizar` lo tira). Cada uno tiene su forma fija y sus hijos se
+   garantizan objeto a objeto: un hijo que falte no rompe el bloque, se crea
+   vacio. Los espejos dentro de `ajustes` estan prohibidos: `ajustes` es de T009.
 
    LA MIGRACION ES DE UNA SOLA VIA Y NO BORRA NADA
    Al faltar `mimo.datos.v1` (primer arranque de esta version, o un perfil
@@ -82,9 +94,53 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
       idioma: 'es',
       catalogo: {},
       malla: null,
+      estudio: {
+        minutos: {},          // lunes -> {CODIGO: minutos, OTROS: registrado sin repartir}
+        metas: { semanal: 0 },// meta base semanal, en horas
+        metas_ramo: {},       // CODIGO -> {horas, nota_min}
+        metas_semana: {},     // lunes -> horas; manda sobre la base
+        descartes: {},        // lunes -> {CODIGO: true} (el aviso no se repite)
+        notas_otros: {}       // lunes -> nota libre del usuario
+      },
+      calificaciones: {
+        cats: {},             // CODIGO -> [{nombre, peso}]
+        comps: {},            // CODIGO -> [{nombre, categoria, peso, nota, fecha}]
+        examen: {},           // CODIGO -> {activo, peso, reemplaza}
+        exim: {},             // CODIGO -> {activa, modo, condiciones}
+        estado: {},           // CODIGO -> 'aprobado' (marca manual; manda sobre el calculo)
+        colores: {}           // reservado para el color por categoria
+      },
       ajustes: {},
       respaldo: {},
       migrado: { de: [], cuando: null }
+    };
+  }
+
+  /* Los dos namespaces de T005, normalizados con guardas. Se garantiza la forma
+     entera: si el disco trae medio objeto, el bloque no adivina, rellena vacio. */
+  function normalizarEstudio(v) {
+    v = esObjeto(v) ? v : {};
+    var semanal = (esObjeto(v.metas) && isFinite(Number(v.metas.semanal)))
+      ? Number(v.metas.semanal) : 0;
+    return {
+      minutos: esObjeto(v.minutos) ? v.minutos : {},
+      metas: { semanal: semanal },
+      metas_ramo: esObjeto(v.metas_ramo) ? v.metas_ramo : {},
+      metas_semana: esObjeto(v.metas_semana) ? v.metas_semana : {},
+      descartes: esObjeto(v.descartes) ? v.descartes : {},
+      notas_otros: esObjeto(v.notas_otros) ? v.notas_otros : {}
+    };
+  }
+
+  function normalizarCalificaciones(v) {
+    v = esObjeto(v) ? v : {};
+    return {
+      cats: esObjeto(v.cats) ? v.cats : {},
+      comps: esObjeto(v.comps) ? v.comps : {},
+      examen: esObjeto(v.examen) ? v.examen : {},
+      exim: esObjeto(v.exim) ? v.exim : {},
+      estado: esObjeto(v.estado) ? v.estado : {},
+      colores: esObjeto(v.colores) ? v.colores : {}
     };
   }
 
@@ -104,6 +160,8 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
        aqui una vez y a partir de ahora manda el campo de primer nivel. */
     e.malla = esObjeto(s.malla) ? s.malla
       : (esObjeto(s.ajustes) && esObjeto(s.ajustes.malla) ? s.ajustes.malla : null);
+    e.estudio = normalizarEstudio(s.estudio);
+    e.calificaciones = normalizarCalificaciones(s.calificaciones);
     e.ajustes = esObjeto(s.ajustes) ? s.ajustes : {};
     e.respaldo = esObjeto(s.respaldo) ? s.respaldo : {};
     e.migrado = esObjeto(s.migrado) ? s.migrado : { de: [], cuando: null };

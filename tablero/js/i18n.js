@@ -81,6 +81,14 @@ var MimoI18n = (function () {
         alarmas: {
           nombre: 'Alarmas',
           desc: 'Avisos a una hora concreta del día.'
+        },
+        estudio: {
+          nombre: 'Estudio',
+          desc: 'Horas por ramo y semana contra su meta, y la dedicación del semestre.'
+        },
+        calificaciones: {
+          nombre: 'Calificaciones',
+          desc: 'Categorías, componentes, examen, eximición y nota final por ramo.'
         }
       },
       vacia: {
@@ -230,7 +238,94 @@ var MimoI18n = (function () {
         etiquetaCrono: 'Reloj editable del cronómetro',
         etiquetaTemp: 'Reloj editable del temporizador'
       },
-      alarmas: { fase: 'Alarmas · ninguna programada' }
+      alarmas: { fase: 'Alarmas · ninguna programada' },
+      /* T005: Estudio y Calificaciones. Las claves van despues de las 153 de
+         T002/T003; no se renombra ni se borra ninguna de las que ya estaban. */
+      estudio: {
+        barras: 'Horas por ramo y semana',
+        puntos: 'Horas por semana',
+        kpis: 'Resumen del semestre',
+        total: 'Total estudiado',
+        promedio: 'Promedio de las semanas con registro',
+        sobreMeta: 'Semanas sobre su meta',
+        objetivo: 'Objetivo semanal',
+        sinRepartir: 'Sin repartir',
+        semanas: '{n} semanas con registro',
+        metaBase: 'Meta base semanal (horas)',
+        metaBaseCorta: 'meta base',
+        metaPropia: 'Meta de esta semana (horas)',
+        metaPropiaCorta: 'meta propia',
+        meta: 'Meta',
+        semana: 'Semana',
+        totalCorto: 'Total',
+        nota: 'Nota libre',
+        horas: 'Horas',
+        sinDatos: 'Todavía no hay horas repartidas entre los ramos.',
+        sinRamos: 'El catálogo está vacío: crea ramos en Malla.',
+        tabla: 'Horas y metas de cada semana',
+        ramo: 'Ramo',
+        dedicacion: 'Te queda poco tiempo en',
+        dedicacionTexto: 'Estos ramos llevan menos de la mitad de su meta de esta semana.',
+        descartar: 'Es válido, déjalo así',
+        sumar: 'Le dedicaré tiempo',
+        cantidad: 'Cuánto tiempo (2h 30m)',
+        guardar: 'Guardar',
+        cancelar: 'Cancelar',
+        anadido: 'Sumados {min} a {ramo}.',
+        actual: 'La semana en curso va resaltada.',
+        leyendaHoras: 'horas realizadas',
+        leyendaObjetivo: 'objetivo semanal',
+        prioridad: 'Ramos que más abren'
+      },
+      calificaciones: {
+        lista: 'Ramos',
+        detalle: 'Detalle del ramo',
+        presentacion: 'Nota de presentación',
+        final: 'Nota final',
+        aprobado: 'aprobado',
+        reprobado: 'reprobado',
+        eximido: 'eximido',
+        aExamen: 'a examen',
+        faltan: 'faltan datos',
+        notaMinima: 'Nota mínima para aprobar',
+        categorias: 'Categorías',
+        componentes: 'Componentes',
+        examen: 'Examen',
+        eximicion: 'Eximición',
+        simulador: 'Simulador de examen',
+        peso: 'Peso',
+        promedio: 'Promedio',
+        nota: 'Nota',
+        nombre: 'Nombre',
+        categoria: 'Categoría',
+        fecha: 'Fecha',
+        activa: 'Este ramo se puede eximir',
+        modo: 'Deben cumplirse',
+        todas: 'Todas',
+        alguna: 'Alguna',
+        sinCategorias: 'Sin categorías todavía.',
+        sinComponentes: 'Sin componentes todavía.',
+        sinCondiciones: 'Sin condiciones todavía.',
+        agregarCategoria: '+ Categoría',
+        agregarComponente: '+ Componente',
+        agregarCondicion: '+ Condición',
+        examenActivo: 'Este ramo tiene examen',
+        pesoExamen: 'Cuánto pesa en la nota final (%)',
+        reemplaza: 'Ocupa el lugar de',
+        noReemplaza: 'Va aparte',
+        apuntas: 'apuntas a',
+        necesitas: 'Para aprobar necesitas',
+        conExamen: 'Con esa nota, la final queda en',
+        sinNota: 'sin nota',
+        simulacro: 'nota de examen simulada',
+        cumple: 'Con estas notas, ya te eximes.',
+        noCumple: 'Con estas notas, todavía no te eximes.',
+        faltanNotas: 'Faltan notas para saber si te eximes.',
+        sinDatosCond: 'todavía sin nota',
+        empezar: 'Elige un ramo de la lista para ver y editar sus notas.',
+        estado: 'Estado',
+        umbral: 'Corte'
+      }
     },
 
     en: {
@@ -278,6 +373,14 @@ var MimoI18n = (function () {
         alarmas: {
           nombre: 'Alarms',
           desc: 'Alerts at a set time of day.'
+        },
+        estudio: {
+          nombre: 'Study',
+          desc: 'Hours per course and week against their goal, and the term load.'
+        },
+        calificaciones: {
+          nombre: 'Grades',
+          desc: 'Categories, components, exam, exemption and final grade per course.'
         }
       },
       vacia: {
@@ -427,7 +530,94 @@ var MimoI18n = (function () {
         etiquetaCrono: 'Editable stopwatch clock',
         etiquetaTemp: 'Editable timer clock'
       },
-      alarmas: { fase: 'Alarms · none scheduled' }
+      alarmas: { fase: 'Alarms · none scheduled' },
+      /* T005: Study and Grades. Added after the 153 keys of T002/T003; none of
+         the existing keys is renamed or removed. */
+      estudio: {
+        barras: 'Hours per course and week',
+        puntos: 'Hours per week',
+        kpis: 'Term summary',
+        total: 'Total studied',
+        promedio: 'Average of the weeks with a log',
+        sobreMeta: 'Weeks over their goal',
+        objetivo: 'Weekly goal',
+        sinRepartir: 'Unassigned',
+        semanas: '{n} weeks with a log',
+        metaBase: 'Base weekly goal (hours)',
+        metaBaseCorta: 'base goal',
+        metaPropia: 'Goal of this week (hours)',
+        metaPropiaCorta: 'own goal',
+        meta: 'Goal',
+        semana: 'Week',
+        totalCorto: 'Total',
+        nota: 'Free note',
+        horas: 'Hours',
+        sinDatos: 'No hours assigned to courses yet.',
+        sinRamos: 'The catalogue is empty: create courses in Malla.',
+        tabla: 'Hours and goals of each week',
+        ramo: 'Course',
+        dedicacion: 'Running short of time in',
+        dedicacionTexto: 'These courses have less than half of their goal this week.',
+        descartar: 'It is fine, leave it',
+        sumar: 'I will spend time on it',
+        cantidad: 'How much time (2h 30m)',
+        guardar: 'Save',
+        cancelar: 'Cancel',
+        anadido: 'Added {min} to {ramo}.',
+        actual: 'The current week is highlighted.',
+        leyendaHoras: 'hours done',
+        leyendaObjetivo: 'weekly goal',
+        prioridad: 'Courses that open the most'
+      },
+      calificaciones: {
+        lista: 'Courses',
+        detalle: 'Course detail',
+        presentacion: 'Coursework grade',
+        final: 'Final grade',
+        aprobado: 'passed',
+        reprobado: 'failed',
+        eximido: 'exempt',
+        aExamen: 'exam pending',
+        faltan: 'missing data',
+        notaMinima: 'Minimum grade to pass',
+        categorias: 'Categories',
+        componentes: 'Components',
+        examen: 'Exam',
+        eximicion: 'Exemption',
+        simulador: 'Exam simulator',
+        peso: 'Weight',
+        promedio: 'Average',
+        nota: 'Grade',
+        nombre: 'Name',
+        categoria: 'Category',
+        fecha: 'Date',
+        activa: 'This course can be exempted',
+        modo: 'Must meet',
+        todas: 'All',
+        alguna: 'Any',
+        sinCategorias: 'No categories yet.',
+        sinComponentes: 'No components yet.',
+        sinCondiciones: 'No conditions yet.',
+        agregarCategoria: '+ Category',
+        agregarComponente: '+ Component',
+        agregarCondicion: '+ Condition',
+        examenActivo: 'This course has an exam',
+        pesoExamen: 'How much it weighs on the final grade (%)',
+        reemplaza: 'It replaces',
+        noReemplaza: 'It is separate',
+        apuntas: 'aiming for',
+        necesitas: 'To pass you need',
+        conExamen: 'With that grade, the final is',
+        sinNota: 'no grade',
+        simulacro: 'simulated exam grade',
+        cumple: 'With these grades, you are already exempt.',
+        noCumple: 'With these grades, you are not exempt yet.',
+        faltanNotas: 'Grades are missing to know if you are exempt.',
+        sinDatosCond: 'no grade yet',
+        empezar: 'Pick a course from the list to see and edit its grades.',
+        estado: 'Status',
+        umbral: 'Cut-off'
+      }
     }
   };
 
@@ -595,7 +785,8 @@ var MimoI18n = (function () {
      `mimo.datos.v1` (js/comun/almacen.js), no en `mimo.idioma`. La clave vieja
      se sigue leyendo como respaldo —y la migración la copia una sola vez— para
      que este motor funcione también en una página que no cargue el sustrato.
-     Los diccionarios no se tocan: 153 claves por idioma, comprobadas. */
+     Los diccionarios no se tocan: 153 claves de T002/T003, más las de T005 de
+     Estudio y Calificaciones, simétricas en los dos idiomas. Ni una se renombra. */
   function comun() {
     if (typeof MimoComun === 'undefined' || !MimoComun) { return null; }
     if (typeof MimoComun.leer !== 'function') { return null; }
