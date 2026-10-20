@@ -1,3 +1,4 @@
+v4: el quiebre de 899 de este fichero es de la v3; la regla vigente se mide en evidencia-quiebre-panel.txt.
 TABLERO · BLOQUE D3 · ARMAZÓN CON PANELES (v3)
 Medido el 2026-10-20, 12:56 (America/Santiago), sobre tablero/armazon-paneles.html
 Chromium 155.0.8059.84 headless · CDP en 127.0.0.1:9333 · file://, sin servidor

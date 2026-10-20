@@ -60,11 +60,15 @@ body[data-pie="oculto"] .pie{display:none}
 .barra__chevron{display:flex;align-items:center;flex:none;color:var(--muted)}
 .barra__fin{display:flex;align-items:center;margin-left:auto;min-width:0}
 
-.armazon{position:relative;display:flex;align-items:stretch;min-height:0;min-width:0}
-.riel{display:flex;flex-direction:column;flex:none;overflow:hidden;min-width:0;width:56px;
+.armazon{position:relative;display:flex;align-items:stretch;min-height:0;min-width:0;
+  /* los dos paneles y el hueco del armazón: UNA declaración de cada ancho.
+     El script los lee de aquí para decidir quién empuja; no se repiten allí. */
+  --riel-abierto:256px; --riel-plegado:56px; --der-abierto:352px; --der-cerrado:0px;
+  --marco-armazon:32px; --losa-margen:32px}
+.riel{display:flex;flex-direction:column;flex:none;overflow:hidden;min-width:0;width:var(--riel-plegado);
   background:var(--sup);color:var(--tinta);
   transition-property:width;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
-[data-riel="abierto"] .riel{width:256px;transition-duration:240ms}
+[data-riel="abierto"] .riel{width:var(--riel-abierto);transition-duration:240ms}
 .riel__bloques,.riel__fijos{display:flex;flex-direction:column;min-width:0}
 .riel__fila{display:flex;align-items:center;min-width:0}
 .riel__bloque,.riel__mas,.riel__fijo{display:flex;align-items:center;width:100%;text-align:left;
@@ -101,10 +105,10 @@ body[data-pie="oculto"] .pie{display:none}
 .btn-icono .icono{transition-property:transform;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
 
 /* el panel derecho: pestañas y dos caras */
-.der{display:flex;flex:none;overflow:hidden;min-width:0;width:0;background:var(--sup);color:var(--tinta);
+.der{display:flex;flex:none;overflow:hidden;min-width:0;width:var(--der-cerrado);background:var(--sup);color:var(--tinta);
   transition-property:width;transition-duration:160ms;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
-[data-der="abierto"] .der{width:352px;transition-duration:240ms}
-.der__caja{display:flex;flex-direction:column;flex:none;width:352px;min-height:0;overflow-y:auto}
+[data-der="abierto"] .der{width:var(--der-abierto);transition-duration:240ms}
+.der__caja{display:flex;flex-direction:column;flex:none;width:var(--der-abierto);min-height:0;overflow-y:auto}
 .der__cab{display:flex;align-items:center;border-bottom:1px solid var(--linea)}
 .pestanas{display:flex;align-items:center;min-width:0}
 .pestana{border:0;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit}
@@ -151,13 +155,18 @@ body[data-vista="ajustes"] .vista--bloque{display:none}
 .pie__z{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pie__z--fin{text-align:right}
 
-/* superposición: por debajo de 900 px o en el estado `angosto` */
+/* superposición POR PANEL: cada uno se sale del flujo cuando, con su ancho, no
+   deja a la losa su suelo de 520 px. El riel, al superponerse, libera el relleno
+   del armazón y la losa se queda con la pantalla menos el carril plegado. */
 .velo{position:absolute;inset:0;z-index:2;display:none;background:var(--velo)}
-body[data-modo="superpuesto"] .armazon{padding:0}
-body[data-modo="superpuesto"] .losa{margin:0 0 0 56px}
-body[data-modo="superpuesto"] .riel{position:absolute;left:0;top:0;bottom:0;z-index:1;box-shadow:var(--sombra)}
-body[data-modo="superpuesto"] .der{position:absolute;right:0;top:0;bottom:0;z-index:4;box-shadow:var(--sombra)}
-body[data-modo="superpuesto"][data-der="abierto"] .velo{display:block}
+body[data-modo-riel="superpuesto"] .armazon{padding:0}
+body[data-modo-riel="superpuesto"] .losa{margin:0 0 0 var(--riel-plegado)}
+body[data-modo-riel="superpuesto"] .riel{position:absolute;left:0;top:0;bottom:0;z-index:1;box-shadow:var(--sombra)}
+body[data-modo-der="superpuesto"] .der{position:absolute;right:0;top:0;bottom:0;z-index:4;box-shadow:var(--sombra)}
+body[data-modo-der="superpuesto"][data-der="abierto"] .velo{display:block}
+/* con el panel derecho superpuesto y el riel en el flujo, el riel va por encima
+   del velo: el velo tapa la losa, no el carril, y el riel se puede pulsar. */
+body[data-modo-der="superpuesto"][data-modo-riel="empuja"] .riel{position:relative;z-index:3}
 
 /* movimiento: apertura 240 · cierre 160 · reduced-motion lo apaga */
 @keyframes entra-izq{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
@@ -198,7 +207,7 @@ body[data-piel="c"][data-tema="oscuro"]{
 [data-piel="c"] .btn-icono .icono{transition-duration:160ms}
 [data-piel="c"] .btn-icono[aria-expanded="true"] .icono{transform:rotate(90deg);transition-duration:240ms}
 [data-piel="c"] .btn-icono:active{transform:scale(.98);transition-duration:100ms}
-[data-piel="c"] .armazon{gap:0;padding:0 32px}
+[data-piel="c"] .armazon{gap:0;padding:0 var(--marco-armazon)}
 
 [data-piel="c"] .riel{gap:8px;padding:8px;border-radius:16px}
 [data-piel="c"] .riel__bloques,[data-piel="c"] .riel__fijos{gap:8px}
@@ -217,7 +226,7 @@ body[data-piel="c"][data-tema="oscuro"]{
   gap:0;padding:16px 0;justify-content:center}
 [data-riel="plegado"] .riel__nombre{display:none}
 
-[data-piel="c"] .losa{margin:0 32px;border-radius:16px}
+[data-piel="c"] .losa{margin:0 var(--losa-margen);border-radius:16px}
 [data-piel="c"] .losa__barra{gap:16px;padding:16px 24px;font-size:13px}
 [data-piel="c"] .losa__cuerpo{gap:32px;padding:48px}
 [data-piel="c"] .vista--bloque{max-width:760px;row-gap:8px}
@@ -298,7 +307,9 @@ body[data-piel="c"][data-tema="oscuro"]{
 [data-piel="c"] .ajuste{gap:24px;padding:16px 24px;border-radius:16px}
 [data-piel="c"] .ajuste__t{font-size:15px}
 
-@media (max-width:899px){
+/* la piel se compacta cuando el riel deja de empujar con el carril abierto:
+   el último ancho en que empuja es 904, así que el corte es 903. */
+@media (max-width:903px){
   [data-piel="c"] .barra{gap:8px;padding:0 16px}
   [data-piel="c"] .barra__fecha{display:none}
   [data-piel="c"] #tema-texto,#pie-guardado-txt{display:none}
@@ -314,7 +325,7 @@ body[data-piel="c"][data-tema="oscuro"]{
 }
 </style>
 </head>
-<body data-piel="c" data-tema="claro" data-estado="normal" data-modo="empuja"
+<body data-piel="c" data-tema="claro" data-estado="normal" data-modo-riel="empuja" data-modo-der="empuja"
       data-riel="abierto" data-der="cerrado" data-cara="contexto" data-vista="normal" data-pie="visible">
 
 <h1 class="sr">Mimo</h1>
@@ -601,6 +612,34 @@ body[data-piel="c"][data-tema="oscuro"]{
   var pila = [];          /* paneles abiertos, el último arriba */
   var ultimoFoco = null;
 
+  /* EL SUELO DE LA LOSA: 520 px, el que fija el encargo. Cada panel empuja solo
+     si, con su ancho, a la losa le quedan al menos estos px; si no, ese panel se
+     superpone. De ahí salen los dos umbrales: riel 904 · panel derecho 1256. */
+  var LOSA_MIN = 520;
+
+  /* Los anchos de los paneles y el hueco del armazón se leen de las
+     declaraciones de .armazon (una sola verdad, arriba), no se repiten aquí.
+     Se lee lo DECLARADO y no lo que el elemento mide: una transición a medias no
+     puede contaminar la cuenta. */
+  var ESTILO = getComputedStyle(document.querySelector('.armazon'));
+  function pxDe(nombre) { return parseFloat(ESTILO.getPropertyValue(nombre)) || 0; }
+  var ANCHO = {
+    riel: { abierto: pxDe('--riel-abierto'), plegado: pxDe('--riel-plegado') },
+    der: { abierto: pxDe('--der-abierto'), cerrado: pxDe('--der-cerrado') }
+  };
+  var HUECO = 2 * (pxDe('--marco-armazon') + pxDe('--losa-margen'));
+
+  /* el modo de cada panel, por separado: el riel decide primero y el derecho
+     descuenta lo que el riel ocupe en el flujo. */
+  function modosDePanel() {
+    if (est.estado === 'angosto') { return { riel: 'superpuesto', der: 'superpuesto' }; }
+    var ancho = window.innerWidth;
+    var riel = (ancho - HUECO - ANCHO.riel[ui.riel] >= LOSA_MIN) ? 'empuja' : 'superpuesto';
+    var enFlujo = riel === 'empuja' ? ANCHO.riel[ui.riel] : 0;
+    var der = (ancho - HUECO - enFlujo - ANCHO.der[ui.der] >= LOSA_MIN) ? 'empuja' : 'superpuesto';
+    return { riel: riel, der: der };
+  }
+
   function icono(id, etiqueta) {
     var simbolo = ICONOS[id];
     if (!simbolo) { return ''; }
@@ -662,9 +701,9 @@ body[data-piel="c"][data-tema="oscuro"]{
     tctx.setAttribute('aria-selected', ui.cara === 'contexto' ? 'true' : 'false');
     tgab.setAttribute('aria-selected', ui.cara === 'gabinete' ? 'true' : 'false');
     pintarCabecera();
-    var modo = (window.matchMedia('(max-width: 899px)').matches || est.estado === 'angosto')
-      ? 'superpuesto' : 'empuja';
-    body.setAttribute('data-modo', modo);
+    var modos = modosDePanel();
+    body.setAttribute('data-modo-riel', modos.riel);
+    body.setAttribute('data-modo-der', modos.der);
   }
 
   /* el contenido entra con 8 px y opacidad al abrir; el ancho lo hace el CSS */
@@ -746,10 +785,10 @@ body[data-piel="c"][data-tema="oscuro"]{
 
   var velo = document.getElementById('velo');
   velo.addEventListener('click', function () {
-    var arriba = pila[pila.length - 1];
-    if (!arriba) { return; }
-    cerrar(arriba);
-    var boton = document.getElementById(arriba === 'riel' ? 'btn-riel' : 'btn-der');
+    /* el velo solo existe con el panel derecho abierto y superpuesto: el clic
+       cierra ese panel, que es el que lo enciende. */
+    cerrar('der');
+    var boton = document.getElementById('btn-der');
     if (boton) { boton.focus(); }
   });
 
@@ -780,6 +819,10 @@ body[data-piel="c"][data-tema="oscuro"]{
   document.getElementById('tema-icono').innerHTML = icono('apariencia');
   document.getElementById('ico-apariencia').innerHTML = icono('apariencia');
   document.getElementById('ico-ajustes').innerHTML = icono('ajustes');
+
+  /* el quiebre depende del ancho: se recalcula al redimensionar, con escucha
+     pasiva y sin bucle (pintar solo escribe atributos y no dispara otro resize). */
+  window.addEventListener('resize', pintar, { passive: true });
 
   pintarRiel();
   pintarGabinete();

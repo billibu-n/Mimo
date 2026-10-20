@@ -1,0 +1,171 @@
+TABLERO · BLOQUE D3-c · EL QUIEBRE, POR PANEL
+Medido el 2026-10-20, 13:20-13:26 (America/Santiago), sobre tablero/armazon-paneles.html (el fichero que escribe este bloque)
+Chromium 155.0.8059.84 headless · CDP en 127.0.0.1:43919 (libre al arrancar; 9333 y 9341 sin tocar) · file://, sin servidor
+Driver: herramientas/cdp.py · sondas: /tmp/mimo/medir-quiebre-panel.py y /tmp/mimo/evento-1100.py
+Crudo: /tmp/mimo/quiebre-panel-medidas.json · quiebre-panel-evento.json · quiebre-panel-antes-despues.json · quiebre-panel-v3v4.json
+Alto del viewport en todas las cargas: 900 px (Emulation.setDeviceMetricsOverride, deviceScaleFactor 1, mobile false)
+Medida del bloque (git): `git status --short` antes 1 (NOTAS.md, ya modificado al empezar el bloque) · despues 4 (los tres
+del entregable + NOTAS.md, que no es de este bloque y no se toco)
+
+0 · LA REGLA, EN UNA LINEA
+
+Cada panel empuja solo si, con su ancho, deja a la losa >= 520 px:
+  losa = innerWidth - 128 (marco) - riel_en_flujo - der_en_flujo
+y si no, ese panel se superpone y no resta.  El riel decide primero; el panel derecho descuenta lo que el riel ocupe
+en el flujo.  ->  riel empuja desde 904 (abierto) y desde 704 (plegado); panel derecho desde 1256 (riel abierto).
+
+Donde vive: .armazon declara los anchos una vez (64-67: --riel-abierto 256, --riel-plegado 56, --der-abierto 352,
+--der-cerrado 0, --marco-armazon 32, --losa-margen 32); la regla de superposicion va por panel (158-169);
+LOSA_MIN y modosDePanel() (618 y 634) escriben data-modo-riel y data-modo-der desde pintar() (691, 704-706) y se
+recalculan con una escucha pasiva de resize (825).  `grep -c "899"` = 0: el 899 literal ya no existe en el fichero.
+
+1 · TABLA (a): ANCHO, MODO DE CADA PANEL, LOSA, PANEL, VELO Y DESBORDE
+
+Una navegacion nueva por fila (Page.navigate, viewport ya fijado); ?estado= contexto abre el panel derecho,
+plegado deja el riel en 56 y el panel cerrado, normal deja el riel abierto y el panel cerrado.
+
+ancho  estado   data-modo-riel  data-modo-der  .losa ancho/left    .der ancho/right    .velo   html
+1280   contexto empuja          empuja          544,00 / 320,00     352,00 / 1248,00    none    1280/1280
+1256   contexto empuja          empuja          520,00 / 320,00     352,00 / 1224,00    none    1256/1256
+1255   contexto empuja          superpuesto     871,00 / 320,00     352,00 / 1255,00    block   1255/1255
+1100   contexto empuja          superpuesto     716,00 / 320,00     352,00 / 1100,00    block   1100/1100
+ 904   contexto empuja          superpuesto     520,00 / 320,00     352,00 /  904,00    block    904/904
+ 903   contexto superpuesto     superpuesto     847,00 /  56,00     352,00 /  903,00    block    903/903
+ 800   plegado  empuja          empuja          616,00 / 120,00       0,00 /  768,00    none     800/800
+ 700   plegado  superpuesto     empuja          644,00 /  56,00       0,00 /  700,00    none     700/700
+ 411   contexto superpuesto     superpuesto     355,00 /  56,00     352,00 /  411,00    block    411/411
+ 411   normal   superpuesto     superpuesto     355,00 /  56,00       0,00 /  411,00    none     411/411
+
+ancho: window.innerWidth pedido y comprobado en cada carga. losa y der: getBoundingClientRect().width/.left/.right de
+.losa y #panel-der. data-modo-riel/data-modo-der: los atributos del body. .velo: getComputedStyle(.velo).display.
+html: scrollWidth/clientWidth de <html>; document.documentElement.scrollWidth - clientWidth (desborde) = 0 en las
+diez filas: 1280-1280, 1256-1256, 1255-1255, 1100-1100, 904-904, 903-903, 800-800, 700-700, 411-411 y 411-411.
+Con el panel en el flujo su borde derecho queda en el borde de relleno del armazon (1280-32 = 1248, 800-32 = 768);
+superpuesto, `right:0` lo lleva al borde de la ventana (1255, 1100, 904, 903, 411).
+El estado real de la carga se leyo en body[data-riel]/body[data-der]; body[data-estado] se queda fijo en "normal"
+y no sirve de marcador (mismo aviso que la evidencia de la v3).
+
+2 · TABLA (b): A 1280 NO SE MUEVE NADA RESPECTO DE LA v3
+
+v3 = `git show HEAD:tablero/armazon-paneles.html` volcado a /tmp/mimo/v3-armazon-paneles.html · v4 = el fichero del
+bloque. Misma sonda, misma navegacion por estado y fichero, 1280 y 1440, 8 estados por ancho.
+
+Campos comparados en cada par: rect de .losa, #panel-der, #riel, .barra y .pie (w, h, left, right), display de .velo
+y desborde de <html>.  16 pares (8 estados x 2 anchos), 0 diferencias.
+
+estado      losa (v3 = v4)  der (v3 = v4)  velo
+normal      896,00            0,00          none
+plegado     1096,00           0,00          none
+contexto    544,00          352,00          none
+gabinete    544,00          352,00          none
+ambos       544,00          352,00          none
+angosto     1224,00         352,00          block
+vacia       896,00            0,00          none
+apariencia  896,00            0,00          none
+
+Los seis estados con el panel abierto (contexto, gabinete, ambos, angosto) dan 544,00 de losa y el panel dentro del
+flujo (352,00, borde derecho en 1248,00); .velo en none salvo angosto, que fuerza superpuesto como en la v3.
+A 1440 los ocho estados tambien coinciden (0 diferencias): losa 1056,00/704,00, der 352,00/0,00.
+
+3 · TABLA (c): A 1100 EL RIEL SIGUE EMPUJANDO Y EL PANEL SE SUPERPONE
+
+Por URL (§1, fila 1100) y por boton, que es el caso que se rompia:
+  carga ?estado=normal a 1100       losa 716,00 · #panel-der 0,00 · data-modo-der empuja
+  clic real en #btn-der, 450 ms     losa 716,00 · #panel-der 352,00 · der.right 1100,00 · .velo block
+                                    data-modo-der superpuesto · data-der abierto
+El panel abierto NO toca la losa: 716,00 antes y 716,00 despues.  En la v3 el mismo clic dejaba la losa en 364,00.
+
+Riel pulsable con el panel abierto (1100, ?estado=contexto):
+  document.elementFromPoint(160, 458)  (centro de #riel)  ->  BUTTON.riel__fijo, y #riel.contains(nodo) = true
+  clic real en ese punto                                    ->  el panel sigue abierto (der 352,00, velo block)
+El riel va en el flujo con position:relative y z-index:3 (medido: relative / 3) por encima del velo; el velo tapa la
+losa, no el carril (regla 169).  Con el riel superpuesto (903 y 411) el velo si lo tapa, como en la v3.
+
+Clic en el velo (1100): punto (420, 458), donde elementFromPoint devuelve #velo (es_velo true).
+  a 400 ms:  #panel-der 0,00 · data-modo-der empuja · .velo none
+  a 650 ms:  0,00 (asentado)
+
+4 · TABLA (d): LOS DOS UMBRALES, MEDIDOS A LOS DOS LADOS
+
+riel abierto   904: 904 - 128 - 256 = 520 -> empuja  ·  losa 520,00
+               903: 903 - 128 - 256 = 519 -> superpuesto · losa 847,00 (903 - 56)
+riel plegado   704: 704 - 128 -  56 = 520 -> empuja  ·  800 medido: riel empuja, losa 616,00 (800 - 184)
+               703: 519 -> superpuesto            ·  700 medido: riel superpuesto, losa 644,00 (700 - 56)
+panel derecho 1256: 1256 - 128 - 256 - 352 = 520 -> empuja · losa 520,00
+              1255: 519 -> superpuesto · losa 871,00 (1255 - 384)
+              con el riel plegado el umbral baja a 1056; medido a 1100 con el riel plegado: el panel empuja,
+              losa 564,00 (1100 - 128 - 56 - 352)
+El caso "riel superpuesto y panel derecho empujando" no se alcanza: con el panel abierto, por debajo de 904 el riel
+se superpone y el panel derecho no llega a 520 con el riel fuera del flujo (700 - 128 - 352 = 220).
+
+Antes y despues con el mismo comando (?estado=contexto; solo cambia el fichero):
+
+ancho  v3 losa   v4 losa   .losa__cuerpo v3   .losa__cuerpo v4
+1100   364,00    716,00    364/364            716/716
+ 904   168,00    520,00    356/168  recorta   520/520
+ 903   167,00    847,00    356/167  recorta   847/847
+ 800   744,00    744,00    744/744            744/744
+ 700   644,00    644,00    644/644            644/644
+ 411   355,00    355,00    355/355            355/355
+
+A 904 y 903 la v3 recortaba el contenido (356 px de contenido en 168 y 167 px de losa); la v4 no recorta en ninguna
+fila de la tabla.  A 800, 700 y 411 el resultado es identico al de la v3: la superposicion no se movio.
+
+5 · TABLA (e): 8 ESTADOS x 2 TEMAS = 16 CARGAS A 1280
+
+Una navegacion por carga, con caja > 0 en las cinco piezas (.barra 1280x48, .armazon 1280x820, .pie 1280x32,
+.losa alto 820, #riel 256x820 en las 16).
+
+estado      losa      riel     der      velo    excepciones/errores/avisos
+normal      896,00    256,00     0,00   none    0/0/0
+plegado    1096,00     56,00     0,00   none    0/0/0
+contexto    544,00    256,00   352,00   none    0/0/0
+gabinete    544,00    256,00   352,00   none    0/0/0
+ambos       544,00    256,00   352,00   none    0/0/0
+angosto    1224,00    256,00   352,00   block   0/0/0
+vacia       896,00    256,00     0,00   none    0/0/0
+apariencia  896,00    256,00     0,00   none    0/0/0
+
+Cada estado se cargo en tema claro y en tema oscuro: las dos filas dan las mismas cifras (16 cargas, 8 geometrias).
+Consola: 0 excepciones (Runtime.exceptionThrown), 0 errores y 0 avisos (Runtime.consoleAPICalled + Log.entryAdded),
+0 entradas en total en las 16 cargas y en las 10 de §1.
+
+6 · TABLA (f): EL CONTADOR DE TOKENS, MISMO COMANDO QUE ANTES DEL BLOQUE
+
+python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html
+
+PIEL C · Materia
+  tamaños     5/5   OK   [13px, 15px, 17px, 26px, 64px]
+  espacios    6/8   OK   [8px, 12px, 16px, 24px, 32px, 48px]
+  radios      2/2   OK   [16px, 999px]
+  duraciones  3/3   OK   [100, 160, 240] ms
+  hex         0/0   OK   [—]
+Hex fuera de los tokens (toda la hoja): 0
+RESUMEN: las tres pieles dentro de su techo.
+EXIT=0
+
+Sale igual que antes del bloque (pieles A y B a 0, sin reglas propias en este fichero).  Los anchos nuevos van en
+custom properties de .armazon, que el contador no cuenta; el 32 del marco pasa a var(--marco-armazon) y 32px sigue
+declarado en .apariencia y .vacia, asi que el juego de espacios medido no cambia (6 de 8).
+
+7 · LO QUE SE TOCO ADEMAS DE LA REGLA, DICHO AQUI
+
+- El corte de la piel pasa de 899 a 903 (312): se compacta cuando el riel deja de empujar con el carril abierto
+  (el ultimo ancho que empuja es 904).  `grep -c "899"` = 0 en el fichero; la v3 tenia 2.
+- El clic en el velo cierra el panel derecho (787).  Antes cerraba el ultimo de la pila, que con ?estado=contexto
+  era el riel y dejaba el panel abierto; el velo solo se enciende con el panel derecho abierto y superpuesto, asi
+  que cierra el panel que lo enciende.  Escape no cambia: sigue con la pila.
+- Los anchos 256/56/352/0 y el marco 32/32 se declaran una vez en .armazon y los leen el CSS y el JS (no hay cifras
+  duplicadas entre los dos).  Los valores calculados no cambian: 1280 y 1440 dan los mismos rectangulos que la v3.
+
+8 · HUECO
+
+HUECO: ninguno de las cifras de arriba.  Lo que no se midio, se declara:
+- No hay capturas: la apariencia no se afirma por ojo, solo por geometria y por display.
+- Todas las cargas son navegaciones nuevas a 900 px de alto: 10 en §1, 32 en §2 (8 estados x 2 anchos x 2 ficheros),
+  12 en §4 (6 anchos x 2 ficheros) y 16 en §5.  No se midio con otro alto ni con zoom.
+- No se midio el arrastre ni el teclado mas alla de lo que ya traia la v3.
+- En las 5 reconfiguraciones sin recarga de la sonda de evento (1280, 1100, 1256, 1255, 900) tampoco hubo
+  excepciones: 0 entradas de consola en el crudo quiebre-panel-evento.json.
+- `git status --short` muestra NOTAS.md ademas de los tres ficheros del entregable; ya estaba modificado antes de
+  escribir nada en este bloque y no se toco (medido en el primer comando del bloque).

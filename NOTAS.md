@@ -245,7 +245,12 @@ el filete da 1,31:1 sobre la superficie y la pista del anillo del pomodoro se pi
 no aplica. **Nada de esto se ha aplicado al prototipo**: el armazón es una muestra aparte y `prototipo/`
 sigue intacto.
 
-**Decisión pendiente del dueño (una sola, ya con números):** dónde deja de empujar el panel derecho. Hay
-dos suelos medidos, 520 (lo que pide el encargo) y 356 (lo mínimo que el contenido necesita), y dan dos
-quiebres distintos, 1256 y 1092. La recomendación del Lead está en la pregunta de esta ronda; no se toca
-la regla de los 899 hasta que el dueño responda.
+**Decisión tomada (2026-10-20, con los números delante):** el quiebre es **por panel**, no por viewport.
+Cada panel empuja solo si, con su ancho real, a la losa le quedan **≥ 520 px** (`LOSA_MIN`); si no, ese
+panel se superpone. Con los dos abiertos eso son los umbrales medidos: **riel 904** y **panel derecho
+1256**; con el riel plegado, 704. Se descartaron, con el dueño delante, un quiebre único en 1256 (a 1100
+el riel se superpondría sin necesidad), bajar el suelo a 356/1092 (la losa bajaría a 364 y el anillo
+tocaría el borde) y plegar el riel solo al abrir el panel (le mueve al usuario una elección manual).
+Los huecos del boceto **se quedan como están**: el dueño queda avisado por escrito y el boceto se aprueba
+por aspecto e interacción, no por función.
+
