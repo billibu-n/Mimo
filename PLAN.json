@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-21T10:40:28-03:00",
+  "updated": "2026-10-21T11:13:38-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -113,7 +113,7 @@
     {
       "id": "T008",
       "title": "Calendario y Semestre: tabla semanal, editor de evento, calendario mes/año/sem, semestres extra e iCal (semestre/ y ajustes/05,07)",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T001",
         "T003",
