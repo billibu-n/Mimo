@@ -614,6 +614,92 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   .tarea__cuando{font-variant-numeric:tabular-nums}
   .tarea__cuando--vencida{color:var(--acento)}
   .tareas__vacio{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  /* ---------------------------------------------------------------- CALENDARIO
+     T008. Todo con los tokens de la piel C (--fondo --sup --sup2 --tinta --muted
+     --linea --fuerte --acento) y la escala congelada: 13/15/17 px, huecos
+     8/12/16/24 y radios 16/999. No hay ningun color ni medida nueva: las
+     mini-barras llevan el color de su ramo en el `style` (una var(--...)), que
+     sale de MimoEstudioMotor.colorDe(). */
+  .calendario{display:grid;gap:16px;min-width:0}
+  .cal__kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .cal__barra-controles{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+  .cal__nav,.cal__vistas,.cal__acciones{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .cal__filtros{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+  .cal__filtros-rot{font-size:13px;color:var(--muted)}
+  .cal__periodo{font-size:15px;font-weight:500;min-width:140px;text-align:center}
+  .cal__vista,.cal__filtro{border:1px solid var(--linea);background:var(--sup);color:var(--tinta);
+    border-radius:999px;padding:0 12px;height:24px;font:inherit;font-size:13px;cursor:pointer}
+  .cal__vista[aria-pressed="true"],.cal__filtro[aria-pressed="true"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+  .cal__aviso{margin:0;font-size:13px;color:var(--fuerte);line-height:1.5}
+  .cal__aviso:empty{display:none}
+  .cal__fichero{display:none}
+  .cal__mes-cab{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
+  .cal__cab-dia{font-size:13px;color:var(--muted);text-align:center}
+  .cal__rejilla-mes{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .cal__celda{display:grid;align-content:start;gap:8px;min-height:88px;padding:8px;
+    border:1px solid var(--linea);border-radius:16px;background:var(--sup);min-width:0}
+  .cal__celda--fuera{border-color:transparent;background:transparent}
+  .cal__celda--hoy{border-color:var(--acento)}
+  .cal__celda--receso{background:var(--sup2)}
+  .cal__celda--examen{border-color:var(--fuerte)}
+  .cal__num{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .cal__marca{font-size:13px;color:var(--fuerte)}
+  .cal__chip{display:flex;align-items:center;gap:8px;min-width:0;padding:0 8px;
+    border-left:2px solid var(--linea);border-radius:999px;background:var(--sup2);
+    font-size:13px;line-height:1.6;cursor:pointer}
+  .cal__chip--hecha{opacity:.55;text-decoration:line-through}
+  .cal__chip-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cal__chip-hora,.cal__chip-nota{font-variant-numeric:tabular-nums;color:var(--muted)}
+  .cal__pri{font-weight:500}
+  .cal__pri--alta{color:var(--acento)}
+  .cal__pri--media{color:var(--fuerte)}
+  .cal__pri--baja{color:var(--muted)}
+  .cal__semana-caja{overflow-x:auto;min-width:0}
+  .cal__tabla{width:100%;border-collapse:collapse;font-size:13px}
+  .cal__th{padding:8px;border-bottom:1px solid var(--linea);text-align:left;
+    font-weight:500;color:var(--muted);white-space:nowrap}
+  .cal__fila--actual{background:var(--sup2)}
+  .cal__fila--pasada{opacity:.75}
+  .cal__semana{padding:8px;border-bottom:1px solid var(--linea);text-align:left;
+    vertical-align:top;white-space:nowrap}
+  .cal__rango{display:block;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .cal__dia{padding:8px;border-bottom:1px solid var(--linea);vertical-align:top;
+    min-width:0;display:table-cell}
+  .cal__est{padding:8px;border-bottom:1px solid var(--linea);vertical-align:top;min-width:96px}
+  .cal__est-cifra{display:block;font-size:15px;font-variant-numeric:tabular-nums}
+  .cal__est-meta{display:block;font-size:13px;color:var(--muted)}
+  .cal__barra{display:flex;height:8px;border-radius:999px;background:var(--sup2);
+    overflow:hidden;margin-top:8px;min-width:16px}
+  .cal__barra i{display:block;height:100%}
+  .cal__anio{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .cal__minimes{display:grid;gap:8px}
+  .cal__minimes-tit{margin:0;font-size:15px;font-weight:500}
+  .cal__minimes-rej{display:grid;grid-template-columns:repeat(7,1fr);gap:0}
+  .cal__minid{font-size:13px;padding:0;text-align:center;color:var(--muted);
+    font-variant-numeric:tabular-nums}
+  .cal__minid--hoy{color:var(--acento);font-weight:500}
+  .cal__minid--receso{color:var(--fuerte)}
+  .cal__minid--examen{color:var(--tinta)}
+  .cal__editor,.cal__panel{display:grid;gap:16px;padding:16px;border:1px solid var(--linea);
+    border-radius:16px;background:var(--sup)}
+  .cal__tit{margin:0;font-size:17px;font-weight:500}
+  .cal__rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .cal__campo{display:grid;gap:8px;font-size:13px;min-width:0}
+  .cal__campo--ancho{grid-column:1/-1}
+  .cal__rot{color:var(--muted)}
+  .cal__entrada{font:inherit;font-size:15px;color:var(--tinta);background:var(--fondo);
+    border:1px solid var(--linea);border-radius:16px;padding:8px 12px;min-width:0}
+  .cal__texto{resize:vertical}
+  .cal__pista{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+  .cal__vacio{display:grid;gap:12px;justify-items:start;padding:16px;
+    border:1px solid var(--linea);border-radius:16px;background:var(--sup2)}
+  .cal__sem-lista{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .cal__sem{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;
+    padding:12px;border:1px solid var(--linea);border-radius:16px;background:var(--fondo)}
+  .cal__sem--activo{border-color:var(--acento)}
+  .cal__sem-nombre{font-size:15px;font-weight:500}
+  .cal__sem-datos{font-size:13px;color:var(--muted)}
+  .cal__sem-acciones{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 </style>
 </head>
 <body data-piel="c" data-tema="claro" data-estado="normal" data-modo-riel="empuja" data-modo-der="empuja"
@@ -881,6 +967,12 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
      medido. Expone `MimoTareasMotor` (puro: no nombra el DOM) y `MimoTareasUI`;
      el armazon solo le da la caja. -->
 <script src="js/tareas.js"></script>
+<!-- calendario.js (T008): el calendario del semestre. Va despues de tareas.js y
+     de i18n.js: sus rotulos van en el propio fichero (las claves de idioma del
+     bloque son de T010) y sus numeros salen de estudio.js y de comun/catalogo.js.
+     Expone `MimoCalendarioMotor` (puro: no nombra el DOM) y `MimoCalendarioUI`;
+     el armazon solo le da la caja. -->
+<script src="js/calendario.js"></script>
 <script>
 (function () {
   var body = document.body;
@@ -924,7 +1016,14 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
     { id: 'calificaciones', icono: 'i-calificaciones' },
     /* T007. Tareas trae nombre y descripcion del diccionario
        (`bloque.tareas.*`), anadidos esta ronda sin renombrar los anteriores. */
-    { id: 'tareas', icono: 'i-tareas' }
+    { id: 'tareas', icono: 'i-tareas' },
+    /* T008. Calendario: su nombre y su descripcion van AQUI, en la fila, no en
+       js/i18n.js. El diccionario no tiene `bloque.calendario.*` y las claves de
+       idioma del bloque son de T010: un `data-i18n` con una clave que no existe
+       se contaria como ausente en el gate de idioma. `nombreBloque()` usa estos
+       dos campos cuando la clave falta. */
+    { id: 'calendario', icono: 'i-calendario', nombre: 'Calendario',
+      desc: 'Semestre con sus semanas, tabla semanal, eventos y calendario de mes, año y semana.' }
   ];
 
   /* LAS SECCIONES: `bloques` es la foto de fábrica (lo instalado al empezar) y
@@ -933,7 +1032,8 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   /* El nombre de cada sección también sale del diccionario
      (`seccion.<id>.nombre`): aquí queda solo lo que es estructura. */
   var SECCIONES = [
-    { id: 'calendario', icono: 'i-calendario', bloques: [], catalogo: [] },
+    /* T008: Calendario llega con su bloque ya instalado de fabrica. */
+    { id: 'calendario', icono: 'i-calendario', bloques: ['calendario'], catalogo: ['calendario'] },
     /* T007: su seccion propia, como en la app anterior (el inventario mapea las
        tres capacidades a "Calendario"). La seccion Calendario sigue vacia para
        T008; Tareas llega con su bloque ya instalado de fabrica. */
@@ -1158,6 +1258,13 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
         ' data-i18n-attr="aria-label:tareas.tablero"' +
         ' aria-label="' + rot('tareas.tablero') + '"></div>';
     }
+    /* CALENDARIO (T008): la caja y nada mas. js/calendario.js pinta dentro la
+       tabla semanal, el editor de evento, la rejilla del mes y el panel de
+       semestres; el armazon no sabe que es una semana ni un examen. */
+    if (b.id === 'calendario') {
+      return '<div class="calendario" data-calendario="bloque" role="region"' +
+        ' aria-label="Calendario del semestre"></div>';
+    }
     if (b.id === 'cronometro') {
       return '<div class="pomo"><div class="pomo__lado">' +
         '<div class="pomo__cifra reloj" data-reloj="crono" role="group"' +
@@ -1372,6 +1479,11 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
        caja no existe (bloque sin instalar o vista cerrada). */
     if (typeof MimoTareasUI !== 'undefined') {
       MimoTareasUI.pintar();
+    }
+    /* T008: la caja del calendario, con el mismo contrato: su pintar() se va sin
+       hacer nada si el bloque no esta instalado o la seccion no es la abierta. */
+    if (typeof MimoCalendarioUI !== 'undefined') {
+      MimoCalendarioUI.pintar();
     }
   }
 
@@ -1875,6 +1987,9 @@ body[data-modo-der="superpuesto"] .der{border-radius:16px}
   if (typeof MimoCalificacionesUI !== 'undefined') { MimoCalificacionesUI.iniciar(); }
   /* T007: el tablero escucha arrastre y clics una sola vez, delegado. */
   if (typeof MimoTareasUI !== 'undefined') { MimoTareasUI.iniciar(); }
+  /* T008: el calendario escucha clic y cambio de fichero una sola vez, delegado
+     en el documento; sus vistas se repintan enteras y no dejan escuchas sueltas. */
+  if (typeof MimoCalendarioUI !== 'undefined') { MimoCalendarioUI.iniciar(); }
   MimoTiempoUI.iniciar({
     t: MimoI18n.t,
     prueba: q.get('prueba') === '1',

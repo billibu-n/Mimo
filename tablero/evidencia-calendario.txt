@@ -1,0 +1,190 @@
+BLOQUE T008 — CALENDARIO Y SEMESTRE
+====================================
+Fecha: 2026-10-21 (America/Santiago)
+Sede: /home/billibu/workspace/proyectos/mimo-nuevo
+Alcance: tablero/. Sin commit, sin add, sin push, sin instalaciones, sin sudo.
+No se tocó referencia/, prototipo/, kit/ ni herramientas/.
+
+QUÉ SE PORTÓ DE LA REFERENCIA
+-----------------------------
+1. El semestre con sus semanas (js/semestre/01-calendario.js y
+   ajustes/05-semestres.js): nombre, lunes de inicio, semanas de clases,
+   recesos tras la semana N y semanas de examen al final, con etiquetas
+   S1..Sn, Receso y Examen n; y los semestres extra (crear, editar,
+   activar, borrar) guardados en el MISMO almacén, no en un espejo.
+2. El editor de evento (semestre/02-editor-evento.js): fecha, hora, texto,
+   detalle, tipo (tarea, control, prueba, examen, entrega, lectura,
+   personal), duración y ramo OPCIONAL; la nota del ramo, si se enlaza, sale
+   de la ficha de calificaciones del ramo (no se inventa un campo de nota).
+3. El calendario (semestre/03-calendario.js): tres vistas —mes, año y
+   semestre— con navegación de período y "Hoy"; la rejilla del mes marca la
+   semana de clases/receso/examen del semestre activo y la del año resume los
+   doce meses.
+4. La tabla semanal: una fila por semana del semestre, una columna por día
+   (lunes a domingo), fila de la semana actual marcada y columna de estudio
+   con las horas registradas, la meta y la mini-barra por ramo.
+5. El .ics (ajustes/07-ical.js): exportar produce VEVENT con DTSTART,
+   DTEND, SUMMARY y DESCRIPTION; importar lee VEVENT y devuelve sus eventos
+   (hora o día completo).
+6. Los filtros por ramo y por tipo, y los KPIs (próximo control/examen,
+   entregas de la semana, horas de la semana y total del semestre).
+
+ARCHIVOS
+--------
+- tablero/js/calendario.js          NUEVO  1548 líneas  sha256 be41105c9268307b...
+  Primer IIFE = MimoCalendarioMotor (puro: 0 apariciones de `document.`);
+  segundo IIFE = MimoCalendarioUI, que toma el documento UNA vez con el
+  alias `D`. Español sin emojis, `var` y `function`, sin clases ni imports.
+- tablero/js/comun/almacen.js       +75 líneas  sha256 ccc55361801019ae...
+  `estadoInicial()` declara los dos espacios (`semestre` y `calendario`);
+  `normalizarSemestre(v)` y `normalizarCalendario(v)` los validan al leer.
+  Sin espejos: todo entra por `MimoComun.leer()`/`guardar()`.
+- tablero/armazon-paneles.html      +115 líneas  sha256 7e41cf67f2efdfda...
+  Fila en BLOQUES (nombre y descripción en línea, porque
+  `bloque.calendario.*` es de T010), sección con su bloque, caja vacía
+  (`<div class="calendario" data-calendario="bloque">`), `<script>` tras
+  tareas.js, pintado en la estantería y arranque de la vista.
+- tablero/medir-calendario.py       NUEVO  732 líneas  sha256 49a72bf6b4f3bca7...
+  Mismo patrón que medir-tiempo2.py: `--fichero`, puerto libre por socket,
+  cierre por pid guardado, `RESUMEN: N choque(s)` y EXIT=0 solo sin choques.
+
+ANTES / DESPUÉS (mismo comando, misma máquina)
+----------------------------------------------
+El ANTES es la copia literal del armazón anterior, congelada ANTES de editar:
+`/tmp/mimo-nuevo-t008-antes/armazon-paneles.html`,
+sha256 096836a96d0a6ffd9ed5cb4a4bbeb95c5ed9f294583b7e4698307c9c8aaad09d
+(el mismo que tenía el fichero antes de este bloque).
+
+Puertas anteriores (no se tocaron; se volvieron a correr):
+                                              ANTES        DESPUÉS
+medir-tablero.py  (pieles dentro del techo)   verde        verde
+  Piel C: tamaños / espacios / radios         5/5 6/8 2/2  5/5 6/8 2/2
+  Piel C: duraciones / hex fuera de tokens    3/3 · 0      3/3 · 0
+medir-tiempo2.py  (17 medidas)                0 choques    0 choques
+  losa a 1280 con ?estado=ambos               544,00       544,00
+  sangría a 1100                               32,00        32,00
+  32 cargas: eventos de consola                    0            0
+  MimoI18n.claves() (mínimo 153)              272/272      272/272
+  diagnostico() ausentes / desajustes          0 / 0        0 / 0
+medir-malla.py    (16 medidas)                0 choques    0 choques
+medir-estudio.py  (18 medidas)                0 choques    0 choques
+
+Instrumento del bloque (mismo comando sobre las dos copias):
+  ANTES   `--solo-basicas`: motor Calendario = undefined, caja = false,
+          script = false, 0 KPIs, 0 eventos de consola.
+          RESUMEN: 0 choque(s) de 1 medidas · MEDIDAS DEL BLOQUE: 0 disponibles.
+  DESPUÉS `--fichero tablero/armazon-paneles.html`:
+          RESUMEN: 0 choque(s) de 22 medidas.  (EXIT=0)
+
+LAS 22 MEDIDAS (salida literal, resumida)
+-----------------------------------------
+[OK]  1. la copia de antes no tenía Calendario — motor=undefined caja=False
+[OK]  2. el armazón de ahora registra motor, vista, caja y script
+[OK]  3. el motor expone la API del contrato — 27/27 funciones
+[OK]  4. crearSemestre genera 18 semanas: 15 clases, 1 receso tras S8 y
+          2 exámenes (etiquetas S1..S15, Receso, Examen 1, Examen 2)
+[OK]  5. la tabla semanal: 18 filas × 7 días, fila actual = S8, columna de
+          estudio en las 18 filas, 4 KPIs
+[OK]  6. el editor: fecha + hora + tipo pintan el evento en su día
+          (2026-10-31 09:30, tipo control)
+[OK]  7. el chip del día lleva su hora 09:30 y su tipo
+[OK]  8. el ramo opcional enlaza el evento con su nota 6.5 y el chip la
+          enseña (data-ramo=FI1001)
+[OK]  9. marcaSemestreDe marca clases, receso y examen; la rejilla del mes
+          pinta data-marca=receso en el lunes del receso
+[OK] 10. navegar mes/ano/sem cambia el período: Octubre 2026 > Noviembre 2026,
+          2026 > 2027, 2026-2 > 2027-1 > 2026-2
+[OK] 11. los semestres extra: 2 > borrar el segundo > queda 1 y se re-activa
+          el primero con sus 18 semanas
+[OK] 12. editar el semestre regenera 19 semanas y conserva los 2 eventos y
+          los ramos MA1001,FI1001
+[OK] 13. los filtros: apagar FI1001 esconde su evento (1 > 0) y
+          resetFiltros lo devuelve (0 > 1); 2 ramos y 7 tipos
+[OK] 14. exportar: 2 VEVENT con DTSTART y SUMMARY, y cierra VCALENDAR
+[OK] 15. importar un .ics: devuelve 2 eventos (2026-12-01 09:00 y
+          2026-12-02 todo el día) con origen=ical
+[OK] 16. cuadre con la malla: los ramos del semestre (MA1001, FI1001) se
+          resuelven en el catálogo T004 (`ramoNuevo`) y están en CAT()
+[OK] 17. la columna de estudio suma lo registrado: «2h 30m», horas=2.5 y la
+          mini-barra se reparte en 2 tramos (los dos ramos con minutos)
+[OK] 18. dos recargas seguidas: 4 eventos, semestre activo «2026-2 bis» y la
+          forma del almacén (`semestre.extras` + `calendario.*`) intacta
+[OK] 19. claves es/en 272/272 (mínimo 153), ausentes 0, desajustes 0
+[OK] 20. el motor no nombra el DOM — 0 apariciones de `document.`
+[OK] 21. 32 aperturas (8 estados × 2 temas × 2 idiomas) con la sección
+          abierta — 0 eventos de consola
+[OK] 22. a 1100 px la caja mide 620,00 dentro de una losa de 716,00 y la
+          página no desborda (ventana=scroll=1100)
+
+`grep -c "document\." tablero/js/calendario.js` = 0.
+
+CONTROLES NUEVOS: EXCEPCIÓN DECLARADA
+-------------------------------------
+La estética congelada no se movió: la losa (544,00), la sangría (32,00) y
+los recuentos de la Piel C (5/5 tamaños, 6/8 espacios, 2/2 radios, 3/3
+duraciones, 0 hex fuera de tokens) son los mismos del ANTES. Lo nuevo es
+todo con tokens y la escala ya congelada (13/15/17 px; huecos 8/12/16/24;
+radios 16/999), y se declara con su medida:
+
+- `.cal__vista` / `.cal__filtro` (píldoras de vista y de filtro): alto 24 px,
+  `font-size: 13px`, radio 999. Ocupan una fila de la barra de controles:
+  la caja del bloque sigue midiendo 620,00 a 1100 y 0 de desborde.
+- `.cal__rejilla-mes`: 7 columnas iguales con gap 8; `.cal__celda` con
+  `min-height: 88px`, radio 16 y `padding: 8px`.
+- `.cal__tabla` (tabular): `font-size: 13px`, celdas con `padding: 8px`,
+  `.cal__est` con `min-width: 96px`; el envoltorio `.cal__semana-caja` tiene
+  `overflow-x: auto`, así que en pantallas estrechas la tabla scrollea
+  dentro en vez de empujar la losa (medido: 0 desborde a 1100).
+- `.cal__editor` y `.cal__panel`: radio 16, `padding: 16px`, campos con
+  `padding: 8px 12px` y `font-size: 15px`.
+- `.cal__barra` (mini-barra de estudio): alto 8 px, radio 999, cada tramo
+  con el color de su ramo en el `style` (`var(--acento)`, `var(--fuerte)` o
+  `var(--muted)`), nunca un hex.
+- Los botones de acción reutilizan `.btn .btn--mini` del armazón; los KPIs,
+  `.kpi`; el aviso, `role="status"` con `aria-live="polite"`.
+
+CÓMO SE REPITE
+--------------
+    cd /home/billibu/workspace/proyectos/mimo-nuevo
+    python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html
+    python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html
+    python3 tablero/medir-malla.py --fichero tablero/armazon-paneles.html
+    python3 tablero/medir-estudio.py --fichero tablero/armazon-paneles.html
+    python3 tablero/medir-calendario.py --fichero tablero/armazon-paneles.html
+
+HUECOS
+------
+- Las claves de idioma del bloque (`bloque.calendario.*` y los rótulos de la
+  tabla) NO existen en js/i18n.js: son de T010 y este bloque no lo toca. El
+  nombre y la descripción del bloque viajan en línea en la fila de BLOQUES,
+  y el resto de rótulos van en español dentro de js/calendario.js. Medido:
+  claves 272/272, ausentes 0, desajustes 0 (no se añadió ninguna clave y no
+  se rompió ninguna de las que había). Traducir el bloque queda para T010.
+- El `.ics` se exporta por descarga (`data:` + `<a download>`) y se importa
+  por `<input type="file">` + FileReader. No hay servidor, ni suscripción a
+  un calendario remoto, ni sincronización con Google/Apple: el archivo se
+  baja y se sube a mano. No se probó contra Google Calendar real.
+- El importador lee VEVENT con DTSTART (fecha o fecha-hora UTC), SUMMARY y
+  DESCRIPTION. No interpreta RRULE (recurrencia), VALARM ni VTIMEZONE: un
+  evento recurrente entra como un evento suelto en su primera fecha. Queda
+  declarado, no simulado.
+- No hay arrastre de eventos entre días en la rejilla (la referencia lo
+  tenía): se crea y se edita con el formulario, que es lo que mide el
+  contrato. Tampoco hay edición en línea del texto de un evento desde la
+  tabla semanal (se abre el editor con el chip).
+- La nota del evento es la nota del RAMO (`notas_evento` enlaza el evento
+  con la ficha de calificaciones): no se inventó una nota por evento. Un
+  evento sin ramo no tiene nota.
+- El semestre no se puede compartir ni exportar: vive en el almacén local
+  `mimo.datos.v1`. No hay exportación de semestres a JSON (la malla sí la
+  tiene); el .ics es lo único que sale.
+- La columna de estudio usa las horas de `MimoEstudioMotor.horasSemana()`,
+  que cuenta solo ramos del catálogo: los minutos sueltos (`OTROS`) no
+  entran en la cifra de la semana, igual que en el bloque de estudio. Es una
+  decisión heredada, no un defecto de este bloque, y queda dicha.
+- Las 32 aperturas se midieron con la sección Calendario abierta y la foto de
+  fábrica; no se midió el arrastre de ventanas ni el modo angosto del riel
+  con un evento abierto, porque no hay arrastre en este bloque.
+- `PLAN.json` ya figuraba modificado en `git status` al empezar este bloque
+  (como en T002); no se abrió ni se editó aquí. No se hizo commit, add ni
+  push: la rama y el remoto los toca el Lead.

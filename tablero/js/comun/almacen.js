@@ -22,6 +22,9 @@
          calificaciones: {cats, comps, examen, exim, estado,
                     colores},      // notas por ramo (T005)
          tareas:   {nuevas, hechas, prioridades},  // tablero de Tareas (T007)
+         semestre: {activo, extras, sem, metas}, // estructura del semestre (T008)
+         calendario: {nuevas, hechas, prioridades, notas_evento, tipos, fichas,
+                    vista, anio, mes},          // eventos y navegacion (T008)
          ajustes:  {},             // T009
          respaldo: {},             // estado del respaldo en carpeta
          migrado:  {de: [...], cuando: ms}   // marca de la migracion, para poder mirarla
@@ -122,6 +125,29 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
         hechas: {},
         prioridades: {}
       },
+      /* T008. El calendario tiene DOS ramas y van separadas a proposito:
+         `semestre` es la ESTRUCTURA (que semestre esta activo, cuales se creo el
+         usuario, sus semanas y su meta semanal) y `calendario` son los EVENTOS y
+         la navegacion (que dia se esta mirando). Un semestre borrado se lleva su
+         `sem[id]`, no los eventos: borrar el calendario de clases no borra lo que
+         el usuario apunto en el. */
+      semestre: {
+        activo: null,         // id del semestre activo, o null
+        extras: [],           // semestres creados por el usuario, con sus semanas
+        sem: {},              // id -> {ramos, notas} del semestre (no se toca al editar)
+        metas: { semanal: 0 } // meta semanal propia del semestre, en horas
+      },
+      calendario: {
+        nuevas: [],           // eventos sueltos {id, fecha, hora, texto, ramo, tipo, ...}
+        hechas: {},           // id -> true
+        prioridades: {},      // id -> 'alta' | 'media' | 'baja'
+        notas_evento: {},     // id -> nota (1,0 a 7,0) del evento
+        tipos: {},            // codigo -> etiqueta propia del usuario
+        fichas: {},           // id -> {detalle, temario} de la ficha del evento
+        vista: 'sem',         // 'mes' | 'anio' | 'sem'
+        anio: 0,              // 0 = el ano de hoy; si no, el ano visible
+        mes: 0                // mes visible (0..11) en la vista de mes
+      },
       ajustes: {},
       respaldo: {},
       migrado: { de: [], cuando: null }
@@ -168,6 +194,51 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
     };
   }
 
+  /* T008: las dos ramas del calendario. `extras` son los semestres del usuario;
+     cada uno se deja tal cual si es objeto con id (su forma la valida el bloque),
+     y los que no lo son se caen: un semestre sin id no se puede activar ni
+     borrar. `sem` y los mapas se garantizan objeto para que una recarga a medias
+     no rompa el bloque. */
+  function normalizarSemestre(v) {
+    v = esObjeto(v) ? v : {};
+    var extras = [], vistos = {};
+    if (Array.isArray(v.extras)) {
+      for (var i = 0; i < v.extras.length; i++) {
+        var x = v.extras[i];
+        if (!esObjeto(x) || !x.id || vistos[x.id]) { continue; }
+        vistos[x.id] = true;
+        extras.push(x);
+      }
+    }
+    var activo = (v.activo && vistos[v.activo]) ? v.activo : (extras.length ? extras[0].id : null);
+    return {
+      activo: activo,
+      extras: extras,
+      sem: esObjeto(v.sem) ? v.sem : {},
+      metas: { semanal: (esObjeto(v.metas) && isFinite(Number(v.metas.semanal)))
+        ? Number(v.metas.semanal) : 0 }
+    };
+  }
+
+  function normalizarCalendario(v) {
+    v = esObjeto(v) ? v : {};
+    var vista = (v.vista === 'mes' || v.vista === 'anio' || v.vista === 'sem') ? v.vista : 'sem';
+    var anio = isFinite(Number(v.anio)) ? Math.round(Number(v.anio)) : 0;
+    var mes = isFinite(Number(v.mes)) ? Math.round(Number(v.mes)) : 0;
+    if (mes < 0 || mes > 11) { mes = 0; }
+    return {
+      nuevas: Array.isArray(v.nuevas) ? v.nuevas : [],
+      hechas: esObjeto(v.hechas) ? v.hechas : {},
+      prioridades: esObjeto(v.prioridades) ? v.prioridades : {},
+      notas_evento: esObjeto(v.notas_evento) ? v.notas_evento : {},
+      tipos: esObjeto(v.tipos) ? v.tipos : {},
+      fichas: esObjeto(v.fichas) ? v.fichas : {},
+      vista: vista,
+      anio: (anio > 1900 && anio < 2200) ? anio : 0,
+      mes: mes
+    };
+  }
+
   /* Normaliza lo que venga del disco: un cajon con una version que no es la
      nuestra, o con basura, se descarta entero (mejor arrancar de fabrica que
      arrancar a medias). Los tres hijos que usa la interfaz se garantizan. */
@@ -187,6 +258,8 @@ var MimoComun = window.MimoComun = window.MimoComun || {};
     e.estudio = normalizarEstudio(s.estudio);
     e.calificaciones = normalizarCalificaciones(s.calificaciones);
     e.tareas = normalizarTareas(s.tareas);
+    e.semestre = normalizarSemestre(s.semestre);
+    e.calendario = normalizarCalendario(s.calendario);
     e.ajustes = esObjeto(s.ajustes) ? s.ajustes : {};
     e.respaldo = esObjeto(s.respaldo) ? s.respaldo : {};
     e.migrado = esObjeto(s.migrado) ? s.migrado : { de: [], cuando: null };

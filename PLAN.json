@@ -1,6 +1,6 @@
 {
   "project": "mimo-nuevo",
-  "updated": "2026-10-20T20:05:31-03:00",
+  "updated": "2026-10-21T10:40:28-03:00",
   "dimension": {
     "size": "grande",
     "type": "migracion",
@@ -193,6 +193,21 @@
       "budget": {
         "maxCalls": 190,
         "maxUsd": 0.24
+      },
+      "assigned_to": "coder"
+    },
+    {
+      "id": "T013",
+      "title": "Sonido del tablero — bloque de sonido propio: js/comun/sonido.js (MimoSonido), namespace sonido en el almacen, interruptor maestro + volumen + silencio hasta hora, <=6 eventos y sustitucion de la alarma.mp3 SIN licencia por piezas del fondo (enlace, nunca copia)",
+      "status": "pending",
+      "depends_on": [
+        "T003",
+        "T009"
+      ],
+      "acceptance": "python3 tablero/medir-sonido.py --fichero tablero/armazon-paneles.html | grep -q 'RESUMEN: 0 choque' && python3 tablero/medir-tablero.py --fichero tablero/armazon-paneles.html | grep -q 'las tres pieles dentro de su techo' && python3 tablero/medir-tiempo2.py --fichero tablero/armazon-paneles.html | grep -q '0 choque' && ! grep -q 'alarma.mp3' tablero/armazon-paneles.html",
+      "budget": {
+        "maxCalls": 200,
+        "maxUsd": 0.25
       },
       "assigned_to": "coder"
     }
