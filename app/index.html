@@ -104,11 +104,23 @@
         <div class="kpi"><b id="kpi-hoy">0</b><span>para hoy</span></div>
         <div class="kpi"><b id="kpi-abiertas">0</b><span>abiertas</span></div>
         <div class="kpi"><b id="kpi-hechas">0</b><span>hechas</span></div>
-        <div class="kpi"><b>0 %</b><span>de la semana</span></div>
+        <div class="kpi"><b id="kpi-progreso">0 %</b><span>del total</span></div>
       </div>
       <div class="card">
         <form class="tarea-form" id="tarea-form" hidden>
           <input class="entrada" id="tarea-titulo" type="text" placeholder="¿Qué hay que hacer?" aria-label="Título de la tarea" autocomplete="off">
+          <select class="entrada" id="tarea-tipo" aria-label="Tipo">
+            <option value="tarea">Tarea</option>
+            <option value="proyecto">Proyecto</option>
+          </select>
+          <select class="entrada" id="tarea-padre" aria-label="Dentro de"></select>
+          <input class="entrada" id="tarea-fecha" type="date" aria-label="Fecha">
+          <select class="entrada" id="tarea-prioridad" aria-label="Prioridad">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Media</option>
+            <option value="baja">Baja</option>
+          </select>
+          <input class="entrada" id="tarea-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
           <button class="btn btn-primario" type="submit">Crear</button>
           <button class="btn" type="button" id="tarea-cancelar">Cancelar</button>
         </form>

@@ -59,7 +59,7 @@
   var estado = leer();
   var pantalla = "calendario";
   var notaBusqueda = "";
-  var vistaTareas = "hoy";
+  var vistaTareas = estado.vistaTareas || "hoy";
   var splitOn = false;
 
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {} }
@@ -157,25 +157,78 @@
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
-  function pintarTareas() {
-    var lista = $("#tareas-lista");
-    var vacio = $("#tareas-vacio");
-    var tareas = estado.tareas;
-    $("#kpi-hoy").textContent = String(tareas.filter(function (t) { return !t.hecha && t.fecha === hoyISO(); }).length);
-    $("#kpi-abiertas").textContent = String(tareas.filter(function (t) { return !t.hecha; }).length);
-    $("#kpi-hechas").textContent = String(tareas.filter(function (t) { return t.hecha; }).length);
-    if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; return; }
-    vacio.hidden = true;
-    lista.innerHTML = tareas.map(function (t) {
-      return '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0">' +
-        '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' +
-        (t.hecha ? "Marcar abierta" : "Marcar hecha") + '">' + (t.hecha ? "✓" : "") + "</button>" +
-        '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + "</span>" +
-        '<span class="tarea-meta">' + (t.fecha === hoyISO() ? "hoy" : esc(t.fecha || "sin fecha")) + "</span>" +
-        '<span class="pill">' + (t.tipo === "proyecto" ? "proyecto" : "tarea") + "</span></div>";
-    }).join("");
+  function normalizarTareas() {
+    estado.tareas = (estado.tareas || []).map(function (t, i) {
+      var e = t.estado || (t.hecha ? "hecha" : "pendiente");
+      return {
+        id: t.id || "t" + i,
+        titulo: t.titulo || "Sin título",
+        tipo: t.tipo === "proyecto" ? "proyecto" : "tarea",
+        padre_id: t.padre_id || null,
+        estado: e,
+        hecha: e === "hecha",
+        prioridad: t.prioridad || "media",
+        fecha: t.fecha || "",
+        contexto: t.contexto || "",
+        nota: t.nota || "",
+        orden: typeof t.orden === "number" ? t.orden : i,
+        creada: t.creada || ""
+      };
+    });
+  }
+  function tareaPorId(id) { return estado.tareas.filter(function (t) { return t.id === id; })[0] || null; }
+  function hijosDe(id) { return estado.tareas.filter(function (t) { return t.padre_id === id; }); }
+  function raicesTareas() {
+    return estado.tareas.filter(function (t) { return !t.padre_id || !tareaPorId(t.padre_id); });
+  }
+  function profundidad(t) {
+    var n = 0, p = t.padre_id, visto = {};
+    while (p && !visto[p]) { visto[p] = 1; n++; var x = tareaPorId(p); p = x ? x.padre_id : null; }
+    return n;
+  }
+  function descendientes(t) {
+    var out = [], pila = hijosDe(t.id).slice();
+    while (pila.length) {
+      var x = pila.shift(); out.push(x);
+      hijosDe(x.id).forEach(function (h) { pila.push(h); });
+    }
+    return out;
+  }
+  function progreso(t) {
+    var ds = descendientes(t), hechas = ds.filter(function (x) { return x.hecha; }).length;
+    var total = ds.length;
+    return { total: total, hechas: hechas, pct: total ? Math.round(hechas / total * 100) : (t.hecha ? 100 : 0) };
+  }
+  function fechaCorta(f) {
+    if (!f) return "sin fecha";
+    if (f === hoyISO()) return "hoy";
+    var p = f.split("-");
+    return p.length === 3 ? p[2] + "/" + p[1] : f;
+  }
+  function filaTarea(t, nivel) {
+    var p = progreso(t), hijos = hijosDe(t.id);
+    var sub = t.tipo === "proyecto"
+      ? '<span class="tarea-progreso" title="' + p.hechas + " de " + p.total + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
+      : "";
+    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" style="--nivel:' + nivel + '">' +
+      '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + (t.hecha ? "Marcar abierta" : "Marcar hecha") + '">' + (t.hecha ? "✓" : "") + "</button>" +
+      '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">proyecto</small>' : "") + "</span>" +
+      '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
+      '<span class="pill pill--' + esc(t.prioridad) + '">' + esc(t.prioridad) + "</span>" + sub +
+      '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="Añadir una tarea dentro">+</button></div>';
+    if (hijos.length) html += hijos.map(function (h) { return filaTarea(h, nivel + 1); }).join("");
+    return html;
+  }
+  function tarjetaTablero(t) {
+    var p = progreso(t);
+    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '">' +
+      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || "sin contexto") + "</small>" +
+      (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
+  }
+  function bindTareas() {
     $$("#tareas-lista [data-tarea]").forEach(function (fila) {
-      fila.addEventListener("click", function () {
+      fila.addEventListener("click", function (ev) {
+        if (ev.target.getAttribute("data-check") || ev.target.getAttribute("data-add-sub")) return;
         estado.tareaSel = fila.getAttribute("data-tarea");
         estado.panel[pantalla] = "detalle";
         guardar(); pintarTareas(); pintarPanel();
@@ -188,11 +241,84 @@
     $$("#tareas-lista [data-check]").forEach(function (b) {
       b.addEventListener("click", function (ev) {
         ev.stopPropagation();
-        var t = estado.tareas.filter(function (x) { return x.id === b.getAttribute("data-check"); })[0];
+        var t = tareaPorId(b.getAttribute("data-check"));
         if (!t) return;
-        t.hecha = !t.hecha; guardar(); pintarTareas(); pintarPanel();
+        var marcar = !t.hecha;
+        t.hecha = marcar; t.estado = marcar ? "hecha" : "pendiente";
+        if (marcar && t.tipo === "proyecto") descendientes(t).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
+        guardar(); pintarTareas(); pintarPanel();
       });
     });
+    $$("#tareas-lista [data-add-sub]").forEach(function (b) {
+      b.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        var padre = b.getAttribute("data-add-sub");
+        abrirFormulario(null, padre);
+      });
+    });
+  }
+  function pintarTareas() {
+    normalizarTareas();
+    var lista = $("#tareas-lista"), vacio = $("#tareas-vacio"), tareas = estado.tareas;
+    var hoy = tareas.filter(function (t) { return !t.hecha && t.fecha === hoyISO(); });
+    var abiertas = tareas.filter(function (t) { return !t.hecha; });
+    var hechas = tareas.filter(function (t) { return t.hecha; });
+    $("#kpi-hoy").textContent = String(hoy.length);
+    $("#kpi-abiertas").textContent = String(abiertas.length);
+    $("#kpi-hechas").textContent = String(hechas.length);
+    $("#kpi-progreso").textContent = (tareas.length ? Math.round(hechas.length / tareas.length * 100) : 0) + " %";
+    if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; return; }
+    vacio.hidden = true;
+    if (vistaTareas === "arbol") {
+      lista.innerHTML = raicesTareas().map(function (t) { return filaTarea(t, 0); }).join("");
+    } else if (vistaTareas === "tablero") {
+      var lunes = new Date(); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+      var domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
+      var iso = function (d) { return d.toISOString().slice(0, 10); };
+      var colHoy = tareas.filter(function (t) { return !t.hecha && (!t.fecha || t.fecha <= hoyISO()); });
+      var colSemana = tareas.filter(function (t) { return !t.hecha && t.fecha > hoyISO(); });
+      var colHechas = tareas.filter(function (t) { return t.hecha; });
+      var col = function (titulo, items) {
+        return '<div class="tablero-col"><h3>' + titulo + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">Nada.</p>') + "</div>";
+      };
+      lista.innerHTML = '<div class="tablero">' + col("Hoy / atrasadas", colHoy) + col("Próximas", colSemana) + col("Hechas", colHechas) + "</div>";
+    } else {
+      var v = tareas.filter(function (t) { return !t.hecha && t.fecha && t.fecha <= hoyISO(); });
+      lista.innerHTML = v.length ? v.map(function (t) { return filaTarea(t, 0); }).join("") : '<p class="muted">Nada para hoy. Cambia a Árbol o Tablero.</p>';
+    }
+    bindTareas();
+  }
+  var formEditId = null;
+  function opcionesPadre(t) {
+    var excluir = {};
+    if (t) { excluir[t.id] = 1; descendientes(t).forEach(function (x) { excluir[x.id] = 1; }); }
+    return '<option value="">Sin padre</option>' + estado.tareas.filter(function (x) {
+      return !excluir[x.id] && profundidad(x) < 4;
+    }).map(function (x) {
+      return '<option value="' + x.id + '">' + esc("— ".repeat(profundidad(x)) + (x.tipo === "proyecto" ? "Proyecto: " : "") + x.titulo) + "</option>";
+    }).join("");
+  }
+  function abrirFormulario(t, padreId) {
+    normalizarTareas();
+    formEditId = t ? t.id : null;
+    $("#tarea-titulo").value = t ? t.titulo : "";
+    $("#tarea-tipo").value = t ? t.tipo : "tarea";
+    $("#tarea-padre").innerHTML = opcionesPadre(t);
+    $("#tarea-padre").value = t ? (t.padre_id || "") : (padreId || "");
+    $("#tarea-fecha").value = t ? t.fecha : hoyISO();
+    $("#tarea-prioridad").value = t ? t.prioridad : "media";
+    $("#tarea-contexto").value = t ? t.contexto : "";
+    $("#tarea-form").hidden = false;
+    $("#tarea-form button[type=submit]").textContent = t ? "Guardar" : "Crear";
+    $("#tarea-titulo").focus();
+  }
+  function borrarTarea(id) {
+    var t = tareaPorId(id); if (!t) return;
+    var familia = [t.id].concat(descendientes(t).map(function (x) { return x.id; }));
+    if (!window.confirm("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?")) return;
+    estado.tareas = estado.tareas.filter(function (x) { return familia.indexOf(x.id) === -1; });
+    if (familia.indexOf(estado.tareaSel) !== -1) estado.tareaSel = null;
+    guardar(); pintarTareas(); pintarPanel();
   }
 
   function notaActual() {
@@ -283,13 +409,22 @@
     });
     var html = "";
     if (tab === "detalle") {
-      var t = estado.tareas.filter(function (x) { return x.id === estado.tareaSel; })[0];
+      var t = tareaPorId(estado.tareaSel);
       var n = notaActual();
       if (t) {
-        html = "<h2>Detalle de la tarea</h2><h3>" + esc(t.titulo) + '</h3><p class="panel__nota">' +
-          (t.hecha ? "Hecha" : "Abierta") + " · " + esc(t.fecha || "sin fecha") +
-          '</p><div class="panel__bloque"><span>Tipo</span><small>' +
-          (t.tipo === "proyecto" ? "proyecto" : "tarea") + "</small></div>";
+        var p = progreso(t), hijos = hijosDe(t.id), padre = t.padre_id ? tareaPorId(t.padre_id) : null;
+        html = "<h2>" + (t.tipo === "proyecto" ? "Proyecto" : "Tarea") + "</h2><h3>" + esc(t.titulo) + "</h3>" +
+          '<div class="panel__bloque"><span>Estado</span><small>' + (t.hecha ? "hecha" : "abierta") + "</small></div>" +
+          '<div class="panel__bloque"><span>Fecha</span><small>' + esc(fechaCorta(t.fecha)) + "</small></div>" +
+          '<div class="panel__bloque"><span>Prioridad</span><small>' + esc(t.prioridad) + "</small></div>" +
+          (t.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(t.contexto) + "</small></div>" : "") +
+          (padre ? '<div class="panel__bloque"><span>Dentro de</span><small>' + esc(padre.titulo) + "</small></div>" : "") +
+          (t.tipo === "proyecto" ? '<h2>Progreso</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + p.hechas + " de " + p.total + " tareas dentro</p>" +
+            '<h2>Subtareas</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + (h.hecha ? "hecha" : "abierta") + "</small></div>"; }).join("") : '<p class="panel__nota">Sin subtareas.</p>') : "") +
+          (t.nota ? '<h2>Nota</h2><p class="panel__nota">' + esc(t.nota) + "</p>" : "") +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + t.id + '">Editar</button>' +
+          '<button class="btn btn--chico" type="button" data-toggle-tarea="' + t.id + '">' + (t.hecha ? "Reabrir" : "Hecha") + "</button>" +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + t.id + '">Borrar</button></div>';
       } else if (n) {
         html = "<h2>Detalle de la nota</h2><h3>" + esc(n.titulo || "Sin título") +
           '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>";
@@ -319,6 +454,19 @@
     }
     $("#panel-cuerpo").innerHTML = html;
     $$("#panel-cuerpo [data-abrir-modal]").forEach(function (b) { b.addEventListener("click", abrirModal); });
+    $$("#panel-cuerpo [data-editar-tarea]").forEach(function (b) {
+      b.addEventListener("click", function () { abrirFormulario(tareaPorId(b.getAttribute("data-editar-tarea"))); });
+    });
+    $$("#panel-cuerpo [data-toggle-tarea]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = tareaPorId(b.getAttribute("data-toggle-tarea")); if (!x) return;
+        x.hecha = !x.hecha; x.estado = x.hecha ? "hecha" : "pendiente";
+        guardar(); pintarTareas(); pintarPanel();
+      });
+    });
+    $$("#panel-cuerpo [data-borrar-tarea]").forEach(function (b) {
+      b.addEventListener("click", function () { borrarTarea(b.getAttribute("data-borrar-tarea")); });
+    });
     var pie = $("#pie-centro");
     if (pie) pie.textContent = nombre(pantalla);
   }
@@ -418,7 +566,9 @@
 
   function init() {
     aplicarTema(estado.tema || "clasico");
-    pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas();
+    pintarTabs(); pintarCalendario();
+    $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
+    pintarTareas(); pintarNotas();
     pintarTemas(); pintarTiempo(); pintarPanel();
     ir(pantalla);
 
@@ -448,26 +598,48 @@
     $$("#vista-tareas button").forEach(function (b) {
       b.addEventListener("click", function () {
         vistaTareas = b.getAttribute("data-vista");
+        estado.vistaTareas = vistaTareas;
         $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x === b); });
-        aviso("Vista " + b.textContent + ": el árbol y el tablero llegan con M23/M25.");
+        guardar(); pintarTareas();
       });
     });
-    $("#btn-nueva-tarea").addEventListener("click", function () {
-      $("#tarea-form").hidden = false; $("#tarea-titulo").focus();
-    });
-    $("#tareas-crear").addEventListener("click", function () {
-      $("#tarea-form").hidden = false; $("#tarea-titulo").focus();
-    });
+    $("#btn-nueva-tarea").addEventListener("click", function () { abrirFormulario(null); });
+    $("#tareas-crear").addEventListener("click", function () { abrirFormulario(null); });
     $("#tarea-cancelar").addEventListener("click", function () { $("#tarea-form").hidden = true; });
     $("#tarea-form").addEventListener("submit", function (e) {
       e.preventDefault();
       var titulo = $("#tarea-titulo").value.trim();
       if (!titulo) return;
-      estado.tareas.push({ id: "t" + Date.now(), titulo: titulo, hecha: false, tipo: "tarea", fecha: hoyISO(), creada: new Date().toISOString() });
-      $("#tarea-titulo").value = "";
+      var tipo = $("#tarea-tipo").value === "proyecto" ? "proyecto" : "tarea";
+      var padre = $("#tarea-padre").value || null;
+      var t;
+      if (formEditId) {
+        t = tareaPorId(formEditId);
+        if (!t) return;
+      } else {
+        t = { id: "t" + Date.now(), creada: new Date().toISOString(), orden: estado.tareas.length };
+        estado.tareas.push(t);
+      }
+      if (padre === t.id) padre = null;
+      t.titulo = titulo;
+      t.tipo = tipo;
+      t.padre_id = padre;
+      t.fecha = $("#tarea-fecha").value || "";
+      t.prioridad = $("#tarea-prioridad").value;
+      t.contexto = $("#tarea-contexto").value.trim();
+      t.nota = t.nota || "";
+      if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
+      estado.tareaSel = t.id;
+      estado.panel[pantalla] = "detalle";
       $("#tarea-form").hidden = true;
+      formEditId = null;
+      if (vistaTareas === "hoy") {
+        vistaTareas = "arbol";
+        estado.vistaTareas = "arbol";
+        $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === "arbol"); });
+      }
       guardar(); pintarTareas(); pintarPanel();
-      aviso("Tarea creada. El árbol y el tablero llegan con M23.");
+      aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
     });
     $("#btn-nueva-nota").addEventListener("click", function () {
       var n = { id: "n" + Date.now(), titulo: "Sin título", cuerpo: "", actualizado: new Date().toISOString().slice(0, 16).replace("T", " ") };
@@ -501,7 +673,7 @@
     $("#btn-buscar").addEventListener("click", function () { aviso("Buscador global Ctrl+K: llega con M27."); });
     $("#btn-sync").addEventListener("click", function () { aviso("Guardado en este equipo. La sincronización es opcional."); });
     $("#btn-nuevo").addEventListener("click", function () {
-      ir("tareas"); $("#tarea-form").hidden = false; $("#tarea-titulo").focus();
+      ir("tareas"); abrirFormulario(null);
     });
     $("#btn-nuevo-evento").addEventListener("click", function () { aviso("Nuevo evento: el editor llega con M22."); });
     document.addEventListener("keydown", function (e) {

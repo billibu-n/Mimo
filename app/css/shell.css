@@ -172,3 +172,28 @@ body{padding-bottom:var(--alto-pie)}
 @media (max-width:1255px){
   .panel{top:calc(var(--alto-topbar) + var(--alto-navbar));bottom:var(--alto-pie);height:auto}
   }
+
+/* ---- U2: árbol, tablero y detalle de tareas ---- */
+.tarea-form .entrada{flex:1 1 140px;min-width:120px}
+.tarea-fila{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);padding-left:calc(var(--sp-2) + (var(--nivel,0) * 14px));border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup)}
+.tarea-fila .tarea-nom{flex:1;min-width:0}
+.tarea-fila .tarea-meta{width:64px;text-align:right}
+.tarea-progreso{display:block;width:70px;height:6px;border-radius:99px;background:var(--pista);overflow:hidden;flex:none}
+.tarea-progreso i{display:block;height:100%;background:var(--ok)}
+.tarea-pct{width:32px;text-align:right;color:var(--muted);font-size:var(--fs-xs)}
+.tarea-tipo{color:var(--muted);font-size:var(--fs-xs);font-weight:400}
+.tarea-add{width:22px;height:22px;border:1px dashed var(--line);border-radius:var(--r-sm);background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
+.tarea-add:hover{border-color:var(--ac);color:var(--ac)}
+.pill--alta{background:var(--pill-bad-bg);color:var(--pill-bad-fg)}
+.pill--media{background:var(--pill-warn-bg);color:var(--pill-warn-fg)}
+.pill--baja{background:var(--sup2);color:var(--muted2)}
+.tablero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.tablero-col{background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-md);padding:var(--sp-2);min-height:160px}
+.tablero-col h3{margin:0 0 var(--sp-2);font-size:var(--fs-sm);display:flex;justify-content:space-between;color:var(--muted)}
+.tablero-col h3 span{font-weight:400}
+.tarjeta-tarea{display:block;width:100%;text-align:left;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);margin-bottom:var(--sp-1);color:var(--fg);font:inherit;cursor:pointer}
+.tarjeta-tarea:hover{border-color:var(--ac)}
+.tarjeta-tarea.sel{border-color:var(--ac);box-shadow:inset 3px 0 0 var(--ac)}
+.tarjeta-tarea b{display:block;font-size:var(--fs-sm);font-weight:600}
+.tarjeta-tarea small{display:block;color:var(--muted);font-size:var(--fs-xs);margin:2px 0 4px}
+@media (max-width:900px){.tablero{grid-template-columns:1fr}.tarea-fila .tarea-progreso{display:none}}

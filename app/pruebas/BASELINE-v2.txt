@@ -1,6 +1,6 @@
-# Línea base U0 — MIMO universal limpio, panel dentro y pie fijo
-# fecha: 2026-10-24T13:14:30-03:00
-# base: 5adad63
+# Línea base U2 — Tareas con proyectos/subtareas, árbol y tablero
+# fecha: 2026-10-24T13:22:18-03:00
+# base: f6034d1
 # comando: python3 app/pruebas/correr-gates.py
 
 
@@ -30,7 +30,7 @@ TABLERO: /home/billibu/sede/trabajo/trabajos/T-48-mimo-m11-m12-shell/borradores/
 [OK] 411: el panel se abre como cajón
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui: 0 choque(s).
-TABLERO: /tmp/mimo-gate-ui-vsr0gn_v/maqueta/index.html
+TABLERO: /tmp/mimo-gate-ui-314_5utj/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -69,6 +69,13 @@ DEMO: buena 0, rota 1. El gate discrimina.
 [OK] kit: quitar Academics no toca Tiempo
 [OK] tareas: crear una tarea
 [OK] tareas: seleccionar cambia el panel a Detalle
+[OK] tareas: crear un proyecto raíz
+[OK] tareas: después de crear, la vista Árbol muestra el proyecto
+[OK] tareas: añadir una subtarea dentro del proyecto
+[OK] tareas: el progreso del proyecto se deriva de la subtarea
+[OK] tareas: editar el proyecto conserva su lugar
+[OK] tareas: el tablero tiene 3 columnas
+[OK] tareas: el tablero pinta tarjetas
 [OK] notas: la nota aparece en la lista
 [OK] notas: el panel Notas muestra la nota abierta
 [OK] panel: recuerda Detalle al volver a Tareas
@@ -79,7 +86,7 @@ DEMO: buena 0, rota 1. El gate discrimina.
 [OK] geometría: el panel vuelve
 [OK] geometría: el pie sigue visible
 [OK] consola limpia al final — []
-[OK] 411: sin desborde — 0px
+[OK] 411: sin desborde en Tareas — 0px
 [OK] 411: consola limpia — []
 RESUMEN gate-shell: 0 choque(s).
 

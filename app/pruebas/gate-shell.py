@@ -88,6 +88,41 @@ def main() -> int:
             exigir(page.locator(".panel__tab.on").inner_text().strip() == "Detalle",
                    "tareas: seleccionar cambia el panel a Detalle", fallas)
 
+            # Proyecto = tarea raíz con subtareas; el progreso se deriva.
+            page.locator("#btn-nueva-tarea").click()
+            page.locator("#tarea-titulo").fill("Proyecto web")
+            page.locator("#tarea-tipo").select_option("proyecto")
+            page.locator("#tarea-fecha").fill("2026-10-30")
+            page.locator('#tarea-form button[type="submit"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator(".tarea-fila").count() >= 2, "tareas: crear un proyecto raíz", fallas)
+            exigir(page.locator('[data-vista="arbol"]').get_attribute("class").find("on") >= 0,
+                   "tareas: después de crear, la vista Árbol muestra el proyecto", fallas)
+            page.locator(".tarea-fila", has_text="Proyecto web").locator("[data-add-sub]").click()
+            page.locator("#tarea-titulo").fill("Diseñar portada")
+            page.locator('#tarea-form button[type="submit"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator(".tarea-fila").count() >= 3, "tareas: añadir una subtarea dentro del proyecto", fallas)
+            page.locator(".tarea-fila", has_text="Diseñar portada").locator("[data-check]").click()
+            page.wait_for_timeout(100)
+            page.locator(".tarea-fila", has_text="Proyecto web").click()
+            page.wait_for_timeout(100)
+            exigir("100 %" in page.locator("#panel-cuerpo").inner_text() or "1 de 1" in page.locator("#panel-cuerpo").inner_text(),
+                   "tareas: el progreso del proyecto se deriva de la subtarea", fallas)
+            page.locator("#panel-cuerpo [data-editar-tarea]").click()
+            page.wait_for_timeout(80)
+            page.locator("#tarea-titulo").fill("Rediseño del sitio v2")
+            page.locator('#tarea-form button[type="submit"]').click()
+            page.wait_for_timeout(100)
+            exigir("Rediseño del sitio v2" in page.locator("#tareas-lista").inner_text(),
+                   "tareas: editar el proyecto conserva su lugar", fallas)
+            page.locator('[data-vista="tablero"]').click()
+            page.wait_for_timeout(100)
+            exigir(page.locator(".tablero-col").count() == 3, "tareas: el tablero tiene 3 columnas", fallas)
+            exigir(page.locator(".tarjeta-tarea").count() >= 1, "tareas: el tablero pinta tarjetas", fallas)
+            page.locator('[data-vista="arbol"]').click()
+            page.wait_for_timeout(80)
+
             page.locator('#tabs .tab:has-text("Notas")').click()
             page.wait_for_timeout(80)
             page.locator("#btn-nueva-nota").click()
@@ -127,8 +162,10 @@ def main() -> int:
 
         ctx, page, errores = nav.abrir(APP, 411, 900)
         try:
+            page.locator('#tabs .tab:has-text("Tareas")').click()
+            page.wait_for_timeout(80)
             d = desborde(page)
-            exigir(d == 0, f"411: sin desborde — {d}px", fallas)
+            exigir(d == 0, f"411: sin desborde en Tareas — {d}px", fallas)
             exigir(not errores, f"411: consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()
