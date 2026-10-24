@@ -70,6 +70,7 @@
   var estado = leer();
   var pantalla = "calendario";
   var notaBusqueda = "";
+  var notaModo = "editar";
   var vistaTareas = estado.vistaTareas || "hoy";
   var vistaCalendario = estado.vistaCalendario || "mes";
   var calCursor = new Date();
@@ -426,19 +427,68 @@
     guardar(); pintarTareas(); pintarPanel();
   }
 
+  function normalizarNotas() {
+    estado.notas = (estado.notas || []).map(function (n, i) {
+      return {
+        id: n.id || "n" + i,
+        titulo: n.titulo || "Sin título",
+        cuerpo: n.cuerpo || "",
+        contexto: n.contexto || "",
+        etiquetas: Array.isArray(n.etiquetas) ? n.etiquetas : (n.tags || []),
+        enlaces: Array.isArray(n.enlaces) ? n.enlaces : [],
+        fijada: !!n.fijada,
+        actualizado: n.actualizado || ""
+      };
+    });
+  }
   function notaActual() {
     return estado.notas.filter(function (n) { return n.id === estado.notaSel; })[0] || null;
+  }
+  function marcaInline(txt) {
+    var s = esc(txt);
+    s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+    s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return s;
+  }
+  function renderMarkdown(txt) {
+    var lineas = String(txt || "").split("\n"), out = [], lista = false;
+    function cerrar() { if (lista) { out.push("</ul>"); lista = false; } }
+    lineas.forEach(function (l) {
+      var t = l.trim();
+      if (!t) { cerrar(); return; }
+      if (/^###\s+/.test(t)) { cerrar(); out.push("<h3>" + marcaInline(t.slice(4)) + "</h3>"); return; }
+      if (/^##\s+/.test(t)) { cerrar(); out.push("<h2>" + marcaInline(t.slice(3)) + "</h2>"); return; }
+      if (/^#\s+/.test(t)) { cerrar(); out.push("<h1>" + marcaInline(t.slice(2)) + "</h1>"); return; }
+      if (/^[-*]\s+\[[ xX]\]\s+/.test(t)) {
+        if (!lista) { out.push("<ul>"); lista = true; }
+        var m = t.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/);
+        out.push('<li class="check-item"><input type="checkbox" disabled ' + (m[1].toLowerCase() === "x" ? "checked" : "") + "> " + marcaInline(m[2]) + "</li>");
+        return;
+      }
+      if (/^[-*]\s+/.test(t)) {
+        if (!lista) { out.push("<ul>"); lista = true; }
+        out.push("<li>" + marcaInline(t.slice(2)) + "</li>");
+        return;
+      }
+      cerrar();
+      out.push("<p>" + marcaInline(t) + "</p>");
+    });
+    cerrar();
+    return out.join("");
   }
   function pintarNotasLista(destino, conClick) {
     var cont = $(destino);
     if (!cont) return;
     var q = notaBusqueda.toLowerCase();
     var vis = estado.notas.filter(function (n) {
-      return !q || (n.titulo + " " + n.cuerpo).toLowerCase().indexOf(q) !== -1;
-    });
+      return !q || (n.titulo + " " + n.cuerpo + " " + n.contexto + " " + n.etiquetas.join(" ")).toLowerCase().indexOf(q) !== -1;
+    }).sort(function (a, b) { return (b.fijada ? 1 : 0) - (a.fijada ? 1 : 0); });
     cont.innerHTML = vis.map(function (n) {
       return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '"><b>' +
-        esc(n.titulo || "Sin título") + "</b><small>" + esc((n.cuerpo || "").slice(0, 70) || "Vacía") + "</small></button>";
+        (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") + "</b><small>" +
+        esc((n.cuerpo || "").slice(0, 70) || "Vacía") + (n.contexto ? " · " + esc(n.contexto) : "") + "</small></button>";
     }).join("");
     if (conClick) {
       $$(destino + " [data-nota]").forEach(function (b) {
@@ -448,15 +498,38 @@
       });
     }
   }
+  function notaVinculoActual(n) {
+    return n && n.enlaces && n.enlaces[0] ? n.enlaces[0].tipo + ":" + n.enlaces[0].id : "";
+  }
   function pintarNotas() {
+    normalizarNotas();
     pintarNotasLista("#notas-items", true);
     pintarNotasLista("#notas-lista-b", true);
     $("#notas-vacio").hidden = estado.notas.length > 0;
     var n = notaActual();
     $("#nota-titulo").disabled = !n;
     $("#nota-cuerpo").disabled = !n;
+    $("#nota-contexto").disabled = !n;
+    $("#nota-etiquetas").disabled = !n;
+    $("#nota-vinculo").disabled = !n;
+    $("#nota-modo").disabled = !n;
+    $("#nota-fijar").disabled = !n;
     $("#nota-titulo").value = n ? n.titulo : "";
     $("#nota-cuerpo").value = n ? n.cuerpo : "";
+    $("#nota-contexto").value = n ? n.contexto : "";
+    $("#nota-etiquetas").value = n ? n.etiquetas.join(", ") : "";
+    $("#nota-fijar").textContent = n && n.fijada ? "Fijada" : "Fijar";
+    $("#nota-fijar").setAttribute("aria-pressed", n && n.fijada ? "true" : "false");
+    var sel = $("#nota-vinculo");
+    var ops = ['<option value="">Enlazar a…</option>'];
+    estado.tareas.forEach(function (t) { ops.push('<option value="tarea:' + t.id + '">Tarea · ' + esc(t.titulo) + "</option>"); });
+    estado.eventos.forEach(function (e) { ops.push('<option value="evento:' + e.id + '">Evento · ' + esc(e.titulo) + "</option>"); });
+    sel.innerHTML = ops.join("");
+    sel.value = n ? notaVinculoActual(n) : "";
+    $("#nota-modo").textContent = notaModo === "preview" ? "Editar" : "Vista previa";
+    $("#nota-cuerpo").hidden = notaModo === "preview";
+    $("#nota-preview").hidden = notaModo !== "preview";
+    $("#nota-preview").innerHTML = notaModo === "preview" && n ? renderMarkdown(n.cuerpo) : "";
     $("#nota-meta").textContent = n ? "Guardada en este equipo · " + n.actualizado : "Sin nota abierta.";
   }
 
@@ -586,8 +659,11 @@
           '<button class="btn btn--chico" type="button" data-toggle-tarea="' + t.id + '">' + (t.hecha ? "Reabrir" : "Hecha") + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + t.id + '">Borrar</button></div>';
       } else if (n) {
-        html = "<h2>Detalle de la nota</h2><h3>" + esc(n.titulo || "Sin título") +
-          '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>";
+        html = "<h2>Detalle de la nota</h2><h3>" + (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") +
+          '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>" +
+          (n.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(n.contexto) + "</small></div>" : "") +
+          (n.etiquetas.length ? '<div class="panel__bloque"><span>Etiquetas</span><small>' + esc(n.etiquetas.join(", ")) + "</small></div>" : "") +
+          (n.enlaces.length ? '<div class="panel__bloque"><span>Enlazada a</span><small>' + esc(n.enlaces[0].titulo) + "</small></div>" : "");
       } else {
         html = '<h2>Detalle</h2><p class="panel__nota">Selecciona una tarea o una nota. El detalle vive aquí, no en un modal que tapa la lista.</p>';
       }
@@ -941,7 +1017,7 @@
       aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
     });
     $("#btn-nueva-nota").addEventListener("click", function () {
-      var n = { id: "n" + Date.now(), titulo: "Sin título", cuerpo: "", actualizado: new Date().toISOString().slice(0, 16).replace("T", " ") };
+      var n = { id: "n" + Date.now(), titulo: "Sin título", cuerpo: "", contexto: "", etiquetas: [], enlaces: [], fijada: false, actualizado: new Date().toISOString().slice(0, 16).replace("T", " ") };
       estado.notas.unshift(n);
       estado.notaSel = n.id;
       guardar(); pintarNotas(); pintarPanel();
@@ -964,6 +1040,31 @@
       n.cuerpo = e.target.value;
       n.actualizado = new Date().toISOString().slice(0, 16).replace("T", " ");
       guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
+    });
+    $("#nota-modo").addEventListener("click", function () { notaModo = notaModo === "preview" ? "editar" : "preview"; pintarNotas(); });
+    $("#nota-fijar").addEventListener("click", function () {
+      var n = notaActual(); if (!n) return;
+      n.fijada = !n.fijada; guardar(); pintarNotas(); pintarPanel();
+    });
+    $("#nota-contexto").addEventListener("input", function (e) {
+      var n = notaActual(); if (!n) return; n.contexto = e.target.value; guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
+    });
+    $("#nota-etiquetas").addEventListener("input", function (e) {
+      var n = notaActual(); if (!n) return;
+      n.etiquetas = e.target.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+      guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
+    });
+    $("#nota-vinculo").addEventListener("change", function (e) {
+      var n = notaActual(); if (!n) return;
+      var v = e.target.value, tipo = v.split(":")[0], id = v.split(":")[1];
+      if (!v) { n.enlaces = []; }
+      else {
+        var titulo = "";
+        if (tipo === "tarea") { var t = tareaPorId(id); titulo = t ? t.titulo : ""; }
+        else { var ev = eventoPorId(id); titulo = ev ? ev.titulo : ""; }
+        n.enlaces = [{ tipo: tipo, id: id, titulo: titulo }];
+      }
+      guardar(); pintarNotas(); pintarPanel();
     });
     $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
     $("#btn-periodo").addEventListener("click", abrirPeriodo);

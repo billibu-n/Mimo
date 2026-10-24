@@ -164,7 +164,15 @@
         </aside>
         <div class="nota-editor card">
           <input class="nota-titulo" id="nota-titulo" type="text" placeholder="Título de la nota" aria-label="Título de la nota" disabled>
-          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe aquí. Markdown en la vista previa llegará con M24." aria-label="Cuerpo de la nota" disabled></textarea>
+          <div class="nota-toolbar">
+            <button class="btn btn--chico" id="nota-modo" type="button">Vista previa</button>
+            <button class="btn btn--chico" id="nota-fijar" type="button">Fijar</button>
+            <input class="entrada" id="nota-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
+            <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas">
+            <select class="entrada" id="nota-vinculo" aria-label="Enlazar a"><option value="">Enlazar a…</option></select>
+          </div>
+          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe en Markdown: # título, **negrita**, - lista, [enlace](https://…)" aria-label="Cuerpo de la nota" disabled></textarea>
+          <div id="nota-preview" class="nota-preview" hidden></div>
           <p class="muted" id="nota-meta">Sin nota abierta.</p>
         </div>
       </div>

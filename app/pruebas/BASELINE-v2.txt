@@ -1,6 +1,6 @@
-# Línea base UX3 — Ajustes completos: navegación, i18n, paneles, notificaciones
-# fecha: 2026-10-24T13:55:27-03:00
-# base: 36c274e
+# Línea base U3 — Notas con Markdown, contexto, etiquetas, enlaces y fijadas
+# fecha: 2026-10-24T13:59:23-03:00
+# base: d3cd05a
 # comando: python3 app/pruebas/correr-gates.py
 
 
@@ -30,7 +30,7 @@ TABLERO: /home/billibu/sede/trabajo/trabajos/T-48-mimo-m11-m12-shell/borradores/
 [OK] 411: el panel se abre como cajón
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui: 0 choque(s).
-TABLERO: /tmp/mimo-gate-ui-gs958den/maqueta/index.html
+TABLERO: /tmp/mimo-gate-ui-wj3yv2zz/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -83,6 +83,9 @@ DEMO: buena 0, rota 1. El gate discrimina.
 [OK] tareas: editar el proyecto conserva su lugar
 [OK] tareas: el tablero tiene 3 columnas
 [OK] tareas: el tablero pinta tarjetas
+[OK] notas: Markdown se previsualiza
+[OK] notas: fijar la nota
+[OK] notas: buscar por etiqueta
 [OK] notas: la nota aparece en la lista
 [OK] notas: el panel Notas muestra la nota abierta
 [OK] panel: recuerda Detalle al volver a Tareas

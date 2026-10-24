@@ -267,3 +267,9 @@ body.nav-izq .navbar .nav-acciones{flex-direction:column;margin:0;gap:var(--sp-1
 body.nav-izq .navbar .periodo{display:none}
 body.nav-izq .navbar .tab-add{margin:0}
 body.nav-izq .shell{margin-left:64px}
+.nota-toolbar{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-2)}
+.nota-toolbar .entrada{flex:1 1 140px;min-width:120px}
+.nota-preview{flex:1;min-height:250px;padding:var(--sp-2) 0;line-height:1.6;overflow:auto}
+.nota-preview h1,.nota-preview h2,.nota-preview h3{margin:var(--sp-3) 0 var(--sp-1)}
+.nota-preview code{background:var(--sup2);padding:1px 4px;border-radius:4px}
+.nota-preview .check-item{list-style:none}
