@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-GATES = ("gate-ui.py", "gate-datos.py", "gate-bloques.py")
+GATES = ("gate-ui.py", "gate-diseno.py", "gate-datos.py", "gate-bloques.py")
 
 
 def main() -> int:
@@ -21,7 +21,7 @@ def main() -> int:
         print(f"\n=== {nombre} ===", flush=True)
         p = subprocess.run([sys.executable, str(AQUI / nombre), "--demo"])
         resultados.append((nombre, p.returncode))
-    print("\n=== RESUMEN M02 ===", flush=True)
+    print("\n=== RESUMEN GATES ===", flush=True)
     for nombre, codigo in resultados:
         print(f"{nombre}: {'VERDE' if codigo == 0 else 'ROJO'} ({codigo})")
     return 0 if all(c == 0 for _, c in resultados) else 1

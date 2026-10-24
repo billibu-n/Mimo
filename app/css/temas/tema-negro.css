@@ -1,0 +1,19 @@
+/* ============================================================================
+   tema-negro.css — tema Negro.
+
+   Adwaita oscuro: fondo #1e1e1e y acento azul.
+   Solo paleta y foco; la forma vive en tokens.css y base.css.
+   ============================================================================ */
+
+[data-tema="negro"]{
+  --fg:#ffffff; --muted:#adaba7; --line:#4d4d4d; --bg:#1e1e1e; --ac:#3584e4;
+  --ok:#8ff0a4; --warn:#f6d32d; --bad:#ff8fa3; --q:#dc8add;
+  --sup:#2e2e2e; --sup2:#383838; --sup3:#242424; --line2:#3d3d3d; --pista:#3d3d3d;
+  --muted2:#c0bfbc; --ac-txt:#ffffff; --ac-txt-fuerte:#ffffff; --ac-fuerte:#1c5aa8;
+  --info-bg:#1c2a3a; --hoy-bg:#1c2a3a;
+  --pill-ok-bg:#0e2e1e; --pill-ok-fg:#8ff0a4;
+  --pill-warn-bg:#3a2c0f; --pill-warn-fg:#f6d32d;
+  --pill-bad-bg:#3a1418; --pill-bad-fg:#ff8fa3;
+  --sombra:0 1px 2px rgb(0 0 0 / .35);
+  --foco:0 0 0 2px #2e2e2e, 0 0 0 4px #3584e4;
+}

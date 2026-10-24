@@ -1,11 +1,11 @@
-# Línea base M02 — gates sobre la maqueta v2
-# fecha: 2026-10-24T12:01:18-03:00
-# base: e8af994
+# Línea base M10 — gates sobre maqueta + banco de tokens
+# fecha: 2026-10-24T12:08:25-03:00
+# base: cf1ac05
 # comando: python3 app/pruebas/correr-gates.py
 
 
 === gate-ui.py ===
-TABLERO: /home/billibu/sede/trabajo/trabajos/T-46-mimo-v2-base/borradores/clon/app/maqueta/index.html
+TABLERO: /home/billibu/sede/trabajo/trabajos/T-47-mimo-m10-tokens/borradores/clon/app/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -30,7 +30,7 @@ TABLERO: /home/billibu/sede/trabajo/trabajos/T-46-mimo-v2-base/borradores/clon/a
 [OK] 411: el panel se abre como cajón
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui: 0 choque(s).
-TABLERO: /tmp/mimo-gate-ui-qg4u_4hr/maqueta/index.html
+TABLERO: /tmp/mimo-gate-ui-9yik8buz/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -57,8 +57,71 @@ TABLERO: /tmp/mimo-gate-ui-qg4u_4hr/maqueta/index.html
 RESUMEN gate-ui/rota: 3 choque(s).
 DEMO: buena 0, rota 1. El gate discrimina.
 
+=== gate-diseno.py ===
+[OK] tokens: 5 tamaños — 5
+[OK] tokens: 8 espacios — 8
+[OK] tokens: 3 radios — 3
+[OK] tokens: 1 duración — 1
+[OK] base.css: 0 hex fuera de tokens — []
+[OK] temas: 9 ficheros — 9
+[OK] tema clasico: selector [data-tema]
+[OK] tema clasico: paleta completa — faltan []
+[OK] tema deepsea: selector [data-tema]
+[OK] tema deepsea: paleta completa — faltan []
+[OK] tema medianoche: selector [data-tema]
+[OK] tema medianoche: paleta completa — faltan []
+[OK] tema negro: selector [data-tema]
+[OK] tema negro: paleta completa — faltan []
+[OK] tema vino: selector [data-tema]
+[OK] tema vino: paleta completa — faltan []
+[OK] tema bosque: selector [data-tema]
+[OK] tema bosque: paleta completa — faltan []
+[OK] tema sepia: selector [data-tema]
+[OK] tema sepia: paleta completa — faltan []
+[OK] tema pinky: selector [data-tema]
+[OK] tema pinky: paleta completa — faltan []
+[OK] tema alto-contraste: selector [data-tema]
+[OK] tema alto-contraste: paleta completa — faltan []
+[OK] 1440: banco sin desborde — 0px
+[OK] 1440: consola limpia — []
+[OK] banco: 9 muestras de tema — 9
+[OK] contraste clasico: mínimo 4.55 — [('fg/bg', 'rgb(30, 41, 59)', 'rgb(248, 250, 252)'), ('muted/bg', 'rgb(100, 116, 139)', 'rgb(248, 250, 252)'), ('fg/sup', 'rgb(30, 41, 59)', 'rgb(255, 255, 255)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(29, 78, 216)')]
+[OK] contraste deepsea: mínimo 5.36 — [('fg/bg', 'rgb(214, 228, 240)', 'rgb(7, 26, 43)'), ('muted/bg', 'rgb(139, 163, 186)', 'rgb(7, 26, 43)'), ('fg/sup', 'rgb(214, 228, 240)', 'rgb(15, 42, 64)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(14, 116, 144)')]
+[OK] contraste medianoche: mínimo 7.78 — [('fg/bg', 'rgb(227, 227, 227)', 'rgb(19, 19, 20)'), ('muted/bg', 'rgb(176, 182, 188)', 'rgb(19, 19, 20)'), ('fg/sup', 'rgb(227, 227, 227)', 'rgb(30, 31, 32)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(11, 79, 168)')]
+[OK] contraste negro: mínimo 6.82 — [('fg/bg', 'rgb(255, 255, 255)', 'rgb(30, 30, 30)'), ('muted/bg', 'rgb(173, 171, 167)', 'rgb(30, 30, 30)'), ('fg/sup', 'rgb(255, 255, 255)', 'rgb(46, 46, 46)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(28, 90, 168)')]
+[OK] contraste vino: mínimo 5.37 — [('fg/bg', 'rgb(240, 222, 223)', 'rgb(21, 10, 12)'), ('muted/bg', 'rgb(171, 134, 137)', 'rgb(21, 10, 12)'), ('fg/sup', 'rgb(240, 222, 223)', 'rgb(38, 19, 23)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(29, 7, 11)', 'rgb(201, 106, 125)')]
+[OK] contraste bosque: mínimo 5.53 — [('fg/bg', 'rgb(20, 32, 26)', 'rgb(238, 244, 238)'), ('muted/bg', 'rgb(85, 101, 92)', 'rgb(238, 244, 238)'), ('fg/sup', 'rgb(20, 32, 26)', 'rgb(255, 255, 255)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(22, 107, 66)')]
+[OK] contraste sepia: mínimo 4.88 — [('fg/bg', 'rgb(59, 52, 40)', 'rgb(244, 236, 216)'), ('muted/bg', 'rgb(111, 101, 81)', 'rgb(244, 236, 216)'), ('fg/sup', 'rgb(59, 52, 40)', 'rgb(250, 244, 228)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(111, 60, 32)')]
+[OK] contraste pinky: mínimo 7.07 — [('fg/bg', 'rgb(63, 16, 36)', 'rgb(255, 255, 255)'), ('muted/bg', 'rgb(122, 74, 95)', 'rgb(255, 255, 255)'), ('fg/sup', 'rgb(63, 16, 36)', 'rgb(255, 255, 255)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(143, 22, 83)')]
+[OK] contraste alto-contraste: mínimo 19.56 — [('fg/bg', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'), ('muted/bg', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'), ('fg/sup', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(0, 0, 0)', 'rgb(255, 255, 0)')]
+[OK] banco: Aplicar cambia data-tema del body
+[OK] 1100: banco sin desborde — 0px
+[OK] 1100: consola limpia — []
+[OK] 411: banco sin desborde — 0px
+[OK] 411: consola limpia — []
+RESUMEN gate-diseno: 0 choque(s).
+[OK] 1440: banco sin desborde — 0px
+[OK] 1440: consola limpia — []
+[OK] banco: 9 muestras de tema — 9
+[ROJO] contraste clasico: mínimo 1.00 — [('fg/bg', 'rgb(248, 250, 252)', 'rgb(248, 250, 252)'), ('muted/bg', 'rgb(100, 116, 139)', 'rgb(248, 250, 252)'), ('fg/sup', 'rgb(248, 250, 252)', 'rgb(255, 255, 255)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(29, 78, 216)')]
+[OK] contraste deepsea: mínimo 5.36 — [('fg/bg', 'rgb(214, 228, 240)', 'rgb(7, 26, 43)'), ('muted/bg', 'rgb(139, 163, 186)', 'rgb(7, 26, 43)'), ('fg/sup', 'rgb(214, 228, 240)', 'rgb(15, 42, 64)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(14, 116, 144)')]
+[OK] contraste medianoche: mínimo 7.78 — [('fg/bg', 'rgb(227, 227, 227)', 'rgb(19, 19, 20)'), ('muted/bg', 'rgb(176, 182, 188)', 'rgb(19, 19, 20)'), ('fg/sup', 'rgb(227, 227, 227)', 'rgb(30, 31, 32)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(11, 79, 168)')]
+[OK] contraste negro: mínimo 6.82 — [('fg/bg', 'rgb(255, 255, 255)', 'rgb(30, 30, 30)'), ('muted/bg', 'rgb(173, 171, 167)', 'rgb(30, 30, 30)'), ('fg/sup', 'rgb(255, 255, 255)', 'rgb(46, 46, 46)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(28, 90, 168)')]
+[OK] contraste vino: mínimo 5.37 — [('fg/bg', 'rgb(240, 222, 223)', 'rgb(21, 10, 12)'), ('muted/bg', 'rgb(171, 134, 137)', 'rgb(21, 10, 12)'), ('fg/sup', 'rgb(240, 222, 223)', 'rgb(38, 19, 23)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(29, 7, 11)', 'rgb(201, 106, 125)')]
+[OK] contraste bosque: mínimo 5.53 — [('fg/bg', 'rgb(20, 32, 26)', 'rgb(238, 244, 238)'), ('muted/bg', 'rgb(85, 101, 92)', 'rgb(238, 244, 238)'), ('fg/sup', 'rgb(20, 32, 26)', 'rgb(255, 255, 255)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(22, 107, 66)')]
+[OK] contraste sepia: mínimo 4.88 — [('fg/bg', 'rgb(59, 52, 40)', 'rgb(244, 236, 216)'), ('muted/bg', 'rgb(111, 101, 81)', 'rgb(244, 236, 216)'), ('fg/sup', 'rgb(59, 52, 40)', 'rgb(250, 244, 228)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(111, 60, 32)')]
+[OK] contraste pinky: mínimo 7.07 — [('fg/bg', 'rgb(63, 16, 36)', 'rgb(255, 255, 255)'), ('muted/bg', 'rgb(122, 74, 95)', 'rgb(255, 255, 255)'), ('fg/sup', 'rgb(63, 16, 36)', 'rgb(255, 255, 255)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(255, 255, 255)', 'rgb(143, 22, 83)')]
+[OK] contraste alto-contraste: mínimo 19.56 — [('fg/bg', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'), ('muted/bg', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'), ('fg/sup', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'), ('ac-txt-fuerte/ac-fuerte', 'rgb(0, 0, 0)', 'rgb(255, 255, 0)')]
+[OK] banco: Aplicar cambia data-tema del body
+[OK] 1100: banco sin desborde — 0px
+[OK] 1100: consola limpia — []
+[OK] 411: banco sin desborde — 0px
+[OK] 411: consola limpia — []
+RESUMEN gate-diseno/roto: 1 choque(s).
+DEMO: buena 0, rota 1. El gate discrimina.
+
 === gate-datos.py ===
-RESPALDO: /home/billibu/sede/trabajo/trabajos/T-46-mimo-v2-base/borradores/clon/app/pruebas/fixtures/respaldo-sintetico.json
+RESPALDO: /home/billibu/sede/trabajo/trabajos/T-47-mimo-m10-tokens/borradores/clon/app/pruebas/fixtures/respaldo-sintetico.json
 [OK] v3: el documento declara v=3
 [OK] v3: meta.migrado_desde=formato2
 [OK] cursos: 87 de 87
@@ -91,7 +154,8 @@ RESUMEN gate-bloques: 0 choque(s).
 [OK] roto: sin tiempo, pomodoro queda huérfano — ["crono: padre 'tiempo' no existe", "temporizador: padre 'tiempo' no existe"]
 DEMO: buena 0, huérfano detectado. El gate discrimina.
 
-=== RESUMEN M02 ===
+=== RESUMEN GATES ===
 gate-ui.py: VERDE (0)
+gate-diseno.py: VERDE (0)
 gate-datos.py: VERDE (0)
 gate-bloques.py: VERDE (0)

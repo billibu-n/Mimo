@@ -1,0 +1,22 @@
+/* ============================================================================
+   tema-alto-contraste.css — tema Alto contraste.
+
+   Negro y blanco puros, acento amarillo, foco cian.
+   Solo paleta y foco; la forma vive en tokens.css y base.css. Este tema sí pisa
+   las formas: radios a 0 y movimiento casi nulo, para quien tiene poca visión.
+   ============================================================================ */
+
+[data-tema="alto-contraste"]{
+  --fg:#ffffff; --muted:#ffffff; --line:#ffffff; --bg:#000000; --ac:#ffff00;
+  --ok:#66ff99; --warn:#ffff00; --bad:#ff6666; --q:#66ffff;
+  --sup:#000000; --sup2:#1a1a1a; --sup3:#000000; --line2:#ffffff; --pista:#ffffff;
+  --muted2:#ffffff; --ac-txt:#000000; --ac-txt-fuerte:#000000; --ac-fuerte:#ffff00;
+  --info-bg:#000000; --hoy-bg:#000000;
+  --pill-ok-bg:#000000; --pill-ok-fg:#66ff99;
+  --pill-warn-bg:#000000; --pill-warn-fg:#ffff00;
+  --pill-bad-bg:#000000; --pill-bad-fg:#ff6666;
+  --sombra:none;
+  --foco:0 0 0 2px #000000, 0 0 0 4px #00ffff;
+  --r-sm:0px; --r-md:0px; --r-lg:0px;
+  --t:.01ms; --curva:linear;
+}

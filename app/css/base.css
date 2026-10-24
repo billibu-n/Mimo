@@ -1,0 +1,170 @@
+/* ============================================================================
+   base.css — la piel del viejo, sin colores de tema.
+
+   Estructura y forma del shell: topbar 53, navbar 55, contenido 1240, tarjeta
+   14, KPI 68, rail 222, panel 320. Los colores salen de tokens.css + el tema.
+   No es todavía la app: es la base que M11/M12 montan.
+   ============================================================================ */
+
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-size:var(--fs-md);
+  line-height:var(--linea);
+  color:var(--fg);
+  background:var(--bg);
+  transition:background var(--t) var(--curva),color var(--t) var(--curva);
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:none;box-shadow:var(--foco)}
+[hidden]{display:none!important}
+
+.topbar{
+  height:var(--alto-topbar);
+  display:flex;align-items:center;gap:var(--sp-2);
+  padding:0 var(--sp-4);
+  background:var(--sup);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--sombra);
+  position:sticky;top:0;z-index:20;
+}
+.topbar .marca{font-weight:700;font-size:var(--fs-lg);letter-spacing:.02em;color:var(--fg)}
+.topbar .badge{
+  font-size:var(--fs-xs);color:var(--muted);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:0 var(--sp-2);
+}
+.topbar .crece{flex:1}
+.icono-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:var(--sp-7);height:var(--sp-7);
+  border:1px solid transparent;border-radius:var(--r-sm);
+  background:transparent;color:var(--muted);
+  transition:background var(--t) var(--curva),color var(--t) var(--curva);
+}
+.icono-btn:hover{background:var(--sup2);color:var(--fg)}
+
+.navbar{
+  height:var(--alto-navbar);
+  display:flex;align-items:center;gap:var(--sp-2);
+  padding:0 var(--sp-4);
+  background:var(--bg);
+  border-bottom:1px solid var(--line);
+  position:sticky;top:var(--alto-topbar);z-index:19;
+}
+.tabs{display:flex;align-items:center;gap:var(--sp-1);overflow-x:auto;scrollbar-width:thin}
+.tab{
+  display:inline-flex;align-items:center;gap:var(--sp-1);
+  height:calc(var(--alto-navbar) - var(--sp-3));
+  padding:0 var(--sp-3);
+  border:1px solid transparent;border-radius:var(--r-sm);
+  background:transparent;color:var(--muted);
+  font-size:var(--fs-sm);white-space:nowrap;
+  transition:background var(--t) var(--curva),color var(--t) var(--curva),border-color var(--t) var(--curva);
+}
+.tab:hover{background:var(--sup2);color:var(--fg)}
+.tab.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac);font-weight:600}
+
+.shell{display:flex;align-items:stretch;min-height:calc(100vh - var(--alto-topbar) - var(--alto-navbar))}
+.contenido{
+  flex:1;min-width:0;
+  width:100%;max-width:var(--ancho-contenido);
+  margin:0 auto;
+  padding:var(--sp-4);
+}
+.layout{display:grid;grid-template-columns:var(--ancho-rail) minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.rail{
+  width:var(--ancho-rail);
+  background:var(--sup);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:var(--sp-3);
+  position:sticky;top:calc(var(--alto-topbar) + var(--alto-navbar) + var(--sp-3));
+}
+.rail h3{margin:0 0 var(--sp-2);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.rail hr{border:0;border-top:1px solid var(--line2);margin:var(--sp-3) 0}
+
+.panel{
+  width:var(--ancho-panel);flex:none;
+  background:var(--sup);border-left:1px solid var(--line);
+  padding:var(--sp-3);
+}
+
+.card{
+  background:var(--sup);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:var(--sp-4);
+  box-shadow:var(--sombra);
+}
+.card h2{margin:0 0 var(--sp-1);font-size:var(--fs-lg);line-height:1.2}
+.muted{color:var(--muted);font-size:var(--fs-sm)}
+.kpi{
+  min-height:var(--alto-kpi);
+  display:flex;flex-direction:column;justify-content:center;
+  background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:var(--sp-2) var(--sp-3);
+}
+.kpi b{font-size:var(--fs-xl);line-height:1.1;color:var(--fg)}
+.kpi span{font-size:var(--fs-xs);color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-2);margin-bottom:var(--sp-4)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-1);
+  min-height:var(--sp-7);
+  padding:0 var(--sp-3);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--sup);color:var(--fg);
+  font-size:var(--fs-sm);
+  transition:background var(--t) var(--curva),color var(--t) var(--curva),border-color var(--t) var(--curva);
+}
+.btn:hover{background:var(--sup2)}
+.btn-primario{background:var(--ac-fuerte);border-color:var(--ac-fuerte);color:var(--ac-txt-fuerte);font-weight:600}
+.btn-primario:hover{filter:brightness(1.08)}
+.btn-peligro{color:var(--bad);border-color:var(--line)}
+.btn-peligro:hover{background:var(--pill-bad-bg)}
+
+.pill{
+  display:inline-flex;align-items:center;
+  border-radius:var(--r-sm);padding:0 var(--sp-2);
+  background:var(--sup2);color:var(--muted2);
+  font-size:var(--fs-xs);white-space:nowrap;
+}
+.pill-ok{background:var(--pill-ok-bg);color:var(--pill-ok-fg)}
+.pill-warn{background:var(--pill-warn-bg);color:var(--pill-warn-fg)}
+.pill-bad{background:var(--pill-bad-bg);color:var(--pill-bad-fg)}
+
+.entrada{
+  width:100%;min-height:var(--sp-7);
+  padding:0 var(--sp-2);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--sup);color:var(--fg);
+}
+
+/* El banco de tokens: cada muestra es un tema completo dentro de la página. */
+.muestra{
+  background:var(--bg);color:var(--fg);
+  border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:var(--sp-4);
+}
+.muestra .card{margin-top:var(--sp-3)}
+.muestra .fila{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
+
+@media (max-width:1255px){
+  .panel{position:fixed;right:0;top:0;bottom:0;z-index:40;transform:translateX(100%);transition:transform var(--t) var(--curva)}
+  body.panel-abierto .panel{transform:translateX(0)}
+}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .rail{width:auto;position:static;max-height:none}
+  .contenido{padding:var(--sp-3)}
+  .topbar,.navbar{padding:0 var(--sp-2)}
+}
+@media (max-width:520px){
+  .topbar .badge,.topbar .oculto-movil{display:none}
+  .contenido{padding:var(--sp-2)}
+}
+
+.muestras{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-4);margin-top:var(--sp-4)}
+@media (max-width:520px){.muestras{grid-template-columns:1fr}}

@@ -1,0 +1,19 @@
+/* ============================================================================
+   tema-medianoche.css — tema Medianoche.
+
+   Fondos casi negros y un azul claro suave.
+   Solo paleta y foco; la forma vive en tokens.css y base.css.
+   ============================================================================ */
+
+[data-tema="medianoche"]{
+  --fg:#e3e3e3; --muted:#b0b6bc; --line:#444746; --bg:#131314; --ac:#8ab4f8;
+  --ok:#81c995; --warn:#fdd663; --bad:#f28b82; --q:#c58af9;
+  --sup:#1e1f20; --sup2:#282a2c; --sup3:#1b1c1d; --line2:#303336; --pista:#3c4043;
+  --muted2:#bdc1c6; --ac-txt:#202124; --ac-txt-fuerte:#ffffff; --ac-fuerte:#0b4fa8;
+  --info-bg:#1f2b3d; --hoy-bg:#1f2b3d;
+  --pill-ok-bg:#0f2a1c; --pill-ok-fg:#81c995;
+  --pill-warn-bg:#3a2f14; --pill-warn-fg:#fdd663;
+  --pill-bad-bg:#3c1f22; --pill-bad-fg:#f28b82;
+  --sombra:0 1px 2px rgb(0 0 0 / .35);
+  --foco:0 0 0 2px #1e1f20, 0 0 0 4px #8ab4f8;
+}
