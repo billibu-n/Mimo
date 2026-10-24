@@ -41,10 +41,10 @@
 
   function porDefecto() {
     return {
-      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [],
+      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [],
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true },
-      notaSel: null, tareaSel: null, eventoSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
+      notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
   function leer() {
@@ -59,6 +59,7 @@
           if (!Array.isArray(d.instalados)) d.instalados = [];
           if (!Array.isArray(d.tareas)) d.tareas = [];
           if (!Array.isArray(d.notas)) d.notas = [];
+          if (!Array.isArray(d.cursos)) d.cursos = [];
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
@@ -161,6 +162,23 @@
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || "Sin título"); }
   function menuDeContexto(el) {
+    var rEl = el.closest("[data-ramo]");
+    if (rEl) {
+      var r = ramoPorCodigo(rEl.getAttribute("data-ramo"));
+      if (!r) return null;
+      return { titulo: menuTitulo("Ramo", r.codigo + " — " + r.nombre), items: [
+        { accion: "ramo-abrir", texto: "Abrir ficha", run: function () {
+          estado.ramoSel = r.codigo; estado.panel.malla = "detalle";
+          guardar(); pintarMalla(); pintarPanel();
+          if (window.innerWidth <= 1255) abrirPanel();
+        } },
+        { accion: "ramo-editar", texto: "Editar", run: function () { abrirFormularioRamo(r); } },
+        { accion: "ramo-estado", texto: r.aprobado ? "Reabrir" : "Marcar aprobado", run: function () { alternarRamo(r.codigo); } },
+        { sep: true },
+        { accion: "ramo-borrar", texto: "Borrar ramo", peligro: true, run: function () { borrarRamo(r.codigo); } }
+      ] };
+    }
+
     var nEl = el.closest("[data-nota]");
     if (nEl) {
       var n = notaPorId(nEl.getAttribute("data-nota"));
@@ -260,6 +278,12 @@
           { accion: "zona-periodo", texto: "Nuevo periodo", run: abrirPeriodo }
         ] };
       }
+      if (zona === "malla") {
+        return { titulo: "Malla", items: [
+          { accion: "zona-ramo", texto: "Nuevo ramo", run: function () { abrirFormularioRamo(null); } },
+          { accion: "zona-importar-malla", texto: "Importar malla", run: function () { $("#archivo-malla").click(); } }
+        ] };
+      }
     }
     return null;
   }
@@ -330,6 +354,7 @@
       s.hidden = s.getAttribute("data-pantalla") !== id;
     });
     pintarTabs();
+    if (id === "malla") pintarMalla();
     pintarPanel();
     if (window.innerWidth <= 1255) cerrarPanel();
   }
@@ -640,6 +665,249 @@
     guardar(); pintarTareas(); pintarPanel(); aviso("Tarea borrada.");
   }
 
+  /* ---- U4a: Malla de cursos, niveles, prerrequisitos y créditos ---- */
+  var formRamoId = null, mallaBusqueda = "", mallaFiltro = "todos", mallaRapido = false;
+
+  function normalizarCursos() {
+    var vistos = {}, out = [];
+    (estado.cursos || []).forEach(function (c) {
+      if (!c || typeof c !== "object") return;
+      var cod = String(c.codigo || "").trim().toUpperCase();
+      if (!cod || vistos[cod]) return;
+      vistos[cod] = 1;
+      var reqs = Array.isArray(c.requisitos) ? c.requisitos : [];
+      reqs = reqs.map(function (r) { return String(r || "").trim().toUpperCase(); })
+        .filter(function (r) { return r && r !== cod; });
+      reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
+      var grupos = Array.isArray(c.requisitos_o) ? c.requisitos_o : [];
+      grupos = grupos.map(function (g) {
+        var lista = Array.isArray(g) ? g : [g];
+        return lista.map(function (r) { return String(r || "").trim().toUpperCase(); })
+          .filter(function (r) { return r && r !== cod; });
+      }).filter(function (g) { return g.length; });
+      var nivel = parseInt(c.nivel, 10); if (!nivel || nivel < 1) nivel = 1; if (nivel > 99) nivel = 99;
+      out.push({
+        codigo: cod, nombre: String(c.nombre || cod).trim() || cod,
+        creditos: Math.max(0, parseInt(c.creditos, 10) || 0), nivel: nivel,
+        requisitos: reqs, requisitos_o: grupos,
+        aprobado: !!c.aprobado, enCurso: !!c.enCurso && !c.aprobado
+      });
+    });
+    estado.cursos = out;
+  }
+  function ramoPorCodigo(cod) {
+    var c = String(cod || "").trim().toUpperCase();
+    return (estado.cursos || []).filter(function (x) { return x.codigo === c; })[0] || null;
+  }
+  function creditosDe(c) { return Number(c.creditos) || 0; }
+  function etiquetaNivel(n) { return Number(n) === 99 ? "Electivos" : "Nivel " + n; }
+  function requisitosTexto(c) {
+    var reqs = (c.requisitos || []).slice();
+    (c.requisitos_o || []).forEach(function (g) { reqs.push(g.join(" o ")); });
+    return reqs.join(" · ");
+  }
+  // aprobado manda; si no, en curso; si no, disponible solo cuando TODOS los requisitos
+  // (y al menos uno de cada grupo "o") están aprobados. Un código que no existe bloquea.
+  function estadoDeRamo(c, visto) {
+    if (!c) return "bloqueado";
+    if (c.aprobado) return "aprobado";
+    if (visto && visto[c.codigo]) return "bloqueado";
+    if (c.enCurso) return "curso";
+    var reqs = c.requisitos || [], grupos = c.requisitos_o || [];
+    if (!reqs.length && !grupos.length) return "disponible";
+    var v2 = Object.assign({}, visto || {}); v2[c.codigo] = 1;
+    var ok = reqs.every(function (r) {
+      var x = ramoPorCodigo(r);
+      return !!x && estadoDeRamo(x, v2) === "aprobado";
+    });
+    (grupos || []).forEach(function (g) {
+      if (!ok) return;
+      var uno = g.some(function (r) {
+        var x = ramoPorCodigo(r);
+        return !!x && estadoDeRamo(x, v2) === "aprobado";
+      });
+      if (!uno) ok = false;
+    });
+    return ok ? "disponible" : "bloqueado";
+  }
+  function faltantesDe(c) {
+    var out = [];
+    (c.requisitos || []).forEach(function (r) {
+      var x = ramoPorCodigo(r);
+      if (!x || estadoDeRamo(x) !== "aprobado") out.push(r);
+    });
+    (c.requisitos_o || []).forEach(function (g) {
+      var uno = g.some(function (r) { var x = ramoPorCodigo(r); return !!x && estadoDeRamo(x) === "aprobado"; });
+      if (!uno) out.push(g.join(" o "));
+    });
+    return out;
+  }
+  function pintarMalla() {
+    var tabla = $("#malla-tablero"); if (!tabla) return;
+    normalizarCursos();
+    var cursos = estado.cursos, total = 0, aprobCred = 0, aprobN = 0, cursoN = 0, libres = 0;
+    cursos.forEach(function (c) {
+      var e = estadoDeRamo(c);
+      total += creditosDe(c);
+      if (e === "aprobado") { aprobCred += creditosDe(c); aprobN++; }
+      if (e === "curso") cursoN++;
+      if (e === "disponible") libres++;
+    });
+    var pct = total ? Math.round(aprobCred / total * 100) : 0;
+    if ($("#malla-k-creditos")) $("#malla-k-creditos").textContent = aprobCred + " / " + total;
+    if ($("#malla-k-pct")) $("#malla-k-pct").textContent = pct + " %";
+    if ($("#malla-k-ramos")) $("#malla-k-ramos").textContent = aprobN + (cursoN ? " · " + cursoN + " curso" + (cursoN === 1 ? "" : "s") : "");
+    if ($("#malla-k-libres")) $("#malla-k-libres").textContent = String(libres);
+    var vacio = $("#malla-vacio");
+    if (!cursos.length) {
+      if (vacio) vacio.hidden = false;
+      tabla.innerHTML = "";
+      return;
+    }
+    if (vacio) vacio.hidden = true;
+    var q = mallaBusqueda.toLowerCase();
+    var visibles = cursos.filter(function (c) {
+      var e = estadoDeRamo(c);
+      if (mallaFiltro === "aprobados" && e !== "aprobado") return false;
+      if (mallaFiltro === "disponibles" && e !== "disponible") return false;
+      if (mallaFiltro === "bloqueados" && e !== "bloqueado") return false;
+      if (mallaFiltro === "curso" && e !== "curso") return false;
+      return !q || (c.codigo + " " + c.nombre).toLowerCase().indexOf(q) !== -1;
+    });
+    if (!visibles.length) {
+      tabla.innerHTML = '<p class="muted malla-sin">Ningún ramo coincide con el filtro.</p>';
+      return;
+    }
+    var niveles = {};
+    visibles.forEach(function (c) { (niveles[c.nivel] = niveles[c.nivel] || []).push(c); });
+    tabla.innerHTML = Object.keys(niveles).map(Number).sort(function (a, b) { return a - b; }).map(function (n) {
+      var lista = niveles[n].slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; });
+      var cr = lista.reduce(function (a, c) { return a + creditosDe(c); }, 0);
+      var cards = lista.map(function (c) {
+        var e = estadoDeRamo(c), req = requisitosTexto(c);
+        var faltan = faltantesDe(c);
+        var titulo = c.nombre + (req ? " · requiere " + req : "") + (faltan.length ? " · faltan: " + faltan.join(", ") : "");
+        return '<button class="ramo-card ramo-card--' + e + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
+          '<span class="ramo-card__top"><b>' + esc(c.codigo) + '</b><span class="ramo-card__est">' + e + "</span></span>" +
+          '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
+          '<span class="ramo-card__meta">' + creditosDe(c) + " cr · " + esc(etiquetaNivel(c.nivel)) + "</span>" +
+          (req ? '<span class="ramo-card__req">Requiere: ' + esc(req) + "</span>" : "") +
+          (faltan.length && e !== "aprobado" ? '<span class="ramo-card__falta">Falta: ' + esc(faltan.join(", ")) + "</span>" : "") +
+          "</button>";
+      }).join("");
+      return '<section class="malla-nivel"><h3>' + esc(etiquetaNivel(n)) +
+        " <span>" + lista.length + " ramo" + (lista.length === 1 ? "" : "s") + " · " + cr + " cr</span></h3>" +
+        '<div class="malla-ramos">' + cards + "</div></section>";
+    }).join("");
+    $$("#malla-tablero [data-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var cod = b.getAttribute("data-ramo");
+        if (mallaRapido) { alternarRamo(cod); return; }
+        estado.ramoSel = cod; estado.panel.malla = "detalle";
+        guardar(); pintarMalla(); pintarPanel();
+        if (window.innerWidth <= 1255) abrirPanel();
+      });
+    });
+  }
+  function alternarRamo(cod) {
+    var c = ramoPorCodigo(cod); if (!c) return;
+    c.aprobado = !c.aprobado;
+    if (c.aprobado) c.enCurso = false;
+    guardar(); pintarMalla(); pintarPanel();
+    aviso(c.codigo + (c.aprobado ? " aprobado." : " reabierto."));
+  }
+  function abrirFormularioRamo(c) {
+    normalizarCursos();
+    formRamoId = c ? c.codigo : null;
+    $("#ramo-codigo").value = c ? c.codigo : "";
+    $("#ramo-nombre").value = c ? c.nombre : "";
+    $("#ramo-creditos").value = c ? c.creditos : 6;
+    $("#ramo-nivel").value = c ? c.nivel : 1;
+    $("#ramo-requisitos").value = c ? (c.requisitos || []).join(", ") : "";
+    $("#ramo-aprobado").checked = !!(c && c.aprobado);
+    $("#ramo-curso").checked = !!(c && c.enCurso);
+    $("#ramo-form").hidden = false;
+    $("#ramo-form button[type=submit]").textContent = c ? "Guardar" : "Crear";
+    $("#ramo-codigo").focus(); $("#ramo-codigo").select();
+  }
+  function cerrarFormularioRamo() {
+    var f = $("#ramo-form"); if (f) f.hidden = true;
+    formRamoId = null;
+  }
+  function borrarRamo(cod) {
+    normalizarCursos();
+    var c = ramoPorCodigo(cod); if (!c) return;
+    var dependientes = estado.cursos.filter(function (x) {
+      return (x.requisitos || []).indexOf(cod) !== -1 ||
+        (x.requisitos_o || []).some(function (g) { return g.indexOf(cod) !== -1; });
+    }).length;
+    if (!window.confirm("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"?" +
+      (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""))) return;
+    estado.cursos = estado.cursos.filter(function (x) { return x.codigo !== cod; });
+    estado.cursos.forEach(function (x) {
+      x.requisitos = (x.requisitos || []).filter(function (r) { return r !== cod; });
+      x.requisitos_o = (x.requisitos_o || []).map(function (g) {
+        return g.filter(function (r) { return r !== cod; });
+      }).filter(function (g) { return g.length; });
+    });
+    if (estado.ramoSel === cod) estado.ramoSel = null;
+    guardar(); pintarMalla(); pintarPanel(); aviso("Ramo borrado.");
+  }
+  function cursosDesdeDoc(doc) {
+    var raw = [], aprob = {};
+    if (doc && doc.datos && Array.isArray(doc.datos.cursos)) {
+      raw = doc.datos.cursos;
+      var ap = doc.datos.aprobados;
+      if (Array.isArray(ap)) ap.forEach(function (c) { aprob[c] = 1; });
+      else if (ap && typeof ap === "object") aprob = ap;
+    } else if (doc && doc.estado && doc.estado.catalogo && typeof doc.estado.catalogo === "object") {
+      raw = Object.keys(doc.estado.catalogo).map(function (k) {
+        return Object.assign({ codigo: k }, doc.estado.catalogo[k]);
+      });
+      aprob = doc.estado.aprobados || {};
+    } else if (doc && Array.isArray(doc.cursos)) {
+      raw = doc.cursos;
+    } else return null;
+    return raw.map(function (c) {
+      if (!c || typeof c !== "object") return null;
+      var cod = String(c.codigo || c.code || "").trim().toUpperCase();
+      if (!cod) return null;
+      return {
+        codigo: cod, nombre: c.nombre || c.name || cod,
+        creditos: parseInt(c.creditos || c.credits, 10) || 0,
+        nivel: parseInt(c.nivel || c.semestre_num, 10) || 1,
+        requisitos: Array.isArray(c.requisitos) ? c.requisitos : [],
+        requisitos_o: Array.isArray(c.requisitos_o) ? c.requisitos_o : [],
+        aprobado: !!(c.aprobado || (Array.isArray(aprob) ? aprob.indexOf(cod) !== -1 : aprob[cod])),
+        enCurso: !!c.enCurso || c.estado === "curso"
+      };
+    }).filter(Boolean);
+  }
+  function importarMalla(file) {
+    var lector = new FileReader();
+    lector.onload = function () {
+      try {
+        var cursos = cursosDesdeDoc(JSON.parse(lector.result));
+        if (!cursos || !cursos.length) { aviso("El archivo no trae cursos de malla."); return; }
+        if (estado.cursos.length && !window.confirm("¿Reemplazar la malla actual (" + estado.cursos.length +
+          " ramos) por " + cursos.length + "?")) return;
+        estado.cursos = cursos; estado.ramoSel = null;
+        normalizarCursos(); guardar(); pintarMalla(); pintarPanel();
+        aviso("Malla importada: " + estado.cursos.length + " ramos.");
+      } catch (e) { aviso("No se pudo leer la malla."); }
+    };
+    lector.readAsText(file);
+  }
+  function exportarMalla() {
+    normalizarCursos();
+    var blob = new Blob([JSON.stringify({ v: 1, tipo: "mimo-malla", cursos: estado.cursos }, null, 2)],
+      { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "mimo-malla.json"; a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    aviso("Malla exportada.");
+  }
+
   function normalizarNotas() {
     estado.notas = (estado.notas || []).map(function (n, i) {
       return {
@@ -863,7 +1131,19 @@
       var t = tareaPorId(estado.tareaSel);
       var n = notaActual();
       var ev = eventoPorId(estado.eventoSel);
-      if (pantalla === "calendario" && ev) {
+      var ramo = ramoPorCodigo(estado.ramoSel);
+      if (pantalla === "malla" && ramo) {
+        var estR = estadoDeRamo(ramo), faltanR = faltantesDe(ramo), reqR = requisitosTexto(ramo);
+        html = "<h2>Ramo</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
+          '<div class="panel__bloque"><span>Estado</span><small>' + esc(estR) + "</small></div>" +
+          '<div class="panel__bloque"><span>Créditos</span><small>' + creditosDe(ramo) + "</small></div>" +
+          '<div class="panel__bloque"><span>Nivel</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +
+          (reqR ? '<div class="panel__bloque"><span>Requiere</span><small>' + esc(reqR) + "</small></div>" : "") +
+          (faltanR.length ? '<h2>Falta</h2><p class="panel__nota">' + esc(faltanR.join(", ")) + "</p>" : "") +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">Editar</button>' +
+          '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.aprobado ? "Reabrir" : "Aprobar") + "</button>" +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">Borrar</button></div>';
+      } else if (pantalla === "calendario" && ev) {
         html = "<h2>Evento</h2><h3>" + esc(ev.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>Fecha</span><small>' + esc(ev.fecha) + "</small></div>" +
           (ev.hora ? '<div class="panel__bloque"><span>Hora</span><small>' + esc(ev.hora) + "</small></div>" : "") +
@@ -894,7 +1174,7 @@
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">Abrir</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">Borrar</button></div>';
       } else {
-        html = '<h2>Detalle</h2><p class="panel__nota">Selecciona una tarea o una nota. El detalle vive aquí, no en un modal que tapa la lista.</p>';
+        html = '<h2>Detalle</h2><p class="panel__nota">Selecciona una tarea, una nota o un ramo. El detalle vive aquí, no en un modal que tapa la lista.</p>';
       }
     } else if (tab === "notas") {
       var nn = notaActual();
@@ -911,6 +1191,7 @@
         calendario: [estado.eventos.length + " eventos", estado.eventos.length ? "El próximo evento aparece en la agenda." : "Sin eventos este mes."],
         tareas: [estado.tareas.length + " tareas", estado.tareas.filter(function (x) { return !x.hecha; }).length + " abiertas"],
         notas: [estado.notas.length + " notas", "Lista y editor en la misma sección."],
+        malla: [(estado.cursos || []).length + " ramos", "Cursos, niveles, prerrequisitos y créditos."],
         tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
         ajustes: ["9 temas", "Apariencia, paneles, bloques y laboratorio."]
       }[pantalla] || ["Sin contexto", "Esta sección no declara contexto."];
@@ -944,6 +1225,15 @@
     $$("#panel-cuerpo [data-borrar-nota]").forEach(function (b) {
       b.addEventListener("click", function () { borrarNota(b.getAttribute("data-borrar-nota")); });
     });
+    $$("#panel-cuerpo [data-editar-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(b.getAttribute("data-editar-ramo"))); });
+    });
+    $$("#panel-cuerpo [data-toggle-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () { alternarRamo(b.getAttribute("data-toggle-ramo")); });
+    });
+    $$("#panel-cuerpo [data-borrar-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () { borrarRamo(b.getAttribute("data-borrar-ramo")); });
+    });
     var pie = $("#pie-centro");
     if (pie) pie.textContent = nombre(pantalla);
   }
@@ -974,9 +1264,9 @@
     var p = estado.prefs || {};
     var b = $("#ajustes-bloques"); if (b) b.textContent = estado.instalados.length + " bloques instalados.";
     var r = $("#ajustes-resumen");
-    if (r) r.textContent = estado.tareas.length + " tareas · " + estado.eventos.length + " eventos · " + estado.notas.length + " notas · " + (estado.periodos || []).length + " periodos.";
+    if (r) r.textContent = estado.tareas.length + " tareas · " + estado.eventos.length + " eventos · " + estado.notas.length + " notas · " + (estado.cursos || []).length + " ramos · " + (estado.periodos || []).length + " periodos.";
     var d = $("#ajustes-datos");
-    if (d) d.textContent = "Datos en este equipo: " + estado.tareas.length + " tareas, " + estado.eventos.length + " eventos, " + estado.notas.length + " notas. Nada sale de aquí.";
+    if (d) d.textContent = "Datos en este equipo: " + estado.tareas.length + " tareas, " + estado.eventos.length + " eventos, " + estado.notas.length + " notas, " + (estado.cursos || []).length + " ramos. Nada sale de aquí.";
     var pl = $("#ajustes-periodos");
     if ($("#ajustes-idioma")) $("#ajustes-idioma").textContent = "Idioma activo: " + (p.idioma === "en" ? "English" : "Español") + ". Navegación y secciones cambian en caliente.";
     if (pl) {
@@ -1132,6 +1422,10 @@
       html = estado.tareas.length ? estado.tareas.slice(0, 10).map(function (t) { return '<div class="mp-row"><span>' + (t.tipo === "proyecto" ? "▸ " : "") + esc(t.titulo) + "</span><small>" + (t.hecha ? "hecha" : "abierta") + "</small></div>"; }).join("") : '<p class="muted">Sin tareas.</p>';
     } else if (sec === "notas") {
       html = estado.notas.length ? estado.notas.slice(0, 8).map(function (n) { return '<div class="mp-row"><span>' + esc(n.titulo) + "</span><small>" + esc((n.cuerpo || "").slice(0, 24)) + "</small></div>"; }).join("") : '<p class="muted">Sin notas.</p>';
+    } else if (sec === "malla") {
+      html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
+        return '<div class="mp-row"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>" + estadoDeRamo(c) + "</small></div>";
+      }).join("") : '<p class="muted">Sin ramos.</p>';
     } else if (sec === "tiempo") {
       html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>";
     } else if (sec === "ajustes") {
@@ -1154,7 +1448,7 @@
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
-    pintarTareas(); pintarNotas();
+    pintarTareas(); pintarNotas(); pintarMalla();
     pintarTemas(); pintarTiempo(); pintarPanel();
     ir(pantalla);
 
@@ -1197,7 +1491,7 @@
           estado = Object.assign(porDefecto(), x);
           if (!estado.prefs) estado.prefs = { inicioSemana: "lunes", hora: "24", panelAncho: "320" };
           guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs();
-          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarTiempo(); pintarPeriodo(); pintarPanel();
+          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarTiempo(); pintarPeriodo(); pintarPanel();
           aviso("Respaldo importado.");
         } catch (err) { aviso("No se pudo importar el archivo."); }
       };
@@ -1300,6 +1594,56 @@
       guardar(); pintarTareas(); pintarPanel();
       aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
     });
+    $("#btn-nuevo-ramo").addEventListener("click", function () { abrirFormularioRamo(null); });
+    $("#malla-crear").addEventListener("click", function () { abrirFormularioRamo(null); });
+    $("#ramo-cancelar").addEventListener("click", cerrarFormularioRamo);
+    $("#btn-importar-malla").addEventListener("click", function () { $("#archivo-malla").click(); });
+    $("#malla-importar-vacio").addEventListener("click", function () { $("#archivo-malla").click(); });
+    $("#btn-exportar-malla").addEventListener("click", exportarMalla);
+    $("#archivo-malla").addEventListener("change", function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      importarMalla(f); e.target.value = "";
+    });
+    $("#malla-buscar").addEventListener("input", function (e) { mallaBusqueda = e.target.value; pintarMalla(); });
+    $("#malla-filtro").addEventListener("change", function (e) { mallaFiltro = e.target.value; pintarMalla(); });
+    $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
+    $("#ramo-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var cod = $("#ramo-codigo").value.trim().toUpperCase();
+      var nombre = $("#ramo-nombre").value.trim();
+      if (!cod || !nombre) { aviso("Código y nombre son obligatorios."); return; }
+      normalizarCursos();
+      var original = formRamoId ? ramoPorCodigo(formRamoId) : null;
+      var choque = ramoPorCodigo(cod);
+      if (choque && (!original || choque.codigo !== original.codigo)) { aviso("Ese código ya existe."); return; }
+      var reqs = $("#ramo-requisitos").value.split(/[,;]+/).map(function (r) {
+        return r.trim().toUpperCase();
+      }).filter(function (r) { return r && r !== cod; });
+      reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
+      if (original && original.codigo !== cod) {
+        estado.cursos.forEach(function (x) {
+          x.requisitos = x.requisitos.map(function (r) { return r === original.codigo ? cod : r; });
+          x.requisitos_o = (x.requisitos_o || []).map(function (g) {
+            return g.map(function (r) { return r === original.codigo ? cod : r; });
+          });
+        });
+        if (estado.ramoSel === original.codigo) estado.ramoSel = cod;
+        original.codigo = cod;
+      }
+      var c = original || { codigo: cod };
+      c.nombre = nombre;
+      c.creditos = Math.max(0, parseInt($("#ramo-creditos").value, 10) || 0);
+      c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
+      c.requisitos = reqs;
+      c.requisitos_o = c.requisitos_o || [];
+      c.aprobado = $("#ramo-aprobado").checked;
+      c.enCurso = $("#ramo-curso").checked && !c.aprobado;
+      if (!original) estado.cursos.push(c);
+      estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
+      guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel();
+      aviso(original ? "Ramo guardado." : "Ramo creado.");
+    });
+
     $("#btn-nueva-nota").addEventListener("click", crearNota);
     $("#btn-borrar-nota").addEventListener("click", function () {
       if (estado.notaSel) borrarNota(estado.notaSel);

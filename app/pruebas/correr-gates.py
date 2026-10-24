@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""correr-gates.py — corre los tres gates de M02 y resume.
+"""correr-gates.py — corre los gates de MIMO v2 y resume.
 
-Sale 0 solo si los tres salen 0. No oculta la salida: cada gate imprime sus
+Sale 0 solo si todos salen 0. No oculta la salida: cada gate imprime sus
 medidas y este resumen cita el código de cada uno.
 """
 from __future__ import annotations
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-GATES = ("gate-ui.py", "gate-shell.py", "gate-diseno.py", "gate-datos.py", "gate-bloques.py")
+GATES = ("gate-ui.py", "gate-shell.py", "gate-malla.py", "gate-diseno.py", "gate-datos.py", "gate-bloques.py")
 
 
 def main() -> int:

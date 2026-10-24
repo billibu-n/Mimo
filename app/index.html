@@ -209,8 +209,55 @@
     </section>
 
     <section class="seccion" data-pantalla="malla" id="p-malla" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub">Cursos, niveles, prerrequisitos y estados de la carrera.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
-      <div class="card"><h2>El motor llega con M30</h2><p class="muted">Esta pestaña ya existe y ya se puede instalar/desinstalar. La reticula, los estados y el editor se portan en M30 sin reescribirlos.</p></div>
+      <div class="sec-cab">
+        <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub">Cursos, niveles, prerrequisitos y créditos. Clic derecho en un ramo para sus acciones.</p></div>
+        <div class="sec-acciones">
+          <span class="pill">kit Academics</span>
+          <button class="btn" id="btn-importar-malla" type="button">Importar</button>
+          <button class="btn" id="btn-exportar-malla" type="button">Exportar</button>
+          <button class="btn btn-primario" id="btn-nuevo-ramo" type="button">+ Nuevo ramo</button>
+          <input type="file" id="archivo-malla" accept=".json,application/json" hidden>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><b id="malla-k-creditos">0 / 0</b><span>créditos aprobados</span></div>
+        <div class="kpi"><b id="malla-k-pct">0 %</b><span>de la carrera</span></div>
+        <div class="kpi"><b id="malla-k-ramos">0</b><span>aprobados · en curso</span></div>
+        <div class="kpi"><b id="malla-k-libres">0</b><span>ramos disponibles</span></div>
+      </div>
+      <div class="card" data-ctx-zona="malla">
+        <form class="ramo-form" id="ramo-form" hidden>
+          <input class="entrada" id="ramo-codigo" type="text" placeholder="Código (MA1001)" aria-label="Código del ramo" autocomplete="off">
+          <input class="entrada" id="ramo-nombre" type="text" placeholder="Nombre del ramo" aria-label="Nombre del ramo" autocomplete="off">
+          <input class="entrada" id="ramo-creditos" type="number" min="0" max="40" value="6" aria-label="Créditos">
+          <input class="entrada" id="ramo-nivel" type="number" min="1" max="99" value="1" aria-label="Nivel">
+          <input class="entrada" id="ramo-requisitos" type="text" placeholder="Requisitos: MA1001, FI2001" aria-label="Requisitos">
+          <label class="check"><input type="checkbox" id="ramo-aprobado"> Aprobado</label>
+          <label class="check"><input type="checkbox" id="ramo-curso"> En curso</label>
+          <button class="btn btn-primario" type="submit">Crear</button>
+          <button class="btn" type="button" id="ramo-cancelar">Cancelar</button>
+        </form>
+        <div class="malla-barra">
+          <input class="entrada" id="malla-buscar" type="search" placeholder="Buscar por código o nombre…" aria-label="Buscar ramo">
+          <select class="entrada" id="malla-filtro" aria-label="Filtrar ramos">
+            <option value="todos">Todos</option>
+            <option value="aprobados">Aprobados</option>
+            <option value="curso">En curso</option>
+            <option value="disponibles">Disponibles</option>
+            <option value="bloqueados">Bloqueados</option>
+          </select>
+          <label class="check"><input type="checkbox" id="malla-rapido"> Modo rápido: marcar aprobado con un clic</label>
+        </div>
+        <div class="empty" id="malla-vacio" hidden>
+          <h2>Tu malla está vacía</h2>
+          <p>Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles.</p>
+          <div class="fila" style="justify-content:center">
+            <button class="btn btn-primario" type="button" id="malla-crear">Crear el primer ramo</button>
+            <button class="btn" type="button" id="malla-importar-vacio">Traer una malla desde un archivo</button>
+          </div>
+        </div>
+        <div id="malla-tablero" class="malla-tablero"></div>
+      </div>
     </section>
 
     <section class="seccion" data-pantalla="calificaciones" id="p-calificaciones" hidden>
