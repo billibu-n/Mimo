@@ -201,7 +201,8 @@
         <div class="card">
           <h2>Vínculo con Estudio</h2>
           <p class="muted">El tiempo que registres se guarda con este vínculo. Estudio lo leerá en U5.</p>
-          <select class="entrada" id="tiempo-vinculo" aria-label="Vínculo de la sesión"></select>
+          <label class="campo">Tarea <select class="entrada" id="tiempo-vinculo" aria-label="Vínculo de la sesión"></select></label>
+          <label class="campo">Ramo <select class="entrada" id="tiempo-ramo" aria-label="Ramo de la sesión"></select></label>
           <div class="mp-kpi"><div><b id="tiempo-sesiones">0</b><span>sesiones</span></div><div><b id="tiempo-horas">0 h</b><span>registradas</span></div></div>
           <h3 class="sesiones-tit">Sesiones</h3>
           <div id="tiempo-lista-sesiones" class="sesiones-lista"><p class="muted">Sin sesiones todavía.</p></div>
@@ -304,8 +305,45 @@
     </section>
 
     <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub">Horas por ramo, metas semanales y gráfico de avance.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
-      <div class="card"><h2>El motor llega con M32</h2><p class="muted">La pestaña ya se instala con el kit; el motor de estudio se porta del viejo.</p></div>
+      <div class="sec-cab">
+        <div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub">Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.</p></div>
+        <div class="sec-acciones"><span class="pill">kit Academics</span><button class="btn" id="btn-estudio-malla" type="button">Ver Malla</button></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi kpi--ac"><b id="est-k-horas">0 h</b><span>horas registradas</span></div>
+        <div class="kpi kpi--ok"><b id="est-k-sesiones">0</b><span>sesiones</span></div>
+        <div class="kpi kpi--warn"><b id="est-k-semanas">0</b><span>semanas sobre la meta</span></div>
+        <div class="kpi kpi--q"><b id="est-k-promedio">0 h</b><span>promedio por semana</span></div>
+      </div>
+      <div class="estudio-layout">
+        <div class="card est-grafico-card">
+          <h2>Horas por semana</h2>
+          <p class="muted" id="est-periodo">Periodo activo</p>
+          <div class="est-grafico" id="est-grafico"></div>
+          <div class="est-leyenda" id="est-leyenda"></div>
+        </div>
+        <div class="card">
+          <h2>Registrar estudio</h2>
+          <p class="muted">Una sesión suelta para lo que no pasó por el cronómetro.</p>
+          <form class="est-form" id="est-form">
+            <select class="entrada" id="est-ramo" aria-label="Ramo"></select>
+            <input class="entrada" id="est-fecha" type="date" aria-label="Fecha">
+            <input class="entrada" id="est-minutos" type="number" min="1" max="1440" step="1" value="60" aria-label="Minutos">
+            <button class="btn btn-primario" type="submit">Registrar</button>
+          </form>
+          <hr class="est-sep">
+          <label class="campo">Meta semanal <input class="entrada est-num" id="est-meta" type="number" min="0" max="100" step="0.5" value="10"> h</label>
+          <p class="muted" id="est-resumen">Sin sesiones todavía.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Horas por ramo</h2>
+        <div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th>Ramo</th><th class="num">Horas</th><th class="num">Meta semanal</th><th>Avance</th></tr></thead><tbody id="est-tabla"></tbody></table></div>
+      </div>
+      <div class="card">
+        <h2>Sesiones recientes</h2>
+        <div id="est-sesiones" class="est-sesiones"></div>
+      </div>
     </section>
 
     <section class="seccion" data-pantalla="ajustes" id="p-ajustes" hidden>

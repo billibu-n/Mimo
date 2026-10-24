@@ -121,7 +121,7 @@ button{cursor:pointer}
 }
 .btn:hover{background:var(--sup2)}
 .btn-primario{background:var(--ac-fuerte);border-color:var(--ac-fuerte);color:var(--ac-txt-fuerte);font-weight:600}
-.btn-primario:hover{filter:brightness(1.08)}
+.btn-primario:hover{background:var(--ac-fuerte);border-color:var(--ac-fuerte);filter:brightness(1.08)}
 .btn-peligro{color:var(--bad);border-color:var(--line)}
 .btn-peligro:hover{background:var(--pill-bad-bg)}
 

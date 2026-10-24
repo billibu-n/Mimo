@@ -42,7 +42,8 @@
   function porDefecto() {
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
-      periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", splitSeccion: "tareas",
+      periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
+      estudio: { metaSemanal: 10, metasRamo: {} }, splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
@@ -61,6 +62,8 @@
           if (!Array.isArray(d.notas)) d.notas = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
           if (!d.califs || typeof d.califs !== "object") d.califs = {};
+          if (!d.estudio || typeof d.estudio !== "object") d.estudio = { metaSemanal: 10, metasRamo: {} };
+          if (!d.estudio.metasRamo || typeof d.estudio.metasRamo !== "object") d.estudio.metasRamo = {};
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
@@ -159,7 +162,7 @@
     var s = (estado.sesiones || [])[indice]; if (!s) return;
     if (!window.confirm("¿Borrar la sesión de " + s.minutos + " min del " + s.fecha + "?")) return;
     estado.sesiones.splice(indice, 1);
-    guardar(); pintarTiempo(); aviso("Sesión borrada.");
+    guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión borrada.");
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || "Sin título"); }
   function menuDeContexto(el) {
@@ -357,6 +360,8 @@
     pintarTabs();
     if (id === "malla") pintarMalla();
     if (id === "calificaciones") pintarCalificaciones();
+    if (id === "estudio") pintarEstudio();
+    if (id === "tiempo") pintarTiempo();
     pintarPanel();
     if (window.innerWidth <= 1255) cerrarPanel();
   }
@@ -1411,6 +1416,143 @@
     guardar(); pintarCalificaciones(); pintarPanel();
   }
 
+  /* ---- U4c: Estudio, horas por ramo y meta semanal ---- */
+  var PALETA_ESTUDIO = ["#2563eb", "#16a34a", "#b45309", "#7c3aed", "#0e7490", "#be123c", "#0f766e", "#a16207", "#dc2626"];
+  function normalizarEstudio() {
+    if (!estado.estudio || typeof estado.estudio !== "object") estado.estudio = { metaSemanal: 10, metasRamo: {} };
+    estado.estudio.metaSemanal = Math.max(0, Number(estado.estudio.metaSemanal) || 0);
+    if (!estado.estudio.metasRamo || typeof estado.estudio.metasRamo !== "object") estado.estudio.metasRamo = {};
+    estado.sesiones = (estado.sesiones || []).map(function (s, i) {
+      return {
+        fecha: String(s.fecha || hoyISO()), minutos: Math.max(0, Number(s.minutos) || 0),
+        ramo: String(s.ramo || "").trim().toUpperCase(), vinculo: String(s.vinculo || "")
+      };
+    });
+  }
+  function colorEstudio(cod) {
+    var i = estado.cursos.map(function (c) { return c.codigo; }).indexOf(cod);
+    return i < 0 ? "var(--muted)" : PALETA_ESTUDIO[i % PALETA_ESTUDIO.length];
+  }
+  function fmtHoras(min) {
+    min = Number(min) || 0;
+    if (min <= 0) return "0 h";
+    if (min < 60) return Math.round(min) + " min";
+    return (Math.round(min / 6) / 10).toString().replace(".", ",") + " h";
+  }
+  function isoDeFecha(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function lunesDe(d) {
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return x;
+  }
+  function semanasEstudio() {
+    var p = periodoActivoObj();
+    if (p && p.semanas && p.semanas.length) {
+      return p.semanas.map(function (w) {
+        return { etiqueta: "S" + w.n, desde: w.desde, hasta: w.hasta, tipo: w.tipo || "clases" };
+      });
+    }
+    var l = lunesDe(new Date()), out = [];
+    for (var i = 7; i >= 0; i--) {
+      var a = new Date(l.getTime()); a.setDate(a.getDate() - i * 7);
+      var b = new Date(a.getTime()); b.setDate(b.getDate() + 6);
+      out.push({ etiqueta: (a.getDate()) + "/" + (a.getMonth() + 1), desde: isoDeFecha(a), hasta: isoDeFecha(b), tipo: "clases" });
+    }
+    return out;
+  }
+  function pintarEstudio() {
+    if (!$("#est-grafico")) return;
+    normalizarCursos(); normalizarEstudio();
+    var cursos = estado.cursos;
+    var semanas = semanasEstudio();
+    var meta = Number(estado.estudio.metaSemanal) || 0;
+    if ($("#est-meta")) $("#est-meta").value = meta;
+    if ($("#est-fecha") && !$("#est-fecha").value) $("#est-fecha").value = hoyISO();
+    var sel = $("#est-ramo");
+    if (sel) {
+      var val = sel.value;
+      sel.innerHTML = '<option value="">Sin ramo</option>' + cursos.map(function (c) {
+        return '<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>";
+      }).join("");
+      if (val && (val === "" || ramoPorCodigo(val))) sel.value = val;
+    }
+    var ses = estado.sesiones || [], totalMin = 0, totalRamo = {}, porSemana = {};
+    ses.forEach(function (s) {
+      totalMin += s.minutos;
+      if (s.ramo) totalRamo[s.ramo] = (totalRamo[s.ramo] || 0) + s.minutos;
+    });
+    semanas.forEach(function (w) { porSemana[w.desde] = 0; });
+    ses.forEach(function (s) {
+      semanas.forEach(function (w) {
+        if (s.fecha >= w.desde && s.fecha <= w.hasta) porSemana[w.desde] += s.minutos;
+      });
+    });
+    var sobre = semanas.filter(function (w) { return porSemana[w.desde] > meta * 60 && meta > 0; }).length;
+    var conDatos = semanas.filter(function (w) { return porSemana[w.desde] > 0; });
+    var prom = conDatos.length ? conDatos.reduce(function (a, w) { return a + porSemana[w.desde]; }, 0) / conDatos.length : 0;
+    if ($("#est-k-horas")) $("#est-k-horas").textContent = fmtHoras(totalMin);
+    if ($("#est-k-sesiones")) $("#est-k-sesiones").textContent = String(ses.length);
+    if ($("#est-k-semanas")) $("#est-k-semanas").textContent = String(sobre);
+    if ($("#est-k-promedio")) $("#est-k-promedio").textContent = fmtHoras(prom);
+    if ($("#est-periodo")) $("#est-periodo").textContent = periodoActivoObj()
+      ? "Periodo " + periodoActivoObj().nombre + " · " + semanas.length + " semanas"
+      : "Últimas " + semanas.length + " semanas";
+    if ($("#est-resumen")) $("#est-resumen").textContent = ses.length
+      ? ses.length + " sesiones · " + fmtHoras(totalMin) + " registradas · meta " + fmtHoras(meta * 60) + " por semana."
+      : "Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.";
+    var max = Math.max(meta * 60, 1);
+    semanas.forEach(function (w) { max = Math.max(max, porSemana[w.desde]); });
+    max *= 1.15;
+    var cols = semanas.map(function (w) {
+      var total = porSemana[w.desde], pct = Math.min(100, total / max * 100);
+      var segs = Object.keys(totalRamo).length ? "" : "";
+      var porCurso = {};
+      ses.forEach(function (s) {
+        if (s.fecha >= w.desde && s.fecha <= w.hasta) {
+          var k = s.ramo || "_";
+          porCurso[k] = (porCurso[k] || 0) + s.minutos;
+        }
+      });
+      var barras = Object.keys(porCurso).map(function (k) {
+        return '<i style="flex:' + porCurso[k] + ';background:' + colorEstudio(k) + '" title="' +
+          esc(k === "_" ? "Sin ramo" : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
+      }).join("");
+      return '<div class="est-col" title="' + esc(w.etiqueta) + " · " + fmtHoras(total) + '">' +
+        '<span class="est-total">' + (total ? fmtHoras(total) : "") + "</span>" +
+        '<div class="est-pila" style="height:' + pct + '%">' + barras + "</div>" +
+        '<span class="est-etq">' + esc(w.etiqueta) + "</span></div>";
+    }).join("");
+    $("#est-grafico").innerHTML = ses.length || meta
+      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, meta * 60 / max * 100) + '%"><span>meta ' +
+        fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
+      : '<p class="empty">Sin horas todavía. Registra una sesión para ver el gráfico.</p>';
+    var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
+      return '<span><i style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
+    });
+    if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>Sin ramo ' + fmtHoras(totalRamo._) + "</span>");
+    $("#est-leyenda").innerHTML = leyenda.join("");
+    var filas = cursos.map(function (c) {
+      var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
+      var pct = m ? Math.min(100, Math.round(h / (m * 60 * Math.max(1, semanas.length)) * 100)) : 0;
+      return '<tr><td><i class="est-punto" style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " — " + esc(c.nombre) + "</td>" +
+        '<td class="num">' + fmtHoras(h) + "</td>" +
+        '<td class="num"><input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-ramo="' + esc(c.codigo) + '" value="' + m + '"> h</td>' +
+        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % de " + (m * semanas.length) + " h" : "sin meta") + "</small></td></tr>";
+    }).join("");
+    if (totalRamo._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>Sin ramo</td><td class="num">' +
+      fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">Asigna un ramo para medirlo</td></tr>';
+    $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">Sin ramos. Crea uno en Malla.</td></tr>';
+    var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
+    $("#est-sesiones").innerHTML = recientes.length ? recientes.map(function (x) {
+      var c = x.s.ramo ? ramoPorCodigo(x.s.ramo) : null;
+      return '<div class="est-sesion"><span><b>' + esc(c ? c.codigo : "Sin ramo") + "</b> " + esc(c ? c.nombre : "") +
+        "</span><small>" + esc(x.s.fecha) + " · " + fmtHoras(x.s.minutos) + '</small>' +
+        '<button class="calif-x" type="button" data-borrar-estudio="' + x.i + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
+    }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
+    if (pantalla === "estudio") pintarPanel();
+  }
   function normalizarNotas() {
     estado.notas = (estado.notas || []).map(function (n, i) {
       return {
@@ -1563,6 +1705,14 @@
       v.value = estado.tiempoVinculo || "";
       v.onchange = function () { estado.tiempoVinculo = v.value; guardar(); };
     }
+    var r = $("#tiempo-ramo");
+    if (r) {
+      var opsR = ['<option value="">Sin ramo</option>'];
+      (estado.cursos || []).forEach(function (c) { opsR.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
+      r.innerHTML = opsR.join("");
+      r.value = estado.tiempoRamo || "";
+      r.onchange = function () { estado.tiempoRamo = r.value; guardar(); };
+    }
     var ses = estado.sesiones || [], min = 0;
     ses.forEach(function (x) { min += Number(x.minutos || 0); });
     if ($("#tiempo-sesiones")) $("#tiempo-sesiones").textContent = String(ses.length);
@@ -1571,8 +1721,9 @@
     if (listaSes) {
       listaSes.innerHTML = ses.length ? ses.map(function (x, i) {
         var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
+        var ram = x.ramo ? ramoPorCodigo(x.ramo) : null;
         return '<div class="sesion-item" data-sesion="' + i + '" title="Clic derecho: borrar"><span><b>' +
-          esc(fechaCorta(x.fecha)) + "</b>" + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
+          esc(fechaCorta(x.fecha)) + "</b>" + (ram ? " · " + esc(ram.codigo) : "") + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
           Number(x.minutos || 0) + " min</small>" +
           '<button class="sesion-x" type="button" data-borrar-sesion="' + i + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
       }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
@@ -1589,7 +1740,7 @@
     if (tiempoInt) return;
     tiempoInt = setInterval(function () { tiempoSeg++; pintaReloj(); }, 1000);
     $("#btn-empezar").disabled = true; $("#btn-pausar").disabled = false; $("#btn-parar").disabled = false;
-    $("#tiempo-estado").textContent = "Cronómetro · corriendo" + (estado.tiempoVinculo ? " · vinculado" : "");
+    $("#tiempo-estado").textContent = "Cronómetro · corriendo" + (estado.tiempoRamo ? " · " + estado.tiempoRamo : "") + (estado.tiempoVinculo ? " · vinculado" : "");
   }
   function pausarTiempo() {
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
@@ -1600,8 +1751,9 @@
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
     if (tiempoSeg > 0) {
       estado.sesiones = estado.sesiones || [];
-      estado.sesiones.push({ fecha: hoyISO(), minutos: Math.max(1, Math.round(tiempoSeg / 60)), vinculo: estado.tiempoVinculo || "" });
-      guardar(); pintarTiempo(); aviso("Sesión registrada. Estudio la leerá en U5.");
+      estado.sesiones.push({ fecha: hoyISO(), minutos: Math.max(1, Math.round(tiempoSeg / 60)),
+        vinculo: estado.tiempoVinculo || "", ramo: estado.tiempoRamo || "" });
+      guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión registrada. Estudio la suma por ramo.");
     }
     tiempoSeg = 0; pintaReloj();
     $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
@@ -1704,6 +1856,7 @@
         notas: [estado.notas.length + " notas", "Lista y editor en la misma sección."],
         malla: [(estado.cursos || []).length + " ramos", "Cursos, niveles, prerrequisitos y créditos."],
         calificaciones: [(estado.cursos || []).length + " ramos", "Notas por categoría, examen y eximición."],
+        estudio: [(estado.sesiones || []).length + " sesiones", "Horas por ramo y meta semanal."],
         tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
         ajustes: ["9 temas", "Apariencia, paneles, bloques y laboratorio."]
       }[pantalla] || ["Sin contexto", "Esta sección no declara contexto."];
@@ -1952,6 +2105,19 @@
         return '<div class="mp-row"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>P " +
           fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small></div>";
       }).join("") : '<p class="muted">Sin ramos.</p>';
+    } else if (sec === "estudio") {
+      normalizarEstudio();
+      var tot = {}, min = 0;
+      (estado.sesiones || []).forEach(function (x) {
+        min += x.minutos;
+        var k = x.ramo || "_";
+        tot[k] = (tot[k] || 0) + x.minutos;
+      });
+      html = (estado.sesiones || []).length ? '<p class="muted">' + fmtHoras(min) + ' en ' + estado.sesiones.length +
+        ' sesiones.</p>' + Object.keys(tot).slice(0, 8).map(function (k) {
+          var c = k !== "_" ? ramoPorCodigo(k) : null;
+          return '<div class="mp-row"><span>' + esc(c ? c.codigo : "Sin ramo") + '</span><small>' + fmtHoras(tot[k]) + "</small></div>";
+        }).join("") : '<p class="muted">Sin sesiones.</p>';
     } else if (sec === "tiempo") {
       html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>";
     } else if (sec === "ajustes") {
@@ -1974,7 +2140,7 @@
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
-    pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones();
+    pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio();
     pintarTemas(); pintarTiempo(); pintarPanel();
     ir(pantalla);
 
@@ -2017,7 +2183,7 @@
           estado = Object.assign(porDefecto(), x);
           if (!estado.prefs) estado.prefs = { inicioSemana: "lunes", hora: "24", panelAncho: "320" };
           guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs();
-          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarTiempo(); pintarPeriodo(); pintarPanel();
+          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarPanel();
           aviso("Respaldo importado.");
         } catch (err) { aviso("No se pudo importar el archivo."); }
       };
@@ -2135,6 +2301,31 @@
     $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
     $("#malla-quitar-sel").addEventListener("click", limpiarSeleccionMalla);
     $("#btn-calif-malla").addEventListener("click", function () { ir("malla"); });
+    $("#btn-estudio-malla").addEventListener("click", function () { ir("malla"); });
+    $("#est-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      normalizarEstudio();
+      var fecha = $("#est-fecha").value || hoyISO();
+      var minutos = Math.max(1, Math.min(1440, parseInt($("#est-minutos").value, 10) || 0));
+      if (!minutos) return;
+      estado.sesiones.push({ fecha: fecha, minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "" });
+      guardar(); pintarEstudio(); pintarTiempo();
+      aviso("Sesión de estudio registrada.");
+    });
+    $("#est-meta").addEventListener("change", function (e) {
+      normalizarEstudio(); estado.estudio.metaSemanal = Math.max(0, Number(e.target.value) || 0);
+      guardar(); pintarEstudio();
+    });
+    $("#est-tabla").addEventListener("change", function (e) {
+      var el = e.target.closest("[data-est-meta-ramo]"); if (!el) return;
+      normalizarEstudio();
+      estado.estudio.metasRamo[el.getAttribute("data-est-meta-ramo")] = Math.max(0, Number(el.value) || 0);
+      guardar(); pintarEstudio();
+    });
+    $("#est-sesiones").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-borrar-estudio]"); if (!b) return;
+      borrarSesion(parseInt(b.getAttribute("data-borrar-estudio"), 10));
+    });
     $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
     $("#calif-lista").addEventListener("click", function (e) {
       var b = e.target.closest("[data-calif]"); if (!b) return;
