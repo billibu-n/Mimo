@@ -151,3 +151,6 @@ body.panel-abierto .velo{display:block}
 .tiempo-caja .fila{justify-content:center;margin-top:var(--sp-4)}
 @media (max-width:900px){.tiempo-layout{grid-template-columns:1fr}}
 .btn:disabled{opacity:.55;cursor:not-allowed;filter:none}
+
+.academics-link{height:var(--sp-7);font-size:var(--fs-xs);text-decoration:none;white-space:nowrap;margin-left:var(--sp-2)}
+@media (max-width:520px){.academics-link{display:none}}
