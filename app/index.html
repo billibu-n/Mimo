@@ -41,7 +41,7 @@
 </defs></svg>
 
 <header class="topbar">
-  <button class="marca" id="btn-mimo" type="button" title="Menú de MIMO"><img src="maqueta/icon-64.png" alt="" width="28" height="28"><span>MIMO</span></button>
+  <button class="marca" id="btn-mimo" type="button" title="Menú de MIMO"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span>MIMO</span></button>
   <span class="badge">universal · 0.1</span>
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span>Buscar</span><kbd>Ctrl K</kbd></button>
@@ -215,10 +215,19 @@
       <div class="sec-cab"><div><h1>Ajustes</h1><p class="sec-sub">Apariencia, navegación, paneles, bloques y laboratorio.</p></div></div>
       <div class="ajustes-grid">
         <section class="card"><h2>Apariencia</h2><p class="muted">Nueve temas del viejo. Se aplican a toda la app.</p><div class="temas" id="temas"></div></section>
-        <section class="card"><h2>Navegación</h2><p class="muted">Barra arriba, pastillas y orden de secciones. Las opciones se activan en M40.</p><div class="fila"><button class="btn" type="button" disabled>Arriba</button><button class="btn" type="button" disabled>Izquierda</button></div></section>
-        <section class="card"><h2>Paneles</h2><p class="muted">El panel derecho tiene Contexto, Detalle, Notas y Bloques. Recuerda la pestaña por sección.</p><button class="btn" type="button" id="btn-panel-ajustes">Abrir panel</button></section>
+        <section class="card"><h2>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
+          <label class="campo">La semana empieza en <select class="entrada" id="pref-inicio"><option value="lunes">Lunes</option><option value="domingo">Domingo</option></select></label>
+          <label class="campo">Formato de hora <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
+          <p class="muted" id="ajustes-resumen"></p>
+        </section>
+        <section class="card"><h2>Paneles</h2><p class="muted">Ancho del panel derecho. Se guarda en este equipo.</p>
+          <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select>
+          <div class="fila" style="margin-top:8px"><button class="btn" type="button" id="btn-panel-ajustes">Abrir panel</button></div>
+        </section>
+        <section class="card"><h2>Periodos</h2><p class="muted">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
         <section class="card"><h2>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
-        <section class="card"><h2>Laboratorio</h2><p class="muted">La vista dividida es un experimento. Apagada por defecto; se enciende desde aquí en M43.</p><label class="check"><input type="checkbox" id="lab-split" disabled> Vista dividida</label></section>
+        <section class="card"><h2>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div></section>
+        <section class="card"><h2>Laboratorio</h2><p class="muted">La vista dividida es un experimento; ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
         <section class="card"><h2>Acerca de</h2><p class="muted">MIMO universal · 0.1 · base 4 + bloques. MIT. Sin red.</p></section>
       </div>
     </section>
@@ -285,5 +294,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/shell.js"></script>
+<script src="js/mimo-juego.js"></script>
 </body>
 </html>

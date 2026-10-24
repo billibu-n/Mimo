@@ -243,3 +243,18 @@ body{padding-bottom:var(--alto-pie)}
 .mp-kpi{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin-top:var(--sp-3)}
 .mp-kpi div{background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:var(--sp-2)}
 .mp-kpi b{display:block;font-size:var(--fs-lg)}.mp-kpi span{font-size:var(--fs-xs);color:var(--muted)}
+
+/* ---- icono MIMO: completo, con juego ---- */
+.marca img{border-radius:0;object-fit:contain;display:block}
+.marca.jugando img{animation:mimo-brinco .42s ease-in-out}
+@keyframes mimo-brinco{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-4px) rotate(-6deg)}70%{transform:translateY(1px) rotate(4deg)}}
+body.split #contenido{flex:1 1 50%;max-width:none;margin:0}
+body.split #contenido-b{flex:1 1 50%;width:auto;max-width:none}
+body.split .cal-layout{grid-template-columns:1fr}
+body.split .cal-layout .rail{display:none}
+.navbar .tabs{margin-left:auto}
+body.split #contenido{width:auto}
+.ajustes-grid .campo{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--muted);margin:var(--sp-2) 0}
+.ajustes-grid .campo select{max-width:160px}
+#lab-split{margin-right:var(--sp-1)}
+.navbar .tabs{justify-content:flex-end}
