@@ -1,6 +1,6 @@
-# Línea base U2 — Tareas con proyectos/subtareas, árbol y tablero
-# fecha: 2026-10-24T13:22:18-03:00
-# base: f6034d1
+# Línea base U1 — Calendario real (mes/semana/agenda) + U2 Tareas
+# fecha: 2026-10-24T13:25:17-03:00
+# base: f4573fd
 # comando: python3 app/pruebas/correr-gates.py
 
 
@@ -30,7 +30,7 @@ TABLERO: /home/billibu/sede/trabajo/trabajos/T-48-mimo-m11-m12-shell/borradores/
 [OK] 411: el panel se abre como cajón
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui: 0 choque(s).
-TABLERO: /tmp/mimo-gate-ui-314_5utj/maqueta/index.html
+TABLERO: /tmp/mimo-gate-ui-561ay58d/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -60,6 +60,11 @@ DEMO: buena 0, rota 1. El gate discrimina.
 === gate-shell.py ===
 [OK] base 4 en orden — ['Calendario', 'Tareas', 'Notas', 'Ajustes']
 [OK] consola limpia — []
+[OK] calendario: el evento aparece en el mes
+[OK] calendario: la cuenta sube a 1
+[OK] calendario: el evento seleccionado va a Detalle
+[OK] calendario: la semana tiene 7 días
+[OK] calendario: la agenda lista el evento
 [OK] Tiempo instalado aparece en la barra
 [OK] Tiempo: 4 bloques dentro
 [OK] Tiempo: quitar un hijo deja 3

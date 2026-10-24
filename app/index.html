@@ -66,10 +66,18 @@
       <div class="sec-cab">
         <div><h1>Calendario</h1><p class="sec-sub">Todo lo que tiene fecha, en un solo sitio.</p></div>
         <div class="sec-acciones">
-          <div class="conmutador" role="group" aria-label="Vista del calendario"><button type="button" class="on">Mes</button><button type="button">Semana</button><button type="button">Agenda</button></div>
+          <div class="conmutador" id="vista-calendario" role="group" aria-label="Vista del calendario"><button type="button" class="on" data-cal-vista="mes">Mes</button><button type="button" data-cal-vista="semana">Semana</button><button type="button" data-cal-vista="agenda">Agenda</button></div>
           <button class="btn" id="btn-hoy" type="button">Hoy</button>
         </div>
       </div>
+      <form class="evento-form" id="evento-form" hidden>
+        <input class="entrada" id="evento-titulo" type="text" placeholder="Título del evento" aria-label="Título del evento" autocomplete="off">
+        <input class="entrada" id="evento-fecha" type="date" aria-label="Fecha">
+        <input class="entrada" id="evento-hora" type="time" aria-label="Hora">
+        <input class="entrada" id="evento-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
+        <button class="btn btn-primario" type="submit">Guardar</button>
+        <button class="btn" type="button" id="evento-cancelar">Cancelar</button>
+      </form>
       <div class="kpis">
         <div class="kpi"><b id="kpi-eventos">0</b><span>eventos este mes</span></div>
         <div class="kpi"><b id="kpi-tareas">0</b><span>tareas con fecha</span></div>
@@ -85,8 +93,9 @@
           <p class="muted">Local · este equipo</p>
         </aside>
         <div class="card cal-tarjeta">
-          <div class="cal-cab"><h2 id="cal-mes-titulo">Mes</h2><span class="pill" id="cal-cuenta">0 eventos</span></div>
+          <div class="cal-cab"><button class="icono-btn" id="cal-ant" type="button" title="Anterior" aria-label="Anterior">‹</button><h2 id="cal-mes-titulo">Mes</h2><button class="icono-btn" id="cal-sig" type="button" title="Siguiente" aria-label="Siguiente">›</button><span class="pill" id="cal-cuenta">0 eventos</span></div>
           <div class="cal-grid" id="cal-grid"></div>
+          <div id="cal-agenda" class="cal-agenda" hidden></div>
           <p class="empty" id="cal-vacio">Sin eventos. Todo lo que tenga fecha aparecerá aquí.</p>
         </div>
       </div>

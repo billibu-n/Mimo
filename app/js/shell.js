@@ -32,8 +32,8 @@
 
   function porDefecto() {
     return {
-      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [],
-      notaSel: null, tareaSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
+      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [],
+      notaSel: null, tareaSel: null, eventoSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
   function leer() {
@@ -60,6 +60,9 @@
   var pantalla = "calendario";
   var notaBusqueda = "";
   var vistaTareas = estado.vistaTareas || "hoy";
+  var vistaCalendario = estado.vistaCalendario || "mes";
+  var calCursor = new Date();
+  var formEventoId = null;
   var splitOn = false;
 
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {} }
@@ -132,25 +135,106 @@
     });
   }
 
+  function normalizarEventos() {
+    estado.eventos = (estado.eventos || []).map(function (e, i) {
+      return {
+        id: e.id || "e" + i,
+        titulo: e.titulo || "Sin título",
+        fecha: e.fecha || hoyISO(),
+        hora: e.hora || "",
+        contexto: e.contexto || "",
+        nota: e.nota || ""
+      };
+    });
+  }
+  function eventoPorId(id) { return estado.eventos.filter(function (e) { return e.id === id; })[0] || null; }
+  function eventosDe(fecha) {
+    return estado.eventos.filter(function (e) { return e.fecha === fecha; })
+      .sort(function (a, b) { return (a.hora || "99:99") < (b.hora || "99:99") ? -1 : 1; });
+  }
+  function chipEvento(e) {
+    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + '">' +
+      (e.hora ? '<b>' + esc(e.hora) + "</b> " : "") + esc(e.titulo) + "</button>";
+  }
   function pintarCalendario() {
-    var hoy = new Date();
-    var y = hoy.getFullYear(), m = hoy.getMonth();
-    $("#cal-mes-titulo").textContent = hoy.toLocaleDateString("es-CL", { month: "long", year: "numeric" });
-    var primero = new Date(y, m, 1);
-    var offset = (primero.getDay() + 6) % 7;
-    var inicio = new Date(y, m, 1 - offset);
-    var dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-    var html = dias.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
-    for (var i = 0; i < 42; i++) {
-      var f = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
-      var fuera = f.getMonth() !== m;
-      var esHoy = f.getFullYear() === y && f.getMonth() === m && f.getDate() === hoy.getDate();
-      html += '<div class="cal-dia' + (fuera ? " fuera" : "") + (esHoy ? " hoy" : "") + '"><b>' + f.getDate() + "</b></div>";
-    }
-    $("#cal-grid").innerHTML = html;
-    $("#cal-cuenta").textContent = "0 eventos";
-    $("#kpi-eventos").textContent = "0";
+    normalizarEventos();
+    var hoy = new Date(), y = calCursor.getFullYear(), m = calCursor.getMonth();
+    var total = estado.eventos.length;
+    $("#kpi-eventos").textContent = String(total);
     $("#kpi-tareas").textContent = String(estado.tareas.filter(function (t) { return t.fecha; }).length);
+    $$("#vista-calendario button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-cal-vista") === vistaCalendario);
+    });
+    var grid = $("#cal-grid"), agenda = $("#cal-agenda");
+    agenda.hidden = vistaCalendario !== "agenda";
+    grid.hidden = vistaCalendario === "agenda";
+    var visibles = 0;
+    if (vistaCalendario === "agenda") {
+      var orden = estado.eventos.slice().sort(function (a, b) {
+        return (a.fecha + " " + (a.hora || "")) < (b.fecha + " " + (b.hora || "")) ? -1 : 1;
+      });
+      visibles = orden.length;
+      $("#cal-mes-titulo").textContent = "Agenda";
+      agenda.innerHTML = orden.length ? orden.map(function (e) {
+        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '"><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(e.hora) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + (e.fecha >= hoyISO() ? "próximo" : "pasado") + "</span></button>";
+      }).join("") : '<p class="empty">Sin eventos todavía.</p>';
+    } else if (vistaCalendario === "semana") {
+      var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
+      lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+      var dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+      grid.className = "cal-grid cal-grid--semana";
+      $("#cal-mes-titulo").textContent = "Semana del " + lunes.getDate() + "/" + (lunes.getMonth() + 1);
+      grid.innerHTML = dias.map(function (d, i) {
+        var f = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + i);
+        var iso = f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, "0") + "-" + String(f.getDate()).padStart(2, "0");
+        var evs = eventosDe(iso); visibles += evs.length;
+        return '<div class="cal-semana-dia' + (iso === hoyISO() ? " hoy" : "") + '"><b>' + d + " " + f.getDate() + "</b>" +
+          (evs.length ? evs.map(chipEvento).join("") : '<span class="cal-vacio-dia">—</span>') + "</div>";
+      }).join("");
+    } else {
+      var primero = new Date(y, m, 1);
+      var offset = (primero.getDay() + 6) % 7;
+      var inicio = new Date(y, m, 1 - offset);
+      var dias2 = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+      grid.className = "cal-grid";
+      $("#cal-mes-titulo").textContent = new Date(y, m, 1).toLocaleDateString("es-CL", { month: "long", year: "numeric" });
+      var html = dias2.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
+      for (var i = 0; i < 42; i++) {
+        var f2 = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
+        var iso2 = f2.getFullYear() + "-" + String(f2.getMonth() + 1).padStart(2, "0") + "-" + String(f2.getDate()).padStart(2, "0");
+        var evs2 = eventosDe(iso2); if (f2.getMonth() === m) visibles += evs2.length;
+        html += '<div class="cal-dia' + (f2.getMonth() !== m ? " fuera" : "") + (iso2 === hoyISO() ? " hoy" : "") + '"><b>' + f2.getDate() + "</b>" +
+          (evs2.length ? '<div class="cal-eventos">' + evs2.slice(0, 2).map(chipEvento).join("") + (evs2.length > 2 ? '<span class="cal-mas">+' + (evs2.length - 2) + "</span>" : "") + "</div>" : "") + "</div>";
+      }
+      grid.innerHTML = html;
+    }
+    $("#cal-cuenta").textContent = visibles + " evento" + (visibles === 1 ? "" : "s");
+    $("#cal-vacio").hidden = visibles > 0;
+    $$("#cal-grid [data-evento], #cal-agenda [data-evento]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        estado.eventoSel = b.getAttribute("data-evento");
+        estado.panel[pantalla] = "detalle";
+        guardar(); pintarPanel(); pintarCalendario();
+        if (window.innerWidth <= 1255) abrirPanel();
+      });
+    });
+  }
+  function abrirEvento(ev) {
+    normalizarEventos();
+    formEventoId = ev ? ev.id : null;
+    $("#evento-titulo").value = ev ? ev.titulo : "";
+    $("#evento-fecha").value = ev ? ev.fecha : hoyISO();
+    $("#evento-hora").value = ev ? ev.hora : "";
+    $("#evento-contexto").value = ev ? ev.contexto : "";
+    $("#evento-form").hidden = false;
+    $("#evento-titulo").focus();
+  }
+  function borrarEvento(id) {
+    var ev = eventoPorId(id); if (!ev) return;
+    if (!window.confirm("¿Borrar \"" + ev.titulo + "\"?")) return;
+    estado.eventos = estado.eventos.filter(function (e) { return e.id !== id; });
+    if (estado.eventoSel === id) estado.eventoSel = null;
+    guardar(); pintarCalendario(); pintarPanel();
   }
 
   function hoyISO() {
@@ -411,7 +495,16 @@
     if (tab === "detalle") {
       var t = tareaPorId(estado.tareaSel);
       var n = notaActual();
-      if (t) {
+      var ev = eventoPorId(estado.eventoSel);
+      if (ev && pantalla === "calendario") {
+        html = "<h2>Evento</h2><h3>" + esc(ev.titulo) + "</h3>" +
+          '<div class="panel__bloque"><span>Fecha</span><small>' + esc(ev.fecha) + "</small></div>" +
+          (ev.hora ? '<div class="panel__bloque"><span>Hora</span><small>' + esc(ev.hora) + "</small></div>" : "") +
+          (ev.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
+          (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">Editar</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">Borrar</button></div>';
+      } else if (t) {
         var p = progreso(t), hijos = hijosDe(t.id), padre = t.padre_id ? tareaPorId(t.padre_id) : null;
         html = "<h2>" + (t.tipo === "proyecto" ? "Proyecto" : "Tarea") + "</h2><h3>" + esc(t.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>Estado</span><small>' + (t.hecha ? "hecha" : "abierta") + "</small></div>" +
@@ -443,7 +536,7 @@
         '<button class="btn panel__anadir" type="button" data-abrir-modal>+ Añadir bloque o kit</button>';
     } else {
       var cuentas = {
-        calendario: ["0 eventos", "Sin eventos este mes."],
+        calendario: [estado.eventos.length + " eventos", estado.eventos.length ? "El próximo evento aparece en la agenda." : "Sin eventos este mes."],
         tareas: [estado.tareas.length + " tareas", estado.tareas.filter(function (x) { return !x.hecha; }).length + " abiertas"],
         notas: [estado.notas.length + " notas", "Lista y editor en la misma sección."],
         tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
@@ -466,6 +559,12 @@
     });
     $$("#panel-cuerpo [data-borrar-tarea]").forEach(function (b) {
       b.addEventListener("click", function () { borrarTarea(b.getAttribute("data-borrar-tarea")); });
+    });
+    $$("#panel-cuerpo [data-editar-evento]").forEach(function (b) {
+      b.addEventListener("click", function () { abrirEvento(eventoPorId(b.getAttribute("data-editar-evento"))); });
+    });
+    $$("#panel-cuerpo [data-borrar-evento]").forEach(function (b) {
+      b.addEventListener("click", function () { borrarEvento(b.getAttribute("data-borrar-evento")); });
     });
     var pie = $("#pie-centro");
     if (pie) pie.textContent = nombre(pantalla);
@@ -666,16 +765,53 @@
       n.actualizado = new Date().toISOString().slice(0, 16).replace("T", " ");
       guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
     });
-    $("#btn-hoy").addEventListener("click", function () {
-      aviso("Hoy es " + new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" }) + ".");
-    });
+    $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
     $("#btn-periodo").addEventListener("click", function () { aviso("Periodo 2026-2 · el semestre lo declara el calendario."); });
     $("#btn-buscar").addEventListener("click", function () { aviso("Buscador global Ctrl+K: llega con M27."); });
     $("#btn-sync").addEventListener("click", function () { aviso("Guardado en este equipo. La sincronización es opcional."); });
     $("#btn-nuevo").addEventListener("click", function () {
       ir("tareas"); abrirFormulario(null);
     });
-    $("#btn-nuevo-evento").addEventListener("click", function () { aviso("Nuevo evento: el editor llega con M22."); });
+    $("#btn-nuevo-evento").addEventListener("click", function () { abrirEvento(null); });
+    $("#evento-cancelar").addEventListener("click", function () { $("#evento-form").hidden = true; });
+    $("#evento-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var titulo = $("#evento-titulo").value.trim();
+      if (!titulo) return;
+      var ev = formEventoId ? eventoPorId(formEventoId) : null;
+      if (!ev) {
+        ev = { id: "e" + Date.now() };
+        estado.eventos.push(ev);
+      }
+      ev.titulo = titulo;
+      ev.fecha = $("#evento-fecha").value || hoyISO();
+      ev.hora = $("#evento-hora").value;
+      ev.contexto = $("#evento-contexto").value.trim();
+      ev.nota = ev.nota || "";
+      estado.eventoSel = ev.id;
+      estado.panel[pantalla] = "detalle";
+      $("#evento-form").hidden = true;
+      formEventoId = null;
+      guardar(); pintarCalendario(); pintarPanel();
+      aviso("Evento guardado.");
+    });
+    $$("#vista-calendario button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        vistaCalendario = b.getAttribute("data-cal-vista");
+        estado.vistaCalendario = vistaCalendario;
+        guardar(); pintarCalendario();
+      });
+    });
+    $("#cal-ant").addEventListener("click", function () {
+      if (vistaCalendario === "semana") calCursor.setDate(calCursor.getDate() - 7);
+      else calCursor.setMonth(calCursor.getMonth() - 1);
+      pintarCalendario();
+    });
+    $("#cal-sig").addEventListener("click", function () {
+      if (vistaCalendario === "semana") calCursor.setDate(calCursor.getDate() + 7);
+      else calCursor.setMonth(calCursor.getMonth() + 1);
+      pintarCalendario();
+    });
     document.addEventListener("keydown", function (e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault(); aviso("Buscador global Ctrl+K: llega con M27.");
