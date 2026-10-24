@@ -179,6 +179,19 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator("body").get_attribute("data-tema") == "deepsea",
                    "ajustes: el tema se aplica al body", fallas)
+            exigir(page.locator(".ajustes-grid .card").count() >= 10,
+                   "ajustes: 10+ tarjetas con contenido", fallas)
+            page.locator("#pref-idioma").select_option("en")
+            page.wait_for_timeout(80)
+            exigir(page.locator('#tabs .tab[data-ir="calendario"]').get_attribute("title") == "Calendar",
+                   "i18n: las pestañas cambian a inglés", fallas)
+            page.locator("#pref-nav").select_option("izquierda")
+            page.wait_for_timeout(80)
+            exigir("nav-izq" in (page.locator("body").get_attribute("class") or ""),
+                   "navegación: la barra pasa a rail izquierdo", fallas)
+            page.locator("#pref-nav").select_option("arriba")
+            page.locator("#pref-idioma").select_option("es")
+            page.wait_for_timeout(80)
             page.locator("#btn-split").click()
             page.wait_for_timeout(80)
             exigir(page.locator("#contenido-b").is_visible(), "split: la ventana secundaria se abre", fallas)

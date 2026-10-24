@@ -73,7 +73,7 @@
 
     <section class="seccion" data-pantalla="calendario" id="p-calendario">
       <div class="sec-cab">
-        <div><h1>Calendario</h1><p class="sec-sub">Todo lo que tiene fecha, en un solo sitio.</p></div>
+        <div><h1 data-i18n="nav.calendario">Calendario</h1><p class="sec-sub">Todo lo que tiene fecha, en un solo sitio.</p></div>
         <div class="sec-acciones">
           <div class="conmutador" id="vista-calendario" role="group" aria-label="Vista del calendario"><button type="button" class="on" data-cal-vista="mes">Mes</button><button type="button" data-cal-vista="semana">Semana</button><button type="button" data-cal-vista="agenda">Agenda</button></div>
           <button class="btn" id="btn-hoy" type="button">Hoy</button>
@@ -112,7 +112,7 @@
 
     <section class="seccion" data-pantalla="tareas" id="p-tareas" hidden>
       <div class="sec-cab">
-        <div><h1>Tareas</h1><p class="sec-sub">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
+        <div><h1 data-i18n="nav.tareas">Tareas</h1><p class="sec-sub">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
         <div class="sec-acciones">
           <div class="conmutador" id="vista-tareas" role="group" aria-label="Vista de tareas"><button type="button" class="on" data-vista="hoy">Hoy</button><button type="button" data-vista="arbol">Árbol</button><button type="button" data-vista="tablero">Tablero</button></div>
           <button class="btn btn-primario" id="btn-nueva-tarea" type="button">+ Nueva tarea</button>
@@ -153,7 +153,7 @@
 
     <section class="seccion" data-pantalla="notas" id="p-notas" hidden>
       <div class="sec-cab">
-        <div><h1>Notas</h1><p class="sec-sub">El material que no es tarea: texto, enlaces y contexto.</p></div>
+        <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub">El material que no es tarea: texto, enlaces y contexto.</p></div>
         <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button">+ Nueva nota</button></div>
       </div>
       <div class="notas-layout">
@@ -171,7 +171,7 @@
     </section>
 
     <section class="seccion" data-pantalla="tiempo" id="p-tiempo" hidden>
-      <div class="sec-cab"><div><h1>Tiempo</h1><p class="sec-sub">Los modos viven arriba; se añaden y se quitan como bloques.</p></div><div class="sec-acciones"><span class="pill pill-ok">instalado</span></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.tiempo">Tiempo</h1><p class="sec-sub">Los modos viven arriba; se añaden y se quitan como bloques.</p></div><div class="sec-acciones"><span class="pill pill-ok">instalado</span></div></div>
       <div class="card tiempo-barra">
         <div class="estanteria" id="estanteria-tiempo" aria-label="Modos dentro de Tiempo"></div>
       </div>
@@ -197,22 +197,22 @@
     </section>
 
     <section class="seccion" data-pantalla="malla" id="p-malla" hidden>
-      <div class="sec-cab"><div><h1>Malla</h1><p class="sec-sub">Cursos, niveles, prerrequisitos y estados de la carrera.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub">Cursos, niveles, prerrequisitos y estados de la carrera.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
       <div class="card"><h2>El motor llega con M30</h2><p class="muted">Esta pestaña ya existe y ya se puede instalar/desinstalar. La reticula, los estados y el editor se portan en M30 sin reescribirlos.</p></div>
     </section>
 
     <section class="seccion" data-pantalla="calificaciones" id="p-calificaciones" hidden>
-      <div class="sec-cab"><div><h1>Calificaciones</h1><p class="sec-sub">Categorías, componentes, examen y eximición.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub">Categorías, componentes, examen y eximición.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
       <div class="card"><h2>El motor llega con M31</h2><p class="muted">La pestaña y su lugar en la barra ya están; el cálculo de notas se porta del viejo.</p></div>
     </section>
 
     <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
-      <div class="sec-cab"><div><h1>Estudio</h1><p class="sec-sub">Horas por ramo, metas semanales y gráfico de avance.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub">Horas por ramo, metas semanales y gráfico de avance.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
       <div class="card"><h2>El motor llega con M32</h2><p class="muted">La pestaña ya se instala con el kit; el motor de estudio se porta del viejo.</p></div>
     </section>
 
     <section class="seccion" data-pantalla="ajustes" id="p-ajustes" hidden>
-      <div class="sec-cab"><div><h1>Ajustes</h1><p class="sec-sub">Apariencia, navegación, paneles, bloques y laboratorio.</p></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.ajustes">Ajustes</h1><p class="sec-sub">Apariencia, navegación, paneles, bloques y laboratorio.</p></div></div>
       <div class="ajustes-grid">
         <section class="card"><h2>Apariencia</h2><p class="muted">Nueve temas del viejo. Se aplican a toda la app.</p><div class="temas" id="temas"></div></section>
         <section class="card"><h2>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
@@ -220,14 +220,24 @@
           <label class="campo">Formato de hora <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
           <p class="muted" id="ajustes-resumen"></p>
         </section>
-        <section class="card"><h2>Paneles</h2><p class="muted">Ancho del panel derecho. Se guarda en este equipo.</p>
-          <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select>
-          <div class="fila" style="margin-top:8px"><button class="btn" type="button" id="btn-panel-ajustes">Abrir panel</button></div>
+        <section class="card"><h2>Navegación</h2><p class="muted">Dónde viven las secciones.</p>
+          <label class="campo">Barra de secciones <select class="entrada" id="pref-nav"><option value="arriba">Arriba</option><option value="izquierda">Izquierda</option></select></label>
+          <p class="muted">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
+        </section>
+        <section class="card"><h2>Paneles</h2><p class="muted">Ancho y visibilidad del panel derecho.</p>
+          <label class="campo">Ancho <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
+          <label class="check"><input type="checkbox" id="pref-panel-abierto"> Abierto al iniciar</label>
+          <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px">Abrir panel</button>
+        </section>
+        <section class="card"><h2>Idioma</h2><p class="muted">Motor i18n es/en. Las claves se declaran con <code>data-i18n</code>.</p>
+          <label class="campo">Idioma <select class="entrada" id="pref-idioma"><option value="es">Español</option><option value="en">English</option></select></label>
+          <p class="muted" id="ajustes-idioma">Los textos de navegación y secciones cambian en caliente.</p>
         </section>
         <section class="card"><h2>Periodos</h2><p class="muted">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
         <section class="card"><h2>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
         <section class="card"><h2>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div></section>
-        <section class="card"><h2>Laboratorio</h2><p class="muted">La vista dividida es un experimento; ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
+        <section class="card"><h2>Notificaciones</h2><p class="muted">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> Avisos activos</label></section>
+        <section class="card"><h2>Laboratorio</h2><p class="muted">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
         <section class="card"><h2>Acerca de</h2><p class="muted">MIMO universal · 0.1 · base 4 + bloques. MIT. Sin red.</p></section>
       </div>
     </section>
@@ -248,10 +258,10 @@
   <aside class="panel" id="panel" aria-label="Panel de herramientas">
     <div class="panel__cab"><span class="panel__tit">Panel</span><button class="icono-btn" id="btn-panel-cerrar" type="button" title="Cerrar panel" aria-label="Cerrar panel" style="min-width:28px;height:26px"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <div class="panel__tabs" role="tablist" aria-label="Herramientas del panel">
-      <button class="panel__tab on" type="button" role="tab" aria-selected="true" data-ptab="contexto">Contexto</button>
-      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="detalle">Detalle</button>
-      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="notas">Notas</button>
-      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="bloques">Bloques</button>
+      <button class="panel__tab on" type="button" role="tab" aria-selected="true" data-ptab="contexto" data-i18n="panel.contexto">Contexto</button>
+      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="detalle" data-i18n="panel.detalle">Detalle</button>
+      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="notas" data-i18n="panel.notas">Notas</button>
+      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="bloques" data-i18n="panel.bloques">Bloques</button>
     </div>
     <div id="panel-cuerpo"></div>
   </aside>

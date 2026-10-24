@@ -13,6 +13,15 @@
     });
   };
 
+  var I18N = {
+    es: { "nav.calendario": "Calendario", "nav.tareas": "Tareas", "nav.notas": "Notas", "nav.tiempo": "Tiempo", "nav.malla": "Malla", "nav.calificaciones": "Calificaciones", "nav.estudio": "Estudio", "nav.ajustes": "Ajustes", "panel.contexto": "Contexto", "panel.detalle": "Detalle", "panel.notas": "Notas", "panel.bloques": "Bloques" },
+    en: { "nav.calendario": "Calendar", "nav.tareas": "Tasks", "nav.notas": "Notes", "nav.tiempo": "Time", "nav.malla": "Degree plan", "nav.calificaciones": "Grades", "nav.estudio": "Study", "nav.ajustes": "Settings", "panel.contexto": "Context", "panel.detalle": "Details", "panel.notas": "Notes", "panel.bloques": "Blocks" }
+  };
+  function idioma() { return (estado && estado.prefs && estado.prefs.idioma) || "es"; }
+  function t(k) {
+    var d = I18N[idioma()] || I18N.es;
+    return d[k] || I18N.es[k] || k;
+  }
   var TEMAS = [
     ["clasico", "Clásico"], ["deepsea", "DeepSea"], ["medianoche", "Medianoche"],
     ["negro", "Negro"], ["vino", "Vino"], ["bosque", "Bosque"],
@@ -34,7 +43,7 @@
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [],
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320" },
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true },
       notaSel: null, tareaSel: null, eventoSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -75,10 +84,7 @@
   }
   function icono(id) { return '<svg class="icono" aria-hidden="true"><use href="#' + id + '"/></svg>'; }
   function nombre(id) {
-    if (id === "calendario") return "Calendario";
-    if (id === "tareas") return "Tareas";
-    if (id === "notas") return "Notas";
-    if (id === "ajustes") return "Ajustes";
+    if (["calendario", "tareas", "notas", "ajustes", "tiempo", "malla", "calificaciones", "estudio"].indexOf(id) !== -1) return t("nav." + id);
     return BLOQUES[id] ? BLOQUES[id].nombre : id;
   }
   function iconoDe(id) {
@@ -634,11 +640,24 @@
   function aplicarPrefs() {
     var p = estado.prefs || {};
     document.documentElement.style.setProperty("--ancho-panel", (p.panelAncho || "320") + "px");
+    document.body.classList.toggle("nav-izq", p.navPos === "izquierda");
     var fi = $("#pref-inicio"), fh = $("#pref-hora"), fp = $("#pref-panel-ancho");
     if (fi) fi.value = p.inicioSemana || "lunes";
     if (fh) fh.value = p.hora || "24";
     if (fp) fp.value = p.panelAncho || "320";
+    if ($("#pref-nav")) $("#pref-nav").value = p.navPos || "arriba";
+    if ($("#pref-idioma")) $("#pref-idioma").value = p.idioma || "es";
+    if ($("#pref-notif")) $("#pref-notif").checked = p.notificaciones !== false;
+    if ($("#pref-panel-abierto")) $("#pref-panel-abierto").checked = p.panelAbierto !== false;
     var lab = $("#lab-split"); if (lab) lab.checked = splitOn;
+  }
+  function aplicarIdioma() {
+    document.documentElement.lang = idioma();
+    $$("[data-i18n]").forEach(function (el) {
+      var v = t(el.getAttribute("data-i18n"));
+      if (v) el.textContent = v;
+    });
+    pintarTabs();
   }
   function pintarAjustes() {
     var p = estado.prefs || {};
@@ -648,6 +667,7 @@
     var d = $("#ajustes-datos");
     if (d) d.textContent = "Datos en este equipo: " + estado.tareas.length + " tareas, " + estado.eventos.length + " eventos, " + estado.notas.length + " notas. Nada sale de aquí.";
     var pl = $("#ajustes-periodos");
+    if ($("#ajustes-idioma")) $("#ajustes-idioma").textContent = "Idioma activo: " + (p.idioma === "en" ? "English" : "Español") + ". Navegación y secciones cambian en caliente.";
     if (pl) {
       pl.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
         return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + x.semanas.length + ' semanas</small></span><button class="btn btn--chico" type="button" data-periodo-aj="' + x.id + '">Usar</button></div>';
@@ -811,7 +831,7 @@
 
   function init() {
     aplicarTema(estado.tema || "clasico");
-    aplicarPrefs(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
+    aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTareas(); pintarNotas();
     pintarTemas(); pintarTiempo(); pintarPanel();
@@ -832,6 +852,10 @@
     $("#pref-inicio").addEventListener("change", function (e) { estado.prefs.inicioSemana = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
     $("#pref-hora").addEventListener("change", function (e) { estado.prefs.hora = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
     $("#pref-panel-ancho").addEventListener("change", function (e) { estado.prefs.panelAncho = e.target.value; guardar(); aplicarPrefs(); });
+    $("#pref-nav").addEventListener("change", function (e) { estado.prefs.navPos = e.target.value; guardar(); aplicarPrefs(); });
+    $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); aplicarIdioma(); pintarAjustes(); });
+    $("#pref-notif").addEventListener("change", function (e) { estado.prefs.notificaciones = e.target.checked; guardar(); });
+    $("#pref-panel-abierto").addEventListener("change", function (e) { estado.prefs.panelAbierto = e.target.checked; guardar(); if (e.target.checked) abrirPanel(); else cerrarPanel(); });
     $("#lab-split").addEventListener("change", function (e) {
       if (e.target.checked !== splitOn) alternarSplit();
       pintarAjustes();
