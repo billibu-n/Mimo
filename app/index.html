@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIMO · universal</title>
+<meta name="description" content="MIMO universal: Calendario, Tareas, Notas y Ajustes; bloques instalables.">
+<link rel="icon" href="maqueta/icon-64.png">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/temas/tema-clasico.css">
+<link rel="stylesheet" href="css/temas/tema-deepsea.css">
+<link rel="stylesheet" href="css/temas/tema-medianoche.css">
+<link rel="stylesheet" href="css/temas/tema-negro.css">
+<link rel="stylesheet" href="css/temas/tema-vino.css">
+<link rel="stylesheet" href="css/temas/tema-bosque.css">
+<link rel="stylesheet" href="css/temas/tema-sepia.css">
+<link rel="stylesheet" href="css/temas/tema-pinky.css">
+<link rel="stylesheet" href="css/temas/tema-alto-contraste.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/shell.css">
+</head>
+<body data-tema="clasico">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-tareas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 7 2 2 3-3M4 17l2 2 3-3M12 7h8M12 17h8"/></symbol>
+  <symbol id="i-notas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 11h6M9 15h6"/></symbol>
+  <symbol id="i-tiempo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6"/></symbol>
+  <symbol id="i-malla" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-libro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></symbol>
+  <symbol id="i-split" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></symbol>
+  <symbol id="i-tema" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></symbol>
+</defs></svg>
+
+<header class="topbar">
+  <span class="marca">MIMO</span>
+  <span class="badge">universal · 0.1</span>
+  <span class="crece"></span>
+  <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span>Buscar</span><kbd>Ctrl K</kbd></button>
+  <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
+  <button class="icono-btn" id="btn-tema" type="button" title="Cambiar de tema"><svg class="icono" aria-hidden="true"><use href="#i-tema"/></svg></button>
+  <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
+  <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
+  <button class="icono-btn" id="btn-ajustes" type="button" title="Ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
+</header>
+
+<div class="navbar">
+  <div class="nav-acciones">
+    <button class="btn btn-primario" id="btn-nuevo" type="button">+ Nuevo</button>
+    <button class="periodo" id="btn-periodo" type="button">Periodo · 2026-2</button>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
+  <button class="tab-add" id="btn-add" type="button" title="Añadir un bloque" aria-label="Añadir un bloque"><svg class="icono" aria-hidden="true"><use href="#i-plus"/></svg></button>
+</div>
+
+<div class="shell" id="shell">
+  <main class="contenido" id="contenido">
+
+    <section class="seccion" data-pantalla="calendario" id="p-calendario">
+      <div class="sec-cab">
+        <div><h1>Calendario</h1><p class="sec-sub">Todo lo que tiene fecha, en un solo sitio.</p></div>
+        <div class="sec-acciones">
+          <div class="conmutador" role="group" aria-label="Vista del calendario"><button type="button" class="on">Mes</button><button type="button">Semana</button><button type="button">Agenda</button></div>
+          <button class="btn" id="btn-hoy" type="button">Hoy</button>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><b id="kpi-eventos">0</b><span>eventos este mes</span></div>
+        <div class="kpi"><b id="kpi-tareas">0</b><span>tareas con fecha</span></div>
+        <div class="kpi"><b>0 h</b><span>registradas</span></div>
+        <div class="kpi"><b id="kpi-bloques">0</b><span>bloques instalados</span></div>
+      </div>
+      <div class="cal-layout">
+        <aside class="rail" aria-label="Filtros">
+          <button class="btn btn-primario" id="btn-nuevo-evento" type="button" style="width:100%">+ Nuevo evento</button>
+          <hr><h3>Contextos</h3>
+          <p class="muted">Sin contextos todavía. Crea uno al primer evento o tarea.</p>
+          <hr><h3>Calendarios</h3>
+          <p class="muted">Local · este equipo</p>
+        </aside>
+        <div class="card cal-tarjeta">
+          <div class="cal-cab"><h2 id="cal-mes-titulo">Mes</h2><span class="pill" id="cal-cuenta">0 eventos</span></div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <p class="empty" id="cal-vacio">Sin eventos. Todo lo que tenga fecha aparecerá aquí.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" data-pantalla="tareas" id="p-tareas" hidden>
+      <div class="sec-cab">
+        <div><h1>Tareas</h1><p class="sec-sub">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
+        <div class="sec-acciones">
+          <div class="conmutador" id="vista-tareas" role="group" aria-label="Vista de tareas"><button type="button" class="on" data-vista="hoy">Hoy</button><button type="button" data-vista="arbol">Árbol</button><button type="button" data-vista="tablero">Tablero</button></div>
+          <button class="btn btn-primario" id="btn-nueva-tarea" type="button">+ Nueva tarea</button>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><b id="kpi-hoy">0</b><span>para hoy</span></div>
+        <div class="kpi"><b id="kpi-abiertas">0</b><span>abiertas</span></div>
+        <div class="kpi"><b id="kpi-hechas">0</b><span>hechas</span></div>
+        <div class="kpi"><b>0 %</b><span>de la semana</span></div>
+      </div>
+      <div class="card">
+        <form class="tarea-form" id="tarea-form" hidden>
+          <input class="entrada" id="tarea-titulo" type="text" placeholder="¿Qué hay que hacer?" aria-label="Título de la tarea" autocomplete="off">
+          <button class="btn btn-primario" type="submit">Crear</button>
+          <button class="btn" type="button" id="tarea-cancelar">Cancelar</button>
+        </form>
+        <div id="tareas-lista" class="tareas-lista"></div>
+        <div class="empty" id="tareas-vacio">
+          <h2>Sin tareas todavía</h2>
+          <p>Una tarea puede ser un proyecto: las tareas dentro suben su progreso.</p>
+          <button class="btn btn-primario" type="button" id="tareas-crear">Crear la primera tarea</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" data-pantalla="notas" id="p-notas" hidden>
+      <div class="sec-cab">
+        <div><h1>Notas</h1><p class="sec-sub">El material que no es tarea: texto, enlaces y contexto.</p></div>
+        <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button">+ Nueva nota</button></div>
+      </div>
+      <div class="notas-layout">
+        <aside class="notas-lista" aria-label="Lista de notas">
+          <input class="entrada" id="buscar-nota" type="search" placeholder="Buscar nota…" aria-label="Buscar nota">
+          <div id="notas-items"></div>
+          <p class="muted" id="notas-vacio">Sin notas todavía.</p>
+        </aside>
+        <div class="nota-editor card">
+          <input class="nota-titulo" id="nota-titulo" type="text" placeholder="Título de la nota" aria-label="Título de la nota" disabled>
+          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe aquí. Markdown en la vista previa llegará con M24." aria-label="Cuerpo de la nota" disabled></textarea>
+          <p class="muted" id="nota-meta">Sin nota abierta.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" data-pantalla="tiempo" id="p-tiempo" hidden>
+      <div class="sec-cab"><div><h1>Tiempo</h1><p class="sec-sub">Cronómetro, temporizador, pomodoro y alarmas. Un bloque con bloques dentro.</p></div><div class="sec-acciones"><span class="pill pill-ok">instalado</span></div></div>
+      <div class="tiempo-layout">
+        <div class="card tiempo-caja">
+          <div class="tiempo-reloj" id="reloj">00:00:00</div>
+          <p class="muted" id="tiempo-estado">Cronómetro · parado · el motor llega con M33</p>
+          <div class="fila"><button class="btn btn-primario" type="button" disabled title="El motor de Tiempo llega con M33">Empezar</button><button class="btn" type="button" disabled title="El motor de Tiempo llega con M33">Pausar</button><button class="btn" type="button" disabled title="El motor de Tiempo llega con M33">Parar</button><button class="btn" type="button" disabled title="El motor de Tiempo llega con M33">Reiniciar</button></div>
+        </div>
+        <div class="card">
+          <h2>Dentro de Tiempo</h2>
+          <div class="estanteria" id="estanteria-tiempo" aria-label="Bloques dentro de Tiempo"></div>
+          <p class="muted" style="margin-top:12px">Quitar un bloque de dentro no desinstala Tiempo ni borra sus datos. El motor real se porta en M33.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="seccion" data-pantalla="malla" id="p-malla" hidden>
+      <div class="sec-cab"><div><h1>Malla</h1><p class="sec-sub">Cursos, niveles, prerrequisitos y estados de la carrera.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
+      <div class="card"><h2>El motor llega con M30</h2><p class="muted">Esta pestaña ya existe y ya se puede instalar/desinstalar. La reticula, los estados y el editor se portan en M30 sin reescribirlos.</p></div>
+    </section>
+
+    <section class="seccion" data-pantalla="calificaciones" id="p-calificaciones" hidden>
+      <div class="sec-cab"><div><h1>Calificaciones</h1><p class="sec-sub">Categorías, componentes, examen y eximición.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
+      <div class="card"><h2>El motor llega con M31</h2><p class="muted">La pestaña y su lugar en la barra ya están; el cálculo de notas se porta del viejo.</p></div>
+    </section>
+
+    <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
+      <div class="sec-cab"><div><h1>Estudio</h1><p class="sec-sub">Horas por ramo, metas semanales y gráfico de avance.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
+      <div class="card"><h2>El motor llega con M32</h2><p class="muted">La pestaña ya se instala con el kit; el motor de estudio se porta del viejo.</p></div>
+    </section>
+
+    <section class="seccion" data-pantalla="ajustes" id="p-ajustes" hidden>
+      <div class="sec-cab"><div><h1>Ajustes</h1><p class="sec-sub">Apariencia, navegación, paneles, bloques y laboratorio.</p></div></div>
+      <div class="ajustes-grid">
+        <section class="card"><h2>Apariencia</h2><p class="muted">Nueve temas del viejo. Se aplican a toda la app.</p><div class="temas" id="temas"></div></section>
+        <section class="card"><h2>Navegación</h2><p class="muted">Barra arriba, pastillas y orden de secciones. Las opciones se activan en M40.</p><div class="fila"><button class="btn" type="button" disabled>Arriba</button><button class="btn" type="button" disabled>Izquierda</button></div></section>
+        <section class="card"><h2>Paneles</h2><p class="muted">El panel derecho tiene Contexto, Detalle, Notas y Bloques. Recuerda la pestaña por sección.</p><button class="btn" type="button" id="btn-panel-ajustes">Abrir panel</button></section>
+        <section class="card"><h2>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
+        <section class="card"><h2>Laboratorio</h2><p class="muted">La vista dividida es un experimento. Apagada por defecto; se enciende desde aquí en M43.</p><label class="check"><input type="checkbox" id="lab-split" disabled> Vista dividida</label></section>
+        <section class="card"><h2>Acerca de</h2><p class="muted">MIMO universal · 0.1 · base 4 + bloques. MIT. Sin red.</p></section>
+      </div>
+    </section>
+  </main>
+
+  <main class="contenido-b" id="contenido-b" hidden aria-label="Vista secundaria">
+    <div class="sec-cab"><div><h2>Notas</h2><p class="sec-sub">Vista secundaria del experimento.</p></div><button class="btn" type="button" id="btn-cerrar-split">Cerrar</button></div>
+    <div class="notas-lista" id="notas-lista-b"></div>
+  </main>
+
+  <aside class="panel" id="panel" aria-label="Panel de herramientas">
+    <div class="panel__cab"><span class="panel__tit">Panel</span><button class="icono-btn" id="btn-panel-cerrar" type="button" title="Cerrar panel" aria-label="Cerrar panel" style="min-width:28px;height:26px"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="panel__tabs" role="tablist" aria-label="Herramientas del panel">
+      <button class="panel__tab on" type="button" role="tab" aria-selected="true" data-ptab="contexto">Contexto</button>
+      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="detalle">Detalle</button>
+      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="notas">Notas</button>
+      <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="bloques">Bloques</button>
+    </div>
+    <div id="panel-cuerpo"></div>
+  </aside>
+</div>
+
+<div class="velo" id="velo"></div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-tit">
+  <div class="modal__caja">
+    <header class="modal__cab"><div><h2 id="modal-tit">Bloques y kits</h2><p class="muted" id="modal-sub"></p></div><button class="icono-btn" id="modal-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <p class="muted">Instalar es una promesa que se cumple: el bloque aparece en la barra, monta su pantalla y se puede quitar sin borrar tus datos.</p>
+    <div class="catalogo" id="catalogo"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/shell.js"></script>
+</body>
+</html>

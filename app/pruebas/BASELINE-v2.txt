@@ -1,11 +1,11 @@
-# Línea base M10 — gates sobre maqueta + banco de tokens
-# fecha: 2026-10-24T12:08:25-03:00
-# base: cf1ac05
+# Línea base M11/M12 — app real + maqueta + banco
+# fecha: 2026-10-24T12:41:31-03:00
+# base: 06baeb3
 # comando: python3 app/pruebas/correr-gates.py
 
 
 === gate-ui.py ===
-TABLERO: /home/billibu/sede/trabajo/trabajos/T-47-mimo-m10-tokens/borradores/clon/app/maqueta/index.html
+TABLERO: /home/billibu/sede/trabajo/trabajos/T-48-mimo-m11-m12-shell/borradores/clon/app/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -30,7 +30,7 @@ TABLERO: /home/billibu/sede/trabajo/trabajos/T-47-mimo-m10-tokens/borradores/clo
 [OK] 411: el panel se abre como cajón
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui: 0 choque(s).
-TABLERO: /tmp/mimo-gate-ui-9yik8buz/maqueta/index.html
+TABLERO: /tmp/mimo-gate-ui-sguv0fen/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -56,6 +56,28 @@ TABLERO: /tmp/mimo-gate-ui-9yik8buz/maqueta/index.html
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui/rota: 3 choque(s).
 DEMO: buena 0, rota 1. El gate discrimina.
+
+=== gate-shell.py ===
+[OK] base 4 en orden — ['Calendario', 'Tareas', 'Notas', 'Ajustes']
+[OK] consola limpia — []
+[OK] Tiempo instalado aparece en la barra
+[OK] Tiempo: 4 bloques dentro
+[OK] Tiempo: quitar un hijo deja 3
+[OK] Tiempo: el padre sigue tras quitar el hijo
+[OK] kit: instala Malla, Calificaciones y Estudio — ['Calendario', 'Tareas', 'Notas', 'Tiempo', 'Malla', 'Calificaciones', 'Estudio', 'Ajustes']
+[OK] kit: quitarlo no deja huérfanas — ['Calendario', 'Tareas', 'Notas', 'Tiempo', 'Ajustes']
+[OK] kit: quitar Academics no toca Tiempo
+[OK] tareas: crear una tarea
+[OK] tareas: seleccionar cambia el panel a Detalle
+[OK] notas: la nota aparece en la lista
+[OK] notas: el panel Notas muestra la nota abierta
+[OK] panel: recuerda Detalle al volver a Tareas
+[OK] ajustes: 9 temas
+[OK] ajustes: el tema se aplica al body
+[OK] consola limpia al final — []
+[OK] 411: sin desborde — 0px
+[OK] 411: consola limpia — []
+RESUMEN gate-shell: 0 choque(s).
 
 === gate-diseno.py ===
 [OK] tokens: 5 tamaños — 5
@@ -121,7 +143,7 @@ RESUMEN gate-diseno/roto: 1 choque(s).
 DEMO: buena 0, rota 1. El gate discrimina.
 
 === gate-datos.py ===
-RESPALDO: /home/billibu/sede/trabajo/trabajos/T-47-mimo-m10-tokens/borradores/clon/app/pruebas/fixtures/respaldo-sintetico.json
+RESPALDO: /home/billibu/sede/trabajo/trabajos/T-48-mimo-m11-m12-shell/borradores/clon/app/pruebas/fixtures/respaldo-sintetico.json
 [OK] v3: el documento declara v=3
 [OK] v3: meta.migrado_desde=formato2
 [OK] cursos: 87 de 87
@@ -156,6 +178,7 @@ DEMO: buena 0, huérfano detectado. El gate discrimina.
 
 === RESUMEN GATES ===
 gate-ui.py: VERDE (0)
+gate-shell.py: VERDE (0)
 gate-diseno.py: VERDE (0)
 gate-datos.py: VERDE (0)
 gate-bloques.py: VERDE (0)

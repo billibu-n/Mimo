@@ -7,6 +7,7 @@ antes para que M10–M12 tengan una línea base y no se declaren verdes por impr
 
 ```bash
 python3 app/pruebas/gate-ui.py --demo
+python3 app/pruebas/gate-shell.py
 python3 app/pruebas/gate-diseno.py --demo
 python3 app/pruebas/gate-datos.py --demo
 python3 app/pruebas/gate-bloques.py --demo
@@ -22,6 +23,7 @@ gate que no discrimina es un gate roto.
 | Gate | Bueno | Roto |
 |---|---|---|
 | `gate-ui` | base 4 en orden, panel de 4, 1440/1100/411 sin desborde, 0 consola, split, temas, cajón | `min-width:1600px` fuerza desborde y debe salir 1 |
+| `gate-shell` | la app real: instalar Tiempo, quitar hijo, kit Academics, tarea, nota, panel por sección, temas | sin demo: mide `app/index.html` |
 | `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 9 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
 | `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
