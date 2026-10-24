@@ -73,8 +73,8 @@ def main() -> int:
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
             page.wait_for_timeout(250)
             exigir(page.locator(".calif-item").count() == 1, "calif: el ramo aparece en la lista", fallas)
-            exigir("faltan datos" in page.locator(".calif-resumen").inner_text(),
-                   "calif: sin notas faltan datos", fallas)
+            exigir("en curso" in page.locator(".calif-resumen").inner_text(),
+                   "calif: sin notas el curso sigue en curso", fallas)
 
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
@@ -96,8 +96,8 @@ def main() -> int:
             cambiar(page, '[data-comp-nota="1"]', "6.0")
             exigir(page.locator(".calif-resumen").inner_text().split("\n")[0].strip() == "5.5",
                    "calif: presentación 5.5 con dos categorías", fallas)
-            exigir("a examen" in page.locator(".calif-resumen").inner_text(),
-                   "calif: con examen activo y sin nota queda a examen", fallas)
+            exigir("en curso" in page.locator(".calif-resumen").inner_text(),
+                   "calif: con examen pendiente el curso sigue en curso", fallas)
 
             cambiar(page, "[data-exam-nota]", "6.0")
             exigir("5.7" in page.locator(".calif-resumen").inner_text(),
@@ -111,14 +111,35 @@ def main() -> int:
             page.locator('[data-accion-calif="cond-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-cond-valor="0"]', "5.5")
-            exigir("eximido" in page.locator(".calif-resumen").inner_text(),
+            exigir("ya te eximes" in page.locator(".calif-exim-estado").inner_text(),
                    "calif: la condición de eximición se cumple", fallas)
             exigir(page.locator(".calif-resumen").inner_text().split("\n")[0].strip() == "5.5",
                    "calif: eximido usa la presentación", fallas)
+
+            page.locator('[data-accion-calif="cerrar-curso"]').click()
+            page.wait_for_timeout(250)
+            exigir("Curso cerrado" in page.locator(".calif-cierre").inner_text()
+                   and "APROBADO" in page.locator(".calif-cierre").inner_text(),
+                   "calif: cerrar con eximición deja el curso aprobado", fallas)
+            exigir("5.5" in page.locator(".calif-cierre").inner_text(),
+                   "calif: el cierre guarda la final 5.5", fallas)
+            page.locator('[data-accion-calif="reabrir-curso"]').click()
+            page.wait_for_timeout(250)
+            exigir("Curso abierto" in page.locator(".calif-cierre").inner_text(),
+                   "calif: reabrir deja el curso abierto", fallas)
             page.locator("[data-exim-activa]").uncheck()
             page.wait_for_timeout(220)
             exigir("5.8" in page.locator(".calif-resumen").inner_text(),
                    "calif: al desactivar la eximición vuelve el examen", fallas)
+
+            cambiar(page, "[data-exam-nota]", "1.0")
+            page.locator('[data-accion-calif="cerrar-curso"]').click()
+            page.wait_for_timeout(250)
+            exigir("REPROBADO" in page.locator(".calif-cierre").inner_text(),
+                   "calif: cerrar con final baja deja el curso reprobado", fallas)
+            page.locator('[data-accion-calif="reabrir-curso"]').click()
+            page.wait_for_timeout(250)
+            cambiar(page, "[data-exam-nota]", "6.0")
 
             page.locator(".calif-item").first.click()
             page.wait_for_timeout(100)

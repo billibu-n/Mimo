@@ -457,3 +457,14 @@ body.nav-izq .shell{margin-left:64px}
 .calif-caja--ok b{color:var(--ok)}
 .calif-caja--est b{color:var(--q)}
 .calif-caja--warn b{color:var(--warn)}
+
+/* cierre manual del curso */
+.calif-cierre{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);border:1px solid var(--line2);border-left:4px solid var(--warn);border-radius:var(--r-sm);background:color-mix(in srgb,var(--warn) 7%,var(--sup));padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3)}
+.calif-cierre b{display:block;font-size:var(--fs-sm)}
+.calif-cierre span{display:block;color:var(--muted);font-size:var(--fs-xs);line-height:1.4}
+.calif-cierre--ok{border-left-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,var(--sup))}
+.calif-cierre--bad{border-left-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--sup))}
+.calif-cierre .btn{flex:none}
+@media (max-width:520px){.calif-cierre{flex-direction:column;align-items:flex-start}.calif-cierre .btn{width:100%}}
+.calif-caja--bad{border-top-color:var(--bad)}
+.calif-caja--bad b{color:var(--bad)}

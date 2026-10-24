@@ -174,7 +174,7 @@
           if (window.innerWidth <= 1255) abrirPanel();
         } },
         { accion: "ramo-editar", texto: "Editar", run: function () { abrirFormularioRamo(r); } },
-        { accion: "ramo-estado", texto: r.aprobado ? "Reabrir" : "Marcar aprobado", run: function () { alternarRamo(r.codigo); } },
+        { accion: "ramo-estado", texto: r.cerrado ? "Reabrir" : "Cerrar curso", run: function () { alternarRamo(r.codigo); } },
         { sep: true },
         { accion: "ramo-borrar", texto: "Borrar ramo", peligro: true, run: function () { borrarRamo(r.codigo); } }
       ] };
@@ -690,12 +690,18 @@
       var nivel = parseInt(c.nivel, 10);
       if (!nivel || nivel < 1) nivel = String(c.tipo || "") === "cupo" ? 99 : 1;
       if (nivel > 99) nivel = 99;
+      var cerrado = c.cerrado !== undefined ? !!c.cerrado : !!c.aprobado;
+      var aprobado = !!c.aprobado && cerrado;
+      var resultado = cerrado ? String(c.resultado || (aprobado ? "aprobado" : "reprobado")) : "";
       out.push({
         codigo: cod, nombre: String(c.nombre || cod).trim() || cod,
         creditos: Math.max(0, parseInt(c.creditos, 10) || 0), nivel: nivel,
         requisitos: reqs, requisitos_o: grupos, aprobacion: Number(c.aprobacion) || null,
         tipo: String(c.tipo || ""), enMalla: c.enMalla !== false && c.en_malla !== false,
-        aprobado: !!c.aprobado, enCurso: !!c.enCurso && !c.aprobado
+        cerrado: cerrado, aprobado: aprobado, resultado: resultado,
+        notaCierre: c.notaCierre === null || c.notaCierre === undefined ? null : Number(c.notaCierre),
+        cerradoEn: String(c.cerradoEn || ""),
+        enCurso: !!c.enCurso && !cerrado
       });
     });
     estado.cursos = out;
@@ -715,7 +721,7 @@
   // (y al menos uno de cada grupo "o") están aprobados. Un código que no existe bloquea.
   function estadoDeRamo(c, visto) {
     if (!c) return "bloqueado";
-    if (c.aprobado) return "aprobado";
+    if (c.cerrado) return c.aprobado ? "aprobado" : "reprobado";
     if (visto && visto[c.codigo]) return "bloqueado";
     if (c.enCurso) return "curso";
     var reqs = c.requisitos || [], grupos = c.requisitos_o || [];
@@ -926,10 +932,41 @@
   }
   function alternarRamo(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
-    c.aprobado = !c.aprobado;
-    if (c.aprobado) c.enCurso = false;
-    guardar(); pintarMalla(); pintarPanel();
-    aviso(c.codigo + (c.aprobado ? " aprobado." : " reabierto."));
+    if (c.cerrado) { reabrirCurso(cod); return; }
+    var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
+    if (P === null) {
+      if (!window.confirm("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?")) return;
+      c.cerrado = true; c.aprobado = true; c.resultado = "aprobado";
+      c.notaCierre = null; c.cerradoEn = selloLocal(); c.enCurso = false;
+      guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+      aviso(c.codigo + " cerrado como aprobado (sin notas).");
+      return;
+    }
+    if (nf === null) { aviso("Falta la nota del examen o la eximición para cerrar el curso."); return; }
+    cerrarCurso(cod);
+  }
+  function cerrarCurso(cod) {
+    var c = ramoPorCodigo(cod); if (!c) return;
+    if (c.cerrado) { aviso("El curso ya está cerrado."); return; }
+    var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
+    if (P === null) { aviso("No hay notas para calcular el resultado del curso."); return; }
+    if (nf === null) { aviso("Falta la nota del examen o la eximición para cerrar el curso."); return; }
+    var res = nf >= q.notaMin ? "aprobado" : "reprobado";
+    if (!window.confirm("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) +
+      "? Quedará " + res.toUpperCase() + ".")) return;
+    c.cerrado = true; c.aprobado = res === "aprobado"; c.resultado = res;
+    c.notaCierre = Math.round(nf * 10) / 10; c.cerradoEn = selloLocal(); c.enCurso = false;
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    aviso("Curso cerrado: " + res + " · " + fmtNota(nf));
+  }
+  function reabrirCurso(cod) {
+    var c = ramoPorCodigo(cod); if (!c || !c.cerrado) return;
+    if (!window.confirm("¿Reabrir \"" + c.codigo + " — " + c.nombre + "\"? Dejará de contar como " +
+      (c.aprobado ? "aprobado" : "reprobado") + " y volverá a en curso.")) return;
+    c.cerrado = false; c.aprobado = false; c.resultado = "";
+    c.notaCierre = null; c.cerradoEn = ""; c.enCurso = true;
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    aviso("Curso reabierto. Sus notas siguen ahí.");
   }
   function abrirFormularioRamo(c) {
     normalizarCursos();
@@ -939,8 +976,8 @@
     $("#ramo-creditos").value = c ? c.creditos : 6;
     $("#ramo-nivel").value = c ? c.nivel : 1;
     $("#ramo-requisitos").value = c ? (c.requisitos || []).join(", ") : "";
-    $("#ramo-aprobado").checked = !!(c && c.aprobado);
-    $("#ramo-curso").checked = !!(c && c.enCurso);
+    $("#ramo-aprobado").checked = !!(c && c.cerrado && c.aprobado);
+    $("#ramo-curso").checked = !!(c && !c.cerrado && c.enCurso);
     $("#ramo-form").hidden = false;
     $("#ramo-form button[type=submit]").textContent = c ? "Guardar" : "Crear";
     $("#ramo-codigo").focus(); $("#ramo-codigo").select();
@@ -1174,14 +1211,11 @@
     if (c.examen.nota === null || c.examen.nota === undefined) return null;
     return (1 - c.examen.peso / 100) * P + (c.examen.peso / 100) * c.examen.nota;
   }
-  function estadoCalifDe(c) {
-    var P = presentacionDe(c);
-    if (P === null) return { texto: "faltan datos", clase: "" };
-    if (estadoEximicion(c).cumple) return { texto: "eximido", clase: "pill-ok" };
-    if (c.examen.activo && (c.examen.nota === null || c.examen.nota === undefined)) return { texto: "a examen", clase: "pill-warn" };
-    var nf = notaFinalDe(c);
-    if (nf === null) return { texto: "faltan datos", clase: "" };
-    return nf >= c.notaMin ? { texto: "aprobado", clase: "pill-ok" } : { texto: "reprobado", clase: "pill-bad" };
+  function estadoCalifDe(c, curso) {
+    if (!curso || !curso.cerrado) return { texto: "en curso", clase: "" };
+    return curso.aprobado
+      ? { texto: "aprobado", clase: "pill-ok" }
+      : { texto: "reprobado", clase: "pill-bad" };
   }
   function necesarioDe(c, objetivo) {
     if (!c.examen.activo || c.examen.peso <= 0) return null;
@@ -1193,7 +1227,7 @@
   }
   function htmlDetalleCalif(cur, q) {
     if (!cur) return '<p class="muted">Selecciona un ramo.</p>';
-    var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q), ex = estadoEximicion(q);
+    var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q, cur), ex = estadoEximicion(q);
     var necMin = necesarioDe(q, q.notaMin), necMeta = necesarioDe(q, q.meta);
     var filasCat = q.categorias.map(function (cat, i) {
       var p = promedioCategoria(q, cat);
@@ -1249,16 +1283,23 @@
       !q.eximicion.condiciones.length ? "Sin condiciones: con ninguna, el ramo no se exime." :
       ex.sinDatos ? "Faltan notas para saber si te eximes." :
       ex.cumple ? "Con estas notas, ya te eximes." : "Con estas notas, todavía no te eximes.";
+    var claseFinal = cur.cerrado ? (cur.aprobado ? "ok" : "bad") : "warn";
+    var cierre = cur.cerrado
+      ? '<div class="calif-cierre calif-cierre--' + (cur.aprobado ? "ok" : "bad") + '"><div><b>Curso cerrado · ' +
+        (cur.aprobado ? "APROBADO" : "REPROBADO") + "</b><span>Final " +
+        fmtNota(cur.notaCierre !== null ? cur.notaCierre : nf) + (cur.cerradoEn ? " · " + esc(cur.cerradoEn) : "") +
+        '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">Reabrir curso</button></div>'
+      : '<div class="calif-cierre"><div><b>Curso abierto</b><span>La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">Cerrar curso</button></div>';
     return '<div class="card calif-card">' +
       '<div class="calif-cab"><div><h2>' + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
         '<p class="muted">' + creditosDe(cur) + " créditos · " + esc(etiquetaNivel(cur.nivel)) + " · meta " + fmtNota(q.meta) + "</p></div>" +
         '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div>" +
       '<div class="calif-resumen">' +
         '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>Presentación</span></div>" +
-        '<div class="calif-caja calif-caja--ok"><b>' + fmtNota(nf) + "</b><span>Final</span></div>" +
+        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? "Final" : "Final provisional") + "</span></div>" +
         '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>Estado</span></div>" +
         '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? "eximido" : q.examen.activo ? textoNecesario(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
-      "</div>" +
+      "</div>" + cierre +
       '<div class="calif-ajustes">' +
         '<label class="campo">Nota mínima <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
         '<label class="campo">Meta <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
@@ -1303,7 +1344,7 @@
     if (!califSel || !ramoPorCodigo(califSel)) califSel = estado.califSel && ramoPorCodigo(estado.califSel) ? estado.califSel : cursos[0].codigo;
     estado.califSel = califSel; estado.ramoSel = califSel;
     lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
-      var q = califDe(cur.codigo), est = estadoCalifDe(q);
+      var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
       return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
         '<span class="calif-item__nom"><b>' + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
         '<small>P ' + fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small>" +
@@ -1351,6 +1392,8 @@
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
     var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
+    if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
     if (accion === "cat-add") q.categorias.push({ nombre: "Categoría " + (q.categorias.length + 1), peso: 0 });
     else if (accion === "comp-add") q.componentes.push({ nombre: "Componente " + (q.componentes.length + 1), categoria: q.categorias[0].nombre, nota: null, fecha: "", peso: 1 });
     else if (accion === "cond-add") q.eximicion.condiciones.push({ tipo: "presentacion", ref: "", op: ">=", valor: 5 });
@@ -1593,7 +1636,7 @@
       var ev = eventoPorId(estado.eventoSel);
       var ramo = ramoPorCodigo(estado.ramoSel);
       if (pantalla === "calificaciones" && ramo) {
-        var qc = califDe(ramo.codigo), estC = estadoCalifDe(qc);
+        var qc = califDe(ramo.codigo), estC = estadoCalifDe(qc, ramo);
         html = "<h2>Calificaciones</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
           '<div class="panel__bloque"><span>Presentación</span><small>' + fmtNota(presentacionDe(qc)) + "</small></div>" +
           '<div class="panel__bloque"><span>Final</span><small>' + fmtNota(notaFinalDe(qc)) + "</small></div>" +
@@ -1609,7 +1652,7 @@
           (reqR ? '<div class="panel__bloque"><span>Requiere</span><small>' + esc(reqR) + "</small></div>" : "") +
           (faltanR.length ? '<h2>Falta</h2><p class="panel__nota">' + esc(faltanR.join(", ")) + "</p>" : "") +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">Editar</button>' +
-          '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.aprobado ? "Reabrir" : "Aprobar") + "</button>" +
+          '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? "Reabrir" : "Cerrar curso") + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">Borrar</button></div>';
       } else if (pantalla === "calendario" && ev) {
         html = "<h2>Evento</h2><h3>" + esc(ev.titulo) + "</h3>" +
@@ -2135,8 +2178,15 @@
       c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
       c.requisitos = reqs;
       c.requisitos_o = c.requisitos_o || [];
-      c.aprobado = $("#ramo-aprobado").checked;
-      c.enCurso = $("#ramo-curso").checked && !c.aprobado;
+      var aprobado = $("#ramo-aprobado").checked;
+      var enCurso = $("#ramo-curso").checked && !aprobado;
+      var cerrado = aprobado || (!!original && original.cerrado && !original.aprobado && !enCurso);
+      c.cerrado = cerrado;
+      c.aprobado = cerrado && aprobado;
+      c.resultado = cerrado ? (c.aprobado ? "aprobado" : "reprobado") : "";
+      c.notaCierre = cerrado ? (original ? original.notaCierre : null) : null;
+      c.cerradoEn = cerrado ? (original && original.cerradoEn ? original.cerradoEn : selloLocal()) : "";
+      c.enCurso = enCurso;
       if (!original) estado.cursos.push(c);
       estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
       guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel();
