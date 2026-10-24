@@ -43,7 +43,8 @@
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
-      estudio: { metaSemanal: 10, metasRamo: {} }, splitSeccion: "tareas",
+      tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
+      alarmas: [], estudio: { metaSemanal: 10, metasRamo: {} }, splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
@@ -62,6 +63,8 @@
           if (!Array.isArray(d.notas)) d.notas = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
           if (!d.califs || typeof d.califs !== "object") d.califs = {};
+          if (!d.pomo || typeof d.pomo !== "object") d.pomo = { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 };
+          if (!Array.isArray(d.alarmas)) d.alarmas = [];
           if (!d.estudio || typeof d.estudio !== "object") d.estudio = { metaSemanal: 10, metasRamo: {} };
           if (!d.estudio.metasRamo || typeof d.estudio.metasRamo !== "object") d.estudio.metasRamo = {};
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
@@ -80,7 +83,7 @@
   var vistaCalendario = estado.vistaCalendario || "mes";
   var calCursor = new Date();
   var formEventoId = null;
-  var tiempoSeg = 0, tiempoInt = null;
+  var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
   var splitOn = false;
 
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {} }
@@ -1660,13 +1663,48 @@
     $("#nota-meta").textContent = n ? "Guardada en este equipo · " + n.actualizado : "Sin nota abierta.";
   }
 
+  function nombreModo(id) {
+    var h = HIJOS.filter(function (x) { return x[0] === id; })[0];
+    return h ? h[1] : id;
+  }
+  function duracionPomo() {
+    var p = estado.pomo || {};
+    var v = p[estado.pomo.fase] !== undefined ? p[estado.pomo.fase] : p.trabajo;
+    return Math.max(0.1, Number(v) || 25);
+  }
+  function pintaReloj() {
+    var modo = estado.tiempoModo || "crono";
+    if (modo === "alarmas") {
+      var d = new Date();
+      $("#reloj").textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+      return;
+    }
+    var seg = modo === "crono" ? tiempoSeg : modo === "temporizador" ? tempSeg : pomoSeg;
+    var h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60), s = seg % 60;
+    $("#reloj").textContent = [h, m, s].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+  }
+  function pintarEstadoTiempo() {
+    var modo = estado.tiempoModo || "crono", txt;
+    if (modo === "alarmas") {
+      var act = (estado.alarmas || []).filter(function (a) { return a.activa; }).length;
+      txt = "Alarmas · " + act + " activa" + (act === 1 ? "" : "s");
+    } else if (modo === "pomodoro") {
+      var fase = estado.pomo.fase === "trabajo" ? "trabajo" : estado.pomo.fase === "corto" ? "pausa corta" : "pausa larga";
+      txt = "Pomodoro · " + fase + (tiempoInt ? " · corriendo" : " · parado");
+    } else {
+      txt = nombreModo(modo) + (tiempoInt ? " · corriendo" : modo === "temporizador" && tempSeg ? " · listo" : " · parado");
+    }
+    if (estado.tiempoRamo && modo !== "alarmas") txt += " · " + estado.tiempoRamo;
+    if (estado.tiempoVinculo && modo !== "alarmas") txt += " · tarea";
+    $("#tiempo-estado").textContent = txt;
+  }
   function pintarTiempo() {
     var c = $("#estanteria-tiempo");
     if (!c) return;
+    if (estado.tiempoHijos.indexOf(estado.tiempoModo) === -1) estado.tiempoModo = estado.tiempoHijos[0] || "crono";
     var html = estado.tiempoHijos.map(function (id) {
-      var nom = (HIJOS.filter(function (h) { return h[0] === id; })[0] || [id, id])[1];
-      return '<button class="estante" type="button" data-hijo="' + id + '"><span>' + esc(nom) +
-        '</span><span class="quitar" data-quitar-hijo="' + id + '" role="button" tabindex="0" title="Quitar de Tiempo">×</span></button>';
+      return '<button class="estante' + (id === estado.tiempoModo ? " on" : "") + '" type="button" data-hijo="' + id + '"><span>' +
+        esc(nombreModo(id)) + '</span><span class="quitar" data-quitar-hijo="' + id + '" role="button" tabindex="0" title="Quitar de Tiempo">×</span></button>';
     }).join("");
     html += '<button class="estante estante-add" type="button" id="btn-add-hijo">+</button>';
     html += '<button class="btn" type="button" id="btn-editar-tiempo">Editar</button>';
@@ -1674,9 +1712,7 @@
     $$("#estanteria-tiempo [data-hijo]").forEach(function (b) {
       b.addEventListener("click", function (ev) {
         if (ev.target.getAttribute("data-quitar-hijo")) return;
-        $$("#estanteria-tiempo .estante").forEach(function (x) { x.classList.remove("on"); });
-        b.classList.add("on");
-        aviso(b.textContent.replace("×", "").trim() + " · vista del bloque.");
+        cambiarModoTiempo(b.getAttribute("data-hijo"));
       });
     });
     $$("#estanteria-tiempo [data-quitar-hijo]").forEach(function (x) {
@@ -1684,7 +1720,8 @@
         ev.stopPropagation();
         var id = x.getAttribute("data-quitar-hijo");
         estado.tiempoHijos = estado.tiempoHijos.filter(function (h) { return h !== id; });
-        guardar(); pintarTiempo(); pintarPanel();
+        if (estado.tiempoModo === id) cambiarModoTiempo(estado.tiempoHijos[0] || "crono");
+        else { guardar(); pintarTiempo(); }
         aviso("Bloque quitado de Tiempo. El padre y sus datos siguen.");
       });
     });
@@ -1697,26 +1734,82 @@
       if (!falta) { aviso("Los 4 bloques de Tiempo ya están dentro."); return; }
       estado.tiempoHijos.push(falta[0]); guardar(); pintarTiempo(); aviso(falta[1] + " añadido a Tiempo.");
     });
+    var cfg = $("#tiempo-config");
+    if (cfg) cfg.innerHTML = "";
+    if (estado.tiempoModo === "temporizador" && !tiempoInt && tempSeg === 0) tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
+    if (estado.tiempoModo === "pomodoro" && !tiempoInt && pomoSeg === 0) pomoSeg = Math.round(duracionPomo() * 60);
+    if (cfg && estado.tiempoModo === "temporizador") {
+      cfg.innerHTML = '<div class="tiempo-config-fila"><label class="campo">Minutos <input class="entrada tiempo-num" id="temp-min" type="number" min="0.1" max="180" step="0.1" value="' +
+        (Number(estado.tempMin) || 25) + '"></label><span class="muted">Cuenta atrás; al llegar a cero registra la sesión.</span></div>';
+      $("#temp-min").addEventListener("change", function (e) {
+        estado.tempMin = Math.max(0.1, Number(e.target.value) || 25);
+        if (!tiempoInt) { tempSeg = Math.round(estado.tempMin * 60); tempInicial = tempSeg; pintaReloj(); }
+        guardar(); pintarEstadoTiempo();
+      });
+    } else if (cfg && estado.tiempoModo === "pomodoro") {
+      cfg.innerHTML = '<div class="tiempo-config-fila"><label class="campo">Trabajo <input class="entrada tiempo-num" id="pomo-trabajo" type="number" min="0.1" max="180" step="0.1" value="' + estado.pomo.trabajo + '"></label>' +
+        '<label class="campo">Corto <input class="entrada tiempo-num" id="pomo-corto" type="number" min="0.1" max="60" step="0.1" value="' + estado.pomo.corto + '"></label>' +
+        '<label class="campo">Largo <input class="entrada tiempo-num" id="pomo-largo" type="number" min="0.1" max="120" step="0.1" value="' + estado.pomo.largo + '"></label>' +
+        '<label class="campo">Cada <input class="entrada tiempo-num" id="pomo-cada" type="number" min="1" max="12" step="1" value="' + estado.pomo.cada + '"></label></div>' +
+        '<p class="muted">Fase actual: <b>' + esc(estado.pomo.fase) + "</b> · " + (estado.pomo.trabajos || 0) + " trabajo(s) completados. Al terminar una fase se detiene para que decidas seguir.</p>";
+      ["trabajo", "corto", "largo"].forEach(function (k) {
+        $("#pomo-" + k).addEventListener("change", function (e) {
+          estado.pomo[k] = Math.max(0.1, Number(e.target.value) || 1);
+          if (!tiempoInt) { pomoSeg = Math.round(duracionPomo() * 60); pintaReloj(); }
+          guardar(); pintarTiempo();
+        });
+      });
+      $("#pomo-cada").addEventListener("change", function (e) { estado.pomo.cada = Math.max(1, Number(e.target.value) || 4); guardar(); });
+    } else if (cfg && estado.tiempoModo === "alarmas") {
+      cfg.innerHTML = '<form class="alarma-form" id="alarma-form"><input class="entrada" id="alarma-hora" type="time" aria-label="Hora de la alarma">' +
+        '<input class="entrada" id="alarma-texto" type="text" placeholder="Para qué es" aria-label="Texto de la alarma">' +
+        '<button class="btn btn--chico btn-primario" type="submit">+ Alarma</button></form>' +
+        '<div class="alarma-lista" id="alarma-lista"></div>';
+      $("#alarma-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var hora = $("#alarma-hora").value;
+        if (!hora) { aviso("Elige una hora para la alarma."); return; }
+        estado.alarmas.push({ id: "a" + Date.now(), hora: hora, texto: $("#alarma-texto").value.trim() || "Alarma", activa: true, ultima: "" });
+        guardar(); pintarTiempo(); aviso("Alarma a las " + hora + ".");
+      });
+      $("#alarma-lista").innerHTML = (estado.alarmas || []).length ? estado.alarmas.map(function (a) {
+        return '<div class="alarma-item' + (a.activa ? "" : " off") + '"><b>' + esc(a.hora) + "</b><span>" + esc(a.texto) + "</span>" +
+          '<button class="btn btn--chico" type="button" data-alarma-toggle="' + esc(a.id) + '">' + (a.activa ? "Activa" : "Apagada") + "</button>" +
+          '<button class="calif-x" type="button" data-alarma-borrar="' + esc(a.id) + '" title="Quitar alarma" aria-label="Quitar alarma">×</button></div>';
+      }).join("") : '<p class="muted">Sin alarmas.</p>';
+      $$("#alarma-lista [data-alarma-toggle]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var a = estado.alarmas.filter(function (x) { return x.id === b.getAttribute("data-alarma-toggle"); })[0];
+          if (!a) return; a.activa = !a.activa; if (a.activa) a.ultima = ""; guardar(); pintarTiempo();
+        });
+      });
+      $$("#alarma-lista [data-alarma-borrar]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          estado.alarmas = estado.alarmas.filter(function (x) { return x.id !== b.getAttribute("data-alarma-borrar"); });
+          guardar(); pintarTiempo(); aviso("Alarma quitada.");
+        });
+      });
+    } else if (cfg && estado.tiempoModo === "crono") {
+      cfg.innerHTML = '<p class="muted">Cuenta hacia arriba. Al parar, la sesión se guarda con el ramo y la tarea elegidos.</p>';
+    }
     var v = $("#tiempo-vinculo");
     if (v) {
       var ops = ['<option value="">Sin vínculo</option>'];
       estado.tareas.forEach(function (t) { ops.push('<option value="' + t.id + '">' + esc(t.titulo) + "</option>"); });
-      v.innerHTML = ops.join("");
-      v.value = estado.tiempoVinculo || "";
+      v.innerHTML = ops.join(""); v.value = estado.tiempoVinculo || "";
       v.onchange = function () { estado.tiempoVinculo = v.value; guardar(); };
     }
     var r = $("#tiempo-ramo");
     if (r) {
       var opsR = ['<option value="">Sin ramo</option>'];
       (estado.cursos || []).forEach(function (c) { opsR.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
-      r.innerHTML = opsR.join("");
-      r.value = estado.tiempoRamo || "";
+      r.innerHTML = opsR.join(""); r.value = estado.tiempoRamo || "";
       r.onchange = function () { estado.tiempoRamo = r.value; guardar(); };
     }
     var ses = estado.sesiones || [], min = 0;
     ses.forEach(function (x) { min += Number(x.minutos || 0); });
     if ($("#tiempo-sesiones")) $("#tiempo-sesiones").textContent = String(ses.length);
-    if ($("#tiempo-horas")) $("#tiempo-horas").textContent = Math.round(min / 60) + " h";
+    if ($("#tiempo-horas")) $("#tiempo-horas").textContent = fmtHoras(min);
     var listaSes = $("#tiempo-lista-sesiones");
     if (listaSes) {
       listaSes.innerHTML = ses.length ? ses.map(function (x, i) {
@@ -1731,43 +1824,104 @@
         b.addEventListener("click", function () { borrarSesion(parseInt(b.getAttribute("data-borrar-sesion"), 10)); });
       });
     }
+    var fila = document.querySelector(".tiempo-caja .fila");
+    if (fila) fila.hidden = estado.tiempoModo === "alarmas";
+    $("#btn-empezar").disabled = estado.tiempoModo === "alarmas" || !!tiempoInt;
+    $("#btn-pausar").disabled = !tiempoInt;
+    $("#btn-parar").disabled = !tiempoInt;
+    pintaReloj(); pintarEstadoTiempo();
   }
-  function pintaReloj() {
-    var h = Math.floor(tiempoSeg / 3600), m = Math.floor((tiempoSeg % 3600) / 60), s = tiempoSeg % 60;
-    $("#reloj").textContent = [h, m, s].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+  function registrarSesion(minutos, tipo) {
+    minutos = Math.max(1, Math.round(Number(minutos) || 0));
+    if (!minutos) return;
+    estado.sesiones = estado.sesiones || [];
+    estado.sesiones.push({ fecha: hoyISO(), minutos: minutos, vinculo: estado.tiempoVinculo || "",
+      ramo: estado.tiempoRamo || "", tipo: tipo || "crono" });
+    guardar(); pintarTiempo(); pintarEstudio();
+  }
+  function pitido() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      var ac = new AC(), o = ac.createOscillator(), g = ac.createGain();
+      o.frequency.value = 880; o.type = "sine"; g.gain.value = 0.08;
+      o.connect(g); g.connect(ac.destination); o.start();
+      setTimeout(function () { o.stop(); ac.close(); }, 700);
+    } catch (e) {}
+  }
+  function tickTiempo() {
+    var modo = estado.tiempoModo || "crono";
+    if (modo === "crono") tiempoSeg++;
+    else if (modo === "temporizador") {
+      tempSeg--;
+      if (tempSeg <= 0) {
+        tempSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
+        registrarSesion(tempInicial / 60, "temporizador");
+        aviso("Temporizador terminado. Sesión registrada."); pitido(); pintarTiempo(); return;
+      }
+    } else if (modo === "pomodoro") {
+      pomoSeg--;
+      if (pomoSeg <= 0) {
+        pomoSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
+        if (estado.pomo.fase === "trabajo") {
+          registrarSesion(pomoInicial / 60, "pomodoro");
+          estado.pomo.trabajos = (estado.pomo.trabajos || 0) + 1;
+          estado.pomo.fase = estado.pomo.trabajos % (estado.pomo.cada || 4) === 0 ? "largo" : "corto";
+          aviso("Pomodoro completado. Descansa: " + estado.pomo.fase + ".");
+        } else {
+          estado.pomo.fase = "trabajo";
+          aviso("Pausa terminada. Vuelve al trabajo.");
+        }
+        guardar(); pitido(); pintarTiempo(); return;
+      }
+    }
+    pintaReloj(); pintarEstadoTiempo();
   }
   function empezarTiempo() {
-    if (tiempoInt) return;
-    tiempoInt = setInterval(function () { tiempoSeg++; pintaReloj(); }, 1000);
+    if (tiempoInt || estado.tiempoModo === "alarmas") return;
+    if (estado.tiempoModo === "temporizador" && tempSeg <= 0) tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
+    if (estado.tiempoModo === "temporizador") tempInicial = tempSeg;
+    if (estado.tiempoModo === "pomodoro" && pomoSeg <= 0) pomoSeg = Math.round(duracionPomo() * 60);
+    if (estado.tiempoModo === "pomodoro") pomoInicial = pomoSeg;
+    tiempoInt = setInterval(tickTiempo, 1000);
     $("#btn-empezar").disabled = true; $("#btn-pausar").disabled = false; $("#btn-parar").disabled = false;
-    $("#tiempo-estado").textContent = "Cronómetro · corriendo" + (estado.tiempoRamo ? " · " + estado.tiempoRamo : "") + (estado.tiempoVinculo ? " · vinculado" : "");
+    pintarEstadoTiempo();
   }
   function pausarTiempo() {
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
     $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true;
-    $("#tiempo-estado").textContent = "Cronómetro · en pausa · " + $("#reloj").textContent;
+    pintarEstadoTiempo();
   }
   function pararTiempo() {
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
-    if (tiempoSeg > 0) {
-      estado.sesiones = estado.sesiones || [];
-      estado.sesiones.push({ fecha: hoyISO(), minutos: Math.max(1, Math.round(tiempoSeg / 60)),
-        vinculo: estado.tiempoVinculo || "", ramo: estado.tiempoRamo || "" });
-      guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión registrada. Estudio la suma por ramo.");
-    }
-    tiempoSeg = 0; pintaReloj();
-    $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
-    $("#tiempo-estado").textContent = "Cronómetro · parado";
+    if (estado.tiempoModo === "crono" && tiempoSeg > 0) registrarSesion(tiempoSeg / 60, "crono");
+    else if (estado.tiempoModo === "temporizador" && tempInicial > tempSeg) registrarSesion((tempInicial - tempSeg) / 60, "temporizador");
+    else if (estado.tiempoModo === "pomodoro" && estado.pomo.fase === "trabajo" && pomoInicial > pomoSeg) registrarSesion((pomoInicial - pomoSeg) / 60, "pomodoro");
+    tiempoSeg = 0; tempSeg = 0; pomoSeg = 0; tempInicial = 0; pomoInicial = 0;
+    $("#btn-empezar").disabled = estado.tiempoModo === "alarmas"; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
+    pintaReloj(); pintarEstadoTiempo();
   }
   function reiniciarTiempo() {
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
-    tiempoSeg = 0; pintaReloj();
-    $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
-    $("#tiempo-estado").textContent = "Cronómetro · parado";
+    tiempoSeg = 0; tempSeg = 0; pomoSeg = 0; tempInicial = 0; pomoInicial = 0;
+    $("#btn-empezar").disabled = estado.tiempoModo === "alarmas"; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
+    pintarTiempo();
   }
-
-
-
+  function cambiarModoTiempo(id) {
+    if (estado.tiempoHijos.indexOf(id) === -1) return;
+    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    estado.tiempoModo = id;
+    if (id === "temporizador") { tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60); tempInicial = tempSeg; }
+    if (id === "pomodoro") { pomoSeg = Math.round(duracionPomo() * 60); pomoInicial = pomoSeg; }
+    guardar(); pintarTiempo();
+  }
+  function comprobarAlarmas() {
+    var d = new Date(), hh = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    var hoy = hoyISO();
+    (estado.alarmas || []).forEach(function (a) {
+      if (!a.activa || a.hora !== hh || a.ultima === hoy) return;
+      a.ultima = hoy; guardar(); aviso("Alarma: " + a.texto); pitido();
+    });
+  }
   function tarjetaPanel(id) {
     var b = BLOQUES[id] || { nombre: nombre(id), desc: "Sección base." };
     return '<div class="panel__bloque"><span>' + esc(b.nombre) + "</span><small>" +
@@ -2534,6 +2688,7 @@
         cerrarModal(); cerrarPanel();
       }
     });
+    setInterval(comprobarAlarmas, 1000);
     window.addEventListener("resize", function () {
       if (window.innerWidth > 1255) document.body.classList.remove("panel-abierto");
       else document.body.classList.remove("panel-oculto");
