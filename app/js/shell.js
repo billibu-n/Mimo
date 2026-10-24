@@ -83,6 +83,215 @@
     var t = $("#toast"); t.textContent = texto; t.classList.add("on");
     clearTimeout(t._t); t._t = setTimeout(function () { t.classList.remove("on"); }, 2600);
   }
+
+  /* ---- acciones: menú de clic derecho + borrado en toda la app ---- */
+  var menuAcciones = {};
+
+  function notaPorId(id) {
+    return estado.notas.filter(function (n) { return n.id === id; })[0] || null;
+  }
+  function crearNota() {
+    var n = {
+      id: "n" + Date.now(), titulo: "Sin título", cuerpo: "", contexto: "", etiquetas: [],
+      enlaces: [], fijada: false, actualizado: selloLocal()
+    };
+    estado.notas.unshift(n);
+    estado.notaSel = n.id;
+    guardar(); pintarNotas(); pintarPanel();
+    $("#nota-titulo").focus(); $("#nota-titulo").select();
+  }
+  function crearTarea(tipo) {
+    abrirFormulario(null);
+    if (tipo === "proyecto") $("#tarea-tipo").value = "proyecto";
+  }
+  function abrirNota(id) {
+    if (!notaPorId(id)) return;
+    estado.notaSel = id;
+    estado.panel.notas = "detalle";
+    guardar();
+    if (pantalla !== "notas") ir("notas"); else { pintarNotas(); pintarPanel(); }
+    if (window.innerWidth <= 1255) abrirPanel();
+  }
+  function abrirTarea(id) {
+    if (!tareaPorId(id)) return;
+    estado.tareaSel = id;
+    estado.panel.tareas = "detalle";
+    guardar();
+    if (pantalla !== "tareas") ir("tareas"); else { pintarTareas(); pintarPanel(); }
+    if (window.innerWidth <= 1255) abrirPanel();
+  }
+  function abrirEventoDetalle(id) {
+    if (!eventoPorId(id)) return;
+    estado.eventoSel = id;
+    estado.panel.calendario = "detalle";
+    guardar();
+    if (pantalla !== "calendario") ir("calendario"); else { pintarCalendario(); pintarPanel(); }
+    if (window.innerWidth <= 1255) abrirPanel();
+  }
+  function alternarTarea(id) {
+    var x = tareaPorId(id); if (!x) return;
+    x.hecha = !x.hecha; x.estado = x.hecha ? "hecha" : "pendiente";
+    guardar(); pintarTareas(); pintarPanel();
+  }
+  function crearEventoEn(fecha) {
+    abrirEvento(null);
+    if (fecha) $("#evento-fecha").value = fecha;
+    $("#evento-titulo").focus();
+  }
+  function borrarNota(id) {
+    var n = notaPorId(id); if (!n) return;
+    if (!window.confirm("¿Borrar la nota \"" + (n.titulo || "Sin título") + "\"?")) return;
+    estado.notas = estado.notas.filter(function (x) { return x.id !== id; });
+    if (estado.notaSel === id) estado.notaSel = estado.notas.length ? estado.notas[0].id : null;
+    guardar(); pintarNotas(); pintarPanel(); aviso("Nota borrada.");
+  }
+  function borrarPeriodo(id) {
+    var p = (estado.periodos || []).filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    if (!window.confirm("¿Borrar el periodo \"" + p.nombre + "\" y sus semanas?")) return;
+    estado.periodos = estado.periodos.filter(function (x) { return x.id !== id; });
+    if (estado.periodoActivo === id) estado.periodoActivo = estado.periodos.length ? estado.periodos[0].id : null;
+    guardar(); pintarPeriodo(); aviso("Periodo borrado. Sus eventos no se tocan.");
+  }
+  function borrarSesion(indice) {
+    var s = (estado.sesiones || [])[indice]; if (!s) return;
+    if (!window.confirm("¿Borrar la sesión de " + s.minutos + " min del " + s.fecha + "?")) return;
+    estado.sesiones.splice(indice, 1);
+    guardar(); pintarTiempo(); aviso("Sesión borrada.");
+  }
+  function menuTitulo(tipo, texto) { return tipo + " · " + (texto || "Sin título"); }
+  function menuDeContexto(el) {
+    var nEl = el.closest("[data-nota]");
+    if (nEl) {
+      var n = notaPorId(nEl.getAttribute("data-nota"));
+      if (!n) return null;
+      var ni = [
+        { accion: "nota-abrir", texto: "Abrir", run: function () { abrirNota(n.id); } },
+        { accion: "nota-fijar", texto: n.fijada ? "Quitar fijada" : "Fijar", run: function () {
+          n.fijada = !n.fijada; guardar(); pintarNotas(); pintarPanel();
+          aviso(n.fijada ? "Nota fijada." : "Nota suelta.");
+        } }
+      ];
+      if (n.enlaces && n.enlaces.length) {
+        ni.push({ accion: "nota-desenlazar", texto: "Quitar enlace", run: function () {
+          n.enlaces = []; guardar(); pintarNotas(); pintarPanel(); aviso("Enlace quitado.");
+        } });
+      }
+      ni.push({ sep: true });
+      ni.push({ accion: "nota-borrar", texto: "Borrar nota", peligro: true, run: function () { borrarNota(n.id); } });
+      return { titulo: menuTitulo("Nota", n.titulo), items: ni };
+    }
+
+    var eEl = el.closest("[data-evento]");
+    if (eEl) {
+      var ev = eventoPorId(eEl.getAttribute("data-evento"));
+      if (!ev) return null;
+      return { titulo: menuTitulo("Evento", ev.titulo), items: [
+        { accion: "evento-abrir", texto: "Abrir detalle", run: function () { abrirEventoDetalle(ev.id); } },
+        { accion: "evento-editar", texto: "Editar", run: function () { abrirEvento(ev); } },
+        { sep: true },
+        { accion: "evento-borrar", texto: "Borrar evento", peligro: true, run: function () { borrarEvento(ev.id); } }
+      ] };
+    }
+
+    var tEl = el.closest("[data-tarea]");
+    if (tEl) {
+      var t = tareaPorId(tEl.getAttribute("data-tarea"));
+      if (!t) return null;
+      return { titulo: menuTitulo(t.tipo === "proyecto" ? "Proyecto" : "Tarea", t.titulo), items: [
+        { accion: "tarea-abrir", texto: "Abrir detalle", run: function () { abrirTarea(t.id); } },
+        { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(t); } },
+        { accion: "tarea-estado", texto: t.hecha ? "Reabrir" : "Marcar hecha", run: function () { alternarTarea(t.id); } },
+        { accion: "tarea-sub", texto: "Añadir subtarea", run: function () { abrirFormulario(null, t.id); } },
+        { sep: true },
+        { accion: "tarea-borrar", texto: t.tipo === "proyecto" ? "Borrar proyecto y sus tareas" : "Borrar tarea", peligro: true,
+          run: function () { borrarTarea(t.id); } }
+      ] };
+    }
+
+    var pEl = el.closest("[data-periodo-item]");
+    if (pEl) {
+      var p = (estado.periodos || []).filter(function (x) { return x.id === pEl.getAttribute("data-periodo-item"); })[0];
+      if (!p) return null;
+      var pi = [];
+      if (estado.periodoActivo !== p.id) {
+        pi.push({ accion: "periodo-usar", texto: "Usar este periodo", run: function () {
+          estado.periodoActivo = p.id; guardar(); pintarPeriodo(); aviso("Periodo activo.");
+        } });
+      }
+      if (pi.length) pi.push({ sep: true });
+      pi.push({ accion: "periodo-borrar", texto: "Borrar periodo", peligro: true, run: function () { borrarPeriodo(p.id); } });
+      return { titulo: menuTitulo("Periodo", p.nombre), items: pi };
+    }
+
+    var sEl = el.closest("[data-sesion]");
+    if (sEl) {
+      var i = parseInt(sEl.getAttribute("data-sesion"), 10);
+      var s = (estado.sesiones || [])[i];
+      if (!s) return null;
+      return { titulo: menuTitulo("Sesión", s.fecha), items: [
+        { accion: "sesion-borrar", texto: "Borrar sesión", peligro: true, run: function () { borrarSesion(i); } }
+      ] };
+    }
+
+    var dEl = el.closest("[data-cal-dia]");
+    if (dEl) {
+      var fecha = dEl.getAttribute("data-cal-dia");
+      return { titulo: "Día " + fecha.split("-").reverse().join("/"), items: [
+        { accion: "dia-evento", texto: "Nuevo evento este día", run: function () { crearEventoEn(fecha); } }
+      ] };
+    }
+
+    var zEl = el.closest("[data-ctx-zona]");
+    if (zEl) {
+      var zona = zEl.getAttribute("data-ctx-zona");
+      if (zona === "notas") {
+        return { titulo: "Notas", items: [{ accion: "zona-nota", texto: "Nueva nota", run: crearNota }] };
+      }
+      if (zona === "tareas") {
+        return { titulo: "Tareas", items: [
+          { accion: "zona-tarea", texto: "Nueva tarea", run: function () { crearTarea("tarea"); } },
+          { accion: "zona-proyecto", texto: "Nuevo proyecto", run: function () { crearTarea("proyecto"); } }
+        ] };
+      }
+      if (zona === "calendario") {
+        return { titulo: "Calendario", items: [
+          { accion: "zona-evento", texto: "Nuevo evento", run: function () { crearEventoEn(""); } },
+          { accion: "zona-periodo", texto: "Nuevo periodo", run: abrirPeriodo }
+        ] };
+      }
+    }
+    return null;
+  }
+  function abrirMenu(x, y, titulo, items) {
+    var m = $("#menu-ctx"); if (!m || !items.length) return;
+    menuAcciones = {};
+    var html = titulo ? '<div class="menu-ctx__cab">' + esc(titulo) + "</div>" : "";
+    items.forEach(function (it) {
+      if (it.sep) { html += '<div class="menu-ctx__sep"></div>'; return; }
+      menuAcciones[it.accion] = it.run;
+      html += '<button type="button" role="menuitem" data-accion="' + esc(it.accion) + '"' +
+        (it.peligro ? ' class="peligro"' : "") + ">" + esc(it.texto) + "</button>";
+    });
+    m.innerHTML = html;
+    m.hidden = false;
+    m.style.left = "0px"; m.style.top = "0px";
+    var r = m.getBoundingClientRect();
+    m.style.left = Math.max(8, Math.min(x, window.innerWidth - r.width - 8)) + "px";
+    m.style.top = Math.max(8, Math.min(y, window.innerHeight - r.height - 8)) + "px";
+    var primero = m.querySelector("button");
+    if (primero) primero.focus({ preventScroll: true });
+  }
+  function cerrarMenu() {
+    var m = $("#menu-ctx");
+    if (!m || m.hidden) return;
+    m.hidden = true; m.innerHTML = ""; menuAcciones = {};
+  }
+  function menuPorTeclado(el) {
+    var ctx = menuDeContexto(el); if (!ctx) return;
+    var r = el.getBoundingClientRect();
+    abrirMenu(r.left, r.bottom + 4, ctx.titulo, ctx.items);
+  }
   function icono(id) { return '<svg class="icono" aria-hidden="true"><use href="#' + id + '"/></svg>'; }
   function nombre(id) {
     if (["calendario", "tareas", "notas", "ajustes", "tiempo", "malla", "calificaciones", "estudio"].indexOf(id) !== -1) return t("nav." + id);
@@ -172,7 +381,7 @@
       .sort(function (a, b) { return (a.hora || "99:99") < (b.hora || "99:99") ? -1 : 1; });
   }
   function chipEvento(e) {
-    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + '">' +
+    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · clic derecho: acciones">' +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b> " : "") + esc(e.titulo) + "</button>";
   }
   function pintarCalendario() {
@@ -195,7 +404,7 @@
       visibles = orden.length;
       $("#cal-mes-titulo").textContent = "Agenda";
       agenda.innerHTML = orden.length ? orden.map(function (e) {
-        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '"><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + (e.fecha >= hoyISO() ? "próximo" : "pasado") + "</span></button>";
+        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="Clic derecho: acciones"><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + (e.fecha >= hoyISO() ? "próximo" : "pasado") + "</span></button>";
       }).join("") : '<p class="empty">Sin eventos todavía.</p>';
     } else if (vistaCalendario === "semana") {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
@@ -209,7 +418,7 @@
         var f = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + i);
         var iso = f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, "0") + "-" + String(f.getDate()).padStart(2, "0");
         var evs = eventosDe(iso); visibles += evs.length;
-        return '<div class="cal-semana-dia' + (iso === hoyISO() ? " hoy" : "") + '"><b>' + d + " " + f.getDate() + "</b>" +
+        return '<div class="cal-semana-dia' + (iso === hoyISO() ? " hoy" : "") + '" data-cal-dia="' + iso + '"><b>' + d + " " + f.getDate() + "</b>" +
           (evs.length ? evs.map(chipEvento).join("") : '<span class="cal-vacio-dia">—</span>') + "</div>";
       }).join("");
     } else {
@@ -225,7 +434,7 @@
         var f2 = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
         var iso2 = f2.getFullYear() + "-" + String(f2.getMonth() + 1).padStart(2, "0") + "-" + String(f2.getDate()).padStart(2, "0");
         var evs2 = eventosDe(iso2); if (f2.getMonth() === m) visibles += evs2.length;
-        html += '<div class="cal-dia' + (f2.getMonth() !== m ? " fuera" : "") + (iso2 === hoyISO() ? " hoy" : "") + '"><b>' + f2.getDate() + "</b>" +
+        html += '<div class="cal-dia' + (f2.getMonth() !== m ? " fuera" : "") + (iso2 === hoyISO() ? " hoy" : "") + '" data-cal-dia="' + iso2 + '"><b>' + f2.getDate() + "</b>" +
           (evs2.length ? '<div class="cal-eventos">' + evs2.slice(0, 2).map(chipEvento).join("") + (evs2.length > 2 ? '<span class="cal-mas">+' + (evs2.length - 2) + "</span>" : "") + "</div>" : "") + "</div>";
       }
       grid.innerHTML = html;
@@ -256,12 +465,16 @@
     if (!window.confirm("¿Borrar \"" + ev.titulo + "\"?")) return;
     estado.eventos = estado.eventos.filter(function (e) { return e.id !== id; });
     if (estado.eventoSel === id) estado.eventoSel = null;
-    guardar(); pintarCalendario(); pintarPanel();
+    guardar(); pintarCalendario(); pintarPanel(); aviso("Evento borrado.");
   }
 
   function hoyISO() {
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function selloLocal() {
+    var d = new Date();
+    return hoyISO() + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
   }
   function normalizarTareas() {
     estado.tareas = (estado.tareas || []).map(function (t, i) {
@@ -316,7 +529,7 @@
     var sub = t.tipo === "proyecto"
       ? '<span class="tarea-progreso" title="' + p.hechas + " de " + p.total + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
       : "";
-    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" style="--nivel:' + nivel + '">' +
+    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" title="Clic derecho: acciones" style="--nivel:' + nivel + '">' +
       '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + (t.hecha ? "Marcar abierta" : "Marcar hecha") + '">' + (t.hecha ? "✓" : "") + "</button>" +
       '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">proyecto</small>' : "") + "</span>" +
       '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
@@ -327,7 +540,7 @@
   }
   function tarjetaTablero(t) {
     var p = progreso(t);
-    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '">' +
+    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="Clic derecho: acciones">' +
       '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || "sin contexto") + "</small>" +
       (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
   }
@@ -424,7 +637,7 @@
     if (!window.confirm("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?")) return;
     estado.tareas = estado.tareas.filter(function (x) { return familia.indexOf(x.id) === -1; });
     if (familia.indexOf(estado.tareaSel) !== -1) estado.tareaSel = null;
-    guardar(); pintarTareas(); pintarPanel();
+    guardar(); pintarTareas(); pintarPanel(); aviso("Tarea borrada.");
   }
 
   function normalizarNotas() {
@@ -486,7 +699,7 @@
       return !q || (n.titulo + " " + n.cuerpo + " " + n.contexto + " " + n.etiquetas.join(" ")).toLowerCase().indexOf(q) !== -1;
     }).sort(function (a, b) { return (b.fijada ? 1 : 0) - (a.fijada ? 1 : 0); });
     cont.innerHTML = vis.map(function (n) {
-      return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '"><b>' +
+      return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '" title="Clic derecho: acciones"><b>' +
         (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") + "</b><small>" +
         esc((n.cuerpo || "").slice(0, 70) || "Vacía") + (n.contexto ? " · " + esc(n.contexto) : "") + "</small></button>";
     }).join("");
@@ -514,6 +727,7 @@
     $("#nota-vinculo").disabled = !n;
     $("#nota-modo").disabled = !n;
     $("#nota-fijar").disabled = !n;
+    $("#btn-borrar-nota").disabled = !n;
     $("#nota-titulo").value = n ? n.titulo : "";
     $("#nota-cuerpo").value = n ? n.cuerpo : "";
     $("#nota-contexto").value = n ? n.contexto : "";
@@ -582,6 +796,19 @@
     ses.forEach(function (x) { min += Number(x.minutos || 0); });
     if ($("#tiempo-sesiones")) $("#tiempo-sesiones").textContent = String(ses.length);
     if ($("#tiempo-horas")) $("#tiempo-horas").textContent = Math.round(min / 60) + " h";
+    var listaSes = $("#tiempo-lista-sesiones");
+    if (listaSes) {
+      listaSes.innerHTML = ses.length ? ses.map(function (x, i) {
+        var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
+        return '<div class="sesion-item" data-sesion="' + i + '" title="Clic derecho: borrar"><span><b>' +
+          esc(fechaCorta(x.fecha)) + "</b>" + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
+          Number(x.minutos || 0) + " min</small>" +
+          '<button class="sesion-x" type="button" data-borrar-sesion="' + i + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
+      }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
+      $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
+        b.addEventListener("click", function () { borrarSesion(parseInt(b.getAttribute("data-borrar-sesion"), 10)); });
+      });
+    }
   }
   function pintaReloj() {
     var h = Math.floor(tiempoSeg / 3600), m = Math.floor((tiempoSeg % 3600) / 60), s = tiempoSeg % 60;
@@ -636,7 +863,7 @@
       var t = tareaPorId(estado.tareaSel);
       var n = notaActual();
       var ev = eventoPorId(estado.eventoSel);
-      if (ev && pantalla === "calendario") {
+      if (pantalla === "calendario" && ev) {
         html = "<h2>Evento</h2><h3>" + esc(ev.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>Fecha</span><small>' + esc(ev.fecha) + "</small></div>" +
           (ev.hora ? '<div class="panel__bloque"><span>Hora</span><small>' + esc(ev.hora) + "</small></div>" : "") +
@@ -644,7 +871,7 @@
           (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">Editar</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">Borrar</button></div>';
-      } else if (t) {
+      } else if (pantalla === "tareas" && t) {
         var p = progreso(t), hijos = hijosDe(t.id), padre = t.padre_id ? tareaPorId(t.padre_id) : null;
         html = "<h2>" + (t.tipo === "proyecto" ? "Proyecto" : "Tarea") + "</h2><h3>" + esc(t.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>Estado</span><small>' + (t.hecha ? "hecha" : "abierta") + "</small></div>" +
@@ -658,12 +885,14 @@
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + t.id + '">Editar</button>' +
           '<button class="btn btn--chico" type="button" data-toggle-tarea="' + t.id + '">' + (t.hecha ? "Reabrir" : "Hecha") + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + t.id + '">Borrar</button></div>';
-      } else if (n) {
+      } else if (pantalla === "notas" && n) {
         html = "<h2>Detalle de la nota</h2><h3>" + (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") +
           '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>" +
           (n.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(n.contexto) + "</small></div>" : "") +
           (n.etiquetas.length ? '<div class="panel__bloque"><span>Etiquetas</span><small>' + esc(n.etiquetas.join(", ")) + "</small></div>" : "") +
-          (n.enlaces.length ? '<div class="panel__bloque"><span>Enlazada a</span><small>' + esc(n.enlaces[0].titulo) + "</small></div>" : "");
+          (n.enlaces.length ? '<div class="panel__bloque"><span>Enlazada a</span><small>' + esc(n.enlaces[0].titulo) + "</small></div>" : "") +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">Abrir</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">Borrar</button></div>';
       } else {
         html = '<h2>Detalle</h2><p class="panel__nota">Selecciona una tarea o una nota. El detalle vive aquí, no en un modal que tapa la lista.</p>';
       }
@@ -709,6 +938,12 @@
     $$("#panel-cuerpo [data-borrar-evento]").forEach(function (b) {
       b.addEventListener("click", function () { borrarEvento(b.getAttribute("data-borrar-evento")); });
     });
+    $$("#panel-cuerpo [data-abrir-nota]").forEach(function (b) {
+      b.addEventListener("click", function () { abrirNota(b.getAttribute("data-abrir-nota")); });
+    });
+    $$("#panel-cuerpo [data-borrar-nota]").forEach(function (b) {
+      b.addEventListener("click", function () { borrarNota(b.getAttribute("data-borrar-nota")); });
+    });
     var pie = $("#pie-centro");
     if (pie) pie.textContent = nombre(pantalla);
   }
@@ -746,10 +981,15 @@
     if ($("#ajustes-idioma")) $("#ajustes-idioma").textContent = "Idioma activo: " + (p.idioma === "en" ? "English" : "Español") + ". Navegación y secciones cambian en caliente.";
     if (pl) {
       pl.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
-        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + x.semanas.length + ' semanas</small></span><button class="btn btn--chico" type="button" data-periodo-aj="' + x.id + '">Usar</button></div>';
+        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + x.semanas.length + ' semanas</small></span>' +
+          '<span class="fila"><button class="btn btn--chico" type="button" data-periodo-aj="' + x.id + '">Usar</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">Borrar</button></span></div>';
       }).join("") : '<p class="muted">Sin periodos. Crea el primero.</p>';
       $$("#ajustes-periodos [data-periodo-aj]").forEach(function (x) {
         x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo-aj"); guardar(); pintarPeriodo(); pintarAjustes(); });
+      });
+      $$("#ajustes-periodos [data-borrar-periodo]").forEach(function (x) {
+        x.addEventListener("click", function () { borrarPeriodo(x.getAttribute("data-borrar-periodo")); });
       });
     }
     aplicarPrefs();
@@ -773,10 +1013,15 @@
     var lista = $("#periodos-lista");
     if (lista) {
       lista.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
-        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + esc(x.inicio) + " · " + x.semanas.length + " semanas</small></span><button class='btn btn--chico' type='button' data-periodo='" + x.id + "'>Usar</button></div>";
+        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + esc(x.inicio) + " · " + x.semanas.length + " semanas</small></span>" +
+          '<span class="fila"><button class="btn btn--chico" type="button" data-periodo="' + x.id + '">Usar</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">Borrar</button></span></div>';
       }).join("") : '<p class="muted">Todavía no hay periodos.</p>';
       $$("#periodos-lista [data-periodo]").forEach(function (x) {
         x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo"); guardar(); pintarPeriodo(); aviso("Periodo activo."); });
+      });
+      $$("#periodos-lista [data-borrar-periodo]").forEach(function (x) {
+        x.addEventListener("click", function () { borrarPeriodo(x.getAttribute("data-borrar-periodo")); });
       });
     }
   }
@@ -961,9 +1206,48 @@
     $("#btn-panel-ajustes").addEventListener("click", abrirPanel);
     $("#pie-panel").addEventListener("click", alternarPanel);
     $("#pie-sync").addEventListener("click", function () { aviso("Guardado en este equipo. El respaldo es un archivo .json."); });
-    $("#pie-ayuda").addEventListener("click", function () { aviso("Panel derecho: Contexto, Detalle, Notas y Bloques. El pie queda fijo; el panel no mueve el header."); });
+    $("#pie-ayuda").addEventListener("click", function () { aviso("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10."); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });
+
+    $("#menu-ctx").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-accion]");
+      if (!b) return;
+      e.stopPropagation();
+      var fn = menuAcciones[b.getAttribute("data-accion")];
+      cerrarMenu();
+      if (fn) fn();
+    });
+    $("#menu-ctx").addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    $("#menu-ctx").addEventListener("keydown", function (e) {
+      var bs = $$("#menu-ctx button");
+      if (!bs.length) return;
+      var i = bs.indexOf(document.activeElement);
+      if (e.key === "ArrowDown") { e.preventDefault(); bs[(i + 1) % bs.length].focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); bs[(i - 1 + bs.length) % bs.length].focus(); }
+      else if (e.key === "Home") { e.preventDefault(); bs[0].focus(); }
+      else if (e.key === "End") { e.preventDefault(); bs[bs.length - 1].focus(); }
+    });
+    document.addEventListener("contextmenu", function (e) {
+      if (e.target.closest("input, textarea, select, [contenteditable='true']")) return;
+      var ctx = menuDeContexto(e.target);
+      if (!ctx) return;
+      e.preventDefault();
+      abrirMenu(e.clientX, e.clientY, ctx.titulo, ctx.items);
+    });
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest("#menu-ctx")) cerrarMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "ContextMenu" && !(e.shiftKey && e.key === "F10")) return;
+      if (e.target.closest("input, textarea, select, [contenteditable='true']")) return;
+      var el = e.target.closest("[data-nota],[data-evento],[data-tarea],[data-periodo-item],[data-sesion],[data-cal-dia],[data-ctx-zona]");
+      if (!el) return;
+      e.preventDefault();
+      menuPorTeclado(el);
+    });
+    window.addEventListener("scroll", cerrarMenu, true);
+    window.addEventListener("resize", cerrarMenu);
     $$(".panel__tab").forEach(function (b) {
       b.addEventListener("click", function () {
         estado.panel[pantalla] = b.getAttribute("data-ptab");
@@ -1016,12 +1300,9 @@
       guardar(); pintarTareas(); pintarPanel();
       aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
     });
-    $("#btn-nueva-nota").addEventListener("click", function () {
-      var n = { id: "n" + Date.now(), titulo: "Sin título", cuerpo: "", contexto: "", etiquetas: [], enlaces: [], fijada: false, actualizado: new Date().toISOString().slice(0, 16).replace("T", " ") };
-      estado.notas.unshift(n);
-      estado.notaSel = n.id;
-      guardar(); pintarNotas(); pintarPanel();
-      $("#nota-titulo").focus(); $("#nota-titulo").select();
+    $("#btn-nueva-nota").addEventListener("click", crearNota);
+    $("#btn-borrar-nota").addEventListener("click", function () {
+      if (estado.notaSel) borrarNota(estado.notaSel);
     });
     $("#buscar-nota").addEventListener("input", function (e) {
       notaBusqueda = e.target.value; pintarNotasLista("#notas-items", true);
@@ -1029,7 +1310,7 @@
     $("#nota-titulo").addEventListener("input", function (e) {
       var n = notaActual(); if (!n) return;
       n.titulo = e.target.value;
-      n.actualizado = new Date().toISOString().slice(0, 16).replace("T", " ");
+      n.actualizado = selloLocal();
       guardar();
     });
     $("#nota-titulo").addEventListener("change", function () {
@@ -1038,7 +1319,7 @@
     $("#nota-cuerpo").addEventListener("input", function (e) {
       var n = notaActual(); if (!n) return;
       n.cuerpo = e.target.value;
-      n.actualizado = new Date().toISOString().slice(0, 16).replace("T", " ");
+      n.actualizado = selloLocal();
       guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
     });
     $("#nota-modo").addEventListener("click", function () { notaModo = notaModo === "preview" ? "editar" : "preview"; pintarNotas(); });
@@ -1164,7 +1445,10 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault(); aviso("Buscador global Ctrl+K: llega con M27.");
       }
-      if (e.key === "Escape") { cerrarModal(); cerrarPanel(); }
+      if (e.key === "Escape") {
+        if (!$("#menu-ctx").hidden) { e.preventDefault(); cerrarMenu(); return; }
+        cerrarModal(); cerrarPanel();
+      }
     });
     window.addEventListener("resize", function () {
       if (window.innerWidth > 1255) document.body.classList.remove("panel-abierto");

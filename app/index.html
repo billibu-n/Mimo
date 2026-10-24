@@ -101,7 +101,7 @@
           <hr><h3>Calendarios</h3>
           <p class="muted">Local · este equipo</p>
         </aside>
-        <div class="card cal-tarjeta">
+        <div class="card cal-tarjeta" data-ctx-zona="calendario">
           <div class="cal-cab"><button class="icono-btn" id="cal-ant" type="button" title="Anterior" aria-label="Anterior">‹</button><h2 id="cal-mes-titulo">Mes</h2><button class="icono-btn" id="cal-sig" type="button" title="Siguiente" aria-label="Siguiente">›</button><span class="pill" id="cal-cuenta">0 eventos</span></div>
           <div class="cal-grid" id="cal-grid"></div>
           <div id="cal-agenda" class="cal-agenda" hidden></div>
@@ -124,7 +124,7 @@
         <div class="kpi"><b id="kpi-hechas">0</b><span>hechas</span></div>
         <div class="kpi"><b id="kpi-progreso">0 %</b><span>del total</span></div>
       </div>
-      <div class="card">
+      <div class="card" data-ctx-zona="tareas">
         <form class="tarea-form" id="tarea-form" hidden>
           <input class="entrada" id="tarea-titulo" type="text" placeholder="¿Qué hay que hacer?" aria-label="Título de la tarea" autocomplete="off">
           <select class="entrada" id="tarea-tipo" aria-label="Tipo">
@@ -142,7 +142,7 @@
           <button class="btn btn-primario" type="submit">Crear</button>
           <button class="btn" type="button" id="tarea-cancelar">Cancelar</button>
         </form>
-        <div id="tareas-lista" class="tareas-lista"></div>
+        <div id="tareas-lista" class="tareas-lista" data-ctx-zona="tareas"></div>
         <div class="empty" id="tareas-vacio">
           <h2>Sin tareas todavía</h2>
           <p>Una tarea puede ser un proyecto: las tareas dentro suben su progreso.</p>
@@ -153,12 +153,13 @@
 
     <section class="seccion" data-pantalla="notas" id="p-notas" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub">El material que no es tarea: texto, enlaces y contexto.</p></div>
+        <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub">El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.</p></div>
         <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button">+ Nueva nota</button></div>
       </div>
       <div class="notas-layout">
-        <aside class="notas-lista" aria-label="Lista de notas">
+        <aside class="notas-lista" aria-label="Lista de notas" data-ctx-zona="notas">
           <input class="entrada" id="buscar-nota" type="search" placeholder="Buscar nota…" aria-label="Buscar nota">
+          <p class="nota-pista">Clic derecho: fijar o borrar.</p>
           <div id="notas-items"></div>
           <p class="muted" id="notas-vacio">Sin notas todavía.</p>
         </aside>
@@ -167,6 +168,7 @@
           <div class="nota-toolbar">
             <button class="btn btn--chico" id="nota-modo" type="button">Vista previa</button>
             <button class="btn btn--chico" id="nota-fijar" type="button">Fijar</button>
+            <button class="btn btn--chico btn-peligro" id="btn-borrar-nota" type="button" disabled>Borrar</button>
             <input class="entrada" id="nota-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
             <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas">
             <select class="entrada" id="nota-vinculo" aria-label="Enlazar a"><option value="">Enlazar a…</option></select>
@@ -199,7 +201,9 @@
           <p class="muted">El tiempo que registres se guarda con este vínculo. Estudio lo leerá en U5.</p>
           <select class="entrada" id="tiempo-vinculo" aria-label="Vínculo de la sesión"></select>
           <div class="mp-kpi"><div><b id="tiempo-sesiones">0</b><span>sesiones</span></div><div><b id="tiempo-horas">0 h</b><span>registradas</span></div></div>
-          <p class="muted" style="margin-top:8px">Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos.</p>
+          <h3 class="sesiones-tit">Sesiones</h3>
+          <div id="tiempo-lista-sesiones" class="sesiones-lista"><p class="muted">Sin sesiones todavía.</p></div>
+          <p class="muted" style="margin-top:8px">Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos. Clic derecho en una sesión para borrarla.</p>
         </div>
       </div>
     </section>
@@ -308,6 +312,8 @@
     <div id="periodos-lista"></div>
   </div>
 </div>
+
+<div class="menu-ctx" id="menu-ctx" role="menu" aria-label="Acciones del elemento" hidden></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

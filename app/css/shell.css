@@ -273,3 +273,34 @@ body.nav-izq .shell{margin-left:64px}
 .nota-preview h1,.nota-preview h2,.nota-preview h3{margin:var(--sp-3) 0 var(--sp-1)}
 .nota-preview code{background:var(--sup2);padding:1px 4px;border-radius:4px}
 .nota-preview .check-item{list-style:none}
+
+/* ---- acciones universales: clic derecho y borrado ---- */
+.nota-pista{margin:0 0 var(--sp-2);color:var(--muted2);font-size:var(--fs-xs)}
+.nota-toolbar #btn-borrar-nota{margin-left:auto}
+.menu-ctx{
+  position:fixed;z-index:90;min-width:210px;max-width:290px;max-height:min(70vh,420px);
+  overflow:auto;padding:var(--sp-1);background:var(--sup);border:1px solid var(--line);
+  border-radius:var(--r-md);box-shadow:0 14px 38px rgb(0 0 0 / .24);
+}
+.menu-ctx[hidden]{display:none}
+.menu-ctx__cab{
+  padding:var(--sp-1) var(--sp-2);color:var(--muted);font-size:var(--fs-xs);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.menu-ctx__sep{height:1px;background:var(--line2);margin:var(--sp-1) 2px}
+.menu-ctx button{
+  display:flex;align-items:center;width:100%;border:0;border-radius:var(--r-sm);
+  background:transparent;color:var(--fg);text-align:left;padding:var(--sp-2);
+  font:inherit;font-size:var(--fs-sm);cursor:pointer;
+}
+.menu-ctx button:hover,.menu-ctx button:focus-visible{background:var(--sup2)}
+.menu-ctx button.peligro{color:var(--bad)}
+.menu-ctx button.peligro:hover,.menu-ctx button.peligro:focus-visible{background:var(--pill-bad-bg)}
+.sesiones-tit{margin:var(--sp-3) 0 var(--sp-1);font-size:var(--fs-sm)}
+.sesiones-lista{display:flex;flex-direction:column;gap:2px;max-height:180px;overflow:auto}
+.sesion-item{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-1) var(--sp-2)}
+.sesion-item>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-xs)}
+.sesion-item small{color:var(--muted);font-size:var(--fs-xs);white-space:nowrap}
+.sesion-x{width:22px;height:22px;flex:none;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--muted);font:inherit;line-height:1;cursor:pointer}
+.sesion-x:hover{color:var(--bad);border-color:var(--line)}
+.periodo-item .fila{flex:none}

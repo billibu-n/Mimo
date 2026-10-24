@@ -182,6 +182,21 @@ def main() -> int:
             exigir("Idea para la demo" in page.locator("#panel-cuerpo").inner_text(),
                    "notas: el panel Notas muestra la nota abierta", fallas)
 
+            # Acciones universales: clic derecho y borrado.
+            exigir(page.locator("#btn-borrar-nota").is_enabled(),
+                   "acciones: la nota abierta ofrece Borrar en el editor", fallas)
+            page.locator("#notas-items .nota-item").first.click(button="right")
+            page.wait_for_timeout(80)
+            exigir(page.locator("#menu-ctx").is_visible() and "Borrar nota" in page.locator("#menu-ctx").inner_text(),
+                   "acciones: clic derecho en la nota abre su menú", fallas)
+            page.once("dialog", lambda d: d.accept())
+            page.locator('#menu-ctx [data-accion="nota-borrar"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#notas-items .nota-item").count() == 0,
+                   "notas: borrar quita la nota de la lista", fallas)
+            exigir(page.locator("#notas-vacio").is_visible() and not page.locator("#btn-borrar-nota").is_enabled(),
+                   "notas: sin nota, vuelve el vacío y Borrar se deshabilita", fallas)
+
             page.locator('#tabs .tab[data-ir="tareas"]').click()
             page.wait_for_timeout(80)
             exigir(page.locator(".panel__tab.on").inner_text().strip() == "Detalle",
@@ -224,6 +239,59 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator(".panel").is_visible(), "geometría: el panel vuelve", fallas)
             exigir(page.locator(".footer").is_visible(), "geometría: el pie sigue visible", fallas)
+
+            # Lo que se añade también se quita: evento, tarea y periodo.
+            page.locator('#tabs .tab[data-ir="calendario"]').click()
+            page.wait_for_timeout(80)
+            page.locator(".evento-chip").first.click(button="right")
+            page.wait_for_timeout(80)
+            exigir("Borrar evento" in page.locator("#menu-ctx").inner_text(),
+                   "acciones: el evento ofrece borrar", fallas)
+            page.once("dialog", lambda d: d.accept())
+            page.locator('#menu-ctx [data-accion="evento-borrar"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator(".evento-chip").count() == 0, "eventos: borrar quita el evento", fallas)
+
+            page.locator('#tabs .tab[data-ir="tareas"]').click()
+            page.wait_for_timeout(80)
+            page.locator(".tarea-fila", has_text="Preparar la reunión del lunes").click(button="right")
+            page.wait_for_timeout(80)
+            exigir("Borrar tarea" in page.locator("#menu-ctx").inner_text(),
+                   "acciones: la tarea ofrece borrar", fallas)
+            page.once("dialog", lambda d: d.accept())
+            page.locator('#menu-ctx [data-accion="tarea-borrar"]').click()
+            page.wait_for_timeout(120)
+            exigir("Preparar la reunión del lunes" not in page.locator("#tareas-lista").inner_text(),
+                   "tareas: borrar quita la tarea", fallas)
+
+            page.locator("#btn-periodo").click()
+            page.wait_for_timeout(80)
+            page.locator("#periodos-lista .periodo-item").first.click(button="right")
+            page.wait_for_timeout(80)
+            exigir("Borrar periodo" in page.locator("#menu-ctx").inner_text(),
+                   "acciones: el periodo ofrece borrar", fallas)
+            page.once("dialog", lambda d: d.accept())
+            page.locator('#menu-ctx [data-accion="periodo-borrar"]').click()
+            page.wait_for_timeout(120)
+            exigir("Todavía no hay periodos" in page.locator("#periodos-lista").inner_text()
+                   and "Sin periodo" in page.locator("#btn-periodo").inner_text(),
+                   "periodos: borrar deja la app sin periodo activo", fallas)
+            page.locator("#periodo-x").click()
+
+            page.locator('#tabs .tab[data-ir="tiempo"]').click()
+            page.wait_for_timeout(80)
+            page.locator("#btn-empezar").click()
+            page.wait_for_timeout(1100)
+            page.locator("#btn-parar").click()
+            page.wait_for_timeout(120)
+            exigir(page.locator(".sesion-item").count() == 1,
+                   "tiempo: la sesión registrada se lista y se puede quitar", fallas)
+            page.locator(".sesion-item").first.click(button="right")
+            page.wait_for_timeout(80)
+            page.once("dialog", lambda d: d.accept())
+            page.locator('#menu-ctx [data-accion="sesion-borrar"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator(".sesion-item").count() == 0, "tiempo: borrar quita la sesión", fallas)
             exigir(not errores, f"consola limpia al final — {errores[:3]}", fallas)
         finally:
             ctx.close()
@@ -234,6 +302,15 @@ def main() -> int:
             page.wait_for_timeout(80)
             d = desborde(page)
             exigir(d == 0, f"411: sin desborde en Tareas — {d}px", fallas)
+            page.locator('#tabs .tab[data-ir="notas"]').click()
+            page.locator("#btn-nueva-nota").click()
+            page.locator("#nota-titulo").fill("Nota móvil")
+            page.wait_for_timeout(100)
+            page.locator("#notas-items .nota-item").first.click(button="right")
+            page.wait_for_timeout(80)
+            caja = page.locator("#menu-ctx").bounding_box()
+            exigir(bool(caja) and caja["x"] >= 0 and caja["x"] + caja["width"] <= 411,
+                   f"411: el menú de acciones cabe en la ventana — {caja}", fallas)
             exigir(not errores, f"411: consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()
