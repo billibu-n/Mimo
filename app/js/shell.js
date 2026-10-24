@@ -33,6 +33,7 @@
   function porDefecto() {
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [],
+      periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", splitSeccion: "tareas",
       notaSel: null, tareaSel: null, eventoSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -63,6 +64,7 @@
   var vistaCalendario = estado.vistaCalendario || "mes";
   var calCursor = new Date();
   var formEventoId = null;
+  var tiempoSeg = 0, tiempoInt = null;
   var splitOn = false;
 
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {} }
@@ -93,8 +95,8 @@
   function pintarTabs() {
     $("#tabs").innerHTML = secciones().map(function (id) {
       var on = id === pantalla ? " on" : "";
-      return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '">' +
-        icono(iconoDe(id)) + "<span>" + esc(nombre(id)) + "</span></button>";
+      return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
+        icono(iconoDe(id)) + "</button>";
     }).join("");
     $$("#tabs .tab").forEach(function (b) {
       b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); });
@@ -118,7 +120,15 @@
     document.body.setAttribute("data-tema", t);
     estado.tema = t;
     pintarTemas();
+    pintarTemaIcono();
     guardar();
+  }
+  function pintarTemaIcono() {
+    var b = $("#btn-tema");
+    if (!b) return;
+    var oscuro = estado.tema !== "clasico" && estado.tema !== "bosque" && estado.tema !== "sepia" && estado.tema !== "pinky";
+    b.innerHTML = icono(oscuro ? "i-sol" : "i-luna");
+    b.title = oscuro ? "Cambiar a claro" : "Cambiar a oscuro";
   }
   function pintarTemas() {
     var c = $("#temas");
@@ -476,7 +486,53 @@
       if (!falta) { aviso("Los 4 bloques de Tiempo ya están dentro."); return; }
       estado.tiempoHijos.push(falta[0]); guardar(); pintarTiempo(); aviso(falta[1] + " añadido a Tiempo.");
     });
+    var v = $("#tiempo-vinculo");
+    if (v) {
+      var ops = ['<option value="">Sin vínculo</option>'];
+      estado.tareas.forEach(function (t) { ops.push('<option value="' + t.id + '">' + esc(t.titulo) + "</option>"); });
+      v.innerHTML = ops.join("");
+      v.value = estado.tiempoVinculo || "";
+      v.onchange = function () { estado.tiempoVinculo = v.value; guardar(); };
+    }
+    var ses = estado.sesiones || [], min = 0;
+    ses.forEach(function (x) { min += Number(x.minutos || 0); });
+    if ($("#tiempo-sesiones")) $("#tiempo-sesiones").textContent = String(ses.length);
+    if ($("#tiempo-horas")) $("#tiempo-horas").textContent = Math.round(min / 60) + " h";
   }
+  function pintaReloj() {
+    var h = Math.floor(tiempoSeg / 3600), m = Math.floor((tiempoSeg % 3600) / 60), s = tiempoSeg % 60;
+    $("#reloj").textContent = [h, m, s].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+  }
+  function empezarTiempo() {
+    if (tiempoInt) return;
+    tiempoInt = setInterval(function () { tiempoSeg++; pintaReloj(); }, 1000);
+    $("#btn-empezar").disabled = true; $("#btn-pausar").disabled = false; $("#btn-parar").disabled = false;
+    $("#tiempo-estado").textContent = "Cronómetro · corriendo" + (estado.tiempoVinculo ? " · vinculado" : "");
+  }
+  function pausarTiempo() {
+    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true;
+    $("#tiempo-estado").textContent = "Cronómetro · en pausa · " + $("#reloj").textContent;
+  }
+  function pararTiempo() {
+    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    if (tiempoSeg > 0) {
+      estado.sesiones = estado.sesiones || [];
+      estado.sesiones.push({ fecha: hoyISO(), minutos: Math.max(1, Math.round(tiempoSeg / 60)), vinculo: estado.tiempoVinculo || "" });
+      guardar(); pintarTiempo(); aviso("Sesión registrada. Estudio la leerá en U5.");
+    }
+    tiempoSeg = 0; pintaReloj();
+    $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
+    $("#tiempo-estado").textContent = "Cronómetro · parado";
+  }
+  function reiniciarTiempo() {
+    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    tiempoSeg = 0; pintaReloj();
+    $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
+    $("#tiempo-estado").textContent = "Cronómetro · parado";
+  }
+
+
 
   function tarjetaPanel(id) {
     var b = BLOQUES[id] || { nombre: nombre(id), desc: "Sección base." };
@@ -570,6 +626,31 @@
     if (pie) pie.textContent = nombre(pantalla);
   }
 
+  function periodoActivoObj() {
+    return (estado.periodos || []).filter(function (p) { return p.id === estado.periodoActivo; })[0] || null;
+  }
+  function pintarPeriodo() {
+    var p = periodoActivoObj();
+    var b = $("#btn-periodo");
+    if (b) b.textContent = p ? p.nombre : "Sin periodo";
+    var lista = $("#periodos-lista");
+    if (lista) {
+      lista.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
+        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + esc(x.inicio) + " · " + x.semanas.length + " semanas</small></span><button class='btn btn--chico' type='button' data-periodo='" + x.id + "'>Usar</button></div>";
+      }).join("") : '<p class="muted">Todavía no hay periodos.</p>';
+      $$("#periodos-lista [data-periodo]").forEach(function (x) {
+        x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo"); guardar(); pintarPeriodo(); aviso("Periodo activo."); });
+      });
+    }
+  }
+  function abrirPeriodo() {
+    $("#modal-periodo").classList.add("on");
+    $("#periodo-inicio").value = hoyISO();
+    pintarPeriodo();
+    $("#periodo-nombre").focus();
+  }
+  function cerrarPeriodo() { $("#modal-periodo").classList.remove("on"); }
+
   function abrirModal() {
     $("#modal").classList.add("on");
     pintarCatalogo();
@@ -651,21 +732,45 @@
     }
     if (document.body.classList.contains("panel-abierto")) cerrarPanel(); else abrirPanel();
   }
+  function opcionesSplit() {
+    var ids = ["calendario", "tareas", "notas", "tiempo", "ajustes"].concat(estado.instalados.filter(function (x) { return ["malla", "calificaciones", "estudio"].indexOf(x) !== -1; }));
+    return ids.filter(function (x, i) { return ids.indexOf(x) === i; });
+  }
+  function pintarSplit() {
+    var sel = $("#split-seccion"), cuerpo = $("#split-cuerpo");
+    if (!sel || !cuerpo) return;
+    sel.innerHTML = opcionesSplit().map(function (id) { return '<option value="' + id + '">' + esc(nombre(id)) + "</option>"; }).join("");
+    if (opcionesSplit().indexOf(estado.splitSeccion) === -1) estado.splitSeccion = "tareas";
+    sel.value = estado.splitSeccion;
+    var sec = estado.splitSeccion, html = "";
+    if (sec === "calendario") {
+      var evs = (estado.eventos || []).slice().sort(function (a, b) { return (a.fecha + a.hora) < (b.fecha + b.hora) ? -1 : 1; });
+      html = evs.length ? evs.slice(0, 8).map(function (e) { return '<div class="mp-row"><span>' + esc(e.titulo) + "</span><small>" + esc(e.fecha) + "</small></div>"; }).join("") : '<p class="muted">Sin eventos.</p>';
+    } else if (sec === "tareas") {
+      html = estado.tareas.length ? estado.tareas.slice(0, 10).map(function (t) { return '<div class="mp-row"><span>' + (t.tipo === "proyecto" ? "▸ " : "") + esc(t.titulo) + "</span><small>" + (t.hecha ? "hecha" : "abierta") + "</small></div>"; }).join("") : '<p class="muted">Sin tareas.</p>';
+    } else if (sec === "notas") {
+      html = estado.notas.length ? estado.notas.slice(0, 8).map(function (n) { return '<div class="mp-row"><span>' + esc(n.titulo) + "</span><small>" + esc((n.cuerpo || "").slice(0, 24)) + "</small></div>"; }).join("") : '<p class="muted">Sin notas.</p>';
+    } else if (sec === "tiempo") {
+      html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>";
+    } else if (sec === "ajustes") {
+      html = '<p class="muted">Ajustes está en la ventana principal.</p>';
+    } else {
+      html = '<p class="muted">' + esc(nombre(sec)) + " se abre en la ventana principal; aquí va su resumen cuando el motor esté.</p>";
+    }
+    cuerpo.innerHTML = html;
+  }
   function alternarSplit() {
     if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
     splitOn = !splitOn;
     document.body.classList.toggle("split", splitOn);
     $("#contenido-b").hidden = !splitOn;
     $("#btn-split").setAttribute("aria-pressed", splitOn ? "true" : "false");
-    if (splitOn) {
-      pintarNotasLista("#notas-lista-b", true);
-      if (pantalla === "calendario" || pantalla === "ajustes") ir("tareas");
-    }
+    if (splitOn) pintarSplit();
   }
 
   function init() {
     aplicarTema(estado.tema || "clasico");
-    pintarTabs(); pintarCalendario();
+    pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTareas(); pintarNotas();
     pintarTemas(); pintarTiempo(); pintarPanel();
@@ -766,12 +871,52 @@
       guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
     });
     $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
-    $("#btn-periodo").addEventListener("click", function () { aviso("Periodo 2026-2 · el semestre lo declara el calendario."); });
+    $("#btn-periodo").addEventListener("click", abrirPeriodo);
+    $("#btn-mimo").addEventListener("click", function () { $("#mimo-menu").hidden = !$("#mimo-menu").hidden; });
+    $$("#mimo-menu [data-menu]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        $("#mimo-menu").hidden = true;
+        var m = b.getAttribute("data-menu");
+        if (m === "periodo") abrirPeriodo();
+        else if (m === "evento") { ir("calendario"); abrirEvento(null); }
+        else if (m === "tarea") { ir("tareas"); abrirFormulario(null); }
+        else if (m === "nota") { ir("notas"); $("#btn-nueva-nota").click(); }
+        else if (m === "ajustes") ir("ajustes");
+      });
+    });
+    $("#periodo-x").addEventListener("click", cerrarPeriodo);
+    $("#periodo-cancelar").addEventListener("click", cerrarPeriodo);
+    $("#modal-periodo").addEventListener("click", function (e) { if (e.target === $("#modal-periodo")) cerrarPeriodo(); });
+    $("#periodo-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var nombre = $("#periodo-nombre").value.trim(); if (!nombre) return;
+      var inicio = $("#periodo-inicio").value || hoyISO();
+      var total = Math.max(1, parseInt($("#periodo-semanas").value, 10) || 18);
+      var receso = Math.max(0, parseInt($("#periodo-receso").value, 10) || 0);
+      var exam = Math.max(0, parseInt($("#periodo-examenes").value, 10) || 0);
+      var clases = Math.max(0, total - receso - exam);
+      var semanas = [], base = new Date(inicio + "T12:00:00");
+      for (var i = 0; i < total; i++) {
+        var d = new Date(base.getTime()); d.setDate(d.getDate() + i * 7);
+        var fin = new Date(d.getTime()); fin.setDate(fin.getDate() + 6);
+        var tipo = i < clases ? "clases" : i < clases + receso ? "receso" : "examenes";
+        semanas.push({ n: i + 1, desde: d.toISOString().slice(0, 10), hasta: fin.toISOString().slice(0, 10), tipo: tipo });
+      }
+      var p = { id: "p" + Date.now(), nombre: nombre, inicio: inicio, semanas: semanas };
+      estado.periodos = estado.periodos || []; estado.periodos.push(p); estado.periodoActivo = p.id;
+      guardar(); pintarPeriodo(); cerrarPeriodo(); $("#periodo-nombre").value = "";
+      aviso("Periodo creado: " + clases + " clases, " + receso + " receso, " + exam + " exámenes.");
+    });
+    $("#split-seccion").addEventListener("change", function (e) {
+      estado.splitSeccion = e.target.value; guardar(); pintarSplit();
+    });
+    $("#btn-empezar").addEventListener("click", empezarTiempo);
+    $("#btn-pausar").addEventListener("click", pausarTiempo);
+    $("#btn-parar").addEventListener("click", pararTiempo);
+    $("#btn-reiniciar").addEventListener("click", reiniciarTiempo);
     $("#btn-buscar").addEventListener("click", function () { aviso("Buscador global Ctrl+K: llega con M27."); });
     $("#btn-sync").addEventListener("click", function () { aviso("Guardado en este equipo. La sincronización es opcional."); });
-    $("#btn-nuevo").addEventListener("click", function () {
-      ir("tareas"); abrirFormulario(null);
-    });
+    $("#btn-nuevo").addEventListener("click", abrirPeriodo);
     $("#btn-nuevo-evento").addEventListener("click", function () { abrirEvento(null); });
     $("#evento-cancelar").addEventListener("click", function () { $("#evento-form").hidden = true; });
     $("#evento-form").addEventListener("submit", function (e) {

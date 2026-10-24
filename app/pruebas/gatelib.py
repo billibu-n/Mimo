@@ -59,7 +59,10 @@ def desborde(page) -> int:
 
 
 def texto_tabs(page):
-    return [t.strip() for t in page.locator("#tabs .tab").all_inner_texts()]
+    out = []
+    for t in page.locator("#tabs .tab").all():
+        out.append(t.get_attribute("title") or t.get_attribute("aria-label") or t.inner_text().strip())
+    return out
 
 
 def exigir(cond, mensaje, fallas):

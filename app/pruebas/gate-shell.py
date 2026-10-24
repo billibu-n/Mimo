@@ -32,10 +32,18 @@ def main() -> int:
     with Navegador() as nav:
         ctx, page, errores = nav.abrir(APP, 1440, 950)
         try:
-            tabs = [t.strip() for t in page.locator("#tabs .tab").all_inner_texts()]
+            tabs = [t.get_attribute("title") for t in page.locator("#tabs .tab").all()]
             exigir(tabs[:3] == ["Calendario", "Tareas", "Notas"] and tabs[-1] == "Ajustes",
                    f"base 4 en orden — {tabs}", fallas)
             exigir(not errores, f"consola limpia — {errores[:3]}", fallas)
+
+            page.locator("#btn-nuevo").click()
+            page.locator("#periodo-nombre").fill("Primavera 2026")
+            page.locator("#periodo-inicio").fill("2026-08-03")
+            page.locator('#periodo-form button[type="submit"]').click()
+            page.wait_for_timeout(100)
+            exigir("Primavera 2026" in page.locator("#btn-periodo").inner_text(),
+                   "periodo: + Nuevo define el periodo activo", fallas)
 
             # U1: un evento real, en mes, semana y agenda.
             hoy = page.evaluate("() => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }")
@@ -64,8 +72,10 @@ def main() -> int:
             page.wait_for_timeout(120)
             page.locator("#modal-x").click()
             page.wait_for_timeout(80)
-            exigir("Tiempo" in [t.strip() for t in page.locator("#tabs .tab").all_inner_texts()],
+            exigir("Tiempo" in [t.get_attribute("title") for t in page.locator("#tabs .tab").all()],
                    "Tiempo instalado aparece en la barra", fallas)
+            exigir(page.locator(".tiempo-barra #estanteria-tiempo").count() == 1,
+                   "Tiempo: la estantería de modos vive arriba", fallas)
             exigir(page.locator("#estanteria-tiempo [data-hijo]").count() == 4,
                    "Tiempo: 4 bloques dentro", fallas)
             page.locator("#btn-editar-tiempo").click()
@@ -74,7 +84,7 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator("#estanteria-tiempo [data-hijo]").count() == 3,
                    "Tiempo: quitar un hijo deja 3", fallas)
-            exigir("Tiempo" in [t.strip() for t in page.locator("#tabs .tab").all_inner_texts()],
+            exigir("Tiempo" in [t.get_attribute("title") for t in page.locator("#tabs .tab").all()],
                    "Tiempo: el padre sigue tras quitar el hijo", fallas)
 
             page.locator("#btn-add").click()
@@ -83,7 +93,7 @@ def main() -> int:
             page.wait_for_timeout(120)
             page.locator("#modal-x").click()
             page.wait_for_timeout(80)
-            tabs = [t.strip() for t in page.locator("#tabs .tab").all_inner_texts()]
+            tabs = [t.get_attribute("title") for t in page.locator("#tabs .tab").all()]
             exigir(all(x in tabs for x in ("Malla", "Calificaciones", "Estudio")),
                    f"kit: instala Malla, Calificaciones y Estudio — {tabs}", fallas)
             page.locator("#btn-add").click()
@@ -92,12 +102,12 @@ def main() -> int:
             page.wait_for_timeout(120)
             page.locator("#modal-x").click()
             page.wait_for_timeout(80)
-            tabs = [t.strip() for t in page.locator("#tabs .tab").all_inner_texts()]
+            tabs = [t.get_attribute("title") for t in page.locator("#tabs .tab").all()]
             exigir(not any(x in tabs for x in ("Malla", "Calificaciones", "Estudio")),
                    f"kit: quitarlo no deja huérfanas — {tabs}", fallas)
             exigir("Tiempo" in tabs, "kit: quitar Academics no toca Tiempo", fallas)
 
-            page.locator('#tabs .tab:has-text("Tareas")').click()
+            page.locator('#tabs .tab[data-ir="tareas"]').click()
             page.wait_for_timeout(80)
             page.locator("#btn-nueva-tarea").click()
             page.locator("#tarea-titulo").fill("Preparar la reunión del lunes")
@@ -144,7 +154,7 @@ def main() -> int:
             page.locator('[data-vista="arbol"]').click()
             page.wait_for_timeout(80)
 
-            page.locator('#tabs .tab:has-text("Notas")').click()
+            page.locator('#tabs .tab[data-ir="notas"]').click()
             page.wait_for_timeout(80)
             page.locator("#btn-nueva-nota").click()
             page.locator("#nota-titulo").fill("Idea para la demo")
@@ -157,7 +167,7 @@ def main() -> int:
             exigir("Idea para la demo" in page.locator("#panel-cuerpo").inner_text(),
                    "notas: el panel Notas muestra la nota abierta", fallas)
 
-            page.locator('#tabs .tab:has-text("Tareas")').click()
+            page.locator('#tabs .tab[data-ir="tareas"]').click()
             page.wait_for_timeout(80)
             exigir(page.locator(".panel__tab.on").inner_text().strip() == "Detalle",
                    "panel: recuerda Detalle al volver a Tareas", fallas)
@@ -169,6 +179,15 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator("body").get_attribute("data-tema") == "deepsea",
                    "ajustes: el tema se aplica al body", fallas)
+            page.locator("#btn-split").click()
+            page.wait_for_timeout(80)
+            exigir(page.locator("#contenido-b").is_visible(), "split: la ventana secundaria se abre", fallas)
+            page.locator("#split-seccion").select_option("calendario")
+            page.wait_for_timeout(80)
+            exigir(page.locator("#split-cuerpo").inner_text().strip() != "",
+                   "split: la sección elegida se pinta", fallas)
+            page.locator("#btn-cerrar-split").click()
+            page.wait_for_timeout(60)
             exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)
             page.locator("#btn-panel").click()
             page.wait_for_timeout(80)
@@ -183,7 +202,7 @@ def main() -> int:
 
         ctx, page, errores = nav.abrir(APP, 411, 900)
         try:
-            page.locator('#tabs .tab:has-text("Tareas")').click()
+            page.locator('#tabs .tab[data-ir="tareas"]').click()
             page.wait_for_timeout(80)
             d = desborde(page)
             exigir(d == 0, f"411: sin desborde en Tareas — {d}px", fallas)

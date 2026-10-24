@@ -216,3 +216,30 @@ body{padding-bottom:var(--alto-pie)}
 .cal-agenda__item b{display:block;font-size:var(--fs-sm)}
 .cal-agenda__item small{color:var(--muted);font-size:var(--fs-xs)}
 @media (max-width:520px){.cal-grid--semana{grid-template-columns:1fr}.cal-semana-dia{min-height:0}}
+
+/* ---- correcciones de cabecera, periodo, split y Tiempo ---- */
+.marca{display:inline-flex;align-items:center;gap:var(--sp-2);border:0;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:var(--fs-lg);cursor:pointer;padding:0}
+.marca img{border-radius:50%}
+.marca:hover img{transform:scale(1.06)}
+.mimo-menu{position:absolute;top:calc(var(--alto-topbar) - 2px);left:var(--sp-3);z-index:60;display:flex;flex-direction:column;min-width:190px;padding:var(--sp-1);background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:0 8px 30px rgb(0 0 0 / .18)}
+.mimo-menu[hidden]{display:none}
+.mimo-menu button{border:0;background:transparent;color:var(--fg);text-align:left;padding:var(--sp-2);border-radius:var(--r-sm);font:inherit;font-size:var(--fs-sm);cursor:pointer}
+.mimo-menu button:hover{background:var(--sup2)}
+.navbar .tabs{flex:1;min-width:0}
+.navbar .nav-acciones{margin-left:auto;flex:none}
+.tab{width:40px;justify-content:center;padding:0}
+.tab span{display:none}
+.btn-periodo-nuevo{width:32px;height:32px;min-height:32px;padding:0;font-size:1.1rem;line-height:1}
+.periodo{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.periodo-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-2);margin:var(--sp-3) 0}
+.periodo-form .campo{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-xs);color:var(--muted)}
+.periodo-form #periodo-nombre{grid-column:1/-1}
+.periodo-form .fila{grid-column:1/-1}
+.periodo-item{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:var(--sp-2);margin-bottom:var(--sp-1)}
+.periodo-item.on{border-color:var(--ac);box-shadow:inset 3px 0 0 var(--ac)}
+.tiempo-barra{margin-bottom:var(--sp-3);padding:var(--sp-2) var(--sp-3)}
+.tiempo-barra .estanteria{margin:0}
+#split-seccion{margin-bottom:var(--sp-3)}
+.mp-kpi{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin-top:var(--sp-3)}
+.mp-kpi div{background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:var(--sp-2)}
+.mp-kpi b{display:block;font-size:var(--fs-lg)}.mp-kpi span{font-size:var(--fs-xs);color:var(--muted)}
