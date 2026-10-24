@@ -1,0 +1,1809 @@
+/* ============================================================================
+   general.css - Lo que hace que el panel se vea como se ve, en cualquier tema.
+
+   Aqui va la ESTRUCTURA y la FORMA: tipografia, tamanos, margenes, rejillas, botones,
+   tarjetas, y las variables de forma (radio, relleno de las tarjetas de la malla, alto de
+   linea). Tambien quedan aqui los colores de base escritos dentro de las reglas: son el
+   punto de partida, y cada tema los pisa desde su propio archivo.
+
+   Ningun COLOR DE TEMA se define aqui. Para cambiar como se ve el panel usa los
+   css/tema-*.css: cada uno trae la paleta completa de su tema.
+   ============================================================================ */
+
+:root{
+  --radio:9px; --nodo-pad:7px 9px; --nodo-fuente:.78rem; --malla-gap:40px; --col-gap:8px;
+  --linea:1.6;
+
+  /* ---- C3: escala de radios con nombre -----------------------------------------------------
+     Antes habia 16 valores de radio sueltos y --radio se usaba una sola vez. Con tres nombres
+     deja de ser un numero al azar y pasa a ser una decision: el control, la tarjeta y el
+     contenedor grande. --radio se conserva como alias de --r-md para no romper lo que lo usa. */
+  --r-sm:6px;   /* controles chicos: pastillas, botones de barra, etiquetas */
+  --r-md:9px;   /* la tarjeta y el boton de siempre: el valor que ya usaba --radio */
+  --r-lg:14px;  /* contenedores grandes: modales, paneles */
+
+  /* ---- C2: anillo de foco ---------------------------------------------------------------
+     Dos capas: una del color del fondo y otra del acento. Asi el borde se despega igual sobre
+     un tema claro y sobre uno oscuro. */
+  --foco:0 0 0 2px var(--sup), 0 0 0 4px var(--ac);
+
+  /* ---- C1: ritmo de las transiciones ----------------------------------------------------
+     Una sola duracion y una sola curva para toda la aplicacion. Corta a proposito: esto se usa
+     muchas veces por minuto y una animacion larga cansa. */
+  --t:.12s;
+  --curva:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+     color:var(--fg);background:var(--bg);line-height:1.45;font-size:14px}
+.sinjs{max-width:900px;margin:40px auto;padding:22px 26px;border:2px solid #fcd34d;background:#fffbeb;
+       border-radius:12px;color:#78350f;line-height:1.6}
+.sinjs pre{background:#fff;border:1px solid #fcd34d;border-radius:var(--r-sm);padding:10px;font-size:.85rem;
+           overflow-x:auto}
+header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:14px 20px;
+       position:sticky;top:0;z-index:30;box-shadow:0 2px 10px rgba(15,23,42,.25)}
+.fila{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+h1{margin:0;font-size:1.05rem;font-weight:700}
+.marca{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;
+       padding:2px 10px;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+.periodo{font-size:.85rem;color:#cbd5e1}
+main{padding:16px 20px 70px;max-width:1500px;margin:0 auto}
+.muestra{background:var(--info-bg);border:1px solid #93c5fd;border-radius:11px;padding:11px 15px;
+         font-size:.85rem;margin-bottom:14px}
+.seccion{display:none}
+.seccion.on{display:block}
+.seccion[hidden]{display:none}
+.estado{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--sup);border:1px solid var(--line);border-radius:11px;padding:10px 13px}
+.kpi b{display:block;font-size:1.3rem;line-height:1.2}
+.kpi span{color:var(--muted);font-size:.76rem}
+.layout{display:grid;grid-template-columns:222px 1fr;gap:16px;align-items:start}
+.rail{background:var(--sup);border:1px solid var(--line);border-radius:11px;padding:12px;position:sticky;top:76px;
+      max-height:calc(100vh - 92px);overflow-y:auto}
+.rail h3{margin:0 0 8px;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.rail label{display:flex;align-items:center;gap:7px;font-size:.83rem;padding:3px 0;cursor:pointer}
+.rail .cuadro{width:11px;height:11px;border-radius:3px;flex:none}
+.rail hr{border:0;border-top:1px solid var(--line2);margin:12px 0}
+.mini{background:var(--sup2);border:1px solid var(--line);border-radius:var(--r-sm);padding:3px 8px;font:inherit;
+      font-size:.76rem;cursor:pointer}
+.mini.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac)}
+.btn{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 12px;font:inherit;
+     font-size:.82rem;cursor:pointer}
+.btn.peligro{color:var(--bad);border-color:#fecaca}
+.btn.peligro:hover{background:var(--pill-bad-bg)}
+.btn.primario{background:var(--ac);color:var(--ac-txt);border-color:var(--ac)}
+table.sem{width:100%;table-layout:fixed;border-collapse:collapse;background:var(--sup);
+          border:1px solid var(--line);border-radius:11px;overflow:hidden}
+table.sem th{background:var(--sup2);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;
+             color:var(--muted2);padding:8px 10px;text-align:center;border-bottom:1px solid var(--line)}
+table.sem th.bl{width:118px;text-align:left;padding-left:10px}
+table.sem th.est{width:92px}
+/* Las 7 columnas de dia se reparten IGUAL (table-layout:fixed y los <th> como unica guia): el
+   ancho de dia es constante, lo manda el encabezado ("Miércoles" es el mas largo), y un evento no
+   quiebra la columna, se ADAPTA al hueco. El padding mayor da el espaciado horizontal pedido. */
+table.sem td{border-bottom:1px solid var(--line2);vertical-align:top;padding:8px 10px}
+table.sem td.bl{border-right:1px solid var(--line2);background:var(--sup);padding:6px 10px}
+table.sem td.est{border-left:1px solid var(--line2);background:var(--sup);padding:6px 10px}
+table.sem tr.actual td.bl{box-shadow:inset 4px 0 0 var(--ac)}
+table.sem tr.actual td.bl b{color:var(--ac)}
+table.sem tr.pasada{opacity:.5}
+table.sem tr.oculta{display:none}
+.sm{font-size:.68rem;color:var(--muted);display:block}
+.chip{border-radius:var(--r-sm);padding:3px 6px;margin:2px 0;font-size:.72rem;line-height:1.25;cursor:pointer;
+      position:relative;overflow-wrap:anywhere;overflow:hidden}
+/* ---- el TEXTO del evento, RECORTADO por defecto ----
+   Reportado con datos reales: en un dia con varios eventos, cada uno se veia entero y la celda
+   quedaba apilada e ilegible (por ejemplo el dia 28). El texto son dos lineas como maximo y
+   termina en puntos suspensivos: se entiende de que es, y el titulo completo sale al apuntarlo
+   (title) o al abrir el evento.
+   Se recorta por defecto a proposito: que el usuario NO tenga que buscar la opcion.
+   Minimo alto del chip en dos lineas de texto para que las celdas queden parejas. */
+.chip .txt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+           overflow:hidden;min-width:0}
+.chip:hover{filter:brightness(.96)}
+.chip .tipo{display:block;font-size:.58rem;letter-spacing:.05em;color:var(--muted2)}
+.chip.hecha{opacity:.45}
+.chip.hecha .txt{text-decoration:line-through}
+.chip .pri{font-weight:700;font-size:.62rem;border-radius:4px;padding:0 4px;margin-right:4px;
+           display:inline-block;vertical-align:1px}
+.pri-alta{background:var(--pri-alta-bg);color:var(--bad)}
+.pri-media{background:var(--pri-media-bg);color:var(--warn)}
+.pri-baja{background:var(--pri-baja-bg);color:var(--pri-baja-fg)}
+.chip .marca-ok{float:right;color:var(--ok);font-weight:700}
+.barra{height:6px;background:transparent;border-radius:99px;overflow:hidden;margin-top:3px;display:flex}
+.barra i{display:block;height:100%}
+.tarjeta{background:var(--sup);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+
+/* ---- Ajustes: el reparto en dos columnas (redistribucion 2026-09-21) ----
+   Dentro de una categoria, sus tarjetas pueden ir lado a lado. Se usa en Estudio,
+   donde a la izquierda van los ajustes de uso diario y a la derecha las metas.
+   Los colores y las medidas salen de variables del tema: nada fijo, o la mitad
+   deja de verse sobre los temas oscuros. */
+.dos-col{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+@media(max-width:900px){.dos-col{grid-template-columns:1fr}}
+.tarjeta h2{margin:0 0 2px;font-size:1.05rem;display:flex;align-items:center;gap:8px}
+.sub{color:var(--muted);font-size:.8rem;margin-bottom:12px}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;margin-bottom:10px}
+.lg{display:inline-flex;align-items:center;gap:5px}
+.lg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.grafico{position:relative;height:360px;padding:18px 0 26px 44px;border-left:1px solid var(--line2);
+         border-bottom:1px solid #e2e8f0;overflow-x:auto}
+.grafico-in{position:relative;height:100%;display:flex;align-items:flex-end;gap:6px;min-width:max-content}
+.grafico .ln{position:absolute;left:0;right:0;border-top:1px dashed #86efac;z-index:2;pointer-events:none}
+.grafico .ln span{background:var(--sup);position:absolute;left:2px;top:-9px;font-size:.62rem;background:var(--sup);padding:0 3px;
+                  color:var(--pill-ok-fg)}
+.semana-col{flex:0 0 46px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+            height:100%;position:relative}
+.semana-col .pila{width:26px;display:flex;flex-direction:column-reverse;border-radius:3px 3px 0 0;
+                  overflow:hidden;background:transparent}
+.grafico-vacio{display:flex;align-items:center;justify-content:center;height:100%;padding:0 24px;
+               text-align:center;color:var(--muted);font-size:.85rem;line-height:1.5;max-width:520px;margin:0 auto}
+.semana-col .seg{width:100%}
+.semana-col .etq{position:absolute;bottom:-22px;font-size:.62rem;color:var(--muted);white-space:nowrap}
+.semana-col .tot{position:absolute;top:-16px;font-size:.62rem;font-weight:700;color:var(--fg)}
+.semana-col.excedida .tot{color:var(--bad)}
+/* La tabla de horas por semana.
+   table-layout:fixed es lo que hace que las columnas de los ramos midan TODAS LO MISMO: sin el,
+   el navegador reparte el ancho segun lo que le entra en cada celda, y quedan columnas anchas
+   junto a otras apretadas, con las lineas separadoras a distancias distintas. Se veia descuidado
+   y costaba leer de arriba abajo. Con anchos iguales, la vista se recorre de un golpe.
+   La primera columna (la semana) si lleva ancho fijo, porque su texto no varia. */
+table.minutos{width:100%;table-layout:fixed;border-collapse:collapse;background:var(--sup);
+              font-size:.8rem;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+table.minutos th{background:var(--sup2);font-size:.7rem;text-transform:uppercase;color:var(--muted2);
+                 padding:7px 6px;border-bottom:1px solid var(--line);text-align:center;
+                 vertical-align:bottom;line-height:1.25;overflow-wrap:anywhere}
+table.minutos th:first-child{text-align:left;width:92px}
+table.minutos td{padding:3px 5px;border-bottom:1px solid var(--line2);text-align:right;
+                 vertical-align:middle}
+table.minutos td:first-child{padding-left:8px;text-align:left;white-space:nowrap}
+/* La casilla ocupa su columna entera: asi ninguna se desborda ni queda mas corta que su hueco.
+   El ancho se aplica a TODAS las casillas de la tabla; el resto del aspecto solo a las de tiempo
+   y a la de la meta, para no pisarle a la nota libre su letra pequena ni su borde punteado. */
+table.minutos input{width:100%;box-sizing:border-box;min-width:0}
+table.minutos input[data-ramo],
+table.minutos input[data-meta]{padding:4px 6px;border:1px solid var(--line2);border-radius:var(--r-sm);
+                               font:inherit;font-size:.78rem;text-align:right;background:var(--sup)}
+/* El nombre largo se abrevia con puntos suspensivos segun lo que se elija en Ajustes. */
+table.minutos th .abrev{display:block;overflow:hidden;text-overflow:ellipsis}
+table.minutos th .meta-ramo{display:block;font-weight:400;text-transform:none;color:var(--muted);
+                            font-size:.68rem;margin-top:2px}
+table.minutos input:focus{outline:2px solid var(--ac);outline-offset:-1px;background:var(--sup)}
+table.minutos tr.hoy td{background:var(--info-bg)}
+table.minutos td.tot{font-weight:700}
+table.minutos td.cero{color:#cbd5e1}
+.notas{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.lista{background:var(--sup);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--line2);cursor:pointer}
+.item:last-child{border-bottom:0}
+.item.on{background:var(--info-bg)}
+.item .pt{width:10px;height:10px;border-radius:3px;flex:none}
+.item .nm{flex:1;min-width:0}
+.item .nm b{display:block;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .nm span{font-size:.7rem;color:var(--muted)}
+.item .nf{font-weight:700;font-size:.9rem}
+table.comp{width:100%;border-collapse:collapse;font-size:.85rem;margin:8px 0}
+table.comp th{background:var(--sup3);font-size:.72rem;text-transform:uppercase;color:var(--muted2);
+              padding:6px 8px;text-align:left;border-bottom:1px solid var(--line)}
+table.comp td{padding:6px 8px;border-bottom:1px solid var(--line2)}
+table.comp td.num,
+table.comp th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.comp input{width:64px;padding:3px 6px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;
+                 font-size:.82rem;text-align:right}
+.reemplazo{color:var(--q);font-size:.72rem}
+.grueso{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.caja{background:var(--sup3);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.caja b{display:block;font-size:1.5rem;line-height:1.15}
+.caja span{font-size:.75rem;color:var(--muted)}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.72rem;font-weight:700}
+.pill.ok{background:var(--pill-ok-bg);color:var(--ok);border:1px solid #86efac}
+.pill.warn{background:var(--pill-warn-bg);color:var(--warn);border:1px solid #fcd34d}
+.pill.bad{background:var(--pill-bad-bg);color:var(--bad);border:1px solid #fecaca}
+.pill.n{background:var(--sup2);color:var(--muted2);border:1px solid var(--line)}
+.sim{background:var(--sim-bg);border:1px solid #c4b5fd;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.sim h3{margin:0 0 4px;font-size:.95rem;color:var(--q)}
+.sim input[type=range]{width:100%;accent-color:var(--q)}
+.sim .res{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin-top:8px;font-size:.88rem}
+.sim .res b{font-variant-numeric:tabular-nums}
+.conf{background:var(--sup);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.conf h3{margin:0 0 8px;font-size:.95rem}
+.campo{display:grid;grid-template-columns:1fr 120px;gap:10px;align-items:center;
+       padding:6px 0;border-bottom:1px solid var(--line2);font-size:.85rem}
+.campo:last-child{border-bottom:0}
+.campo input[type=number],
+.campo input[type=text],
+.campo input[type=date],
+.campo select{width:100%;
+       padding:4px 7px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;font-size:.85rem}
+.campo input[type=number]{text-align:right}
+/* El nombre del evento ocupa el ancho entero: es el titulo del modal, no un dato corto. */
+.m-nombre-caja{grid-template-columns:1fr;gap:4px;align-items:stretch}
+.m-nombre-caja input[type=text]{font-size:.95rem;font-weight:600;padding:6px 9px}
+.ayuda{font-size:.74rem;color:var(--muted);margin-top:8px}
+/* Recuadro de texto moderno, unico para los campos de formulario sueltos (no los que ya tienen
+   su contexto: .campo, table.cat, .cond...). Borde suave, fondo sutil y anillo de foco con el
+   color de acento, el mismo lenguaje que los botones. */
+.entrada{padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;
+         font-size:.85rem;color:var(--fg);background:var(--sup2);min-width:0}
+.entrada::placeholder{color:var(--muted)}
+.entrada:hover{border-color:var(--muted)}
+.entrada:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 22%,transparent)}
+/* Ficha ampliada del ramo (2026-09-21): titulos de bloque y controles nuevos. */
+.bloque-tit{margin:16px 0 6px;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;
+            color:var(--muted);border-bottom:1px solid var(--line2);padding-bottom:4px}
+.escala{display:flex;align-items:center;gap:6px}
+.escala-punto{width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--sup);
+              cursor:pointer;padding:0;transition:background-color var(--t) var(--curva)}
+.escala-punto:hover{background:var(--sup2)}
+.escala-punto.on{background:var(--ac);border-color:var(--ac)}
+.escala-txt{font-size:.78rem;color:var(--muted)}
+.chip-req{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid var(--line);
+          border-radius:999px;font-size:.78rem;background:var(--sup2);font-family:var(--mono,inherit)}
+.chip-req .ch-req-quita{border:none;background:none;color:var(--muted);cursor:pointer;font-size:.85rem;
+          line-height:1;padding:0 2px}
+.chip-req .ch-req-quita:hover{color:var(--bad)}
+.req-lista{display:flex;flex-direction:column;gap:2px;max-height:180px;overflow:auto;margin-top:4px;
+           border:1px solid var(--line);border-radius:var(--r-sm);padding:4px}
+.req-opcion{display:flex;align-items:center;gap:8px;padding:5px 8px;border:none;background:none;
+            cursor:pointer;text-align:left;font:inherit;font-size:.82rem;border-radius:var(--r-sm)}
+.req-opcion:hover{background:var(--sup2)}
+.req-opcion .mono{font-weight:600}
+.req-opcion .nm2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.req-opcion .sm{font-size:.72rem;color:var(--muted)}
+.color-fila{display:grid;grid-template-columns:150px 1fr 74px 54px;gap:12px;align-items:center;
+            padding:9px 0;border-bottom:1px solid var(--line2)}
+.color-fila:last-child{border-bottom:0}
+.color-fila .nm{font-size:.86rem;font-weight:600;display:flex;align-items:center;gap:7px}
+.color-fila .pt{width:11px;height:11px;border-radius:3px}
+.tono{width:100%;height:20px;border-radius:var(--r-sm);appearance:none;cursor:pointer;
+      background:linear-gradient(to right,#ff0000 0%,#ffff00 17%,#00ff00 33%,#00ffff 50%,#0000ff 67%,
+      #ff00ff 83%,#ff0000 100%)}
+.tono::-webkit-slider-thumb{appearance:none;width:14px;height:20px;border-radius:4px;background:var(--sup);
+      border:2px solid #334155;cursor:pointer}
+.muestra-color{width:100%;height:30px;border-radius:7px;border:1px solid var(--line)}
+.atajos{display:flex;gap:4px}
+.atajos button{width:20px;height:20px;border-radius:5px;border:1px solid var(--line);cursor:pointer;padding:0}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;z-index:70; /* 70: POR ENCIMA del velo del panel (.aj-velo, 60). Con 50, un aviso pedido desde dentro de un
+     panel de Ajustes salia DEBAJO del velo: se veia el fondo oscurecido y el aviso no. Lo
+     reporto el dueno con 'Restablecer', que preguntaba desde detras del propio panel. */
+       align-items:flex-start;justify-content:center;
+       padding:var(--modal-top,40px) 16px 40px;overflow-y:auto}
+.modal.on{display:flex}
+.modal-caja{background:var(--sup);border-radius:var(--r-lg);max-width:620px;width:100%;padding:20px 22px;
+            box-shadow:0 18px 50px rgba(15,23,42,.3)}
+/* La ventana de Importar (Malla) lleva la cara de Ajustes: por dentro es un .aj-panel, como en el
+   boceto aprobado; asi hereda tal cual .aj-cab/.aj-x/.aj-pie. El #modal-caja comun queda solo de
+   envoltorio (transparente). Las clases de la casa (.eti/.archivo/.nombre) se acotan al imp-caja
+   para NO tocar las de Ajustes, que viven dentro de .aj-panel. */
+.modal-caja.imp-caja{background:none;border:0;box-shadow:none;padding:0;max-width:640px}
+.modal-caja.imp-caja > .aj-panel{display:block}
+.modal-caja h2{margin:0 0 4px;font-size:1.1rem}
+.modal-caja .cerrar{float:right;border:0;background:var(--sup2);border-radius:var(--r-sm);padding:4px 10px;
+                    cursor:pointer;font:inherit}
+/* --- elegir un archivo, sin el boton feo del navegador ---
+   El <input type="file"> trae su boton y su texto, y son del NAVEGADOR: no se pueden pintar ni
+   traducir. Se esconde (invisible, pero vivo) y lo abre un boton de la casa. */
+.modal-caja.imp-caja .eti{display:block;font-size:.75rem;font-weight:700;color:var(--muted);
+                          letter-spacing:.03em;text-transform:uppercase;margin:0 0 2px 1px}
+.modal-caja.imp-caja .archivo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+.modal-caja.imp-caja .archivo .btn{display:inline-flex;align-items:center;gap:8px}
+.modal-caja.imp-caja .archivo input[type=file]{position:absolute;width:1px;height:1px;padding:0;opacity:0;pointer-events:none}
+.modal-caja.imp-caja .nombre{color:var(--muted);font-size:.82rem;min-width:0;overflow:hidden;
+                             text-overflow:ellipsis;white-space:nowrap}
+.modal-caja.imp-caja .nombre.on{color:var(--fg);font-weight:600}
+.modal-caja.imp-caja .g-cuerpo .ayuda{margin:10px 0 0}
+.modal-caja.imp-caja .pegado{display:grid;gap:6px;margin-top:8px;font-size:.85rem}
+.modal-caja.imp-caja .pegado textarea{width:100%;font-family:ui-monospace,monospace;font-size:.82rem;
+                                      min-height:74px;padding:8px 10px;border:1px solid var(--line);
+                                      border-radius:var(--r-sm);resize:vertical}
+textarea{width:100%;min-height:74px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);
+         font:inherit;font-size:.85rem;resize:vertical}
+.prioridades{display:flex;gap:6px}
+.prioridades button{flex:1;padding:6px;border:1px solid var(--line);background:var(--sup);border-radius:var(--r-sm);
+                    cursor:pointer;font:inherit;font-size:.8rem}
+.prioridades button.on{background:var(--fg);color:var(--sup);border-color:var(--fg)}
+.flotante{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f172a;color:#fff;
+          border-radius:999px;padding:8px 18px;font-size:.82rem;opacity:0;transition:opacity .25s;z-index:75}
+.flotante.on{opacity:.95}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem}
+.sel{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:var(--r-sm);
+     padding:5px 9px;font:inherit;font-size:.85rem}
+.sel option{color:var(--fg)}
+/* El selector de semestre activo de la cabecera: un ancho minimo fijo para que no se encoja
+   al ancho del nombre mas corto (quedaba diminuto junto a "+Semestre"). */
+#sem-activo, #sem-activo.sel{min-width:13rem}
+/* M2: en la barra lateral (176px, con overflow:hidden) un min-width fijo de 13rem (208px)
+   se salia 42px y la flecha quedaba recortada. min(13rem,100%) conserva el proposito
+   (no encogerse cuando sobra sitio) pero nunca supera el ancho disponible. */
+.sel-cara.sel-cabecera{min-width:min(13rem, 100%)}
+.btn.chico{padding:4px 9px;font-size:.78rem;background:var(--sup2);color:var(--fg);
+           border-color:rgba(255,255,255,.25)}
+.btn.chico:hover{filter:brightness(1.12)}
+.puntos{position:relative;padding:14px 8px 26px 8px}
+.puntos svg{display:block;width:100%;height:250px;overflow:visible}
+.puntos .ejex{display:flex;margin-top:2px}
+.puntos .ejex span{flex:1;text-align:center;font-size:.6rem;color:var(--muted);white-space:nowrap}
+table.cat{width:100%;border-collapse:collapse;font-size:.84rem;margin:6px 0 2px}
+table.cat th{background:var(--sup3);font-size:.7rem;text-transform:uppercase;color:var(--muted);padding:5px 8px;
+             text-align:left;border-bottom:1px solid var(--line)}
+table.cat td{padding:5px 8px;border-bottom:1px solid var(--line2);vertical-align:middle}
+table.cat td.num{text-align:right;font-variant-numeric:tabular-nums}
+table.cat input[type=text]{width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;
+                           font-size:.82rem;background:var(--sup);color:var(--fg);
+                           transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+table.cat input[type=text]:hover{border-color:var(--muted)}
+table.cat input[type=text]:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+table.cat input[type=number]{width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-sm);
+                             font:inherit;font-size:.82rem;text-align:right;background:var(--sup);color:var(--fg);
+                             transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+table.cat input[type=number]:hover{border-color:var(--muted)}
+table.cat input[type=number]:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+table.cat input[type=date]{width:auto;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;
+                           font-size:.82rem;background:var(--sup);color:var(--fg);
+                           transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+table.cat input[type=date]:hover{border-color:var(--muted)}
+table.cat input[type=date]:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+table.cat select{padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;font-size:.82rem;
+                 background:var(--sup);color:var(--fg);cursor:pointer;
+                 transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+table.cat select:hover{border-color:var(--muted)}
+table.cat select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+.barra-peso{height:7px;border-radius:99px;background:var(--pista);overflow:hidden;margin-top:5px;display:flex}
+.barra-peso i{display:block;height:100%}
+.cond{display:grid;grid-template-columns:150px 1fr 74px 90px 30px;gap:8px;align-items:center;padding:5px 0;
+      border-bottom:1px solid var(--line2)}
+.cond select,
+.cond input{padding:6px 8px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;
+                         font-size:.82rem;width:100%;background:var(--sup);color:var(--fg);
+                         transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+.cond input:hover,.cond select:hover{border-color:var(--muted)}
+.cond input:focus,.cond select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+.cond input[type=number]{text-align:right}
+.quitar{border:0;background:var(--pill-bad-bg);color:var(--bad);border-radius:var(--r-sm);cursor:pointer;font:inherit;
+        font-size:.8rem;padding:4px 9px;transition:background-color var(--t) var(--curva),color var(--t) var(--curva)}
+.quitar:hover{background:var(--bad);color:var(--bg)}
+.vacio{color:var(--muted);font-size:.8rem;padding:6px 0}
+/* Pastillas de ramo del detalle de la malla (Antes necesitas / Este ramo desbloquea).
+   No tenian regla propia: se dibujaban en linea, una pegada a la otra (medido: 0 px entre
+   pastillas), y los codigos se leian como una sola palabra. Ahora son pastillas separadas y
+   llevan el color del estado del ramo, el mismo que el nodo en la malla. */
+.pt-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pt-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;
+         border:1px solid var(--line);background:var(--sup2);font-size:.8rem;line-height:1.3;
+         cursor:pointer;white-space:nowrap;transition:filter var(--t) var(--curva)}
+.pt-chip:hover{filter:brightness(.95)}
+.pt-chip.aprobado{background:var(--malla-aprobado-bg);border-color:var(--malla-aprobado-bd);color:var(--malla-aprobado-fg)}
+.pt-chip.curso{background:var(--malla-curso-bg);border-color:var(--malla-curso-bd);color:var(--malla-curso-fg)}
+.pt-chip.disponible{background:var(--malla-disponible-bg);border-color:var(--malla-disponible-bd);color:var(--malla-disponible-fg)}
+.pt-chip.bloqueado{background:var(--malla-bloqueado-bg);border-color:var(--malla-bloqueado-bd);color:var(--malla-bloqueado-fg)}
+/* La fila de botones del detalle no debe tocar el ultimo apartado (medido: quedaban al ras, 0 px). */
+#malla-detalle .bloque + .fila{margin-top:14px}
+.uno-de{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px;
+  font-size:.74rem;color:var(--muted)}
+.uno-de .o{font-weight:700;padding:0 2px}
+.alta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.alta input[type=number]{width:74px;text-align:right;padding:6px 8px;border:1px solid var(--line);
+  border-radius:var(--r-sm);font:inherit;font-size:.82rem;background:var(--sup);color:var(--fg);
+  transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+.alta input[type=number]:hover{border-color:var(--muted)}
+.alta input[type=number]:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+.alta select{flex:1;min-width:130px;padding:6px 8px;border:1px solid var(--line);
+  border-radius:var(--r-sm);font:inherit;font-size:.82rem;background:var(--sup);color:var(--fg);
+  transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+.alta select:hover{border-color:var(--muted)}
+.alta select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+.chico{display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--muted);
+  margin:0 0 8px;cursor:pointer}
+.punto-cat{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+table.cat input[type=color]{width:36px;height:26px;padding:0;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:none;cursor:pointer;vertical-align:middle;
+  transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+table.cat input[type=color]:hover{border-color:var(--muted)}
+table.cat input[type=color]:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+.exim{background:var(--pill-ok-bg);border:1px solid #86efac;border-radius:10px;padding:10px 12px;margin:10px 0;
+      font-size:.84rem}
+.celda-otros{text-align:right;background:var(--sup2)}
+/* El numero de "Sin asignar" solo ocupa linea cuando la semana tiene tiempo sin repartir. Sin
+   reservarle ese alto, esas filas quedaban 16px mas bajas que las demas y la tabla se veia
+   desprolija, con las lineas a alturas distintas. */
+.h-otros{display:block;line-height:1.25;min-height:1.25em}
+.nota-otros{width:100%;margin-top:3px;font-size:.68rem;border:1px dashed var(--line);
+  border-radius:5px;background:transparent;color:var(--muted);padding:1px 4px}
+.nota-otros:focus{color:var(--fg);border-style:solid}
+.nota-chip{font-size:.66rem;font-weight:700;background:var(--fg);color:var(--bg);
+  border-radius:var(--r-sm);padding:0 5px;margin-right:4px;white-space:nowrap}
+.grupo-tit{display:flex;align-items:baseline;gap:9px;margin:22px 2px 9px;font-weight:700;font-size:1rem}
+.grupo-tit:first-child{margin-top:4px}
+.grupo-tit .num{background:var(--ac);color:var(--ac-txt);border-radius:7px;min-width:21px;height:21px;
+  display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.grupo-tit .sm{font-weight:400;font-size:.79rem;color:var(--muted)}
+.aj-bar{position:sticky;bottom:10px;z-index:6}
+.aj-bar.on .aj-caja{background:var(--sup);border:2px solid var(--ac);border-radius:12px;
+  padding:12px 15px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.aj-caja .aj-tit{display:flex;flex-direction:column;gap:3px;margin-bottom:4px}
+.aj-caja .aj-tit b{font-size:.98rem}
+.aj-caja .sm{font-weight:400;font-size:.78rem;color:var(--muted)}
+.aj-caja ul{margin:7px 0 11px;padding-left:20px;font-size:.83rem;max-height:132px;overflow:auto}
+.aj-caja li{margin-bottom:2px}
+.exim.no{background:var(--pill-warn-bg);border-color:#fcd34d}
+.bloque{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:12px}
+.bloque h4{margin:0 0 8px;font-size:.86rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted2)}
+.tiempo{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start;width:100%;max-width:100%}
+.crono,
+.sesiones{background:var(--sup);border:1px solid var(--line);border-radius:12px;padding:18px 20px;min-width:0}
+/* El ancho del recuadro es CONSTANTE entre las cuatro categorias: minmax(0,1fr) deja que la
+   columna del crono ceda en vez de estirarse por su contenido, y min-width:0 en las dos cajas
+   permite que lo de adentro (campos, pomo-config, rec-panel) se adapte al hueco. Sin esto, al
+   pasar de Cronometro (788px) a Pomodoro/Recordatorios el contenido ancho empujaba el recuadro
+   de 1104px a 1204px. */
+/* El recuadro de Tiempo mantiene su altura constante entre las cuatro categorias: manda la mas
+   alta (Recordatorios, ~913px con su formulario completo). Sin esto, al pasar de Cronometro a
+   Recordatorios el recuadro se estira de golpe. En los modos cortos queda aire abajo, que es lo
+   buscado: el recuadro no salta. */
+.crono{min-height:920px}
+.crono-cab{display:flex;gap:6px;margin-bottom:12px}
+.reloj{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:3.2rem;font-weight:700;
+       text-align:center;letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--fg)}
+.reloj.corriendo{color:var(--ac)}
+.reloj.modo-temporizador{color:var(--q)}
+/* Los digitos del reloj son editables: se pinchan y se escribe la hora como en Google */
+.reloj .rlj{width:1.3em;font-family:inherit;font-size:inherit;font-weight:inherit;
+            text-align:center;border:0;border-bottom:2px dashed transparent;background:transparent;
+            color:inherit;letter-spacing:.04em;font-variant-numeric:tabular-nums;padding:0;-moz-appearance:textfield}
+.reloj .rlj::-webkit-outer-spin-button,.reloj .rlj::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.reloj .rlj:hover,.reloj .rlj:focus{border-bottom-color:var(--line);background:var(--sup2);border-radius:6px;outline:none}
+/* Los tres controles del cronometro/temporizador: Play / Pausa / Parar */
+.controles{display:flex;gap:8px;margin-top:12px}
+.btn-control{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:9px 12px;border-radius:10px;font:inherit;font-size:.86rem;font-weight:650;
+  cursor:pointer;border:1px solid transparent}
+.btn-control .ic{width:16px;height:16px}
+.btn-play{background:var(--ok);color:var(--bg)}
+.btn-pausa{background:var(--warn);color:var(--bg)}
+.btn-parar{background:var(--sup);color:var(--bad);border-color:var(--bad)}
+.btn-control:disabled{opacity:.4;cursor:default}
+/* El aviso "¿registrar estos X min?" que sale al parar con tiempo sin anotar */
+.aviso-registro{margin-top:12px;padding:12px;border:1px solid var(--warn);background:var(--sup2);
+  border-radius:10px;font-size:.82rem}
+.aviso-registro[hidden]{display:none}
+.aviso-registro .pregunta{font-weight:650;margin-bottom:8px}
+.aviso-registro .acciones{display:flex;gap:8px}
+.aviso-registro button{flex:1;padding:7px 0;border-radius:8px;font:inherit;font-size:.82rem;font-weight:650;cursor:pointer}
+.aviso-registro .btn-si{background:var(--ok);color:var(--bg);border:1px solid transparent}
+.aviso-registro .btn-no{background:var(--sup);color:var(--muted);border:1px solid var(--line)}
+
+/* ---- Configuracion del pomodoro (cuatro valores en dos filas) ---- */
+.pomo-config{margin-top:4px}
+.pomo-config[hidden]{display:none}
+.pomo-config .pomo-fila{display:flex;gap:12px;flex-wrap:wrap}
+.pomo-config .pomo-fila .campo{flex:1 1 0;min-width:0}
+
+/* ---- Recordatorios (cuarto modo de Tiempo) ---- */
+.recordatorios{margin-top:12px}
+.recordatorios[hidden]{display:none}
+.recordatorios .rec-tipo{display:flex;gap:6px}
+.recordatorios .rec-tipo-btn{padding:6px 14px}
+.recordatorios .rec-tipo-btn.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac)}
+.recordatorios .rec-dias{display:flex;gap:5px;flex-wrap:wrap}
+.recordatorios .rec-dia{width:34px;height:34px;padding:0;border-radius:999px;display:grid;place-items:center}
+.recordatorios .rec-dia.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac);font-weight:700}
+.recordatorios .rec-fila{display:flex;gap:12px;flex-wrap:wrap}
+.recordatorios .rec-fila .campo{flex:1 1 0;min-width:0}
+/* Los campos que llevan un GRUPO de botones (tipo, sonido, dias) no caben en la columna fija de
+   120px del .campo generico: el grupo de botones se Salia del bloque 44px a la derecha. Se les da
+   display:block (etiqueta arriba, control abajo a todo el ancho) y el grupo se envuelve. */
+.recordatorios .campo:has(.rec-tipo),
+.recordatorios .campo:has(.rec-sonido),
+.recordatorios .campo:has(.rec-dias){display:block}
+.recordatorios .campo:has(.rec-tipo) > span,
+.recordatorios .campo:has(.rec-sonido) > span,
+.recordatorios .campo:has(.rec-dias) > span{display:block;margin-bottom:6px}
+.recordatorios .rec-tipo{display:flex;gap:6px;flex-wrap:wrap}
+.recordatorios .rec-sonido{display:flex;gap:6px;flex-wrap:wrap}
+.recordatorios .rec-son-btn{padding:5px 11px}
+.recordatorios .rec-son-btn.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac)}
+.recordatorios .rec-archivo-fila{display:flex;align-items:center;gap:10px}
+.recordatorios .rec-bitacora{width:44px;height:44px;flex:0 0 auto;border-radius:999px;cursor:pointer;
+  display:grid;place-items:center;background:var(--sup2);border:1px solid var(--line);
+  color:var(--ac-fuerte, var(--ac));transition:border-color .14s, transform .14s}
+.recordatorios .rec-bitacora:hover{border-color:var(--ac);transform:scale(1.05)}
+.recordatorios .rec-archivo-nom{font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recordatorios .rec-agregar{margin-top:12px}
+.recordatorios .rec-lista{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.rec-item{display:flex;align-items:center;gap:12px;background:var(--sup2);border:1px solid var(--line2);
+  border-radius:var(--r-md);padding:10px 14px;font-size:.86rem}
+.rec-item .rec-hora{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rec-item .rec-txt{flex:1}
+.rec-item .rec-det{font-size:.72rem;color:var(--muted);white-space:nowrap}
+.rec-item .rec-quitar{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-sm);
+  width:26px;height:26px;color:var(--bad);font-weight:700;cursor:pointer}
+
+/* El MISMO sonido, ahora en el panel de la seccion Tiempo (antes solo existia dentro de
+   .recordatorios y no se pintaba en Ajustes). Reutiliza las clases; el panel manda. */
+.aj-panel .rec-sonido{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.aj-panel .rec-son-btn{padding:6px 12px}
+.aj-panel .rec-son-btn.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac)}
+.aj-panel .rec-campo-archivo{margin-top:10px}
+.aj-panel .rec-archivo-fila{display:flex;align-items:center;gap:10px}
+.aj-panel .rec-bitacora{width:44px;height:44px;flex:0 0 auto;border-radius:999px;cursor:pointer;
+  display:grid;place-items:center;background:var(--sup2);border:1px solid var(--line);
+  color:var(--ac-fuerte, var(--ac));transition:border-color .14s, transform .14s}
+.aj-panel .rec-bitacora:hover{border-color:var(--ac);transform:scale(1.05)}
+.aj-panel .rec-archivo-nom{font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.sesiones h3{margin:0 0 10px;font-size:.95rem}
+.sesion{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--line2);
+        font-size:.83rem}
+.sesion:last-child{border-bottom:0}
+.sesion .h{font-variant-numeric:tabular-nums;font-weight:700}
+/* Encabezado de cada dia en "Sesiones por dia" */
+.dia-titulo{margin:10px 0 2px;padding-top:8px;font-size:.78rem;font-weight:700;color:var(--ac-fuerte);
+  text-transform:uppercase;letter-spacing:.05em;border-top:1px solid var(--line2)}
+.dia-titulo:first-of-type{border-top:0;margin-top:0}
+.sesion.total{border-bottom:0;color:var(--muted);font-size:.8rem}
+.sesion.total .h{color:var(--fg);padding-left:12px}
+/* El dia de HOY, arriba y destacado: recuadro con el acento de la seccion. El resto de dias de
+   la semana van debajo, con su epigrafe, mas apagados. Antes todo era una lista corrida. */
+.hoy-caja{border:1px solid var(--ac);border-radius:var(--r-md);background:var(--hoy-bg);padding:10px 12px 4px}
+.hoy-tit{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:2px}
+.hoy-tit b{color:var(--ac-fuerte);font-size:.86rem}
+.hoy-tit .h{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ac-fuerte);padding-left:12px}
+.resto-tit{margin:16px 0 4px;font-size:.74rem;font-weight:700;text-transform:uppercase;
+           letter-spacing:.05em;color:var(--muted)}
+.destino{background:var(--info-bg);border:1px solid #93c5fd;border-radius:var(--r-md);padding:8px 11px;font-size:.8rem;
+         margin-bottom:10px}
+.mini.peligro{color:var(--bad);border-color:#fecaca}
+@media(max-width:1000px){.tiempo{grid-template-columns:1fr}}
+.lista-ramos{max-height:290px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup)}
+/* Reordenar malla: filas de columnas y de ramos, con flechas arriba/abajo */
+.lista-ord{max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup)}
+.fila-ord{display:flex;align-items:center;gap:9px;padding:7px 11px;border-bottom:1px solid var(--line2);font-size:.82rem}
+.fila-ord:last-child{border-bottom:0}
+.fila-ord .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;min-width:70px}
+.fila-ord .nm2{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fila-ord .sm{margin:0;color:var(--muted)}
+.ord-acciones{display:flex;gap:4px}
+.ord-acciones .btn{padding:2px 8px;font-size:.8rem;line-height:1.3}
+.opcion{display:grid;grid-template-columns:26px 82px 1fr auto;gap:9px;align-items:center;padding:6px 10px;
+        border-bottom:1px solid var(--line2);cursor:pointer;font-size:.83rem}
+.opcion:last-child{border-bottom:0}
+.opcion:hover{background:var(--sup3)}
+.opcion input{margin:0}
+.opcion .nm2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opcion .sm{margin:0}
+.malla-tools{margin:10px 0;gap:14px;align-items:center;flex-wrap:wrap}
+.malla-tools input[type=text]{padding:6px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;
+                              font-size:.84rem;min-width:250px}
+.llave{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted2);cursor:pointer}
+.leyenda-malla{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 12px;font-size:.76rem;color:var(--muted2)}
+.leyenda-malla i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;
+                 vertical-align:-1px;border:1px solid rgba(15,23,42,.15)}
+.malla-lienzo{display:flex;gap:14px;align-items:flex-start}
+.malla-caja{flex:1 1 auto;min-width:0}
+.ficha-ramo{flex:0 0 290px;position:sticky;top:76px;display:none;
+            background:var(--sup);border:1px solid var(--malla-ficha-bd);
+            border-radius:12px;padding:14px 15px}
+.ficha-ramo.on{display:block}
+body.sin-ficha .ficha-ramo{display:none!important}
+.ficha-ramo .ficha-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.ficha-ramo .bloque{margin-top:11px}
+.ficha-ramo .bloque h4{margin:0 0 3px;font-size:.68rem;text-transform:uppercase;
+                       letter-spacing:.05em;color:var(--muted2);font-weight:700}
+.ficha-texto{margin:0;font-size:.83rem;white-space:pre-wrap;word-break:break-word}
+.ficha-ramo .vacio{font-size:.82rem;color:var(--muted)}
+.ficha-ramo .btn{margin-top:14px}
+@media(max-width:1000px){
+  .malla-lienzo{display:block}
+  .ficha-ramo{position:static;width:auto;margin-bottom:12px}
+}
+.malla-scroll{position:relative;overflow-x:auto;overflow-y:hidden;padding-bottom:6px}
+.malla svg{position:absolute;top:0;left:0;pointer-events:none;z-index:0}
+.malla-col{display:flex;flex-direction:column;gap:var(--col-gap);width:186px;flex:0 0 186px}
+.malla-col .col-tit{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+                    font-weight:700;padding:2px 0 4px;border-bottom:2px solid var(--line);margin-bottom:4px}
+.malla-col .col-cred{font-size:.68rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
+/* Secciones de la carrera: cada seccion es un bloque con su titulo centrado sobre sus columnas,
+   un fondo suave (del color de la seccion) y una linea vertical que la separa de la siguiente. */
+.malla{display:flex;gap:0;position:relative;z-index:1;min-width:max-content;padding:4px 2px 10px}
+.seccion-bloque{display:flex;flex-direction:column;padding:8px 14px 12px;background:color-mix(in srgb,var(--sec-color,#f6f7f9) 9%,transparent)}
+.seccion-bloque + .seccion-bloque{border-left:1px solid var(--line)}
+.seccion-bloque .sec-titulo{text-align:center;font-size:.72rem;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--fg);margin-bottom:8px;padding-bottom:4px;
+  border-bottom:2px solid var(--sec-color,var(--line));white-space:nowrap}
+.seccion-bloque .sec-titulo .sigla{color:var(--sec-color,var(--muted));margin-right:5px}
+.seccion-bloque .columnas{display:flex;gap:var(--malla-gap)}
+/* el editor de secciones usa las clases de la casa (.campo, .fila, .btn); aca solo el puntito
+   redondo que muestra el color de cada seccion. */
+.pt-seccion{width:12px;height:12px;border-radius:50%;flex:0 0 auto;display:inline-block;
+  border:1px solid var(--line)}
+/* ---- C1: los controles responden, no saltan ---------------------------------------------
+   Solo se animan las propiedades que se pintan (fondo, borde, color). No se anima nada que
+   obligue al navegador a recalcular la pagina: la app tiene mallas grandes y eso se sentiria. */
+.btn,.mini,button,input,select,textarea,.nav,.modo,.pill,.chip{
+  transition:background-color var(--t) var(--curva),
+             border-color var(--t) var(--curva),
+             color var(--t) var(--curva);
+}
+
+/* ---- C2: el foco del teclado ------------------------------------------------------------
+   :focus-visible es el foco que se llega con TAB, no con el mouse: al hacer clic NO aparece
+   el anillo. Asi se arregla la regla que borraba el contorno sin poner nada en su lugar. */
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px;box-shadow:var(--foco);border-radius:inherit}
+
+/* ---- C4: si el sistema pide menos movimiento, se le hace caso ---------------------------
+   15 de las 20 referencias ya lo respetan. Son cuatro lineas y evita marear a quien lo tiene
+   activado por salud. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important;
+  }
+}
+
+.nodo{border-radius:var(--r-md);padding:var(--nodo-pad);font-size:var(--nodo-fuente);line-height:1.25;cursor:pointer;
+      border:1px solid;position:relative;background:var(--sup);transition:transform .1s}
+.nodo:hover{transform:translateX(2px)}
+.nodo b{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.72rem;display:block;
+        opacity:.75;font-weight:600}
+.nodo .nm{display:block;margin-top:1px}
+.nodo em{font-style:normal;font-size:.68rem;opacity:.7}
+.nodo .candado{position:absolute;right:7px;top:6px;font-size:.7rem;opacity:.6}
+.nodo.aprobado{background:var(--malla-aprobado-bg);border-color:var(--malla-aprobado-bd);color:var(--malla-aprobado-fg)}
+.nodo.curso{background:var(--malla-curso-bg);border-color:var(--malla-curso-bd);color:var(--malla-curso-fg)}
+.nodo.disponible{background:var(--malla-disponible-bg);border-color:var(--malla-disponible-bd);color:var(--malla-disponible-fg)}
+.nodo.bloqueado{background:var(--malla-bloqueado-bg);border-color:var(--malla-bloqueado-bd);color:var(--malla-bloqueado-fg)}
+.nodo.sel{outline:2px solid var(--fg);outline-offset:1px}
+.nodo.apagado{opacity:.6}
+.nodo.oculto{display:none}
+.nodo-h{font-weight:700}
+@media(max-width:900px){.malla-col{width:170px;flex:0 0 170px}.malla{gap:34px}}
+.nodo.anual{width:calc(200% + var(--malla-gap));max-width:none;z-index:2;
+            background:var(--malla-anual-bg);border-color:var(--malla-anual-bd);color:var(--malla-anual-fg)}
+.anual-tag{font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;border:1px solid currentColor;
+           border-radius:999px;padding:0 5px;margin-left:6px;opacity:.8;font-weight:400}
+.nodo.cupo{border-style:dashed}
+.nodo.compacto{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:3px 7px;
+               font-size:.72rem;line-height:1.2}
+.nodo.compacto b{display:inline;font-size:.7rem}
+.leyenda-malla i.cupo{background:var(--sup);border-style:dashed;border-color:var(--muted)}
+.leyenda-malla i.aprobado{background:var(--malla-aprobado);border-color:var(--malla-aprobado)}
+.leyenda-malla i.curso{background:var(--malla-curso);border-color:var(--malla-curso)}
+.leyenda-malla i.disponible{background:var(--malla-disponible);border-color:var(--malla-disponible)}
+.leyenda-malla i.bloqueado{background:var(--malla-bloqueado);border-color:var(--malla-bloqueado)}
+.kpi,
+.rail,
+.btn,
+table.sem,
+.tarjeta,
+table.minutos,
+.lista,
+.conf,
+.modal-caja,
+.prioridades button,
+.nodo,
+.item,
+.destino,
+.muestra,
+.caja,
+.pill{background:var(--sup)}
+.btn:hover,
+table.sem th,
+table.minutos th,
+.pill.n,
+.modal-caja .cerrar,
+table.comp th{background:var(--sup2)}
+table.sem td.bl,
+table.sem td.est,
+table.minutos input{background:var(--sup)}
+.muestra,
+.destino{background:var(--info-bg)}
+table.minutos tr.hoy td,
+.item.on{background:var(--hoy-bg)}
+.pill.ok{background:var(--pill-ok-bg);color:var(--pill-ok-fg)}
+.pill.warn{background:var(--pill-warn-bg);color:var(--pill-warn-fg)}
+.pill.bad{background:var(--pill-bad-bg);color:var(--pill-bad-fg)}
+.nav.on,
+.mini.on,
+.btn.primario,
+.seg button.on,
+.btn.acento{background:var(--ac-fuerte);color:var(--ac-txt-fuerte);border-color:var(--ac-fuerte)}
+body.relleno-solido .nodo.aprobado{background:var(--malla-aprobado);border-color:var(--malla-aprobado);color:var(--malla-aprobado-sol)}
+body.relleno-solido .nodo.curso{background:var(--malla-curso);border-color:var(--malla-curso);color:var(--malla-curso-sol)}
+body.relleno-solido .nodo.disponible{background:var(--malla-disponible);border-color:var(--malla-disponible);color:var(--malla-disponible-sol)}
+body.relleno-solido .nodo.bloqueado{background:var(--malla-bloqueado);border-color:var(--malla-bloqueado);color:var(--malla-bloqueado-sol)}
+body.relleno-solido .nodo em{opacity:.85}
+body.relleno-solido .nodo.sel{outline-color:var(--fg)}
+.nodo .mas{position:absolute;right:5px;bottom:4px;width:17px;height:17px;padding:0;border-radius:50%;
+  border:1px solid var(--line);background:var(--sup);color:var(--fg);font-size:12px;line-height:1;
+  cursor:pointer;opacity:.5;transition:opacity .1s}
+.nodo:hover .mas{opacity:1}
+.nodo .mas:hover{background:var(--ac);border-color:var(--ac);color:var(--ac-txt)}
+.nodo .mas.quitar:hover{background:var(--bad);border-color:var(--bad)}
+.nodo .mas:hover::after{content:attr(data-globo);position:absolute;right:20px;bottom:-3px;white-space:nowrap;
+  background:#0f172a;color:#fff;font-size:.66rem;padding:3px 7px;border-radius:var(--r-sm);z-index:9}
+/* Todos los campos llevan su propio color de letra Y su propio fondo.
+   El fondo parece de mas en el tema claro, donde el del navegador ya es blanco, pero las reglas
+   de mas abajo (tablas de notas, ajustes, buscador de la malla) solo ponian borde y letra: en los
+   temas oscuros el texto salia claro sobre el blanco del navegador y el cuadro quedaba ilegible.
+   Va con var(--sup), que es la superficie de cada tema, para no tener que repetir el color en
+   cada tema-*.css.
+   Los type=color, checkbox, radio y range quedan fuera a proposito: su aspecto nativo (el
+   cuadradito de color, el tick) se pierde si se les pinta el fondo. */
+button,
+input:not([type=color]):not([type=checkbox]):not([type=radio]):not([type=range]),
+select,
+textarea{color:var(--fg);background:var(--sup)}
+.pri-alta{background:var(--pri-alta-bg);color:var(--bad)}
+.pri-media{background:var(--pri-media-bg);color:var(--warn)}
+.pri-baja{background:var(--pri-baja-bg);color:var(--pri-baja-fg)}
+.guardado{font-size:.72rem;border-radius:999px;padding:2px 9px;border:1px solid rgba(255,255,255,.3);
+  color:#e2e8f0;white-space:nowrap}
+.guardado.bien{background:rgba(74,222,128,.18);border-color:rgba(134,239,172,.5);color:#dcfce7}
+.guardado.mal{background:rgba(248,113,113,.2);border-color:rgba(252,165,165,.6);color:#fee2e2}
+.banner-remoto{display:none;align-items:center;gap:12px;flex-wrap:wrap;max-width:1500px;margin:12px auto -4px;
+  padding:9px 14px;border-radius:10px;background:var(--pill-warn-bg);border:1px solid var(--warn);
+  color:var(--pill-warn-fg);font-size:.85rem}
+.banner-remoto.on{display:flex}
+.av-fila{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;
+  border-bottom:1px dashed var(--line2)}
+.aviso-dedicacion{border-left:4px solid var(--warn);margin-bottom:14px}
+.aviso-dedicacion h3{margin:0 0 4px;font-size:1rem}
+.aviso-fila{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:8px 0;
+            border-bottom:1px dashed var(--line2)}
+.aviso-fila:last-child{border-bottom:0}
+.aviso-fila .sm{color:var(--muted)}
+.aviso-acciones{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.aviso-acciones input{padding:4px 7px;border:1px solid var(--line);border-radius:7px;font:inherit}
+.av-fila:last-child{border-bottom:0}
+.av-fila .eti{flex:0 0 185px;font-size:.85rem}
+.av-fila .pista{font-size:.74rem;color:var(--muted);flex:1 1 200px;min-width:140px}
+.av-fila .ayuda-ico{display:inline-grid;place-items:center;width:16px;height:16px;font-size:.7rem;
+  font-weight:700;color:var(--muted);background:var(--sup2);border:1px solid var(--line);
+  border-radius:999px;cursor:help;margin-left:-8px;flex:0 0 auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;flex:0 0 auto}
+.seg button{border:0;background:transparent;padding:4px 12px;font:inherit;font-size:.79rem;
+  cursor:pointer;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--ac);color:var(--ac-txt);font-weight:600}
+.av-color{display:inline-flex;align-items:center;gap:6px;font-size:.79rem;color:var(--muted)}
+.av-color input[type=color]{width:32px;height:24px;border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:0;background:none;cursor:pointer}
+.av-muestra{border:1px solid var(--line);border-radius:var(--r-sm);padding:7px 10px;display:flex;gap:8px;
+  align-items:center;flex-wrap:wrap;font-size:.76rem;color:var(--muted)}
+.av-muestra i{width:52px;height:20px;border-radius:5px;border:1px solid var(--line);display:inline-block}
+/* Ventana de Malla (aprobada 2026-09-30): las casillas de la fila "Detalles" y la MAQUETA, que va
+   a todo el ancho debajo de las filas de controles. Los nodos toman su color, forma y tamano del
+   estado real de los ajustes (los pinta renderAvanzado con estilo en linea). */
+.av-check{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--fg)}
+.av-maqueta{margin-top:12px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--sup3);padding:11px 13px}
+.av-maq-cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;
+  margin-bottom:9px}
+.av-maq-cab b{font-size:.85rem}
+.av-maq-cab span{font-size:.74rem;color:var(--muted)}
+.av-maq-rej{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+@media (max-width:640px){.av-maq-rej{grid-template-columns:repeat(2,1fr)}}
+.av-maq-nodo{display:flex;justify-content:space-between;align-items:center;gap:8px;border-style:solid}
+.av-maq-nombre{font-weight:600}
+.av-maq-ratio{opacity:.75;font-variant-numeric:tabular-nums;font-size:.72rem}
+.nav.on,
+.mini.on,
+.btn.primario,
+.seg button.on,
+.btn.acento{
+  background:var(--ac-fuerte);color:var(--ac-txt-fuerte);border-color:var(--ac-fuerte)}
+.ayuda-btn{border:1px solid var(--line);background:var(--sup2);color:var(--muted2);
+  width:18px;height:18px;border-radius:50%;font:inherit;font-size:.7rem;font-weight:700;
+  line-height:1;cursor:pointer;padding:0;margin-left:6px;vertical-align:1px}
+.ayuda-btn:hover{background:var(--ac-fuerte);color:var(--ac-txt-fuerte);border-color:var(--ac-fuerte)}
+.ayuda-caja{max-width:560px}
+.modal-caja .ayuda{color:var(--fg);margin:8px 0 0;max-width:none}
+.ayuda-ejemplo{background:var(--info-bg);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:10px 12px;margin-top:12px;font-size:.86rem;color:var(--fg)}
+.formato{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:.86rem}
+.formato .nom{flex:1}
+.formato .vale{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--muted2);
+  min-width:52px;text-align:right}
+
+/* Menu que se abre con el boton derecho sobre una casilla de tiempo, para sumar de un clic. */
+.menu-suma{position:fixed;z-index:95;min-width:168px;padding:6px;border:1px solid var(--line2);
+           border-radius:11px;background:var(--sup);box-shadow:0 12px 32px rgba(0,0,0,.22)}
+.menu-suma .ms-titulo{padding:3px 9px 7px;margin-bottom:4px;border-bottom:1px solid var(--line2);
+                      font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2)}
+.menu-suma .ms-op{display:block;width:100%;padding:7px 10px;border:0;border-radius:7px;
+                  background:transparent;color:var(--fg);font:inherit;font-size:.82rem;
+                  text-align:left;cursor:pointer}
+.menu-suma .ms-op:hover,.menu-suma .ms-op:focus{background:var(--sup2);outline:none}
+/* El MISMO menu lo usa ahora el boton derecho de toda la app (comun/12-contexto.js): la opcion que
+   ya esta en ese estado se marca, la que borra va en color de peligro, y las rayas separan grupos. */
+.menu-suma .ms-op.on{color:var(--ac);font-weight:600}
+.menu-suma .ms-op.ms-peligro{color:var(--bad)}
+.menu-suma .ms-op.ms-peligro:hover,.menu-suma .ms-op.ms-peligro:focus{background:var(--bad-suave)}
+.menu-suma .ms-sep{height:1px;margin:5px 6px;background:var(--line2)}
+
+/* La columna Meta de la tabla: la meta de esa semana en concreto.
+   En blanco = se usa la meta base, y se ve en gris para que no parezca un dato olvidado. Cuando la
+   semana lleva la suya, se marca: asi se distingue de un descuido al mirar la tabla. */
+table.minutos td.celda-meta input.meta-casilla{text-align:center;color:var(--muted)}
+table.minutos td.celda-meta input.meta-casilla.propia{color:var(--fg);font-weight:700;
+  border-color:var(--ac);background:var(--info-bg)}
+/* Marca de la meta propia dentro del grafico, para verla sin bajar a la tabla. */
+.semana-col .ln-propia{position:absolute;left:0;right:0;height:0;
+  border-top:2px solid var(--ac);opacity:.7}
+
+/* ---- Campos de formulario atractivos (un solo estilo en toda la app) ----
+   Antes cada input heredaba el borde chato de 1px y quedaba poco acogedor. Ahora todos los
+   campos de texto, numero, fecha y select comparten: borde suave, padding generoso, esquinas
+   consistentes, una sombra sutil al apuntar y un anillo de foco en el color de acento. */
+.campo input[type=text],
+.campo input[type=number],
+.campo input[type=date],
+.campo select,
+.ficha-campo input[type=text],
+.etiqueta-campo,
+.modal-caja input[type=text],
+.modal-caja input[type=number],
+.modal-caja input[type=date],
+.modal-caja select,
+.modal-caja textarea{
+  width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:var(--r-sm);
+  font:inherit;font-size:.86rem;color:var(--fg);background:var(--sup);
+  transition:border-color .14s, box-shadow .14s;
+}
+.campo input[type=number],
+.modal-caja input[type=number]{text-align:right}
+.campo input:hover,.campo select:hover,
+.ficha-campo input:hover,.modal-caja input:hover,.modal-caja select:hover,.modal-caja textarea:hover{
+  border-color:var(--muted)
+}
+.campo input:focus,.campo select:focus,
+.ficha-campo input:focus,.modal-caja input:focus,.modal-caja select:focus,.modal-caja textarea:focus{
+  outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)
+}
+.modal-caja textarea{min-height:84px;resize:vertical}
+
+/* ---- Los campos de la ficha del ramo (renombrar/agregar/quitar) ----
+   Cada fila es: flecha de reordenar + campo de texto + boton quitar. El campo es el foco. */
+.ficha-campo{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--line2)}
+.ficha-campo:last-child{border-bottom:0}
+.etiqueta-campo{flex:1}
+.ficha-lista{margin-top:4px}
+
+/* ---- Modal de edicion de ramo mas ancho y comodo ----
+   El editor de ramos tiene muchos campos; darle mas aire evita que se lea apretado. */
+.modal-caja.m-campo{max-width:960px}
+
+/* Los campos del editor se reparten en dos columnas en pantallas anchas para no formar una
+   columna delgada y vertical. Solo si el modal es el editor de ramos (lleva el boton r-guardar),
+   no el simulador. Los campos anchos cruzan las dos columnas. */
+.modal-caja.m-campo:has(#r-guardar){display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px 18px;align-items:start}
+.modal-caja.m-campo:has(#r-guardar)>h2,
+.modal-caja.m-campo:has(#r-guardar)>.cerrar,
+.modal-caja.m-campo:has(#r-guardar)>.ayuda,
+.modal-caja.m-campo:has(#r-guardar)>#r-error,
+.modal-caja.m-campo:has(#r-guardar)>.fila{grid-column:1/-1}
+/* Dentro del editor de ramo, cada .campo deja el grid de DOS columnas (etiqueta|120px, pensado
+   para formularios simples) y se APILA: etiqueta arriba, control abajo a lo ancho. Sin esto, los
+   controles anchos (buscadores, escalas, filas de select+input) se comprimen en 120px y los
+   botones se salen del recuadro. El span del .campo (la etiqueta) sube a su propia fila. */
+.modal-caja.m-campo:has(#r-guardar) .campo{
+  grid-template-columns:1fr;
+  gap:4px;
+  align-items:stretch;
+}
+.modal-caja.m-campo:has(#r-guardar) .campo>span:first-child{
+  font-size:.78rem;color:var(--muted);margin-bottom:2px;
+}
+.modal-caja.m-campo:has(#r-guardar) .campo .fila{flex-wrap:wrap}
+.modal-caja.m-campo:has(#r-guardar) .campo .pista{margin-top:4px}
+/* Los dos campos grandes (Prerrequisitos y Ramos equivalentes) llevan un buscador ancho adentro:
+   cruzan las columnas para no comprimirse en una celda de 280px. */
+.modal-caja.m-campo:has(#r-guardar) .campo:has(#r-req),
+.modal-caja.m-campo:has(#r-guardar) .campo:has(#r-equi){grid-column:1/-1}
+
+/* ---- Barra extraible: el despliegue unico de toda la aplicacion ----
+   Hasta ahora cada lista y cada bloque del modal se veian planos, sin un lenguaje comun para
+   "esto se abre". Aqui vive el UNICO patron: se usa en el modal de Evento, en la lista de
+   semestres, en Ajustes, en Malla y en la ficha. Si aparece otro lugar que despliegue, usa
+   este, no uno propio.
+
+   Va sobre <details>/<summary> NATIVO a proposito: el navegador trae la apertura, el foco por
+   teclado y el anuncio a lectores de pantalla; no hay que reimplementarlos ni se rompen si el
+   JS falla. El estilo solo le pone la ropa de mimo.
+
+   Los colores salen de variables del tema (--sup, --sup2, --info-bg, --ac, --line, --line2),
+   asi que funciona en los cuatro temas sin tocar ningun tema-*.css. Nada de color fijo: un
+   borde azul escrito a mano desaparece sobre el tema oscuro. */
+.barra-extraible{border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup);
+  margin-bottom:7px;overflow:hidden;transition:border-color .16s cubic-bezier(.4,0,.2,1),
+  box-shadow .16s cubic-bezier(.4,0,.2,1)}
+.barra-extraible>summary{list-style:none;cursor:pointer;padding:10px 13px;font-size:.86rem;
+  display:flex;align-items:center;justify-content:space-between;gap:9px;
+  transition:background-color .16s cubic-bezier(.4,0,.2,1),color .16s cubic-bezier(.4,0,.2,1)}
+.barra-extraible>summary::-webkit-details-marker{display:none}
+/* el tinte al pasar el mouse: aqui se "siente" que la barra se puede abrir */
+.barra-extraible>summary:hover{background:var(--sup2)}
+/* abierta: un paso mas marcado, con el acento del tema */
+.barra-extraible.abierta{border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 12%,transparent)}
+.barra-extraible.abierta>summary{background:var(--info-bg);color:var(--ac);font-weight:600;
+  border-bottom:1px solid var(--line2)}
+.barra-extraible>summary:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+/* la flecha gira al abrir; es el "baja" que se lee sin explicarlo */
+.barra-extraible .flecha{color:var(--muted);font-size:.72rem;flex:none;
+  transition:transform .16s cubic-bezier(.4,0,.2,1)}
+.barra-extraible.abierta>summary .flecha{transform:rotate(90deg)}
+/* El cuerpo entra y sale deslizandose, con la MISMA curva en los dos sentidos.
+   Un <details> no anima el cierre: al quitarle 'open' el navegador esconde el contenido en el mismo
+   cuadro. Por eso el estado visible NO es 'open' sino la clase .abierta (la pone el JS de
+   06-arranque.js), y el alto se anima aqui con max-height, que si transiciona en ambos sentidos.
+   El envoltorio cuelga DIRECTO de la barra: colgando del .cuerpo, el alto que reparte el <details>
+   impedia que el recorte se viera. */
+/* .cuerpo queda DENTRO de .cuerpo-env, asi que no es hijo directo de la barra: con '>' el padding
+   no se aplicaba. El descendiente vale envuelto (normal) y sin envolver (si el JS no corre). */
+.barra-extraible .cuerpo{padding:0 13px;transition:padding .18s cubic-bezier(.4,0,.2,1)}
+.barra-extraible.abierta .cuerpo{padding:11px 13px 13px}
+.barra-extraible > .cuerpo-env{overflow:hidden;max-height:0;
+  transition:max-height .18s cubic-bezier(.4,0,.2,1)}
+.barra-extraible.abierta > .cuerpo-env{max-height:2000px}
+/* quien pidio menos movimiento en su sistema, no lo ve moverse */
+@media(prefers-reduced-motion:reduce){
+  .barra-extraible .cuerpo,.barra-extraible > .cuerpo-env,
+  .barra-extraible>summary,.barra-extraible .flecha{animation:none;transition:none}
+}
+.barra-extraible .cuerpo .campo{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;
+  padding:5px 0;border-bottom:1px solid var(--line2);font-size:.85rem;color:var(--fg)}
+.barra-extraible .cuerpo .campo:last-child{border-bottom:0}
+/* el contador que acompana al titulo: "20 semanas · 5 ramos" */
+.barra-extraible .cuenta{color:var(--muted);font-size:.78rem;font-weight:400}
+.barra-extraible .izq{display:flex;align-items:center;gap:9px;min-width:0}
+
+/* ---- Select propio: el desplegable con la estetica del proyecto --------------------------
+   Reemplaza el menu nativo del <select> (que el navegador dibuja feo y no respeta el tema). El
+   select nativo queda oculto dentro y es la fuente de verdad; esto es solo la capa de arriba.
+   Un solo patron para toda la app: se cambia aqui y afecta a todos los selects. */
+.sel-propio{position:relative;display:block;cursor:pointer;max-width:100%}
+.campo .sel-propio,.cond .sel-propio,.alta .sel-propio{width:100%;flex:1}
+table.cat .sel-propio{display:inline-block;min-width:120px}
+.sel-cara{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+  padding:6px 9px;border:1px solid var(--line);border-radius:var(--r-sm);font:inherit;font-size:.82rem;
+  color:var(--fg);background:var(--sup);cursor:pointer;text-align:left;
+  transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+.sel-cara:hover{border-color:var(--muted)}
+.sel-cara:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.sel-propio.abierto .sel-cara{border-color:var(--ac);box-shadow:0 0 0 3px var(--info-bg)}
+.sel-valor{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-flecha{color:var(--muted);font-size:.78rem;line-height:1;
+  transition:transform var(--t) var(--curva)}
+.sel-propio.abierto .sel-flecha{transform:rotate(180deg)}
+.sel-panel{position:absolute;z-index:9999;
+  background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);
+  box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;max-height:230px;overflow:auto;
+  opacity:0;transform:translateY(-4px);pointer-events:none;
+  transition:opacity var(--t) var(--curva),transform var(--t) var(--curva)}
+.sel-propio.abierto .sel-panel{opacity:1;transform:translateY(0);pointer-events:auto}
+.sel-opcion{padding:6px 9px;border-radius:var(--r-sm);font-size:.82rem;color:var(--fg);cursor:pointer;
+  white-space:nowrap}
+.sel-opcion:hover{background:var(--sup2)}
+.sel-opcion.on{background:var(--info-bg);color:var(--ac-fuerte)}
+/* M3: este select nacio cuando la cabecera era OSCURA y forzaba texto blanco. La cabecera
+   es clara desde que se rehizo, y aquel blanco fijo daba contraste 1,00 sobre --sup en los
+   temas claros (clasico y bosque) y 1,09 en sepia: texto ilegible. Ya no se pinta a mano:
+   hereda los tokens del .sel-cara normal (color:var(--fg), fondo:var(--sup)), que si siguen
+   al tema. La clase .sel-cabecera se conserva solo para el ancho minimo de arriba (M2). */
+
+/* aviso del boton "Buscar actualizacion" (Ajustes > Actualizacion) */
+.aviso-act{padding:8px 12px;border-radius:var(--r-sm);font-size:.82rem;margin-top:8px;
+  border:1px solid var(--line);background:var(--sup2);color:var(--muted)}
+.aviso-act.ok{background:var(--pill-ok-bg);color:var(--pill-ok-fg);border-color:#86efac}
+.aviso-act.mal{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+.aviso-act.cargando{color:var(--muted)}
+
+
+/* ============================================================================
+   MARCO G1 -- barra lateral retractil (1.0.3)
+   ----------------------------------------------------------------------------
+   La navegacion deja el header oscuro y las pestanas horizontales, y pasa a una
+   barra lateral a la izquierda con las siete secciones. La barra se repliega de
+   tres maneras (manual, automatica, fija), elegidas en Ajustes.
+
+   SE CONSERVA el motor de mimo: los botones siguen teniendo la clase .tab y el
+   data-panel, asi que 06-arranque.js alterna .panel sin un solo cambio. Lo que
+   cambia es SOLO donde viven y como se ven.
+
+   Las reglas de abajo PISAN a las del header oscuro de arriba (estan al final a
+   proposito): el header ahora es claro y las pestanas van en una columna.
+   ============================================================================ */
+
+/* ---- el armazon: rejilla de cabecera + lateral + contenido ----------------- */
+.marco.g1{
+  display:grid;
+  grid-template-columns:var(--ancho-barra,176px) minmax(0,1fr);
+  grid-template-rows:auto 1fr;
+  grid-template-areas:"cabecera cabecera" "lateral contenido";
+  /* La medida de la ventana, corregida por el zoom de "Tamaño de la fuente" (02-avanzados.js pone
+     --zoom). El `zoom` agranda TAMBIEN `100vh`, asi que a secas medía `alto_real * zoom`: el
+     armazon pasaba a ser mas alto que la ventana y lo de abajo (el bloque de Semestre) se salia y
+     quedaba cortado. Dividiendo por el factor, vuelve a medir la ventana de verdad. El valor de
+     reserva es 1, para que sin el JS siga midiendo una pantalla. */
+  height:calc(100vh / var(--zoom, 1));
+  overflow:hidden;
+  transition:grid-template-columns 220ms cubic-bezier(.22,1,.36,1);
+}
+.marco.g1.replegada{grid-template-columns:0 minmax(0,1fr)}
+
+/* ---- cabecera clara, con la hamburguesa y la marca ------------------------- */
+.g1 .b1{
+  grid-area:cabecera;
+  display:flex;align-items:center;gap:12px;
+  padding:11px 20px;border-bottom:1px solid var(--line);background:var(--sup);
+  color:var(--fg);
+}
+/* ---- boton de SINCRONIZACION de la cabecera (sustituye al texto "Guardado aqui") ----
+   Un circulito con el icono de refrescar. El color dice el estado y el icono gira mientras
+   sincroniza. Ocupa el sitio del texto viejo: se va a la derecha con margin-left:auto. */
+.g1 .b1 .btn-sync{margin-left:auto;position:relative;width:30px;height:30px;border-radius:50%;
+  padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  border:1px solid var(--line2);background:var(--sup2);color:var(--muted);
+  transition:color 140ms ease-out,border-color 140ms ease-out}
+.g1 .b1 .btn-sync .ic{width:16px;height:16px}
+.g1 .b1 .btn-sync .anillo{position:absolute;inset:-4px;border-radius:50%;border:2px solid transparent;
+  pointer-events:none}
+.g1 .b1 .btn-sync:hover{border-color:var(--ac-fuerte);color:var(--fg)}
+.g1 .b1 .btn-sync.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.g1 .b1 .btn-sync.ok .anillo{border-color:color-mix(in srgb,var(--ok) 28%,transparent)}
+.g1 .b1 .btn-sync.tarde{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 50%,transparent)}
+.g1 .b1 .btn-sync.tarde .anillo{border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+.g1 .b1 .btn-sync.falta{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,transparent)}
+.g1 .b1 .btn-sync.falta .anillo{border-color:color-mix(in srgb,var(--bad) 32%,transparent);
+  border-style:dashed}
+/* Mientras sincroniza: una vuelta COMPLETA de 360 sobre su propio centro. */
+.g1 .b1 .btn-sync.girando .ic{animation:mimo-vuelta 900ms linear infinite}
+@keyframes mimo-vuelta{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.g1 .b1 .btn-sync.girando .ic{animation:none}}
+.marca{display:flex;align-items:center;font-weight:650;font-size:.95rem;letter-spacing:-.01em;
+  /* Es un BOTON (el guino de los iconos), pero tiene que seguir pareciendo la marca: sin
+     fondo, sin borde y sin relleno de boton. */
+  background:none;border:0;padding:0;font-family:inherit;color:inherit;cursor:pointer}
+.marca:hover .marca-ic{transform:scale(1.08)}
+.marca-ic{transition:transform 140ms ease-out}
+.tag-version{font-size:.7rem;font-weight:650;border-radius:999px;padding:2px 10px;cursor:pointer;
+  border:1px solid var(--line2);background:var(--sup2);color:var(--muted);white-space:nowrap;
+  transition:background 140ms ease-out,color 140ms ease-out,border-color 140ms ease-out}
+.tag-version:hover{border-color:var(--ac-fuerte);color:var(--fg)}
+.tag-version.al-dia{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent);
+  background:color-mix(in srgb,var(--ok) 10%,var(--sup))}
+.tag-version.nueva{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 50%,transparent);
+  background:color-mix(in srgb,var(--warn) 10%,var(--sup))}
+.tag-version.mal{color:var(--bad);border-color:var(--bad)}
+.tag-version[disabled]{opacity:.7;cursor:progress}
+
+/* ---- la barra lateral y sus botones ---------------------------------------- */
+.g1 .lateral{
+  grid-area:lateral;
+  display:flex;flex-direction:column;
+  padding:14px 10px;gap:2px;width:var(--ancho-barra,176px);
+  border-right:1px solid var(--line);background:var(--sup);
+  transform:translateX(0);
+  transition:transform 220ms cubic-bezier(.22,1,.36,1);
+  z-index:5;
+  overflow:hidden;
+  /* Antes: height:100vh + align-self:start. Como la barra empieza DEBAJO de la
+     cabecera (y=59), medir 100vh la estiraba 59px por debajo de la ventana y sus
+     ultimas acciones quedaban cortadas. Siendo hija de la fila 1fr, basta con
+     llenar su fila: 'height:auto' (y el estirado por defecto de la rejilla). */
+  height:auto;
+  /* Si aun asi no cupiera (fuente muy grande y ventana baja), el panel se desplaza DENTRO de si
+     mismo y el bloque de Semestre sigue siendo alcanzable. Antes era `overflow:hidden`: lo que
+     sobraba se cortaba y desaparecia. `min-height:0` deja que la rejilla lo encoja. */
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+.g1.replegada .lateral{transform:translateX(-100%)}
+.g1 .navs{display:flex;flex-direction:column;gap:2px}
+.g1 .acciones{display:flex;flex-direction:column;gap:6px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line2)}
+.g1 .acciones .btn,.g1 .acciones .sel-propio{width:100%}
+/* 'margin:0' anulaba el 'margin:0 auto' de 'main' (linea 50): con la ventana ancha el
+   contenido se quedaba pegado al borde IZQUIERDO con todo el hueco muerto a la derecha
+   (medido: x=0, w=1500, ventana=1600, 100px de aire a la derecha y 0 a la izquierda).
+   Con 'auto' se centra, como el resto de la pagina. */
+.g1 .contenido{grid-area:contenido;padding:22px 26px;min-height:0;min-width:0;overflow:auto;width:100%;margin:0 auto}
+
+/* ---- el recuadro de la seccion (un solo marco para todas) ----------------
+   Cada seccion que va DIRECTO en la "ventana" (.contenido) se dibuja dentro de un
+   recuadro: fondo de superficie, borde y esquinas, como la zona de Ajustes. Da el
+   margen uniforme por los cuatro lados y evita que el contenido se pegue al borde o
+   se corte contra el scroll. El relleno de abajo es mayor a proposito: es donde el
+   contenido chocaba con el final de la ventana.
+   OJO: no pintar el recuadro si la seccion ya trae el suyo (.zona-g2, en Ajustes y
+   Tareas): dos marcos serian "torpe". Y si la seccion no es hija directa (por
+   ejemplo si un dia se envuelve), el selector no aplica y no pasa nada. */
+.contenido > .seccion{
+  background: var(--sup2); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px 24px 52px; max-width: 1240px; margin: 4px auto 0;
+}
+.contenido > .seccion > .zona-g2{
+  background: none; border: 0; border-radius: 0;
+  padding: 0; margin: 0; max-width: none;
+}
+/* la ventana de Scroll (Tiempo) pedia 920 px fijos: con la ventana baja, el pie del
+   cronometro quedaba fuera. Con un minimo mas suave sobra espacio en pantallas altas
+   y no obliga a un scroll de relleno en las bajas. */
+.crono{min-height:560px}
+
+/* ---- las pestanas en la columna: .nav (el motor del marco G1) ------ */
+.g1 .navs .nav{
+  background:none;border:0;color:var(--muted);
+  font:inherit;font-size:.86rem;cursor:pointer;
+  padding:8px 12px;border-radius:var(--r-sm);text-align:left;
+  display:flex;align-items:center;gap:11px;
+  transition:background 140ms ease-out,color 140ms ease-out;
+}
+.g1 .navs .nav:hover{background:var(--sup2);color:var(--fg)}
+.g1 .navs .nav.on{background:var(--fg);color:var(--sup);font-weight:650}
+
+/* ---- hamburguesa ------------------------------------------------------------ */
+.btn-menu{
+  width:32px;height:30px;flex:0 0 auto;
+  border:1px solid var(--line);background:var(--sup);border-radius:var(--r-sm);
+  cursor:pointer;display:grid;place-content:center;gap:3px;
+}
+.btn-menu i{display:block;width:14px;height:1.5px;background:var(--fg);
+  transition:transform 200ms ease-out,opacity 160ms ease-out}
+.g1:not(.replegada) .btn-menu i:nth-child(1){transform:translateY(4.5px) rotate(45deg)}
+.g1:not(.replegada) .btn-menu i:nth-child(2){opacity:0}
+.g1:not(.replegada) .btn-menu i:nth-child(3){transform:translateY(-4.5px) rotate(-45deg)}
+
+/* ---- zona caliente del modo automatico -------------------------------------- */
+.zona-caliente{position:fixed;left:0;top:0;bottom:0;width:6px;z-index:40;display:none}
+.g1.modo-automatico~.zona-caliente{display:block}
+.g1.modo-automatico{grid-template-columns:0 1fr}
+.g1.modo-automatico .lateral{
+  position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);
+  box-shadow:2px 0 18px rgba(28,31,38,.09);
+}
+.g1.modo-automatico.abierta .lateral{transform:none}
+.g1.modo-automatico .btn-menu{display:none}
+.g1.modo-fijo{grid-template-columns:var(--ancho-barra,176px) 1fr}
+.g1.modo-fijo .lateral{transform:none}
+.g1.modo-fijo .btn-menu{display:none}
+
+/* ===== Posicion de la barra de secciones (P7): izquierda / derecha / arriba =====
+   La posicion y el estilo son clases del marco (pos-*, estilo-*); el motor de la barra las pone
+   y los tres modos (manual / automatica / fija) siguen valiendo en las tres. */
+.g1.pos-derecha{
+  grid-template-columns:minmax(0,1fr) var(--ancho-barra,176px);
+  grid-template-areas:"cabecera cabecera" "contenido lateral";
+}
+.g1.pos-derecha.replegada{grid-template-columns:minmax(0,1fr) 0}
+.g1.pos-derecha.replegada .lateral{transform:translateX(100%)}
+.g1.pos-derecha .lateral{border-right:0;border-left:1px solid var(--line)}
+/* con la barra a la derecha, la hamburguesa tiene que ir a la derecha (iba a la izquierda
+   y no tenia sentido); y la zona caliente del modo automatico, tambien. */
+.g1.pos-derecha .b1 .btn-menu{order:3}
+.g1.pos-derecha.modo-automatico~.zona-caliente{left:auto;right:0}
+
+/* Arriba: cabecera + barra horizontal; el contenido ocupa todo el ancho. */
+.g1.pos-arriba{
+  grid-template-columns:1fr;
+  grid-template-rows:auto auto 1fr;
+  grid-template-areas:"cabecera" "navegacion" "contenido";
+}
+.g1.pos-arriba .lateral{
+  grid-area:navegacion;flex-direction:row;align-items:center;flex-wrap:wrap;
+  width:100%;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line);
+  padding:9px 16px;gap:8px;overflow:visible;transform:none;
+}
+.g1.pos-arriba .navs{flex-direction:row;flex-wrap:wrap;gap:4px}
+.g1.pos-arriba .navs .nav{border-radius:999px;white-space:nowrap}
+.g1.pos-arriba .acciones{flex-direction:row;margin-top:0;padding-top:0;border-top:0;order:1}
+/* Con la barra ARRIBA, el usuario pidio cambiar los espacios: las secciones a la DERECHA y el
+   bloque de Semestre (nombre + Editar/Borrar) a la IZQUIERDA. En el DOM .navs va antes que
+   .acciones; con 'order' se invierten y el margen automatico de .navs empuja las secciones al
+   borde derecho, dejando el semestre a la izquierda. */
+.g1.pos-arriba .navs{order:2;margin-left:auto}
+.g1.pos-arriba .acciones .btn,.g1.pos-arriba .acciones .sel-propio{width:auto}
+/* La barra de ARRIBA no se oculta nunca. Antes '.replegada' le ponia la fila a 0 y
+   'display:none'; como el estado por defecto es justamente 'replegada', la barra nacia
+   invisible y la pagina se salia por abajo (medido: contenido hasta 1144 > 1080). En
+   'arriba' la barra queda siempre visible; la hamburguesa solo COMPACTA los botones
+   (oculta .navs y .acciones, deja la barra) para no dejar un boton que no hace nada.
+   La navegacion horizontal no usa la zona caliente del modo automatico. */
+.g1.pos-arriba .lateral{display:flex;transform:none}
+/* 'replegada' fija las columnas a '0 minmax(0,1fr)' y tiene mas especificidad que
+   '.g1.pos-arriba'; hay que reponerlas o la barra horizontal se aplasta a ancho 0. */
+.g1.pos-arriba.replegada{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}
+.g1.pos-arriba .btn-menu{display:block}
+.g1.pos-arriba.comp .navs,.g1.pos-arriba.comp .acciones{display:none}
+/* En 'arriba' la hamburguesa no abre ni cierra: compacta los botones (la barra no se oculta).
+   La X que dibuja .g1:not(.replegada) no corresponde aqui y se veia ajena (el usuario la
+   describio como poco atractiva): se conserva el icono natural de tres rayas. */
+.g1.pos-arriba .b1 .btn-menu i:nth-child(1),
+.g1.pos-arriba .b1 .btn-menu i:nth-child(3){transform:none}
+.g1.pos-arriba .b1 .btn-menu i:nth-child(2){opacity:1}
+.g1.pos-arriba .zona-caliente{display:none}
+
+/* ===== Estilos del menu de secciones (P7): clasica / compacta / pastillas ===== */
+.g1.estilo-compacta{--ancho-barra:150px}
+.g1.estilo-compacta .lateral{padding:10px 7px}
+.g1.estilo-compacta .navs{gap:1px}
+.g1.estilo-compacta .navs .nav{padding:5px 9px;font-size:.8rem;gap:8px;border-radius:6px}
+.g1.estilo-pastillas .navs .nav{border-radius:999px}
+.g1.estilo-pastillas .navs .nav.on{background:color-mix(in srgb, var(--ac) 18%, transparent);color:var(--fg)}
+.g1.pos-arriba.estilo-compacta .navs .nav{padding:4px 10px}
+
+@media (max-width:720px){
+  /* M1: la barra lateral pasa a panel deslizante (position:fixed) y el contenido ocupa
+     todo el ancho: UNA sola columna. Dos cosas son imprescindibles aqui.
+     1) minmax(0,1fr), no 1fr: con 1fr la pista no baja del ancho MINIMO del contenido
+        (medido: 449px) y en un telefono de 390px la pagina se sale. Si solo se pone 1fr,
+        390 y 700 siguen dando 449px de ancho real.
+     2) Reponer las columnas en TODAS las variantes que las pisan con mas especificidad
+        (.replegada, .modo-*, .pos-derecha.replegada). Antes ganaban ellas y la rejilla se
+        quedaba en '0 minmax(0,1fr)' teniendo areas de UNA columna: el contenido caia en la
+        pista 0 (0px) y toda la app medía ~40-52px de ancho. Ese era el colapso. */
+  .marco.g1,
+  .marco.g1.replegada,
+  .marco.g1.modo-fijo,
+  .marco.g1.modo-automatico,
+  .marco.g1.pos-derecha,
+  .marco.g1.pos-derecha.replegada{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"cabecera" "contenido";
+  }
+  /* La barra de ARRIBA conserva su fila de navegacion; aqui solo se corrige la columna. */
+  .marco.g1.pos-arriba,
+  .marco.g1.pos-arriba.replegada{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto 1fr;
+    grid-template-areas:"cabecera" "navegacion" "contenido";
+  }
+  /* P9: el lateral NO se oculta. Antes era display:none y el boton de menu se quedaba
+     sin nada que abrir: en una ventana estrecha (pantalla dividida) no habia forma de
+     cambiar de seccion. Ahora se convierte en panel deslizante sobre el contenido y la
+     hamburguesa lo muestra u oculta de verdad. El contenido ya no reserva su columna:
+     grid-template-columns es 1fr, asi que el lateral sale del flujo (position:fixed). */
+  .g1 .lateral{
+    display:flex;position:fixed;top:0;left:0;bottom:0;height:100vh;width:min(82vw,280px);
+    transform:translateX(-100%);box-shadow:0 10px 34px rgba(0,0,0,.28);
+    transition:transform 220ms cubic-bezier(.22,1,.36,1);
+    z-index:40;
+  }
+  .g1.abierta .lateral{transform:translateX(0)}
+  .g1 .btn-menu{display:block}
+}
+
+/* ---- iconos (sprite Lucide incrustado en index.html) ----------------------- */
+.ic{
+  width:16px;height:16px;flex:0 0 auto;
+  fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.navs .nav .ic{width:15px;height:15px;opacity:.8}
+.navs .nav.on .ic{opacity:1}
+.marca-ic{width:30px;height:30px;display:block;flex:none;object-fit:contain;border-radius:6px}
+.marca .marca-ic{margin-right:11px}
+
+/* ==== SECCION AJUSTES (propuesta G2): INICIO ==== */
+/* La cara visual es la de la propuesta G2 aprobada. El motor de mimo queda
+   conectado por debajo. Rejilla fija a 3 columnas; "Ajustes avanzados" se pliega
+   con la misma animacion (.plegable) que el resto. Todo con variables del tema.
+
+   .zona-g2 es la "ventana hija" dentro de la "ventana padre" (.contenido): lleva
+   su propio margen y relleno (un recuadro) para no quedar pegado al borde de la
+   ventana ni cortado contra el tope. */
+
+.zona-g2 { max-width: 1240px; margin: 4px auto; padding: 22px 24px 40px;
+           background: var(--sup2); border: 1px solid var(--line); border-radius: 14px; }
+
+.encabezado { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 16px; }
+.encabezado h1 { font-size: 1.35rem; font-weight: 650; letter-spacing: -.02em; }
+.encabezado .apoyo { font-size: .82rem; color: var(--muted); }
+
+/* --- la rejilla: SIMETRICA, como el boceto v5 aprobado ------------------
+   Tres columnas PAREJAS (antes auto-fit: daba 4 columnas en pantalla ancha y las 7
+   tarjetas quedaban en 4+3, descuadradas). Con 3, las 6 de la aplicación caen en
+   3+3 y la séptima (Respaldo) ocupa la fila entera. Baja a 2 y a 1 al estrechar. */
+.rejilla { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rejilla > .grupo { grid-column: auto; }   /* las tarjetas caen por parejo en las 3 columnas */
+.rejilla > .grupo.ancho { grid-column: 1 / -1; }
+
+/* --- cada grupo es una tarjeta (y ademas un boton que abre su ventana) ---- */
+.grupo { background: var(--sup); border: 1px solid var(--line); border-radius: var(--r-lg);
+         overflow: hidden; transition: border-color 140ms ease-out;
+         /* reset de boton: la tarjeta se pulsa y abre su ventana */
+         display: block; width: 100%; text-align: left; font: inherit; color: inherit;
+         padding: 0; cursor: pointer; }
+.grupo:hover { border-color: var(--ac); box-shadow: 0 2px 10px rgba(37,99,235,.10); }
+.grupo:focus-visible { outline: 2px solid var(--ac); outline-offset: 2px; }
+/* Alineado ARRIBA (no al centro): las tarjetas de seccion llevan chip a la derecha y
+   con 'center' el icono y el titulo quedaban a media altura y el chip descuadrado. */
+.g-cab { display: flex; align-items: flex-start; gap: 9px; padding: 13px 16px 11px; }
+.g-cab h2, .g-cab .g-tit { font-size: .93rem; font-weight: 650; letter-spacing: -.01em; margin: 0; }
+/* el chip de la ficha va a la derecha, alineado con el titulo */
+.g-cab .g-chip { margin-left: auto; }
+/* el bloque de texto de la tarjeta: titulo y, DEBAJO, su linea. Va al lado del icono. */
+.g-txt { flex: 1 1 auto; min-width: 0; }
+/* la ficha de la TARJETA: la descripcion va dentro de .g-cab. OJO: los paneles (.aj-panel)
+   tambien usan .g-cuerpo; por eso el recorte se acota solo a las tarjetas de la rejilla. */
+.rejilla > .grupo .g-cuerpo { display: none; }
+
+/* --- la baldosa del icono: cuadro con el acento detras del icono ----------
+   Es la firma visual del boceto v5 aprobado: .tarjeta .t-ic (40x40, radio 11,
+   fondo acento al 10%, icono 22). Aqui se reproduce con los mismos numeros. */
+.grupo .g-cab .ic { width: 22px; height: 22px; }
+.grupo .g-cab { position: relative; }
+.t-ic { width: 40px; height: 40px; border-radius: 11px; flex: none; display: grid;
+        place-content: center; background: color-mix(in srgb, var(--ac) 10%, var(--sup)); color: var(--ac); }
+
+/* --- un ajuste = un renglon --------------------------------------------- */
+.ren { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-top: 1px solid var(--line2); }
+.ren:first-of-type { border-top: 0; }
+/* DOS COLUMNAS: el nombre con ancho FIJO y las opciones siempre en la misma vertical, para que al
+   crecer el numero de botones no invadan el titulo. Es alineacion, no una raya: no se dibuja nada. */
+.ren { display: grid; grid-template-columns: 34% 1fr; gap: 14px; }
+.ren-txt { min-width: 0; }
+.ren-tit { font-size: .85rem; font-weight: 550; }
+.ren-nota { font-size: .75rem; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+.ren-ctl { justify-self: start; }
+.filtros { justify-content: flex-start; }
+/* El ejemplo del recorte: recuadro de geometria FIJA; el texto se ajusta a el. */
+.ren-eco { display: grid; grid-template-columns: 34% 1fr; gap: 14px; align-items: center; padding: 2px 0 10px; }
+.eco-etq { font-size: .72rem; color: var(--muted); }
+.eco-caja { width: 200px; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--sup2); padding: 5px 9px;
+  font-size: .82rem; }
+
+/* --- la lista de atajos (Navegacion), dentro de su desplegable -------------- */
+.atajo-cab { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 4px 0 5px;
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.atajo-fila { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px;
+  padding: 7px 0; border-top: 1px solid var(--line2); }
+.atajo-fila .a-nom { font-size: .85rem; }
+.tecla { font: inherit; font-size: .76rem; font-family: ui-monospace, Menlo, Consolas, monospace;
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 7px; background: var(--sup2);
+  padding: 3px 9px; cursor: pointer; color: var(--fg); min-width: 84px; text-align: center; }
+.tecla:hover { border-color: var(--ac); }
+.tecla.capturando { border-color: var(--ac); background: color-mix(in srgb, var(--ac) 12%, var(--sup)); color: var(--ac); }
+.atajo-pie { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }
+.atajo-hint { font-size: .72rem; color: var(--muted); margin: 8px 0 0; }
+.atajo-cab ~ p .tecla, p.atajo-hint .tecla { cursor: default; min-width: 0; padding: 2px 7px; font-size: .7rem; }
+
+/* --- los idiomas (Navegacion->Idioma): rejilla de 2 columnas con bandera ---- */
+.idiomas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.idioma { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--sup);
+  border-radius: 10px; padding: 9px 11px; cursor: pointer; font: inherit; color: var(--fg); text-align: left; }
+.idioma:hover { border-color: var(--ac); }
+.idioma.on { border-color: var(--ac); background: color-mix(in srgb, var(--ac) 8%, var(--sup));
+  box-shadow: inset 0 0 0 1px var(--ac); }
+.idioma[disabled] { opacity: .55; cursor: default; }
+.idioma[disabled]:hover { border-color: var(--line); }
+.idioma .band { width: 28px; height: 19px; border-radius: 3px; flex: none; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.14); display: block; }
+.idioma .n { font-weight: 600; font-size: .86rem; line-height: 1.15; }
+.idioma .e { display: block; font-weight: 400; font-size: .7rem; color: var(--muted); }
+.idioma .chk { margin-left: auto; color: var(--ac); font-weight: 700; }
+
+/* --- la galeria de temas (cara del boceto) ------------------------------ */
+.temas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tema { position: relative; display: block; text-align: left; border: 1px solid var(--line);
+  background: var(--sup); font: inherit; cursor: pointer; padding: 9px;
+  border-radius: var(--r-md); transition: border-color 140ms ease-out, background 140ms ease-out; }
+.tema:hover { border-color: var(--ac); }
+/* la muestra: una barra ancha con el fondo y el acento del tema, con su punto a la derecha */
+.tema .tm-muestra { display: flex; align-items: center; justify-content: flex-end; height: 34px;
+  border-radius: 6px; border: 1px solid rgba(0,0,0,.10); padding-right: 8px; }
+.tema .tm-muestra::after { content: ""; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--tm-ac, var(--ac)); border: 1px solid rgba(0,0,0,.15); }
+.tema .tm-nom { display: block; font-weight: 600; font-size: .9rem; margin-top: 7px; }
+.tema .tm-ds { display: block; font-size: .76rem; color: var(--muted); }
+/* El distintivo vivia DENTRO del flujo del flex: sus 44px se reservaban siempre (aunque
+   estuviera a opacidad 0) y con "Medianoche", "Deepsea" o "Alto contraste" el nombre no cabia
+   y el texto se salia del recuadro (medido: clientWidth 156 < scrollWidth 180). Ahora va fuera
+   del flujo, en la esquina, y como icono: un visto discreto en vez de la palabra "elegido". */
+.tema .tm-marca { position: absolute; top: 16px; right: 12px; transform: translateY(-50%);
+  box-sizing: border-box; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--ac); opacity: 0; pointer-events: none; }
+.tema.on { border-color: var(--ac); background: var(--sup2); font-weight: 600; }
+.tema.on .tm-marca { opacity: 1; }
+/* El visto se DIBUJA con bordes, como en .pastilla .bola::after: asi se centra solo y su
+   color no depende del glifo de la fuente. Se pinta con '--ac-txt' sobre el disco '--ac',
+   el par que cada tema garantiza (medido en los 9: 3,77:1 el peor, 19,56:1 el mejor).
+   Con '--ok' quedaba invisible en los temas oscuros (1,29:1 en Alto contraste). */
+.tema .tm-marca::after { content: ""; position: absolute; left: 5px; top: 2px;
+  width: 4px; height: 8px; border: solid var(--ac-txt); border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg); }
+
+/* --- la pastilla de dos estados ----------------------------------------- */
+.pastilla { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line);
+  background: var(--sup); border-radius: 999px; padding: 3px 11px 3px 4px; cursor: pointer;
+  font: inherit; font-size: .74rem; font-weight: 600; color: var(--muted);
+  transition: border-color .14s ease-out, background-color .14s ease-out, color .14s ease-out; }
+.pastilla .bola { width: 16px; height: 16px; border-radius: 50%; background: var(--sup3);
+  flex: 0 0 auto; position: relative; }
+.pastilla .bola::after { content: ''; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px;
+  border: solid var(--sup); border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); opacity: 0;
+  transition: opacity .14s ease-out; }
+.pastilla:hover { border-color: var(--ac); }
+.pastilla[aria-pressed="true"] { background: var(--info-bg); border-color: var(--ac); color: var(--ac); }
+.pastilla[aria-pressed="true"] .bola { background: var(--ac); }
+.pastilla[aria-pressed="true"] .bola::after { opacity: 1; }
+
+/* --- los tres modos de la barra ----------------------------------------- */
+.modos { display: grid; gap: 6px; }
+.modos .modo { display: flex; align-items: center; gap: 10px; text-align: left; border: 1px solid var(--line);
+  background: var(--sup); font: inherit; font-size: .83rem; padding: 10px 12px; border-radius: 10px;
+  cursor: pointer; color: var(--fg); }
+.modos .modo:hover { border-color: var(--ac); }
+.modos .modo .md-nom { font-weight: 600; }
+.modos .modo .md-nota { color: var(--muted); font-size: .74rem; margin-left: auto; }
+.modos .modo .md-visto { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line); flex: 0 0 auto; }
+.modos .modo.on { border-color: var(--ac);
+  background: color-mix(in srgb, var(--ac) 8%, var(--sup));
+  box-shadow: inset 0 0 0 1px var(--ac); }
+.modos .modo.on .md-nom { font-weight: 700; color: var(--ac); }
+.modos .modo.on .md-visto { border-color: var(--ac);
+  background: var(--ac);
+  box-shadow: inset 0 0 0 3px var(--sup); }
+
+/* --- el semaforo de version --------------------------------------------- */
+.semaforo { display: flex; align-items: center; gap: 10px; padding: 12px 13px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--sup2); margin-top: 8px; }
+.sf-punto { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; background: var(--muted);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 16%, transparent); }
+.sf-txt { flex: 1 1 auto; min-width: 0; }
+.sf-tit { display: block; font-size: .85rem; font-weight: 650; }
+.sf-sub { display: block; font-size: .75rem; color: var(--muted); }
+.sf-ver { font-size: .78rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  padding: 2px 9px; border-radius: 999px; background: var(--sup3); color: var(--fg); }
+.sf-acciones { display: flex; gap: 7px; padding-top: 11px; flex-wrap: wrap; }
+.semaforo.al-dia .sf-punto { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 16%, transparent); }
+.semaforo.al-dia .sf-ver { background: var(--pill-ok-bg); color: var(--pill-ok-fg); }
+.semaforo.atrasada .sf-punto { background: var(--bad); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bad) 16%, transparent); }
+.semaforo.atrasada .sf-ver { background: var(--pill-bad-bg); color: var(--pill-bad-fg); }
+
+/* --- desplegable animado (.plegable), el mismo patron de la casa --------- */
+.plegable { border: 1px solid var(--line); border-radius: 10px; background: var(--sup); }
+.plegable + .plegable { margin-top: 8px; }
+.plegable summary { list-style: none; cursor: pointer; padding: 12px 14px; display: flex;
+  align-items: center; gap: 10px; }
+.plegable summary::-webkit-details-marker { display: none; }
+.plegable summary:hover { background: var(--sup2); }
+.pl-izq { flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; font-size: .84rem; font-weight: 600; }
+.pl-cuenta { font-size: .73rem; font-weight: 400; color: var(--muted); }
+.pl-flecha { font-size: .8rem; color: var(--muted); transition: transform 180ms cubic-bezier(.22,1,.36,1); }
+.plegable[open] .pl-flecha { transform: rotate(90deg); }
+.pl-cuerpo { padding: 2px 14px 14px; border-top: 1px solid var(--line2); }
+
+/* --- botones apilados (Mis datos) --------------------------------------- */
+.filtros { display: flex; flex-wrap: wrap; gap: 5px; }
+.filtros.apilados { flex-direction: column; align-items: stretch; gap: 7px; }
+.filtros.apilados .btn { width: 100%; }
+
+/* --- el rotulo de cada bloque (como el .seccion-titulo del boceto v5) ---- */
+.seccion-titulo { font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); margin: 22px 2px 10px; }
+
+/* --- la banda de nota bajo un rotulo ------------------------------------ */
+.nota-band { background: var(--sup); border: 1px dashed var(--line); border-radius: var(--r-md);
+  padding: 11px 13px; font-size: .83rem; color: var(--muted2); margin: 0 0 14px; }
+
+/* --- la ficha del recuadro: describe, en una linea por opcion, lo que trae ---
+   Se apoya en .g-cab (que ya existe) y anade esta ficha. Todo con variables del tema. */
+.g-des { display: block; font-size: .78rem; color: var(--muted); line-height: 1.45; margin: 2px 0 0; }
+.g-ficha { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.g-ficha .lin { display: flex; gap: 8px; align-items: center; font-size: .77rem; color: var(--muted2); line-height: 1.4; }
+.g-ficha .lin .ic { color: var(--muted); flex: none; }
+.g-ficha .lin .txt { flex: 1; min-width: 0; }
+/* --- las fichas (pastillas de estado del boceto). NO se usa .chip: ese nombre ya lo ocupan las
+   tareas. Se usa .g-chip, con su propia forma, para no pisar nada. ------------------------------ */
+.g-chip { font-size: .7rem; background: var(--sup2); color: var(--muted2); border-radius: 999px;
+  padding: 2px 9px; border: 1px solid var(--line2); white-space: nowrap; }
+.g-chip.mueve { background: var(--pill-warn-bg); color: var(--pill-warn-fg); border-color: var(--line); }
+.g-ficha .lin .g-chip { margin-left: auto; flex: none; }
+/* --- el selector de modo de color (paso 1 de Apariencia): tres botones anchos con su icono --- */
+.seg.anchos { display: flex; width: 100%; }
+.seg.anchos button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 11px 8px; font-size: .82rem; }
+.seg.anchos button .ic { width: 20px; height: 20px; }
+.seg.anchos button .lb { display: block; }
+/* rotulo de grupo dentro de la rejilla de temas (modo "segun el sistema") */
+.temas-lb { grid-column: 1 / -1; font-size: .72rem; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--muted); margin: 6px 2px 0; }
+/* el recuadro destacado (Respaldo): ocupa la fila entera, va CENTRADO (icono, titulo y estado)
+   y se marca con el BORDE de acento, para que la vista caiga en el sin buscarlo. */
+.grupo.ancho { border-width: 2px; border-color: var(--ac); box-shadow: 0 2px 12px rgba(37,99,235,.12); }
+.grupo.ancho .g-cab { flex-direction: column; align-items: center; text-align: center; gap: 9px; padding: 20px; }
+.grupo.ancho .t-ic { width: 48px; height: 48px; border-radius: 13px; background: var(--ac); color: var(--ac-txt); }
+.grupo.ancho .g-cab .ic { width: 26px; height: 26px; }
+.grupo.ancho .g-tit { font-size: 1.08rem; font-weight: 700; }
+/* la ficha destacada NO lleva descripcion: el detalle vive dentro de su ventana */
+.grupo.ancho .g-des { display: none; }
+/* la pastilla «lo mas importante» sigue viva: la usan otras fichas de Ajustes */
+.tilde { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 700;
+  color: var(--pill-ok-fg); background: var(--pill-ok-bg); border: 1px solid var(--line);
+  border-radius: 999px; padding: 2px 9px; white-space: nowrap; margin-left: 4px; }
+.grupo .g-cab .tilde .ic { width: 13px; height: 13px; color: var(--pill-ok-fg); }
+
+/* --- el distintivo de ESTADO del respaldo (sustituye a «lo mas importante») ------------
+   No es una etiqueta fija: dice COMO esta el respaldo. Sin carpeta, «pendiente» en dorado;
+   con carpeta, «sincronizado en <ruta>» en verde. Se pinta desde pintarRespaldo() (10-...js). */
+.estado-resp { display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700;
+  border-radius: 999px; padding: 3px 11px; white-space: nowrap; max-width: 100%; }
+.estado-resp .ic { width: 13px; height: 13px; }
+.estado-resp .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.estado-resp.pendiente { color: var(--pill-warn-fg); background: var(--pill-warn-bg); border: 1px solid var(--warn); }
+.estado-resp.sync { color: var(--pill-ok-fg); background: var(--pill-ok-bg); border: 1px solid var(--ok); }
+
+/* --- rotulos de bloque (entre rejillas) --------------------------------- */
+/* --- el recuadro del COMANDO de actualizacion (Linux: se copia y se pega) --- */
+.act-cmd { font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.78rem;
+  background:var(--sup3); border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:8px 10px; margin:8px 0 8px; white-space:pre-wrap; word-break:break-all; user-select:all;
+  text-align:left; }
+.grupo-tit { display: flex; align-items: baseline; gap: 9px; margin: 24px 2px 10px;
+  font-weight: 700; font-size: .98rem; }
+
+/* --- la ventana emergente de un recuadro (mismo patron que .modal) -------
+   El velo cubre todo y centra el panel elegido. Cada panel es el mismo DOM
+   siempre (no se reescribe), para que los controles que el motor escucha por
+   id sigan vivos: por eso NO se usa innerHTML, se muestra y se oculta. */
+.aj-velo { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 60; display: none;
+  align-items: flex-start; justify-content: center; padding: 46px 16px; overflow-y: auto; }
+.aj-velo.on { display: flex; }
+.aj-panel { position: relative; background: var(--sup); border-radius: var(--r-lg); max-width: 640px;
+  width: 100%; padding: 20px 22px 22px; box-shadow: 0 18px 50px rgba(15,23,42,.35); display: none; }
+.aj-panel.on { display: block; }
+.aj-panel .aj-cab { display: flex; align-items: flex-start; gap: 12px; padding-right: 44px; margin-bottom: 8px; }
+.aj-panel .aj-cab .t-ic { width: 38px; height: 38px; border-radius: 10px; background: var(--sup2);
+  color: var(--ac); display: grid; place-items: center; flex: none; }
+.aj-panel .aj-cab h2 { margin: 0; font-size: 1.1rem; }
+.aj-panel .aj-cab .sub { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+/* la misma cabecera, CENTRADA: icono, titulo y subtitulo en columna (la usan las ventanas que
+   se abren en columna, como Respaldo). Mismos tamanos que la de fila. */
+.aj-panel .aj-cab.centrada { flex-direction: column; align-items: center; text-align: center;
+  padding-right: 0; gap: 7px; margin-bottom: 10px; }
+.aj-panel .aj-cab.centrada .t-ic { width: 40px; height: 40px; border-radius: 11px; }
+/* la X, anclada a la esquina: respeta el margen del panel y no pisa el titulo */
+.aj-x { position: absolute; top: 13px; right: 13px; width: 32px; height: 32px; display: grid;
+  place-items: center; border: 0; background: transparent; border-radius: 8px; cursor: pointer;
+  color: var(--muted); padding: 0; }
+.aj-x:hover { background: var(--sup2); color: var(--fg); }
+.aj-x:focus-visible { outline: 2px solid var(--ac); outline-offset: 2px; }
+.aj-x .ic { width: 17px; height: 17px; }
+.aj-panel .aj-pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;
+  padding-top: 13px; border-top: 1px solid var(--line2); }
+
+/* --- el boton de apoyo (Buy Me a Coffee), con sus colores de marca ------- */
+.bmc { display: inline-flex; align-items: center; gap: 10px; background: #FFDD00; color: #222222;
+  text-decoration: none; font-weight: 700; font-size: .92rem; padding: 11px 18px; border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.bmc:hover { background: #FFE533; }
+.bmc .taza { flex: none; }
+.aj-panel .ayuda { color: var(--fg); }
+
+/* --- la ventana "Colaborar": las tres formas de ayudar, como tarjetas ----------
+   Una tarjeta por forma (icono + titulo, y la descripcion debajo), el mismo patron
+   que las tarjetas de Ajustes. La flecha marca que abre fuera, en GitHub. */
+.opciones { display: grid; gap: 8px; margin: 12px 0 0; }
+.opcion { text-decoration: none; color: inherit; }
+.opcion .g-cab { align-items: center; }
+.o-flecha { margin-left: auto; color: var(--muted); font-size: 1rem; line-height: 1; flex: none; }
+.opcion:hover .o-flecha { color: var(--ac); }
+/* El cafe va debajo, en su propio renglon, con su nota al lado. */
+.colab-cafe { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0 2px; }
+/* La FAQ, dentro del desplegable: mismo patron que el resto de la app. */
+#colab-preguntas { margin-top: 14px; }
+.preguntas { border-top: 1px solid var(--line); }
+.pregunta { border-bottom: 1px solid var(--line); }
+.pregunta summary { list-style: none; cursor: pointer; padding: 10px 2px; font-size: .86rem;
+  font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.pregunta summary::-webkit-details-marker { display: none; }
+.pregunta summary::before { content: "+"; color: var(--ac); font-weight: 700; width: 12px; }
+.pregunta[open] summary::before { content: "–"; }
+.pregunta p { margin: 0 2px 12px 22px; font-size: .82rem; color: var(--muted2); }
+
+/* --- lo que el motor necesita pero no se ve ----------------------------- */
+.oculto-para-el-motor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* --- barras extraibles del resto de la app (las de Ajustes ya no pliegan) --
+   Ajustes usa .plegable solo para "Ajustes avanzados" y "Mis datos". */
+
+/* --- responsive: 3 -> 2 -> 1 columnas (parejas, como el boceto v5) -------- */
+@media (max-width: 960px) {
+  .rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .rejilla { grid-template-columns: 1fr; }
+}
+
+/* --- responsive: una columna en movil ------------------------------------ */
+@media (max-width: 900px) {
+  .rejilla { grid-template-columns: 1fr; }
+  .temas { grid-template-columns: 1fr; }
+}
+
+/* ==== SECCION AJUSTES (propuesta G2): FIN ==== */
+
+/* ==== SECCION TAREAS (propuesta v3, aprobada 2026-09-21): INICIO ==== */
+/* Un solo bloque: editar aca, no copiar en otro lado. */
+.ta-barra{display:flex;align-items:center;gap:10px;margin:18px 0 16px;flex-wrap:wrap}
+.ta-filtros{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.ta-filtros .chip{border:1px solid var(--line);background:var(--sup);color:var(--muted);
+  border-radius:999px;padding:7px 13px;font-size:.82rem;cursor:pointer}
+.ta-filtros .chip.on{background:var(--fg);color:var(--sup);border-color:var(--fg)}
+.ta-filtros .chip .n{font-weight:700;margin-left:7px}
+
+.ta-resumen{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:stretch;margin-bottom:18px}
+.ta-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ta-kpis .kpi{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 18px}
+.ta-kpis .kpi b{font-size:1.4rem;display:block;letter-spacing:-.02em;line-height:1.1}
+.ta-kpis .kpi span{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+
+.ta-anillo{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:16px 22px;display:flex;align-items:center;gap:16px;min-width:260px}
+.ta-anillo svg{flex:none}
+.ta-ley .tit{font-weight:700;margin:0 0 6px;font-size:.88rem}
+.ta-ley .leg{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:.82rem}
+.ta-ley .leg i{width:10px;height:10px;border-radius:3px;flex:none}
+.ta-ley .num{font-weight:700}
+
+.ta-rejilla{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:start}
+.ta-col{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px}
+.ta-col .col-tit{display:flex;align-items:center;gap:10px;font-weight:700;margin:0 0 14px;font-size:.98rem}
+.ta-col .col-tit .punto{width:9px;height:9px;border-radius:50%;flex:none}
+
+.ta-col .tarea{display:grid;grid-template-columns:auto 22px 1fr;gap:11px;align-items:start;
+  background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-md);
+  padding:14px;margin-bottom:10px;cursor:pointer;transition:transform .13s ease,box-shadow .13s,border-color .13s}
+.ta-col .tarea:hover{border-color:var(--ac);transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,23,42,.08)}
+.ta-col .tarea::before{content:"";grid-column:1;grid-row:1/span 3;width:4px;height:100%;
+  border-radius:99px;background:var(--pista);align-self:stretch}
+.ta-col .tarea.pri-alta::before{background:var(--bad)}
+.ta-col .tarea.pri-media::before{background:var(--warn)}
+.ta-col .tarea.pri-baja::before{background:var(--pista)}
+.ta-col .tarea .check{grid-column:2;grid-row:1;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);
+  cursor:pointer;display:grid;place-items:center;color:var(--bg);transition:all .15s ease}
+.ta-col .tarea.hecha .check{background:var(--ok);border-color:var(--ok)}
+.ta-col .tarea.hecha .check::after{content:"✓";font-size:13px;font-weight:700}
+.ta-col .tarea .cuerpo{grid-column:3;grid-row:1/span 3;min-width:0;display:flex;flex-direction:column;gap:8px}
+.ta-col .tarea .titulo{font-weight:600;font-size:.92rem;line-height:1.4}
+.ta-col .tarea.hecha .titulo{text-decoration:line-through;color:var(--muted)}
+.ta-col .tarea .meta{display:flex;flex-direction:column;gap:4px}
+.ta-col .tarea .fila{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--muted);flex-wrap:wrap}
+.ta-col .tarea .ramo{display:inline-flex;align-items:center;gap:6px}
+.ta-col .tarea .ramo i{width:9px;height:9px;border-radius:3px;flex:none}
+.ta-col .tarea .personal-chip{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);
+  background:var(--pista);border-radius:999px;padding:2px 9px;font-weight:600}
+.ta-col .tarea .fecha{color:var(--muted)}
+.ta-col .tarea .fecha.vencida{color:var(--bad);font-weight:600}
+.ta-col .tarea .hora{display:inline-flex;align-items:center;gap:5px;color:var(--fg);font-weight:600;
+  background:var(--sup);border:1px solid var(--line2);border-radius:var(--r-sm);
+  padding:2px 8px;font-size:.78rem;font-variant-numeric:tabular-nums}
+.ta-col .tarea .hora .reloj{opacity:.55;font-weight:400}
+.ta-col .vacio{text-align:center;color:var(--muted);padding:34px 12px;font-size:.86rem;
+  border:1px dashed var(--line);border-radius:var(--r-md)}
+
+/* vinculo con otras secciones: etiqueta que dice de donde viene la tarea */
+.ta-col .tarea .origen-chip{display:inline-block;font-size:.68rem;color:var(--muted2);
+  background:var(--sup2);border:1px solid var(--line2);border-radius:999px;padding:1px 7px;
+  margin-left:6px;vertical-align:middle}
+
+/* drag & drop: la tarjeta que se arrastra se atenua; la columna destino se resalta */
+.ta-col .tarea.arrastrando{opacity:.45;transform:scale(.98)}
+.ta-col.sobre{background:var(--sup2);border-color:var(--ac);box-shadow:inset 0 0 0 2px var(--ac)}
+
+@media (max-width:900px){
+  .ta-rejilla{grid-template-columns:1fr}
+  .ta-resumen{grid-template-columns:1fr}
+}
+/* ==== SECCION TAREAS: FIN ====
+
+/* ==== SECCION RAMOS: asistencia, torta y horario del ramo ==== */
+.torta{display:flex;align-items:center;gap:14px;margin:4px 0 12px}
+.torta svg{flex:0 0 auto}
+.torta-txt{display:flex;flex-direction:column;gap:2px}
+.torta-txt b{font-size:1.05rem}
+.torta-txt span{font-size:.78rem;color:var(--muted)}
+
+/* grilla del horario semanal L-D, 7 columnas; cada celda acepta bloques con su franja */
+.horario-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0}
+.hora-dia-col{background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-sm);
+  padding:6px;min-height:72px;display:flex;flex-direction:column;gap:4px}
+.hora-dia-col.sobre{background:var(--info-bg);border-color:var(--ac);box-shadow:inset 0 0 0 2px var(--ac)}
+.hora-dia-tit{font-size:.72rem;color:var(--muted);text-transform:uppercase;text-align:center}
+.hora-celda-bloque{background:var(--ac);color:var(--ac-txt);border-radius:var(--r-sm);
+  padding:4px 6px;font-size:.74rem;text-align:center;cursor:grab;font-variant-numeric:tabular-nums}
+.hora-celda-bloque.arrastrando{opacity:.4}
+.hora-dur-input{width:64px;padding:3px 6px;font:inherit;font-size:.78rem;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--sup);color:var(--fg);text-align:right;
+  font-variant-numeric:tabular-nums}
+.hora-bloque{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px solid var(--line2)}
+.hora-bloque:last-child{border-bottom:0}
+.hora-dia{width:64px;font-size:.8rem;color:var(--muted)}
+.hora-franja{flex:1;font-variant-numeric:tabular-nums;font-weight:600}
+.hora-dur{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+/* ==== SECCION RAMOS: FIN ==== */
+/* --- grupo Semestre de Ajustes: lista y tabla de metas visibles -------------
+   Los contenedores #lista-semestres y #tabla-metas-ramo viven DENTRO de las dos
+   tarjetas del grupo "Semestre". La tabla de metas (table.comp, ya estilizada) puede
+   desbordar con muchos ramos: se deja scrollear horizontal sin romper la rejilla. */
+.env-tabla{overflow-x:auto}
+#lista-semestres{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+
+/* ===== CALENDARIO comercial (mes / año), sin semestre obligatorio =====
+   La barra de navegacion, la grilla del mes y la grilla de los 12 meses. El semestre activo,
+   cuando existe, pinta sus semanas de clase/examen/receso sobre los dias (sombras suaves). */
+.cal-wrap{min-width:0;width:100%}
+.cal-barra{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin-bottom:10px}
+.cal-vistas{display:flex;gap:6px}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-periodo{font-weight:700;font-size:.95rem;letter-spacing:-.01em;margin-left:6px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
+.cal-cab{font-size:.68rem;text-align:center;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--muted2);padding:6px 2px;font-weight:600}
+.cal-dia{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-sm);
+  min-height:92px;padding:4px 6px;position:relative;display:flex;flex-direction:column;gap:2px;
+  /* La celda NO crece sin limite: con muchos eventos, la grilla se desalineaba y el mes se
+     volvia ilegible. Con un alto maximo, los eventos que no caben quedan recortados aqui y se
+     ven en el detalle del dia. `align-self:start` evita que la celda estire a sus vecinas. */
+  max-height:168px;overflow:hidden}
+.cal-dia.fuera{background:var(--sup2);opacity:.55}
+.cal-dia.hoy{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
+.cal-num{font-size:.78rem;font-weight:650;font-variant-numeric:tabular-nums;color:var(--fg)}
+.cal-dia.hoy .cal-num{color:var(--ac)}
+.cal-evs{display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.cal-evs .chip{margin:1px 0}
+/* marca del semestre sobre el dia (numero de semana S7, Receso, Examen) */
+.cal-marca{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.02em;
+  padding:1px 5px;border-radius:99px;background:var(--info-bg);color:var(--ac);
+  align-self:flex-start}
+.cal-marca-receso{background:var(--warn-bg, var(--sup3));color:var(--warn, #b45309)}
+.cal-marca-examen{background:var(--pill-bad-bg);color:var(--bad)}
+/* sombras de semana sobre el dia (clases = neutro, receso = ambar, examen = rojo) */
+.cal-dia.sem-clases{background:var(--sup)}
+.cal-dia.sem-receso{background:color-mix(in srgb, var(--warn, #b45309) 9%, var(--sup))}
+.cal-dia.sem-examen{background:color-mix(in srgb, var(--bad, #dc2626) 10%, var(--sup))}
+
+/* ===== Vista AÑO: los 12 meses ===== */
+#cl-anio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.cal-mes{background:var(--sup);border:1px solid var(--line);border-radius:12px;padding:10px}
+.cal-mes-tit{font-weight:700;font-size:.86rem;text-align:center;margin-bottom:6px}
+.cal-mes-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-mes-cab{font-size:.6rem;text-align:center;text-transform:uppercase;color:var(--muted2);
+  padding:2px 0}
+.cal-mes-cel{font-size:.68rem;text-align:center;padding:3px 0;border-radius:4px;
+  font-variant-numeric:tabular-nums;color:var(--muted);min-height:18px;position:relative}
+.cal-mes-cel.vacia{background:none}
+.cal-mes-cel.num{color:var(--fg)}
+.cal-mes-cel.con{background:var(--sup2);cursor:pointer}
+.cal-mes-cel.sem-clases{color:var(--fg)}
+.cal-mes-cel.sem-receso{background:color-mix(in srgb, var(--warn, #b45309) 9%, var(--sup));color:var(--fg)}
+.cal-mes-cel.sem-examen{background:color-mix(in srgb, var(--bad, #dc2626) 10%, var(--sup));color:var(--fg)}
+.cal-mes-cel .dot{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:var(--ac)}
+@media (max-width:980px){ #cl-anio{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:640px){ #cl-anio{grid-template-columns:1fr} }
+
+/* Secciones de la carrera: antes era UNA fila sin rotulos donde el nombre se estiraba a lo ancho
+   y la sigla quedaba en 76 px (su propio texto salia cortado). Con etiqueta sobre cada campo y
+   anchos proporcionales, cada cosa se lee y se entiende. Los campos no se cortan a media palabra:
+   el nombre ajusta y, si no cabe, se recorta con puntos (ellipsis), nunca a la mitad. */
+.campo-sec{display:grid;grid-template-columns:minmax(0,1fr) 110px 96px 130px auto;
+           gap:8px 12px;align-items:end;padding:10px 0;border-bottom:1px solid var(--line2)}
+.campo-sec:last-child{border-bottom:0}
+.campo-sec label{display:flex;flex-direction:column;gap:5px;min-width:0;
+                 font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted2)}
+.campo-sec .cs-nombre{min-width:0}
+.campo-sec .sec-nombre{width:100%}
+.campo-sec .sec-sigla{width:100%;text-align:center;text-transform:uppercase;letter-spacing:.06em}
+.campo-sec .sec-color{width:100%;height:38px;padding:2px;cursor:pointer}
+.campo-sec .sec-rango{display:block;line-height:38px;font-size:.82rem;color:var(--muted);
+                      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.campo-sec.nueva{margin-top:12px}
+@media (max-width:720px){
+  .campo-sec{grid-template-columns:1fr}
+  .campo-sec .sec-rango{line-height:1.4}
+}

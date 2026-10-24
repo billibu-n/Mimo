@@ -1,0 +1,62 @@
+<!-- ==========================================================================
+     tareas.html - la pestaña Tareas, entera. (propuesta v3, aprobada 2026-09-21)
+
+     Es una PIEZA: no se abre sola. La mete en su sitio el programa
+     construir/index.py, que arma el index.html juntando esta pieza con las demás.
+     El CSS vive en general.css (bloque final "Tareas"), entre las marcas INICIO/FIN.
+     ========================================================================== -->
+
+  <section class="seccion" data-seccion="tareas" id="p-tareas">
+    <div class="zona-g2">
+
+      <div class="encabezado">
+        <h1>Tareas</h1>
+        <p class="apoyo">Todo lo pendiente, unido y vinculado a tus ramos y calendario.</p>
+      </div>
+
+      <div class="ta-barra">
+        <button class="btn" id="ta-nueva">＋ Nueva tarea</button>
+        <div class="ta-filtros">
+          <button class="chip on" data-filtro="todas" id="ta-ch-todas">Todas <span class="n">0</span></button>
+          <button class="chip" data-filtro="pendientes" id="ta-ch-pendientes">Pendientes <span class="n">0</span></button>
+          <button class="chip" data-filtro="hoy" id="ta-ch-hoy">Hoy <span class="n">0</span></button>
+          <button class="chip" data-filtro="ramos" id="ta-ch-ramos">Ramos <span class="n">0</span></button>
+          <button class="chip" data-filtro="personal" id="ta-ch-personal">Personales <span class="n">0</span></button>
+        </div>
+      </div>
+
+      <div class="ta-resumen">
+        <div class="ta-kpis">
+          <div class="kpi"><b id="ta-kpi-pend">0</b><span>pendientes</span></div>
+          <div class="kpi"><b id="ta-kpi-hoy">0</b><span>para hoy</span></div>
+          <div class="kpi"><b id="ta-kpi-personal">0</b><span>personales</span></div>
+          <div class="kpi"><b id="ta-kpi-ramo">0</b><span>vinculadas a ramo</span></div>
+        </div>
+        <div class="ta-anillo">
+          <svg width="108" height="108" viewBox="0 0 120 120" id="ta-anillo"></svg>
+          <div class="ta-ley">
+            <p class="tit">Esta semana</p>
+            <div class="leg"><i style="background:var(--ok)"></i><span><span class="num" id="ta-ley-hechas">0</span> hechas</span></div>
+            <div class="leg"><i style="background:var(--fg)"></i><span><span class="num" id="ta-ley-pend">0</span> pendientes</span></div>
+            <div class="leg"><i style="background:var(--pista)"></i><span>de <span class="num" id="ta-ley-total">0</span> en total</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ta-rejilla">
+        <div class="ta-col">
+          <p class="col-tit"><span class="punto" style="background:var(--bad)"></span>Hoy</p>
+          <div id="ta-col-hoy"></div>
+        </div>
+        <div class="ta-col">
+          <p class="col-tit"><span class="punto" style="background:var(--ac)"></span>Esta semana</p>
+          <div id="ta-col-semana"></div>
+        </div>
+        <div class="ta-col">
+          <p class="col-tit"><span class="punto" style="background:var(--ok)"></span>Hechas esta semana</p>
+          <div id="ta-col-hechas"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>

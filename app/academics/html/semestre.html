@@ -1,0 +1,62 @@
+<!-- ==========================================================================
+     semestre.html - la pestana Semestre, entera.
+
+     Es una PIEZA: no se abre sola en el navegador. La mete en su sitio el programa
+     construir/index.py, que arma el index.html juntando esta pieza con las demas.
+     Para editar esta pestana, edita este archivo y vuelve a armar.
+     ========================================================================== -->
+
+<!-- ============ SEMESTRE ============ -->
+  <section class="seccion on" data-seccion="calendario" id="p-semestre">
+    <div class="estado" id="cl-estado"></div>
+    <div class="layout">
+      <aside class="rail">
+        <button class="btn" id="cl-nuevo">+ Nuevo evento</button>
+        <hr>
+        <h3>Ramos</h3>
+        <div id="cl-ramos"></div>
+        <hr>
+        <h3>Eventos</h3>
+        <div id="cl-eventos"></div>
+        <hr>
+        <h3>Ver</h3>
+        <div class="fila" style="gap:6px;flex-wrap:wrap">
+          <button class="mini on" id="cl-ver-todo">Todo</button>
+          <button class="mini" id="cl-ver-prox">Lo que viene</button>
+          <button class="mini" id="cl-ver-pend">Por hacer</button>
+        </div>
+        <p class="ayuda">Haz clic en cualquier evento para ponerle prioridad, marcarlo como hecho, o
+           escribirle una descripción y su temario.</p>
+      </aside>
+      <div class="cal-wrap">
+        <!-- Barra de navegacion del calendario: selector de vista + periodo + hoy -->
+        <div class="cal-barra">
+          <div class="cal-vistas">
+            <button class="mini on" id="cl-vista-mes">Mes</button>
+            <button class="mini" id="cl-vista-anio">Año</button>
+            <button class="mini" id="cl-vista-sem">Semestre</button>
+          </div>
+          <div class="cal-nav">
+            <button class="mini" id="cl-ant" title="anterior">‹</button>
+            <button class="mini" id="cl-hoy" title="Ir al periodo actual">Hoy</button>
+            <button class="mini" id="cl-sig" title="siguiente">›</button>
+            <span class="cal-periodo" id="cl-periodo"></span>
+          </div>
+        </div>
+
+        <!-- Vista MES: grilla de un mes, tipo calendario comercial -->
+        <div id="cl-mes"></div>
+        <!-- Vista AÑO: los 12 meses -->
+        <div id="cl-anio" style="display:none"></div>
+        <!-- Vista SEMESTRE: la tabla semanal academica (la clasica) -->
+        <div id="cl-semestre" style="overflow-x:auto">
+          <table class="sem">
+            <thead><tr><th class="bl">Semana</th>
+              <th>Lunes</th><th>Martes</th><th>Miércoles</th><th>Jueves</th><th>Viernes</th>
+              <th>Sábado</th><th>Domingo</th><th class="est">Estudio</th></tr></thead>
+            <tbody id="cl-cuerpo"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>

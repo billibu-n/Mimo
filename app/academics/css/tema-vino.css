@@ -1,0 +1,58 @@
+/* ============================================================================
+   tema-vino.css - Tema Vino.
+
+   Negro con rojo profundo: fondo #150a0c, acento rosa-vino #e8899b. Viene del
+   proyecto1 (web/base/temas/vino.css), traducido al esquema de mimo. Solo COLORES.
+
+   Es un tema oscuro: el texto claro #f0dedf sobre el fondo casi negro da el
+   contraste, y el acento rosa-vino es lo que le da el caracter.
+   ============================================================================ */
+
+body.tema-vino{
+  --fg:#f0dedf; --muted:#ab8689; --line:#452028; --bg:#150a0c;
+  --ac:#e8899b; --ok:#7fc8a0; --warn:#f6d32d; --bad:#ff9b8a; --q:#c58adc;
+  --sup:#261317; --sup2:#2e181d; --sup3:#150a0c; --line2:#3a1a20; --pista:#3a1a20;
+  --muted2:#c9a7aa; --ac-txt:#1d070b; --ac-txt-fuerte:#1d070b;
+
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --foco:0 0 0 2px #261317, 0 0 0 4px #e8899b;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+
+  --info-bg:#2a1419; --hoy-bg:#2a1419;
+  --pri-alta-bg:#3a1418; --pri-media-bg:#3a2c0f; --pri-baja-bg:#2a2038;
+  --sim-bg:#2a1820; --pri-baja-fg:#c5b3f0;
+
+  --ac-fuerte:#c96a7d;
+  --pill-ok-bg:#0e2e1e; --pill-ok-fg:#8ff0a4;
+  --pill-warn-bg:#3a2c0f; --pill-warn-fg:#f6d32d;
+  --pill-bad-bg:#3a1418; --pill-bad-fg:#ff8fa3;
+
+  --malla-aprobado:#7fc8a0; --malla-aprobado-bg:#0e2e1e; --malla-aprobado-bd:#4ade80; --malla-aprobado-fg:#8ff0a4; --malla-aprobado-sol:#101828;
+  --malla-curso:#f6d32d; --malla-curso-bg:#3a2c0f; --malla-curso-bd:#fde047; --malla-curso-fg:#f6d32d; --malla-curso-sol:#101828;
+  --malla-disponible:#8ab4f8; --malla-disponible-bg:#1e2350; --malla-disponible-bd:#93c5fd; --malla-disponible-fg:#c5d8ff; --malla-disponible-sol:#101828;
+  --malla-bloqueado:#7a7a7a; --malla-bloqueado-bg:#2e2e2e; --malla-bloqueado-bd:#5c5c5c; --malla-bloqueado-fg:#c0bfbc; --malla-bloqueado-sol:#101828;
+
+  --malla-linea:#452028;
+  --malla-linea-req:#e8899b;
+  --malla-linea-des:#f0a0b0;
+  --malla-anual-bg:#2a1419;
+  --malla-anual-bd:#e8899b;
+  --malla-anual-fg:#f0dedf;
+  --malla-ficha-bd:#452028;
+  --malla-codigo-bg:#2e181d;
+}
+body.tema-vino .celda-otros{background:var(--sup3)}
+body.tema-vino .tab.on{background:var(--ac-fuerte);color:#fff;border-color:var(--ac-fuerte)}
+body.tema-vino input,
+body.tema-vino select,
+body.tema-vino textarea{color:var(--fg)}
+body.tema-vino .nodo.compacto{background:var(--sup2)}
+body.tema-vino .nodo .mas.quitar:hover{color:#150a0c}
+body.tema-vino .btn.peligro{border-color:#5b2529}
+body.tema-vino .quitar{background:#3a1418}
+body.tema-vino .atajos button,
+body.tema-vino .muestra-color{border-color:var(--line)}
+
+body.tema-vino .g1 .b1,
+body.tema-vino .g1 .lateral{background:#261317}
+body.tema-vino .g1 .lateral{border-right-color:var(--line)}

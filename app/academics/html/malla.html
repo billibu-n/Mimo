@@ -1,0 +1,60 @@
+<!-- ==========================================================================
+     malla.html - la pestana Malla, entera.
+
+     Es una PIEZA: no se abre sola en el navegador. La mete en su sitio el programa
+     construir/index.py, que arma el index.html juntando esta pieza con las demas.
+     Para editar esta pestana, edita este archivo y vuelve a armar.
+     ========================================================================== -->
+
+<!-- ============ MALLA ============ -->
+  <section class="seccion" data-seccion="malla" id="p-malla">
+    <div class="estado" id="malla-kpis"></div>
+    <div class="malla-lienzo">
+    <div class="malla-caja">
+    <div class="tarjeta">
+      <h2>Malla</h2>
+      <div id="malla-deshacer"></div>
+      <div class="sub">Filtra, crea y ordena tus ramos. La malla se dibuja sola por niveles según sus prerrequisitos.</div>
+      <div class="fila malla-tools">
+        <input type="text" id="malla-buscar" placeholder="Buscar ramo por código o nombre">
+        <label class="llave"><input type="checkbox" id="malla-rapido"> Modo rápido: marcar aprobados con un clic</label>
+        <button class="mini" id="malla-limpiar">Quitar selección</button>
+        <button class="mini" id="malla-nuevo-ramo">+ Nuevo ramo</button>
+        <button class="mini" id="malla-reordenar">Reordenar niveles</button>
+        <button class="mini" id="malla-importar">Traer una malla desde un archivo</button>
+        <button class="mini" id="malla-simular">Simular toma de ramos</button>
+      </div>
+      <div class="leyenda-malla" id="malla-leyenda"></div>
+      <div class="malla-scroll">
+        <div class="malla" id="malla"></div>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div id="malla-detalle"></div>
+
+    <details class="barra-extraible">
+      <summary><span class="izq">Configuración de la malla
+        <span class="cuenta">secciones y respaldo</span></span>
+        <span class="flecha">&#9654;</span></summary>
+      <div class="cuerpo">
+        <div class="tarjeta">
+          <h2>Secciones de la carrera</h2>
+          <div class="sub">Agrupa los semestres en categorías (Plan común, Licenciatura, Especialidad...).
+            Cada sección tiene un nombre, una sigla corta y un color, y se asigna a un rango de semestres
+            o ramo a ramo en su editor. Viaja con la malla al exportar o importar.</div>
+          <div id="secciones-malla"></div>
+        </div>
+        <div class="tarjeta">
+          <h2>Respaldo de la malla</h2>
+          <div class="sub">Exportar descarga un archivo con la estructura de la malla (ramos, niveles,
+            prerrequisitos y créditos), <b>sin nada personal</b>: ni qué ramos tienes aprobados, ni tus
+            notas, ni tus horas, ni los alias o colores que elegiste. Sirve para compartir una malla
+            corregida con un compañero, o para partir de nuevo sin perder la malla.</div>
+          <div class="fila" style="gap:8px">
+            <button class="btn" id="malla-exportar">Exportar la malla (.json)</button>
+          </div>
+        </div>
+      </div>
+    </details>
+  </section>

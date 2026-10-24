@@ -1,0 +1,62 @@
+/* ============================================================================
+   tema-alto-contraste.css - Tema Alto Contraste.
+
+   Accesibilidad: negro y blanco puros, acento amarillo, foco cian. Para quien
+   tiene poca vision. Viene del proyecto1 (web/base/temas/alto-contraste.css),
+   traducido al esquema de mimo. Solo COLORES.
+
+   No es decorativo: es el tema que permite usar la app a alguien con poca vision.
+   El texto, los bordes y el acento se mantienen puros (blanco/negro/amarillo).
+   Unica licencia: --sup2 lleva un gris muy oscuro (#1a1a1a) para separar las
+   tarjetas entre si; el texto sigue blanco puro sobre el, con contraste ~17:1,
+   muy por encima del WCAG AAA (7:1). Decision del usuario 2026-09-21 (opcion B).
+   ============================================================================ */
+
+body.tema-alto-contraste{
+  --fg:#ffffff; --muted:#ffffff; --line:#ffffff; --bg:#000000;
+  --ac:#ffff00; --ok:#66ff99; --warn:#ffff00; --bad:#ff6666; --q:#66ffff;
+  --sup:#000000; --sup2:#1a1a1a; --sup3:#000000; --line2:#ffffff; --pista:#ffffff;
+  --muted2:#ffffff; --ac-txt:#000000; --ac-txt-fuerte:#000000;
+
+  --r-sm:0px; --r-md:0px; --r-lg:0px;
+  --foco:0 0 0 2px #000000, 0 0 0 4px #00ffff;
+  --t:.01ms; --curva:linear;
+
+  --info-bg:#000000; --hoy-bg:#000000;
+  --pri-alta-bg:#000000; --pri-media-bg:#000000; --pri-baja-bg:#000000;
+  --sim-bg:#000000; --pri-baja-fg:#66ffff;
+
+  --ac-fuerte:#ffff00;
+  --pill-ok-bg:#000000; --pill-ok-fg:#66ff99;
+  --pill-warn-bg:#000000; --pill-warn-fg:#ffff00;
+  --pill-bad-bg:#000000; --pill-bad-fg:#ff6666;
+
+  --malla-aprobado:#66ff99; --malla-aprobado-bg:#000000; --malla-aprobado-bd:#66ff99; --malla-aprobado-fg:#66ff99; --malla-aprobado-sol:#000000;
+  --malla-curso:#ffff00; --malla-curso-bg:#000000; --malla-curso-bd:#ffff00; --malla-curso-fg:#ffff00; --malla-curso-sol:#000000;
+  --malla-disponible:#66ffff; --malla-disponible-bg:#000000; --malla-disponible-bd:#66ffff; --malla-disponible-fg:#66ffff; --malla-disponible-sol:#000000;
+  --malla-bloqueado:#ffffff; --malla-bloqueado-bg:#000000; --malla-bloqueado-bd:#ffffff; --malla-bloqueado-fg:#ffffff; --malla-bloqueado-sol:#000000;
+
+  --malla-linea:#ffffff;
+  --malla-linea-req:#ffff00;
+  --malla-linea-des:#66ffff;
+  --malla-anual-bg:#000000;
+  --malla-anual-bd:#ffff00;
+  --malla-anual-fg:#ffffff;
+  --malla-ficha-bd:#ffffff;
+  --malla-codigo-bg:#000000;
+}
+body.tema-alto-contraste .celda-otros{background:#000000}
+body.tema-alto-contraste .tab.on{background:#ffff00;color:#000000;border-color:#ffff00}
+body.tema-alto-contraste input,
+body.tema-alto-contraste select,
+body.tema-alto-contraste textarea{color:#ffffff;background:#000000}
+body.tema-alto-contraste .nodo.compacto{background:#000000}
+body.tema-alto-contraste .nodo .mas.quitar:hover{color:#000000}
+body.tema-alto-contraste .btn.peligro{border-color:#ff6666}
+body.tema-alto-contraste .quitar{background:#000000;border:1px solid #ff6666}
+body.tema-alto-contraste .atajos button,
+body.tema-alto-contraste .muestra-color{border-color:#ffffff}
+
+body.tema-alto-contraste .g1 .b1,
+body.tema-alto-contraste .g1 .lateral{background:#000000;border-color:#ffffff}
+body.tema-alto-contraste .g1 .lateral{border-right-color:#ffffff}

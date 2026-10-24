@@ -1,0 +1,51 @@
+/* ============================================================================
+   tema-clasico.css - Tema Clasico.
+
+   El de fabrica: fondo claro, azul de acento. Es el que se ve si no se elige ningun otro.
+
+   Solo COLORES. La estructura y la forma estan en general.css; este archivo las viste.
+   ============================================================================ */
+
+body.tema-clasico{
+  /* C1/C2/C3: ritmo, radios y foco. Con el MISMO selector que los otros siete temas, para que
+     --foco se resuelva con el fondo y el acento de ESTE tema (antes heredaba el de general.css,
+     que apunta a :root, y al dejar clasico de ser :root quedaria invalido). */
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+  --foco:0 0 0 2px #fff, 0 0 0 4px #2563eb;
+  --fg:#1e293b; --muted:#64748b; --line:#cbd5e1; --bg:#f8fafc;
+  --ac:#2563eb; --ok:#16a34a; --warn:#b45309; --bad:#b91c1c; --q:#7c3aed;
+  --sup:#fff; --sup2:#f1f5f9; --sup3:#f8fafc; --line2:#eef2f7; --pista:#e2e8f0;
+  --muted2:#475569; --ac-txt:#fff; --ac-txt-fuerte:#ffffff;
+  --info-bg:#eff6ff; --hoy-bg:#eff6ff;
+  --pri-alta-bg:#fee2e2; --pri-media-bg:#fef3c7; --pri-baja-bg:#e0e7ff;
+  --sim-bg:#f5f3ff; --pri-baja-fg:#3730a3;
+  /* Azul de los botones con letra blanca. Tiene que ser mas oscuro que el azul de
+     acento: con el acento a secas, la letra blanca queda en 3.77 y no se lee. */
+  --ac-fuerte:#1d4ed8;
+  --pill-ok-bg:#f0fdf4; --pill-ok-fg:#166534;
+  --pill-warn-bg:#fffbeb; --pill-warn-fg:#92400e;
+  --pill-bad-bg:#fef2f2; --pill-bad-fg:#991b1b;
+  /* Estados de la malla: fuerte (relleno solido), suave (fondo), borde, texto y texto sobre solido.
+     Los calcula y los puede cambiar Ajustes avanzados. */
+  --malla-aprobado:#16a34a; --malla-aprobado-bg:#dcfce7; --malla-aprobado-bd:#86efac; --malla-aprobado-fg:#14532d; --malla-aprobado-sol:#fff;
+  --malla-curso:#eab308; --malla-curso-bg:#fefce8; --malla-curso-bd:#fde047; --malla-curso-fg:#713f12; --malla-curso-sol:#101828;
+  --malla-disponible:#2563eb; --malla-disponible-bg:#dbeafe; --malla-disponible-bd:#93c5fd; --malla-disponible-fg:#1e3a8a; --malla-disponible-sol:#fff;
+  --malla-bloqueado:#94a3b8; --malla-bloqueado-bg:#f1f5f9; --malla-bloqueado-bd:#cbd5e1; --malla-bloqueado-fg:#64748b; --malla-bloqueado-sol:#101828;
+  /* ---- Lo que pinta la malla --------------------------------------------------------------
+     Las lineas de prerrequisito, los recuadros de ramo anual y los bordes de la ficha salen de
+     aqui. Estaban escritos a mano DENTRO del JS, y por eso el tema oscuro los dejaba invisibles:
+     las lineas fijas en #cbd5e1 desaparecen sobre un fondo #1e1e1e. Un color de la malla no se
+     escribe nunca en el JS; se escribe aqui, y aqui se repite en cada tema.
+     OJO: van con valor literal en cada tema a proposito. Poniendo --malla-linea:var(--line) se
+     resolveria en el ambito donde se DECLARA (el :root de general.css) y ahi --line vale el color
+     claro: el tema oscuro no lo cambiaria. Por eso cada tema----este incluido----trae el literal. */
+  --malla-linea:#cbd5e1;      /* linea suelta, sin nada elegido */
+  --malla-linea-req:#2563eb;  /* lo que el ramo elegido NECESITA */
+  --malla-linea-des:#ea580c;  /* lo que el ramo elegido DESBLOQUEA */
+  --malla-anual-bg:#eef2ff;   /* recuadro de un ramo anual, que ocupa dos semestres */
+  --malla-anual-bd:#6366f1;
+  --malla-anual-fg:#312e81;
+  --malla-ficha-bd:#dfe5ec;   /* borde de la ficha lateral y de las cajas suaves */
+  --malla-codigo-bg:#f1f5f9;  /* fondo de los bloques de codigo de los modales */
+}

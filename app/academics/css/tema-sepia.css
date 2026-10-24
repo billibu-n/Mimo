@@ -1,0 +1,59 @@
+/* ============================================================================
+   tema-sepia.css - Tema Sepia.
+
+   Papel calido, para leer comodo: fondo #f4ecd8, acento terroso #8a4b2a. Viene
+   del proyecto1 (web/base/temas/sepia.css), traducido al esquema de colores de
+   mimo (--fg/--bg/--sup/--ac). Solo COLORES: la forma vive en general.css.
+
+   El acento marron #8a4b2a sobre fondo claro es el de la lectura en papel; el
+   texto oscuro #3b3428 da contraste alto sin ser negro puro.
+   ============================================================================ */
+
+body.tema-sepia{
+  --fg:#3b3428; --muted:#6f6551; --line:#d9cdb0; --bg:#f4ecd8;
+  --ac:#8a4b2a; --ok:#4a6b3f; --warn:#b45309; --bad:#a32e2e; --q:#7c3aed;
+  --sup:#faf4e4; --sup2:#ece2c8; --sup3:#f4ecd8; --line2:#e3d9bf; --pista:#d9cdb0;
+  --muted2:#5a5040; --ac-txt:#faf4e4; --ac-txt-fuerte:#ffffff;
+
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --foco:0 0 0 2px #faf4e4, 0 0 0 4px #8a4b2a;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+
+  --info-bg:#efe6ce; --hoy-bg:#efe6ce;
+  --pri-alta-bg:#f3dcdc; --pri-media-bg:#efe6c8; --pri-baja-bg:#e0e7ff;
+  --sim-bg:#efe7d4; --pri-baja-fg:#3730a3;
+
+  --ac-fuerte:#6f3c20;
+  --pill-ok-bg:#e6eddd; --pill-ok-fg:#354a2c;
+  --pill-warn-bg:#f2e8cb; --pill-warn-fg:#7a4c10;
+  --pill-bad-bg:#f3dddd; --pill-bad-fg:#8a2727;
+
+  --malla-aprobado:#4a6b3f; --malla-aprobado-bg:#dcfce7; --malla-aprobado-bd:#86efac; --malla-aprobado-fg:#14532d; --malla-aprobado-sol:#fff;
+  --malla-curso:#b45309; --malla-curso-bg:#fefce8; --malla-curso-bd:#fde047; --malla-curso-fg:#713f12; --malla-curso-sol:#101828;
+  --malla-disponible:#2563eb; --malla-disponible-bg:#dbeafe; --malla-disponible-bd:#93c5fd; --malla-disponible-fg:#1e3a8a; --malla-disponible-sol:#fff;
+  --malla-bloqueado:#94a3b8; --malla-bloqueado-bg:#f1f5f9; --malla-bloqueado-bd:#cbd5e1; --malla-bloqueado-fg:#64748b; --malla-bloqueado-sol:#101828;
+
+  --malla-linea:#d9cdb0;
+  --malla-linea-req:#8a4b2a;
+  --malla-linea-des:#a8632f;
+  --malla-anual-bg:#efe6ce;
+  --malla-anual-bd:#8a4b2a;
+  --malla-anual-fg:#5a3a20;
+  --malla-ficha-bd:#d9cdb0;
+  --malla-codigo-bg:#f4ecd8;
+}
+body.tema-sepia .celda-otros{background:var(--sup3)}
+body.tema-sepia .tab.on{background:var(--ac-fuerte);color:#fff;border-color:var(--ac-fuerte)}
+body.tema-sepia input,
+body.tema-sepia select,
+body.tema-sepia textarea{color:var(--fg)}
+body.tema-sepia .nodo.compacto{background:var(--sup2)}
+body.tema-sepia .nodo .mas.quitar:hover{color:#f4ecd8}
+body.tema-sepia .btn.peligro{border-color:#7f1d1d}
+body.tema-sepia .quitar{background:#f3dddd}
+body.tema-sepia .atajos button,
+body.tema-sepia .muestra-color{border-color:var(--line)}
+
+body.tema-sepia .g1 .b1,
+body.tema-sepia .g1 .lateral{background:#faf4e4}
+body.tema-sepia .g1 .lateral{border-right-color:var(--line)}

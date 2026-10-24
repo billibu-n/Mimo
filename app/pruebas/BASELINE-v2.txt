@@ -1,6 +1,6 @@
-# Línea base M11/M12 — app real + maqueta + banco
-# fecha: 2026-10-24T12:41:31-03:00
-# base: 06baeb3
+# Línea base L2 — viejo funcional + panel/pie, shell universal y gates
+# fecha: 2026-10-24T13:04:49-03:00
+# base: 2f4fa7a
 # comando: python3 app/pruebas/correr-gates.py
 
 
@@ -30,7 +30,7 @@ TABLERO: /home/billibu/sede/trabajo/trabajos/T-48-mimo-m11-m12-shell/borradores/
 [OK] 411: el panel se abre como cajón
 [OK] 411: el cajón se cierra
 RESUMEN gate-ui: 0 choque(s).
-TABLERO: /tmp/mimo-gate-ui-sguv0fen/maqueta/index.html
+TABLERO: /tmp/mimo-gate-ui-0iquh_cn/maqueta/index.html
 [OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
 [OK] 1440: Ajustes es la última pestaña — ['Ajustes']
 [OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
@@ -78,6 +78,23 @@ DEMO: buena 0, rota 1. El gate discrimina.
 [OK] 411: sin desborde — 0px
 [OK] 411: consola limpia — []
 RESUMEN gate-shell: 0 choque(s).
+
+=== gate-academics.py ===
+[OK] viejo: 7 navs — 7
+[OK] viejo: 7 secciones — 7
+[OK] panel: 4 pestañas
+[OK] pie: visible
+[OK] panel: abierto por defecto a 1440
+[OK] consola limpia — []
+[OK] panel: navega a Malla
+[OK] panel: se cierra
+[OK] panel: se vuelve a abrir
+[OK] 411: sin desborde — 0px
+[OK] 411: el panel se abre
+[OK] 411: el panel es visible
+[OK] 411: el panel se cierra
+[OK] 411: consola limpia — []
+RESUMEN gate-academics: 0 choque(s).
 
 === gate-diseno.py ===
 [OK] tokens: 5 tamaños — 5
@@ -179,6 +196,7 @@ DEMO: buena 0, huérfano detectado. El gate discrimina.
 === RESUMEN GATES ===
 gate-ui.py: VERDE (0)
 gate-shell.py: VERDE (0)
+gate-academics.py: VERDE (0)
 gate-diseno.py: VERDE (0)
 gate-datos.py: VERDE (0)
 gate-bloques.py: VERDE (0)

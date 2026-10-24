@@ -1,0 +1,113 @@
+<!-- ==========================================================================
+     tiempo.html - la pestana Tiempo, entera.
+
+     Es una PIEZA: no se abre sola en el navegador. La mete en su sitio el programa
+     construir/index.py, que arma el index.html juntando esta pieza con las demas.
+     Para editar esta pestana, edita este archivo y vuelve a armar.
+     ========================================================================== -->
+
+<!-- ============ TIEMPO ============ -->
+  <section class="seccion" data-seccion="tiempo" id="p-tiempo">
+    <div class="tiempo">
+      <div class="crono">
+        <div class="crono-cab">
+          <button class="mini modo on" data-modo="cronometro">Cronómetro</button>
+          <button class="mini modo" data-modo="temporizador">Temporizador</button>
+          <button class="mini modo" data-modo="pomodoro">Pomodoro</button>
+          <button class="mini modo" data-modo="recordatorios">Recordatorios</button>
+        </div>
+        <div class="reloj" id="crono-reloj">00:00:00</div>
+        <div id="crono-extra"></div>
+
+        <!-- Configuracion del pomodoro: visible solo en ese modo. -->
+        <div class="pomo-config" id="pomo-config" hidden>
+          <div class="pomo-fila">
+            <div class="campo"><span>Trabajo (min)</span>
+              <input type="number" id="pomo-trabajo" min="1" max="120" step="1" value="25"></div>
+            <div class="campo"><span>Descanso corto (min)</span>
+              <input type="number" id="pomo-corto" min="1" max="60" step="1" value="5"></div>
+          </div>
+          <div class="pomo-fila">
+            <div class="campo"><span>Descanso largo (min)</span>
+              <input type="number" id="pomo-largo" min="1" max="120" step="1" value="15"></div>
+            <div class="campo"><span>Largo cada N trabajos</span>
+              <input type="number" id="pomo-cada" min="1" max="12" step="1" value="4"></div>
+          </div>
+          <p class="ayuda">Al terminar cada bloque suena la alarma y sigue el siguiente solo: trabajo →
+            descanso corto → trabajo…, y cada N trabajos, un descanso largo.</p>
+        </div>
+
+        <div class="campo"><span>Ramo al que se carga</span><select id="crono-ramo"></select></div>
+        <div class="campo"><span>Semana en la que se registra</span><select id="crono-semana"></select></div>
+        <div class="campo"><span>Día en el que se registra</span><select id="crono-dia"></select></div>
+        <div class="controles">
+          <button class="btn-control btn-play" id="crono-play">
+            <svg class="ic"><use href="#ic-play"></use></svg>Iniciar</button>
+          <button class="btn-control btn-pausa" id="crono-pausa" disabled>
+            <svg class="ic"><use href="#ic-pausa"></use></svg>Pausa</button>
+          <button class="btn-control btn-parar" id="crono-parar" disabled>
+            <svg class="ic"><use href="#ic-stop"></use></svg>Parar</button>
+        </div>
+        <div class="aviso-registro" id="crono-aviso" hidden>
+          <div class="pregunta" id="crono-aviso-texto"></div>
+          <div class="acciones">
+            <button class="btn-si" id="crono-aviso-si">Registrar</button>
+            <button class="btn-no" id="crono-aviso-no">Descartar</button>
+          </div>
+        </div>
+        <p class="ayuda">El cronómetro sigue corriendo aunque cambies de pestaña. Si cierras el archivo,
+           al volver a abrirlo el tiempo sigue donde iba.</p>
+
+        <!-- ===== Recordatorios (cuarto modo) ===== -->
+        <div class="recordatorios" id="rec-panel" hidden>
+          <div class="campo"><span>Tipo</span>
+            <div class="rec-tipo">
+              <button class="mini rec-tipo-btn on" data-tipo="una" id="rec-tipo-una">Una vez</button>
+              <button class="mini rec-tipo-btn" data-tipo="prog" id="rec-tipo-prog">Programado</button>
+            </div></div>
+
+          <div class="rec-fila">
+            <div class="campo" id="rec-campo-fecha"><span>Día (si es una vez)</span>
+              <input type="date" id="rec-fecha"></div>
+            <div class="campo"><span>Horas (separadas por coma)</span>
+              <input type="text" id="rec-horas" placeholder="ej. 22:00 o 10:00,22:00"></div>
+          </div>
+
+          <div class="campo" id="rec-campo-dias"><span>Días (programado)</span>
+            <div class="rec-dias" id="rec-dias">
+              <button class="mini rec-dia" data-dia="0">L</button>
+              <button class="mini rec-dia" data-dia="1">M</button>
+              <button class="mini rec-dia" data-dia="2">X</button>
+              <button class="mini rec-dia" data-dia="3">J</button>
+              <button class="mini rec-dia" data-dia="4">V</button>
+              <button class="mini rec-dia" data-dia="5">S</button>
+              <button class="mini rec-dia" data-dia="6">D</button>
+            </div></div>
+
+          <div class="campo"><span>Qué recuerdo</span>
+            <input type="text" id="rec-texto" placeholder="ej. tomar el remedio"></div>
+
+          <div class="campo"><span data-i18n="tiempo.sonido">Sonido del aviso</span>
+            <div class="rec-sonido">
+              <button class="mini rec-son-btn on" data-sonido="propia" data-i18n="tiempo.son.propia">Alarma de mimo</button>
+              <button class="mini rec-son-btn" data-sonido="sistema" data-i18n="tiempo.son.pitido">Pitido</button>
+              <button class="mini rec-son-btn" data-sonido="archivo" data-i18n="tiempo.son.archivo">Timbre propio</button>
+            </div></div>
+
+          <!-- FUENTE UNICA del timbre propio: el <input type=file> no se puede mover a otra
+               seccion (el navegador exige que este en el DOM de origen), asi que vive aqui,
+               oculto. El boton de doble corchea del panel de ajustes lo abre; la etiqueta
+               #rec-archivo-nom del panel muestra el nombre elegido. -->
+          <input type="file" id="rec-archivo" accept="audio/*" style="display:none">
+
+          <button class="btn rec-agregar" id="rec-agregar">+ Agregar recordatorio</button>
+          <div class="rec-lista" id="rec-lista"></div>
+        </div>
+        <!-- ===== /Recordatorios ===== -->
+      </div>
+      <div class="sesiones">
+        <h3>Sesiones por día</h3>
+        <div id="crono-sesiones"></div>
+      </div>
+    </div>
+  </section>

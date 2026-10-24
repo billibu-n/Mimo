@@ -1,0 +1,49 @@
+/* ============================================================================
+   tema-negro.css - Tema Negro.
+
+   Paleta de GNOME Adwaita oscuro: fondo de ventana #242424, vista #1e1e1e, acento azul #3584e4.
+
+   Solo COLORES. La estructura y la forma estan en general.css; este archivo las viste.
+   ============================================================================ */
+
+body.tema-negro{
+  /* Paleta de GNOME Adwaita oscuro: fondo de ventana #242424, vista #1e1e1e, acento azul #3584e4. */
+  --fg:#ffffff; --muted:#adaba7; --line:#4d4d4d; --bg:#1e1e1e;
+  --sup:#2e2e2e; --sup2:#383838; --sup3:#242424; --line2:#3d3d3d; --pista:#3d3d3d;
+
+  /* ---- C3/C1/C2: radio, ritmo y foco, con el color de ESTE tema ---------------------------
+     Van aqui y no en :root a proposito: el anillo de foco se dibuja con el fondo de este
+     tema, y heredarlo del :root lo dejaria con el color del tema claro. */
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --foco:0 0 0 2px #2e2e2e, 0 0 0 4px #3584e4;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+  --muted2:#c0bfbc; --ac-txt:#ffffff; --ac-txt-fuerte:#ffffff;
+  --info-bg:#1c2a3a; --hoy-bg:#1c2a3a;
+  --pill-ok-bg:#0e2e1e; --pill-ok-fg:#8ff0a4;
+  --pill-warn-bg:#3a2c0f; --pill-warn-fg:#f6d32d;
+  --pill-bad-bg:#3a1418; --pill-bad-fg:#ff8fa3;
+  --ac:#3584e4; --ok:#8ff0a4; --warn:#f6d32d; --bad:#ff8fa3; --q:#dc8add;
+  --pri-alta-bg:#3a1418; --pri-media-bg:#3a2c0f; --pri-baja-bg:#1e2350;
+  --sim-bg:#2a2438; --pri-baja-fg:#a5b4fc; --ac-fuerte:#1c5aa8;
+  --malla-linea:#5c5c5c;
+  --malla-linea-req:#62a0ea;
+  --malla-linea-des:#ffa348;
+  --malla-anual-bg:#26243d;
+  --malla-anual-bd:#8b7cf0;
+  --malla-anual-fg:#d6d0ff;
+  --malla-ficha-bd:#4d4d4d;
+  --malla-codigo-bg:#383838;
+}
+body.tema-negro .celda-otros{background:var(--sup3)}
+body.tema-negro header{background:#303030}
+body.tema-negro .flotante{background:#383838;border-color:#4d4d4d}
+body.tema-negro .tab.on{background:var(--ac-fuerte);color:#fff;border-color:var(--ac-fuerte)}
+body.tema-negro input,
+body.tema-negro select,
+body.tema-negro textarea{color:var(--fg)}
+body.tema-negro .nodo.compacto{background:var(--sup2)}
+body.tema-negro .nodo .mas.quitar:hover{color:#1e1e1e}
+body.tema-negro .btn.peligro{border-color:#5b2529}
+body.tema-negro .quitar{background:#3a1418}
+body.tema-negro .atajos button,
+body.tema-negro .muestra-color{border-color:var(--line)}

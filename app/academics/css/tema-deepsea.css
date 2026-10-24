@@ -1,0 +1,59 @@
+/* ============================================================================
+   tema-deepsea.css - Tema DeepSea.
+
+   Mar profundo: azules muy oscuros con un acento cian. Es el mas frio de los cuatro
+   y el de mayor contraste entre el fondo y las tarjetas, para pantallas con mucha luz.
+
+   Solo COLORES. La estructura y la forma estan en general.css; este archivo las viste.
+
+   Para anadir un tema nuevo: copia este archivo, cambia la paleta, y sumalo a la lista
+   de TEMAS en js/ajustes/02-avanzados.js. No hay que tocar nada mas.
+   ============================================================================ */
+
+body.tema-deepsea{
+  --fg:#d6e4f0;
+  --muted:#8ba3ba;
+  --line:#1e3a52;
+  --bg:#071a2b;
+  --sup:#0f2a40;
+
+  /* ---- C3/C1/C2: radio, ritmo y foco, con el color de ESTE tema ---------------------------
+     Van aqui y no en :root a proposito: el anillo de foco se dibuja con el fondo de este
+     tema, y heredarlo del :root lo dejaria con el color del tema claro. */
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --foco:0 0 0 2px #0f2a40, 0 0 0 4px #22d3ee;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+  --sup2:#16384f;
+  --sup3:#0b2135;
+  --line2:#17334a;
+  --pista:#23455c;
+  --muted2:#a8c0d4;
+  --ac-txt:#04121e; --ac-txt-fuerte:#ffffff;
+  --info-bg:#103650;
+  --hoy-bg:#103650;
+  --pill-ok-bg:#0b3028;
+  --pill-ok-fg:#6ee7c8;
+  --pill-warn-bg:#33290f;
+  --pill-warn-fg:#fcd34d;
+  --pill-bad-bg:#3a1a22;
+  --pill-bad-fg:#fca5a5;
+  --ac:#22d3ee;
+  --ok:#34d399;
+  --warn:#fbbf24;
+  --bad:#f87171;
+  --q:#a78bfa;
+  --pri-alta-bg:#3a1a22;
+  --pri-media-bg:#33290f;
+  --pri-baja-bg:#123a52;
+  --sim-bg:#1b2f47;
+  --pri-baja-fg:#7dd3fc;
+  --ac-fuerte:#0e7490;
+  --malla-linea:#2a4a63;
+  --malla-linea-req:#38bdf8;
+  --malla-linea-des:#fb923c;
+  --malla-anual-bg:#14324a;
+  --malla-anual-bd:#2dd4bf;
+  --malla-anual-fg:#ccfbf1;
+  --malla-ficha-bd:#1e3a52;
+  --malla-codigo-bg:#16384f;
+}

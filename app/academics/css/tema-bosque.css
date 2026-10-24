@@ -1,0 +1,61 @@
+/* ============================================================================
+   tema-bosque.css - Tema Bosque.
+
+   Verde sobrio, fondo claro verdoso. Para quien quiere algo mas tranquilo: la
+   paleta del acento parte del verde #1f7a4d sobre un fondo blanco verdoso
+   #eef4ee (los mismos colores del ejemplo acero/ del proyecto, que ya venia
+   con este tema aprobado).
+
+   Solo COLORES. La estructura y la forma estan en general.css; este archivo las viste.
+   ============================================================================ */
+
+body.tema-bosque{
+  --fg:#14201a; --muted:#55655c; --line:#cfdcd2; --bg:#eef4ee;
+  --ac:#1f7a4d; --ok:#16a34a; --warn:#b45309; --bad:#b91c1c; --q:#7c3aed;
+  --sup:#ffffff; --sup2:#dfeadf; --sup3:#eef4ee; --line2:#e3ece4; --pista:#d7e6d8;
+  --muted2:#3f5146; --ac-txt:#ffffff; --ac-txt-fuerte:#ffffff;
+
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --foco:0 0 0 2px #ffffff, 0 0 0 4px #1f7a4d;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+
+  --info-bg:#e3f2e9; --hoy-bg:#e3f2e9;
+  --pri-alta-bg:#fee2e2; --pri-media-bg:#fef3c7; --pri-baja-bg:#e0e7ff;
+  --sim-bg:#e9f5ed; --pri-baja-fg:#3730a3;
+
+  --ac-fuerte:#166b42;
+  --pill-ok-bg:#e3f6ea; --pill-ok-fg:#14532d;
+  --pill-warn-bg:#fffbeb; --pill-warn-fg:#92400e;
+  --pill-bad-bg:#fef2f2; --pill-bad-fg:#991b1b;
+
+  --malla-aprobado:#1f7a4d; --malla-aprobado-bg:#dcfce7; --malla-aprobado-bd:#86efac; --malla-aprobado-fg:#14532d; --malla-aprobado-sol:#fff;
+  --malla-curso:#b45309; --malla-curso-bg:#fefce8; --malla-curso-bd:#fde047; --malla-curso-fg:#713f12; --malla-curso-sol:#101828;
+  --malla-disponible:#2563eb; --malla-disponible-bg:#dbeafe; --malla-disponible-bd:#93c5fd; --malla-disponible-fg:#1e3a8a; --malla-disponible-sol:#fff;
+  --malla-bloqueado:#94a3b8; --malla-bloqueado-bg:#f1f5f9; --malla-bloqueado-bd:#cbd5e1; --malla-bloqueado-fg:#64748b; --malla-bloqueado-sol:#101828;
+
+  --malla-linea:#cfdcd2;
+  --malla-linea-req:#1f7a4d;
+  --malla-linea-des:#ea580c;
+  --malla-anual-bg:#e3f2e9;
+  --malla-anual-bd:#1f7a4d;
+  --malla-anual-fg:#14532d;
+  --malla-ficha-bd:#cfdcd2;
+  --malla-codigo-bg:#eef4ee;
+}
+body.tema-bosque .celda-otros{background:var(--sup3)}
+body.tema-bosque .tab.on{background:var(--ac-fuerte);color:#fff;border-color:var(--ac-fuerte)}
+body.tema-bosque input,
+body.tema-bosque select,
+body.tema-bosque textarea{color:var(--fg)}
+body.tema-bosque .nodo.compacto{background:var(--sup2)}
+body.tema-bosque .nodo .mas.quitar:hover{color:#eef4ee}
+body.tema-bosque .btn.peligro{border-color:#7f1d1d}
+body.tema-bosque .quitar{background:#fee2e2}
+body.tema-bosque .atajos button,
+body.tema-bosque .muestra-color{border-color:var(--line)}
+
+/* El marco G1 usa fondo blanco fijo en la barra y la cabecera; en bosque se
+   tiñen apenas de verde para no romper la estetica del tema. */
+body.tema-bosque .g1 .b1,
+body.tema-bosque .g1 .lateral{background:#ffffff}
+body.tema-bosque .g1 .lateral{border-right-color:var(--line)}

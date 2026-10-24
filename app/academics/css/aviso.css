@@ -1,0 +1,45 @@
+/* ============================================================================================
+   Ventana de aviso propia (js/comun/11-avisos.js).
+   ============================================================================================
+
+   Sustituye a los dialogos del navegador (confirm/alert/prompt), que en la aplicacion de
+   escritorio no se muestran y dejaban el borrado sin consultar. Reutiliza el .modal que ya
+   existia, asi que hereda el fondo oscurecido, las esquinas y el comportamiento.
+
+   Se anade poco: el ancho de la caja (mas estrecho, es solo un texto), los parrafos del mensaje
+   y la botonera. Los colores salen de los tokens del tema, como el resto.
+   ============================================================================================ */
+
+.aviso-caja { max-width: 460px; }
+
+.aviso-caja .aviso-texto {
+  margin: 8px 0 0;
+  color: var(--fg);
+  line-height: 1.5;
+  /* El mensaje puede traer un nombre largo (un ramo, un semestre): que parta, no que desborde. */
+  overflow-wrap: anywhere;
+}
+
+.aviso-caja .aviso-entrada {
+  width: 100%;
+  margin-top: 12px;
+  box-sizing: border-box;
+}
+
+.aviso-caja .aviso-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+/* El boton de una accion que borra: en el color de peligro, para que no se pulse por inercia. */
+.aviso-caja .btn.peligro {
+  background: var(--bad);
+  color: #fff;
+  border-color: var(--bad);
+}
+
+.aviso-caja .btn.peligro:hover {
+  filter: brightness(.94);
+}

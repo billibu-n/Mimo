@@ -1,0 +1,52 @@
+<!-- ==========================================================================
+     estudio.html - la pestana Estudio, entera.
+
+     Es una PIEZA: no se abre sola en el navegador. La mete en su sitio el programa
+     construir/index.py, que arma el index.html juntando esta pieza con las demas.
+     Para editar esta pestana, edita este archivo y vuelve a armar.
+     ========================================================================== -->
+
+<!-- ============ ESTUDIO ============ -->
+  <section class="seccion" data-seccion="estudio" id="p-estudio">
+    <div class="estado" id="es-kpis"></div>
+    <div id="es-dedicacion"></div>
+    <div class="tarjeta">
+      <h2>Tu meta de estudio</h2>
+      <div class="sub">La <b>meta base</b> son las horas que quieres estudiar en una semana normal.
+        Vale para todas. Y si una semana es distinta —dos pruebas, una entrega, vacaciones—, ponle
+        la suya en la columna <b>Meta</b> de la tabla de abajo: <b>esa manda sobre la base</b>, solo
+        para esa semana. Déjala en blanco para volver a la base.</div>
+      <div class="campo"><span>Meta base (horas por semana)</span>
+        <input type="number" id="es-meta" min="1" max="120" step="0.5"></div>
+      <div class="campo"><label class="llave" style="gap:8px">
+        <input type="checkbox" id="es-meta-max"> Mi meta = mi máximo histórico (se actualiza solo)</label>
+        <div class="pista">En vez de fijar un número, la meta pasa a ser la semana en la que
+        más estudiaste hasta ahora. Si un día superas ese récord, la meta sube sola.</div></div>
+      <div id="es-meta-max-info" class="ayuda" style="margin-top:4px"></div>
+    </div>
+    <div class="tarjeta">
+      <h2>Horas de estudio por semana</h2>
+      <div class="sub">Cada barra es una semana y cada tramo es un ramo, con las horas que le repartiste.
+        Solo se dibuja lo repartido entre ramos, así que ninguna barra queda de relleno. La línea verde
+        punteada es la meta que te pusiste.</div>
+      <div class="leyenda" id="es-grafico-leyenda"></div>
+      <div class="grafico" id="es-grafico"></div>
+    </div>
+    <div class="tarjeta">
+      <h2>Lo realizado contra lo objetivo</h2>
+      <div class="sub">Los puntos y la línea son las horas que efectivamente estudiaste cada semana; la
+        línea verde sólida es tu objetivo semanal.</div>
+      <div class="leyenda" id="es-puntos-leyenda"></div>
+      <div id="es-puntos"></div>
+    </div>
+    <div class="tarjeta">
+      <h2>Horas por ramo, semana a semana</h2>
+      <div class="sub">Escribe el tiempo en cada casilla (por ejemplo "2h 30m" o "45m") y el total se
+        arma solo. Las horas que registras aquí se suman en las barras y en el calendario.<br>
+        <b>¿Estudiaste otro rato del mismo ramo más adelante en la semana?</b> Escribe
+        <b>+30m</b> (con el signo <b>+</b> delante) y aprieta <b>Enter</b>: ese rato se
+        <b>suma</b> a lo que ya tenías, sin que tengas que calcular el total.
+        Si escribes sin el <b>+</b>, se reemplaza lo que había —así puedes corregir un error—.</div>
+      <div style="overflow-x:auto"><table class="minutos" id="es-tabla"></table></div>
+    </div>
+  </section>

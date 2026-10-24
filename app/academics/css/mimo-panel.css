@@ -1,0 +1,76 @@
+/* mimo-panel.css — panel derecho, footer y botón de panel sobre Mimo Academics 1.1.2.
+   No toca motores ni el CSS viejo: usa sus variables de tema. */
+
+.mimo-panel-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-left:10px;padding:0 12px;height:30px;
+  border:1px solid var(--line2);border-radius:var(--r-sm);
+  background:var(--sup2);color:var(--fg);font:inherit;font-size:.78rem;cursor:pointer;
+  transition:border-color .12s ease-out,background .12s ease-out;
+}
+.mimo-panel-btn:hover{border-color:var(--ac-fuerte);background:var(--sup)}
+.mimo-panel-btn .punto{width:7px;height:7px;border-radius:50%;background:var(--ac)}
+
+.mimo-panel{
+  position:fixed;top:var(--mimo-panel-top,58px);right:0;bottom:var(--mimo-pie-alto,42px);
+  width:320px;z-index:80;
+  display:flex;flex-direction:column;
+  background:var(--sup);border-left:1px solid var(--line);
+  box-shadow:-8px 0 24px rgb(0 0 0 / .08);
+  transform:translateX(100%);
+  transition:transform .16s cubic-bezier(.4,0,.2,1);
+}
+body.mimo-panel-abierto .mimo-panel{transform:translateX(0)}
+body.mimo-panel-abierto .marco.g1{padding-right:320px}
+body.mimo-panel-abierto .mimo-pie{right:320px}
+
+.mimo-panel__cab{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 12px 8px;border-bottom:1px solid var(--line2)}
+.mimo-panel__tit{font-weight:700;font-size:.82rem;letter-spacing:.02em}
+.mimo-panel__x{width:26px;height:26px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);color:var(--muted);font:inherit;cursor:pointer}
+.mimo-panel__x:hover{color:var(--fg);border-color:var(--line)}
+.mimo-panel__tabs{display:flex;gap:1px;padding:0 8px;border-bottom:1px solid var(--line2);overflow-x:auto}
+.mimo-panel__tab{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:inherit;font-size:.7rem;padding:8px 6px;white-space:nowrap;cursor:pointer}
+.mimo-panel__tab.on{color:var(--fg);border-bottom-color:var(--ac);font-weight:650}
+.mimo-panel__cuerpo{padding:12px;overflow:auto;flex:1;font-size:.8rem;line-height:1.45}
+.mimo-panel__cuerpo h2{font-size:.86rem;margin:0 0 4px}
+.mimo-panel__cuerpo h3{font-size:.78rem;margin:12px 0 4px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.mimo-panel__cuerpo p{margin:0 0 8px}
+.mp-muted{color:var(--muted);font-size:.75rem}
+.mp-card{background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-md);padding:8px 10px;margin-bottom:6px}
+.mp-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line2)}
+.mp-row:last-child{border-bottom:0}
+.mp-row b{font-size:.78rem;font-weight:650}
+.mp-row small{color:var(--muted);font-size:.7rem}
+.mp-nav{display:flex;align-items:center;gap:8px;width:100%;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);padding:6px 7px;font:inherit;font-size:.78rem;text-align:left;cursor:pointer}
+.mp-nav:hover{background:var(--sup2);border-color:var(--line2)}
+.mp-nav .ic{width:15px;height:15px;opacity:.8}
+.mp-nav .tag{margin-left:auto;font-size:.62rem;color:var(--muted);border:1px solid var(--line2);border-radius:999px;padding:1px 6px}
+.mp-kpi{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.mp-kpi div{background:var(--sup2);border:1px solid var(--line2);border-radius:var(--r-sm);padding:7px 8px}
+.mp-kpi b{display:block;font-size:1rem;line-height:1.1}
+.mp-kpi span{display:block;color:var(--muted);font-size:.66rem}
+
+.mimo-pie{
+  position:fixed;left:0;right:0;bottom:0;height:var(--mimo-pie-alto,42px);z-index:75;
+  display:flex;align-items:center;gap:8px;padding:0 12px;
+  background:var(--sup);border-top:1px solid var(--line);
+  color:var(--muted);font-size:.7rem;
+  transition:right .16s cubic-bezier(.4,0,.2,1);
+}
+.mimo-pie__btn{display:inline-flex;align-items:center;gap:5px;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--muted);font:inherit;font-size:.7rem;padding:4px 6px;cursor:pointer}
+.mimo-pie__btn:hover{background:var(--sup2);color:var(--fg)}
+.mimo-pie__centro{margin-left:auto;margin-right:auto;color:var(--muted2)}
+.mimo-pie__punto{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.mimo-velo{display:none;position:fixed;inset:0;background:rgb(0 0 0 / .28);z-index:70}
+
+
+@media (max-width:1255px){
+  body.mimo-panel-abierto .mimo-velo{display:block}
+  body.mimo-panel-abierto .marco.g1{padding-right:0}
+  body.mimo-panel-abierto .mimo-pie{right:0}
+  .mimo-panel{width:min(360px,92vw);box-shadow:-12px 0 40px rgb(0 0 0 / .25)}
+}
+@media (max-width:520px){
+  .mimo-panel{width:100%;top:0;bottom:0}
+  .mimo-panel-btn span{display:none}
+}

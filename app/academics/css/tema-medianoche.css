@@ -1,0 +1,50 @@
+/* ============================================================================
+   tema-medianoche.css - Tema Medianoche.
+
+   Fondos casi negros, superficies apenas mas claras y un acento azul claro, mas suave que el azul saturado del tema Negro.
+
+   Solo COLORES. La estructura y la forma estan en general.css; este archivo las viste.
+   ============================================================================ */
+
+body.tema-medianoche{
+  /* Medianoche: fondos casi negros, superficies apenas mas claras y un acento azul claro, mas
+     suave que el azul saturado del tema Negro. */
+  --fg:#e3e3e3; --muted:#b0b6bc; --line:#444746; --bg:#131314;
+  --sup:#1e1f20; --sup2:#282a2c; --sup3:#1b1c1d; --line2:#303336; --pista:#3c4043;
+
+  /* ---- C3/C1/C2: radio, ritmo y foco, con el color de ESTE tema ---------------------------
+     Van aqui y no en :root a proposito: el anillo de foco se dibuja con el fondo de este
+     tema, y heredarlo del :root lo dejaria con el color del tema claro. */
+  --r-sm:6px; --r-md:9px; --r-lg:14px;
+  --foco:0 0 0 2px #1e1f20, 0 0 0 4px #8ab4f8;
+  --t:.12s; --curva:cubic-bezier(.4,0,.2,1);
+  --muted2:#bdc1c6; --ac-txt:#202124; --ac-txt-fuerte:#ffffff;
+  --info-bg:#1f2b3d; --hoy-bg:#1f2b3d;
+  --pill-ok-bg:#0f2a1c; --pill-ok-fg:#81c995;
+  --pill-warn-bg:#3a2f14; --pill-warn-fg:#fdd663;
+  --pill-bad-bg:#3c1f22; --pill-bad-fg:#f28b82;
+  --ac:#8ab4f8; --ok:#81c995; --warn:#fdd663; --bad:#f28b82; --q:#c58af9;
+  --pri-alta-bg:#3c1f22; --pri-media-bg:#3a2f14; --pri-baja-bg:#1f2b3d;
+  --sim-bg:#262a3a; --pri-baja-fg:#a8c7fa; --ac-fuerte:#0b4fa8;
+  --malla-linea:#4a4d51;
+  --malla-linea-req:#8ab4f8;
+  --malla-linea-des:#fcad70;
+  --malla-anual-bg:#23253a;
+  --malla-anual-bd:#9a8cf5;
+  --malla-anual-fg:#d2ccff;
+  --malla-ficha-bd:#444746;
+  --malla-codigo-bg:#282a2c;
+}
+body.tema-medianoche .celda-otros{background:var(--sup3)}
+body.tema-medianoche header{background:#1e1f20}
+body.tema-medianoche .flotante{background:#282a2c;border-color:#444746}
+body.tema-medianoche .tab.on{background:var(--ac-fuerte);color:#fff;border-color:var(--ac-fuerte)}
+body.tema-medianoche input,
+body.tema-medianoche select,
+body.tema-medianoche textarea{color:var(--fg)}
+body.tema-medianoche .nodo.compacto{background:var(--sup2)}
+body.tema-medianoche .nodo .mas.quitar:hover{color:#131314}
+body.tema-medianoche .btn.peligro{border-color:#5c2b2f}
+body.tema-medianoche .quitar{background:#3c1f22}
+body.tema-medianoche .atajos button,
+body.tema-medianoche .muestra-color{border-color:var(--line)}
