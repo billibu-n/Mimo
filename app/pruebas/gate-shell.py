@@ -229,6 +229,13 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator("#split-cuerpo").inner_text().strip() != "",
                    "split: la sección elegida se pinta", fallas)
+            page.locator("#split-seccion").select_option("tareas")
+            page.wait_for_timeout(100)
+            exigir(page.locator("#split-cuerpo [data-split-tarea]").count() >= 1,
+                   "split: la sección secundaria es interactiva", fallas)
+            page.locator("#split-cuerpo [data-split-tarea]").first.click()
+            page.wait_for_timeout(100)
+            exigir(page.locator("#p-tareas").is_visible(), "split: abrir una tarea cambia la ventana principal", fallas)
             page.locator("#btn-cerrar-split").click()
             page.wait_for_timeout(60)
             exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)

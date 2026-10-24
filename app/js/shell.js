@@ -2316,21 +2316,28 @@
     var sec = estado.splitSeccion, html = "";
     if (sec === "calendario") {
       var evs = (estado.eventos || []).slice().sort(function (a, b) { return (a.fecha + a.hora) < (b.fecha + b.hora) ? -1 : 1; });
-      html = evs.length ? evs.slice(0, 8).map(function (e) { return '<div class="mp-row"><span>' + esc(e.titulo) + "</span><small>" + esc(e.fecha) + "</small></div>"; }).join("") : '<p class="muted">Sin eventos.</p>';
+      html = evs.length ? evs.slice(0, 8).map(function (e) {
+        return '<button class="split-item" type="button" data-split-evento="' + esc(e.id) + '"><span>' + esc(e.titulo) + "</span><small>" + esc(e.fecha) + "</small></button>";
+      }).join("") : '<p class="muted">Sin eventos.</p>';
     } else if (sec === "tareas") {
-      html = estado.tareas.length ? estado.tareas.slice(0, 10).map(function (t) { return '<div class="mp-row"><span>' + (t.tipo === "proyecto" ? "▸ " : "") + esc(t.titulo) + "</span><small>" + (t.hecha ? "hecha" : "abierta") + "</small></div>"; }).join("") : '<p class="muted">Sin tareas.</p>';
+      html = estado.tareas.length ? estado.tareas.slice(0, 10).map(function (t) {
+        return '<div class="split-item split-item--tarea"><button class="split-check' + (t.hecha ? " on" : "") + '" type="button" data-split-check="' + esc(t.id) + '" aria-label="Marcar tarea">' + (t.hecha ? "✓" : "") + '</button>' +
+          '<button class="split-open" type="button" data-split-tarea="' + esc(t.id) + '"><span>' + (t.tipo === "proyecto" ? "▸ " : "") + esc(t.titulo) + "</span><small>" + (t.hecha ? "hecha" : "abierta") + "</small></button></div>";
+      }).join("") : '<p class="muted">Sin tareas.</p>';
     } else if (sec === "notas") {
-      html = estado.notas.length ? estado.notas.slice(0, 8).map(function (n) { return '<div class="mp-row"><span>' + esc(n.titulo) + "</span><small>" + esc((n.cuerpo || "").slice(0, 24)) + "</small></div>"; }).join("") : '<p class="muted">Sin notas.</p>';
+      html = estado.notas.length ? estado.notas.slice(0, 8).map(function (n) {
+        return '<button class="split-item" type="button" data-split-nota="' + esc(n.id) + '"><span>' + esc(n.titulo) + "</span><small>" + esc((n.cuerpo || "").slice(0, 32) || "Vacía") + "</small></button>";
+      }).join("") : '<p class="muted">Sin notas.</p>';
     } else if (sec === "malla") {
       html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
-        return '<div class="mp-row"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>" + estadoDeRamo(c) + "</small></div>";
+        return '<button class="split-item" type="button" data-split-ramo="' + esc(c.codigo) + '"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>" + estadoDeRamo(c) + "</small></button>";
       }).join("") : '<p class="muted">Sin ramos.</p>';
     } else if (sec === "calificaciones") {
       normalizarCalifs();
       html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
         var q = califDe(c.codigo);
-        return '<div class="mp-row"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>P " +
-          fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small></div>";
+        return '<button class="split-item" type="button" data-split-calif="' + esc(c.codigo) + '"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>P " +
+          fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small></button>";
       }).join("") : '<p class="muted">Sin ramos.</p>';
     } else if (sec === "estudio") {
       normalizarEstudio();
@@ -2343,16 +2350,28 @@
       html = (estado.sesiones || []).length ? '<p class="muted">' + fmtHoras(min) + ' en ' + estado.sesiones.length +
         ' sesiones.</p>' + Object.keys(tot).slice(0, 8).map(function (k) {
           var c = k !== "_" ? ramoPorCodigo(k) : null;
-          return '<div class="mp-row"><span>' + esc(c ? c.codigo : "Sin ramo") + '</span><small>' + fmtHoras(tot[k]) + "</small></div>";
+          return '<div class="split-item"><span>' + esc(c ? c.codigo : "Sin ramo") + '</span><small>' + fmtHoras(tot[k]) + "</small></div>";
         }).join("") : '<p class="muted">Sin sesiones.</p>';
     } else if (sec === "tiempo") {
-      html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>";
+      html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>" +
+        '<button class="btn btn--chico" type="button" data-split-sec="tiempo">Ir a Tiempo</button>';
     } else if (sec === "ajustes") {
-      html = '<p class="muted">Ajustes está en la ventana principal.</p>';
+      html = '<p class="muted">Atajos de tema en la ventana secundaria.</p><div class="split-temas">' +
+        TEMAS.slice(0, 5).map(function (t) { return '<button type="button" data-split-tema="' + t[0] + '" class="btn btn--chico">' + esc(t[1]) + "</button>"; }).join("") + "</div>";
     } else {
-      html = '<p class="muted">' + esc(nombre(sec)) + " se abre en la ventana principal; aquí va su resumen cuando el motor esté.</p>";
+      html = '<p class="muted">' + esc(nombre(sec)) + " se abre en la ventana principal.</p>";
     }
     cuerpo.innerHTML = html;
+    $$("#split-cuerpo [data-split-evento]").forEach(function (b) { b.addEventListener("click", function () { abrirEventoDetalle(b.getAttribute("data-split-evento")); }); });
+    $$("#split-cuerpo [data-split-tarea]").forEach(function (b) { b.addEventListener("click", function () { abrirTarea(b.getAttribute("data-split-tarea")); }); });
+    $$("#split-cuerpo [data-split-check]").forEach(function (b) {
+      b.addEventListener("click", function (e) { e.stopPropagation(); alternarTarea(b.getAttribute("data-split-check")); pintarSplit(); });
+    });
+    $$("#split-cuerpo [data-split-nota]").forEach(function (b) { b.addEventListener("click", function () { abrirNota(b.getAttribute("data-split-nota")); }); });
+    $$("#split-cuerpo [data-split-ramo]").forEach(function (b) { b.addEventListener("click", function () { estado.ramoSel = b.getAttribute("data-split-ramo"); estado.panel.malla = "detalle"; guardar(); ir("malla"); }); });
+    $$("#split-cuerpo [data-split-calif]").forEach(function (b) { b.addEventListener("click", function () { califSel = b.getAttribute("data-split-calif"); estado.califSel = califSel; ir("calificaciones"); }); });
+    $$("#split-cuerpo [data-split-sec]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-split-sec")); }); });
+    $$("#split-cuerpo [data-split-tema]").forEach(function (b) { b.addEventListener("click", function () { aplicarTema(b.getAttribute("data-split-tema")); pintarSplit(); }); });
   }
   function alternarSplit() {
     if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
