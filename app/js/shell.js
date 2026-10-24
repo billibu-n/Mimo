@@ -41,10 +41,10 @@
 
   function porDefecto() {
     return {
-      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [],
+      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true },
-      notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
+      notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
   function leer() {
@@ -60,6 +60,7 @@
           if (!Array.isArray(d.tareas)) d.tareas = [];
           if (!Array.isArray(d.notas)) d.notas = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
+          if (!d.califs || typeof d.califs !== "object") d.califs = {};
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
@@ -355,6 +356,7 @@
     });
     pintarTabs();
     if (id === "malla") pintarMalla();
+    if (id === "calificaciones") pintarCalificaciones();
     pintarPanel();
     if (window.innerWidth <= 1255) cerrarPanel();
   }
@@ -841,9 +843,10 @@
       return (x.requisitos || []).indexOf(cod) !== -1 ||
         (x.requisitos_o || []).some(function (g) { return g.indexOf(cod) !== -1; });
     }).length;
-    if (!window.confirm("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"?" +
+    if (!window.confirm("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"? Se borran también sus calificaciones." +
       (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""))) return;
     estado.cursos = estado.cursos.filter(function (x) { return x.codigo !== cod; });
+    if (estado.califs) delete estado.califs[cod];
     estado.cursos.forEach(function (x) {
       x.requisitos = (x.requisitos || []).filter(function (r) { return r !== cod; });
       x.requisitos_o = (x.requisitos_o || []).map(function (g) {
@@ -906,6 +909,336 @@
     a.href = URL.createObjectURL(blob); a.download = "mimo-malla.json"; a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
     aviso("Malla exportada.");
+  }
+
+  /* ---- U4b: Calificaciones, notas por categoría, examen y eximición ---- */
+  var califSel = null;
+
+  function califPorDefecto() {
+    return {
+      categorias: [{ nombre: "General", peso: 100 }],
+      componentes: [],
+      examen: { activo: true, peso: 40, nota: null, reemplaza: null },
+      eximicion: { activa: false, modo: "todas", condiciones: [] },
+      notaMin: 4, meta: 5
+    };
+  }
+  function notaNum(v) {
+    if (v === "" || v === null || v === undefined) return null;
+    var n = Number(String(v).replace(",", "."));
+    if (!isFinite(n)) return null;
+    while (n >= 10) n = n / 10;
+    if (n > 7) n = 7;
+    if (n < 1) n = 1;
+    return Math.round(n * 10) / 10;
+  }
+  function fmtNota(v) { return v === null || v === undefined ? "—" : (Math.round(v * 10) / 10).toFixed(1); }
+  function fmtNota2(v) { return v === null || v === undefined ? "—" : (Math.round(v * 100) / 100).toFixed(2); }
+  function normalizarCalifs() {
+    normalizarCursos();
+    if (!estado.califs || typeof estado.califs !== "object") estado.califs = {};
+    var vigentes = {};
+    estado.cursos.forEach(function (cur) {
+      var q = estado.califs[cur.codigo];
+      if (!q || typeof q !== "object") q = califPorDefecto();
+      if (!Array.isArray(q.categorias) || !q.categorias.length) q.categorias = [{ nombre: "General", peso: 100 }];
+      q.categorias = q.categorias.map(function (cat, i) {
+        return { nombre: String(cat.nombre || "Categoría " + (i + 1)), peso: Math.max(0, Number(cat.peso) || 0) };
+      });
+      var vistosCat = {};
+      q.categorias.forEach(function (cat) {
+        var base = cat.nombre, n = 1;
+        while (vistosCat[cat.nombre]) { n++; cat.nombre = base + " " + n; }
+        vistosCat[cat.nombre] = 1;
+      });
+      q.componentes = (Array.isArray(q.componentes) ? q.componentes : []).map(function (x, i) {
+        return {
+          nombre: String(x.nombre || "Componente " + (i + 1)),
+          categoria: String(x.categoria || q.categorias[0].nombre),
+          nota: notaNum(x.nota), fecha: String(x.fecha || ""), peso: Math.max(0.1, Number(x.peso) || 1)
+        };
+      });
+      q.componentes.forEach(function (x) {
+        if (!q.categorias.some(function (c) { return c.nombre === x.categoria; })) x.categoria = q.categorias[0].nombre;
+      });
+      var ex = q.examen || {};
+      q.examen = {
+        activo: ex.activo !== false,
+        peso: Math.max(0, Math.min(100, Number(ex.peso))),
+        nota: notaNum(ex.nota),
+        reemplaza: null
+      };
+      if (isNaN(q.examen.peso)) q.examen.peso = 40;
+      var rep = parseInt(ex.reemplaza, 10);
+      if (!isNaN(rep) && rep >= 0 && rep < q.componentes.length) q.examen.reemplaza = rep;
+      var exi = q.eximicion || {};
+      q.eximicion = { activa: !!exi.activa, modo: exi.modo === "alguna" ? "alguna" : "todas", condiciones: [] };
+      (Array.isArray(exi.condiciones) ? exi.condiciones : []).forEach(function (c) {
+        var tipo = ["presentacion", "categoria", "componente"].indexOf(c.tipo) !== -1 ? c.tipo : "presentacion";
+        var op = [">=", ">", "<=", "<"].indexOf(c.op) !== -1 ? c.op : ">=";
+        q.eximicion.condiciones.push({ tipo: tipo, ref: String(c.ref || ""), op: op, valor: notaNum(c.valor) || 1 });
+      });
+      q.notaMin = notaNum(q.notaMin) || 4;
+      q.meta = notaNum(q.meta) || 5;
+      estado.califs[cur.codigo] = q; vigentes[cur.codigo] = 1;
+    });
+    Object.keys(estado.califs).forEach(function (cod) { if (!vigentes[cod]) delete estado.califs[cod]; });
+  }
+  function califDe(cod) {
+    if (!estado.califs || typeof estado.califs !== "object") estado.califs = {};
+    if (!estado.califs[cod]) estado.califs[cod] = califPorDefecto();
+    return estado.califs[cod];
+  }
+  function valorComp(c, i) {
+    if (!c.componentes[i]) return null;
+    var ex = c.examen;
+    if (ex && ex.reemplaza === i && ex.nota !== null && ex.nota !== undefined) return Number(ex.nota);
+    var n = c.componentes[i].nota;
+    return n === null || n === undefined ? null : Number(n);
+  }
+  function promedioCategoria(c, cat) {
+    var sp = 0, sn = 0;
+    c.componentes.forEach(function (x, i) {
+      if ((x.categoria || "General") !== cat.nombre) return;
+      var v = valorComp(c, i); if (v === null) return;
+      var p = Number(x.peso) || 1;
+      sp += p; sn += p * v;
+    });
+    return sp ? sn / sp : null;
+  }
+  function presentacionDe(c) {
+    var sp = 0, sn = 0;
+    c.categorias.forEach(function (cat) {
+      var p = promedioCategoria(c, cat); if (p === null) return;
+      var w = Number(cat.peso) || 0;
+      sp += w; sn += w * p;
+    });
+    return sp ? sn / sp : null;
+  }
+  function condicionValor(c, cond) {
+    if (cond.tipo === "presentacion") return presentacionDe(c);
+    if (cond.tipo === "categoria") {
+      var cat = c.categorias.filter(function (x) { return x.nombre === cond.ref; })[0];
+      return cat ? promedioCategoria(c, cat) : null;
+    }
+    var i = c.componentes.map(function (x) { return x.nombre; }).indexOf(cond.ref);
+    return i >= 0 ? valorComp(c, i) : null;
+  }
+  function estadoEximicion(c) {
+    var ex = c.eximicion;
+    var detalle = (ex.condiciones || []).map(function (cond) {
+      var v = condicionValor(c, cond);
+      var ok = false;
+      if (v !== null) {
+        var x = Number(cond.valor);
+        ok = cond.op === ">=" ? v >= x : cond.op === "<=" ? v <= x : cond.op === ">" ? v > x : v < x;
+      }
+      return { cond: cond, actual: v, ok: ok };
+    });
+    var cumple = ex.activa && detalle.length > 0 &&
+      (ex.modo === "alguna" ? detalle.some(function (d) { return d.ok; }) : detalle.every(function (d) { return d.ok; }));
+    return { activa: ex.activa, modo: ex.modo, detalle: detalle, cumple: cumple,
+      sinDatos: detalle.some(function (d) { return d.actual === null; }) };
+  }
+  function notaFinalDe(c) {
+    var P = presentacionDe(c); if (P === null) return null;
+    if (estadoEximicion(c).cumple) return P;
+    if (!c.examen.activo) return P;
+    if (c.examen.nota === null || c.examen.nota === undefined) return null;
+    return (1 - c.examen.peso / 100) * P + (c.examen.peso / 100) * c.examen.nota;
+  }
+  function estadoCalifDe(c) {
+    var P = presentacionDe(c);
+    if (P === null) return { texto: "faltan datos", clase: "" };
+    if (estadoEximicion(c).cumple) return { texto: "eximido", clase: "pill-ok" };
+    if (c.examen.activo && (c.examen.nota === null || c.examen.nota === undefined)) return { texto: "a examen", clase: "pill-warn" };
+    var nf = notaFinalDe(c);
+    if (nf === null) return { texto: "faltan datos", clase: "" };
+    return nf >= c.notaMin ? { texto: "aprobado", clase: "pill-ok" } : { texto: "reprobado", clase: "pill-bad" };
+  }
+  function necesarioDe(c, objetivo) {
+    if (!c.examen.activo || c.examen.peso <= 0) return null;
+    var P = presentacionDe(c); if (P === null) return null;
+    var f0 = (1 - c.examen.peso / 100) * P;
+    var f1 = f0 + (c.examen.peso / 100);
+    if (Math.abs(f1 - f0) < 1e-9) return null;
+    return (objetivo - f0) / (f1 - f0);
+  }
+  function htmlDetalleCalif(cur, q) {
+    if (!cur) return '<p class="muted">Selecciona un ramo.</p>';
+    var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q), ex = estadoEximicion(q);
+    var necMin = necesarioDe(q, q.notaMin), necMeta = necesarioDe(q, q.meta);
+    var filasCat = q.categorias.map(function (cat, i) {
+      var p = promedioCategoria(q, cat);
+      return '<tr><td><input class="entrada calif-entrada" type="text" data-cat-nombre="' + i + '" value="' + esc(cat.nombre) + '"></td>' +
+        '<td class="num"><input class="entrada calif-entrada calif-num" type="number" min="0" max="100" step="5" data-cat-peso="' + i + '" value="' + (Number(cat.peso) || 0) + '"></td>' +
+        '<td class="num">' + fmtNota(p) + '</td>' +
+        '<td class="num"><button class="calif-x" type="button" data-accion-calif="cat-quitar" data-i="' + i + '" title="Quitar categoría" aria-label="Quitar categoría">×</button></td></tr>';
+    }).join("");
+    var opcionesCat = q.categorias.map(function (cat) {
+      return '<option value="' + esc(cat.nombre) + '">' + esc(cat.nombre) + "</option>";
+    }).join("");
+    var filasComp = q.componentes.map(function (comp, i) {
+      var reemplaza = q.examen.reemplaza === i;
+      var celdaNota = reemplaza
+        ? '<span class="muted">' + (q.examen.nota === null ? "lo pone el examen" : fmtNota(q.examen.nota)) + "</span>"
+        : '<input class="entrada calif-entrada calif-num" type="number" min="1" max="7" step="0.1" data-comp-nota="' + i + '" value="' + (comp.nota === null ? "" : comp.nota) + '">';
+      return '<tr><td><input class="entrada calif-entrada" type="text" data-comp-nombre="' + i + '" value="' + esc(comp.nombre) + '"></td>' +
+        '<td><select class="entrada calif-entrada" data-comp-cat="' + i + '">' + q.categorias.map(function (cat) {
+          return '<option value="' + esc(cat.nombre) + '"' + (cat.nombre === comp.categoria ? " selected" : "") + ">" + esc(cat.nombre) + "</option>";
+        }).join("") + "</select></td>" +
+        '<td class="num">' + celdaNota + "</td>" +
+        '<td><input class="entrada calif-entrada" type="date" data-comp-fecha="' + i + '" value="' + esc(comp.fecha) + '"></td>' +
+        '<td class="num"><button class="calif-x" type="button" data-accion-calif="comp-quitar" data-i="' + i + '" title="Quitar componente" aria-label="Quitar componente">×</button></td></tr>';
+    }).join("");
+    var opcionesComp = q.componentes.map(function (comp, i) {
+      return '<option value="' + i + '"' + (q.examen.reemplaza === i ? " selected" : "") + ">" + esc(comp.nombre) + "</option>";
+    }).join("");
+    var filasCond = q.eximicion.condiciones.map(function (cond, i) {
+      var ref = "";
+      if (cond.tipo === "presentacion") ref = '<span class="muted calif-ref">la presentación</span>';
+      else if (cond.tipo === "categoria") {
+        ref = '<select class="entrada calif-entrada" data-cond-ref="' + i + '">' + q.categorias.map(function (cat) {
+          return '<option value="' + esc(cat.nombre) + '"' + (cat.nombre === cond.ref ? " selected" : "") + ">" + esc(cat.nombre) + "</option>";
+        }).join("") + "</select>";
+      } else {
+        ref = '<select class="entrada calif-entrada" data-cond-ref="' + i + '">' + q.componentes.map(function (comp) {
+          return '<option value="' + esc(comp.nombre) + '"' + (comp.nombre === cond.ref ? " selected" : "") + ">" + esc(comp.nombre) + "</option>";
+        }).join("") + "</select>";
+      }
+      return '<div class="calif-cond">' +
+        '<select class="entrada calif-entrada" data-cond-tipo="' + i + '">' +
+          '<option value="presentacion"' + (cond.tipo === "presentacion" ? " selected" : "") + ">Presentación</option>" +
+          '<option value="categoria"' + (cond.tipo === "categoria" ? " selected" : "") + ">Categoría</option>" +
+          '<option value="componente"' + (cond.tipo === "componente" ? " selected" : "") + ">Componente</option></select>" +
+        ref +
+        '<select class="entrada calif-entrada calif-op" data-cond-op="' + i + '">' +
+          ["<", "<=", ">=", ">"].map(function (op) { return '<option' + (cond.op === op ? " selected" : "") + ">" + op + "</option>"; }).join("") +
+        "</select>" +
+        '<input class="entrada calif-entrada calif-num" type="number" min="1" max="7" step="0.1" data-cond-valor="' + i + '" value="' + cond.valor + '">' +
+        '<button class="calif-x" type="button" data-accion-calif="cond-quitar" data-i="' + i + '" title="Quitar condición" aria-label="Quitar condición">×</button></div>';
+    }).join("");
+    var textoExim = !q.eximicion.activa ? "La eximición está desactivada para este ramo." :
+      !q.eximicion.condiciones.length ? "Sin condiciones: con ninguna, el ramo no se exime." :
+      ex.sinDatos ? "Faltan notas para saber si te eximes." :
+      ex.cumple ? "Con estas notas, ya te eximes." : "Con estas notas, todavía no te eximes.";
+    return '<div class="card calif-card">' +
+      '<div class="calif-cab"><div><h2>' + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
+        '<p class="muted">' + creditosDe(cur) + " créditos · " + esc(etiquetaNivel(cur.nivel)) + " · meta " + fmtNota(q.meta) + "</p></div>" +
+        '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div>" +
+      '<div class="calif-resumen">' +
+        '<div><b>' + fmtNota(P) + "</b><span>Presentación</span></div>" +
+        '<div><b>' + fmtNota(nf) + "</b><span>Final</span></div>" +
+        '<div><b>' + esc(est.texto) + "</b><span>Estado</span></div>" +
+        '<div><b>' + (ex.cumple ? "eximido" : q.examen.activo ? fmtNota2(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
+      "</div>" +
+      '<div class="calif-ajustes">' +
+        '<label class="campo">Nota mínima <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
+        '<label class="campo">Meta <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
+        '<span class="muted">Examen para la meta: ' + (q.examen.activo ? fmtNota2(necMeta) : "sin examen") + "</span>" +
+      "</div>" +
+      '<section class="calif-bloque"><h3>Categorías <span>peso sobre la presentación</span></h3>' +
+        '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>Categoría</th><th class="num">Peso %</th><th class="num">Promedio</th><th></th></tr></thead><tbody>' +
+        (filasCat || '<tr><td colspan="4" class="muted">Sin categorías.</td></tr>') + "</tbody></table></div>" +
+        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">+ Categoría</button></section>' +
+      '<section class="calif-bloque"><h3>Componentes y notas</h3>' +
+        '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>Componente</th><th>Categoría</th><th class="num">Nota</th><th>Fecha</th><th></th></tr></thead><tbody>' +
+        (filasComp || '<tr><td colspan="5" class="muted">Sin componentes todavía.</td></tr>') + "</tbody></table></div>" +
+        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">+ Componente</button></section>' +
+      '<section class="calif-bloque"><h3>Examen</h3><div class="calif-examen">' +
+        '<label class="check"><input type="checkbox" data-exam-activo' + (q.examen.activo ? " checked" : "") + "> Activo</label>" +
+        '<label class="campo">Peso % <input class="entrada calif-num" type="number" min="0" max="100" step="5" data-exam-peso value="' + q.examen.peso + '"></label>' +
+        '<label class="campo">Nota <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-exam-nota value="' + (q.examen.nota === null ? "" : q.examen.nota) + '"></label>' +
+        '<label class="campo">Reemplaza <select class="entrada calif-entrada" data-exam-reemplaza><option value="">—</option>' + opcionesComp + "</select></label>" +
+      "</div></section>" +
+      '<section class="calif-bloque"><h3>Eximición</h3>' +
+        '<label class="check"><input type="checkbox" data-exim-activa' + (q.eximicion.activa ? " checked" : "") + "> El ramo se puede eximir</label>" +
+        '<label class="campo">Deben cumplirse <select class="entrada" data-exim-modo>' +
+          '<option value="todas"' + (q.eximicion.modo === "todas" ? " selected" : "") + ">Todas</option>" +
+          '<option value="alguna"' + (q.eximicion.modo === "alguna" ? " selected" : "") + ">Al menos una</option></select></label>" +
+        (filasCond || '<p class="muted">Sin condiciones: mientras no haya ninguna, el ramo no se exime.</p>') +
+        '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">+ Condición</button>' +
+        '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p></section>" +
+      "</div>";
+  }
+  function pintarCalificaciones() {
+    var lista = $("#calif-lista"), det = $("#calif-detalle");
+    if (!lista || !det) return;
+    normalizarCursos(); normalizarCalifs();
+    var cursos = estado.cursos, vacio = $("#calif-vacio"), layout = $("#calif-layout");
+    if (!cursos.length) {
+      if (vacio) vacio.hidden = false;
+      if (layout) layout.hidden = true;
+      return;
+    }
+    if (vacio) vacio.hidden = true;
+    if (layout) layout.hidden = false;
+    if (!califSel || !ramoPorCodigo(califSel)) califSel = estado.califSel && ramoPorCodigo(estado.califSel) ? estado.califSel : cursos[0].codigo;
+    estado.califSel = califSel; estado.ramoSel = califSel;
+    lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
+      var q = califDe(cur.codigo), est = estadoCalifDe(q);
+      return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
+        '<span class="calif-item__nom"><b>' + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
+        '<small>P ' + fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small>" +
+        '<em class="pill ' + est.clase + '">' + esc(est.texto) + "</em></button>";
+    }).join("");
+    det.innerHTML = htmlDetalleCalif(ramoPorCodigo(califSel), califDe(califSel));
+  }
+  function cambioCalif(e) {
+    var el = e.target, q = califDe(califSel); if (!q || !el) return;
+    var i = parseInt(el.getAttribute("data-i"), 10);
+    if (el.hasAttribute("data-cat-nombre") || el.hasAttribute("data-cat-peso")) {
+      var ic = parseInt(el.getAttribute("data-cat-nombre") || el.getAttribute("data-cat-peso"), 10);
+      if (!q.categorias[ic]) return;
+      if (el.hasAttribute("data-cat-nombre")) {
+        var viejo = q.categorias[ic].nombre, nuevo = el.value.trim() || "Categoría";
+        q.categorias[ic].nombre = nuevo;
+        q.componentes.forEach(function (x) { if (x.categoria === viejo) x.categoria = nuevo; });
+        q.eximicion.condiciones.forEach(function (c) { if (c.tipo === "categoria" && c.ref === viejo) c.ref = nuevo; });
+      } else q.categorias[ic].peso = Math.max(0, Number(el.value) || 0);
+    } else if (el.hasAttribute("data-comp-nombre") || el.hasAttribute("data-comp-cat") || el.hasAttribute("data-comp-nota") || el.hasAttribute("data-comp-fecha")) {
+      var ix = parseInt(el.getAttribute("data-comp-nombre") || el.getAttribute("data-comp-cat") || el.getAttribute("data-comp-nota") || el.getAttribute("data-comp-fecha"), 10);
+      if (!q.componentes[ix]) return;
+      if (el.hasAttribute("data-comp-nombre")) q.componentes[ix].nombre = el.value.trim() || "Componente";
+      else if (el.hasAttribute("data-comp-cat")) q.componentes[ix].categoria = el.value;
+      else if (el.hasAttribute("data-comp-nota")) q.componentes[ix].nota = notaNum(el.value);
+      else q.componentes[ix].fecha = el.value;
+    } else if (el.hasAttribute("data-exam-activo")) q.examen.activo = el.checked;
+    else if (el.hasAttribute("data-exam-peso")) q.examen.peso = Math.max(0, Math.min(100, Number(el.value) || 0));
+    else if (el.hasAttribute("data-exam-nota")) q.examen.nota = notaNum(el.value);
+    else if (el.hasAttribute("data-exam-reemplaza")) q.examen.reemplaza = el.value === "" ? null : parseInt(el.value, 10);
+    else if (el.hasAttribute("data-exim-activa")) q.eximicion.activa = el.checked;
+    else if (el.hasAttribute("data-exim-modo")) q.eximicion.modo = el.value;
+    else if (el.hasAttribute("data-cond-tipo") || el.hasAttribute("data-cond-ref") || el.hasAttribute("data-cond-op") || el.hasAttribute("data-cond-valor")) {
+      var icond = parseInt(el.getAttribute("data-cond-tipo") || el.getAttribute("data-cond-ref") || el.getAttribute("data-cond-op") || el.getAttribute("data-cond-valor"), 10);
+      var cond = q.eximicion.condiciones[icond]; if (!cond) return;
+      if (el.hasAttribute("data-cond-tipo")) { cond.tipo = el.value; cond.ref = ""; }
+      else if (el.hasAttribute("data-cond-ref")) cond.ref = el.value;
+      else if (el.hasAttribute("data-cond-op")) cond.op = el.value;
+      else cond.valor = notaNum(el.value) || 1;
+    } else if (el.hasAttribute("data-nota-min")) q.notaMin = notaNum(el.value) || 4;
+    else if (el.hasAttribute("data-meta")) q.meta = notaNum(el.value) || 5;
+    guardar(); pintarCalificaciones(); pintarPanel();
+  }
+  function accionCalif(e) {
+    var b = e.target.closest("[data-accion-calif]"); if (!b) return;
+    var q = califDe(califSel); if (!q) return;
+    var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "cat-add") q.categorias.push({ nombre: "Categoría " + (q.categorias.length + 1), peso: 0 });
+    else if (accion === "comp-add") q.componentes.push({ nombre: "Componente " + (q.componentes.length + 1), categoria: q.categorias[0].nombre, nota: null, fecha: "", peso: 1 });
+    else if (accion === "cond-add") q.eximicion.condiciones.push({ tipo: "presentacion", ref: "", op: ">=", valor: 5 });
+    else if (accion === "cat-quitar") {
+      if (q.categorias.length <= 1) { aviso("Debe quedar al menos una categoría."); return; }
+      if (!window.confirm("¿Quitar la categoría \"" + q.categorias[i].nombre + "\"?")) return;
+      var nombre = q.categorias[i].nombre;
+      q.categorias.splice(i, 1);
+      q.componentes.forEach(function (x) { if (x.categoria === nombre) x.categoria = q.categorias[0].nombre; });
+    } else if (accion === "comp-quitar") {
+      q.componentes.splice(i, 1);
+      if (q.examen.reemplaza === i) q.examen.reemplaza = null;
+      else if (q.examen.reemplaza > i) q.examen.reemplaza--;
+    } else if (accion === "cond-quitar") q.eximicion.condiciones.splice(i, 1);
+    guardar(); pintarCalificaciones(); pintarPanel();
   }
 
   function normalizarNotas() {
@@ -1132,7 +1465,15 @@
       var n = notaActual();
       var ev = eventoPorId(estado.eventoSel);
       var ramo = ramoPorCodigo(estado.ramoSel);
-      if (pantalla === "malla" && ramo) {
+      if (pantalla === "calificaciones" && ramo) {
+        var qc = califDe(ramo.codigo), estC = estadoCalifDe(qc);
+        html = "<h2>Calificaciones</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
+          '<div class="panel__bloque"><span>Presentación</span><small>' + fmtNota(presentacionDe(qc)) + "</small></div>" +
+          '<div class="panel__bloque"><span>Final</span><small>' + fmtNota(notaFinalDe(qc)) + "</small></div>" +
+          '<div class="panel__bloque"><span>Estado</span><small>' + esc(estC.texto) + "</small></div>" +
+          '<div class="panel__bloque"><span>Componentes</span><small>' + qc.componentes.length + " · " + qc.categorias.length + " categorías</small></div>" +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">Abrir</button></div>';
+      } else if (pantalla === "malla" && ramo) {
         var estR = estadoDeRamo(ramo), faltanR = faltantesDe(ramo), reqR = requisitosTexto(ramo);
         html = "<h2>Ramo</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
           '<div class="panel__bloque"><span>Estado</span><small>' + esc(estR) + "</small></div>" +
@@ -1192,6 +1533,7 @@
         tareas: [estado.tareas.length + " tareas", estado.tareas.filter(function (x) { return !x.hecha; }).length + " abiertas"],
         notas: [estado.notas.length + " notas", "Lista y editor en la misma sección."],
         malla: [(estado.cursos || []).length + " ramos", "Cursos, niveles, prerrequisitos y créditos."],
+        calificaciones: [(estado.cursos || []).length + " ramos", "Notas por categoría, examen y eximición."],
         tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
         ajustes: ["9 temas", "Apariencia, paneles, bloques y laboratorio."]
       }[pantalla] || ["Sin contexto", "Esta sección no declara contexto."];
@@ -1224,6 +1566,13 @@
     });
     $$("#panel-cuerpo [data-borrar-nota]").forEach(function (b) {
       b.addEventListener("click", function () { borrarNota(b.getAttribute("data-borrar-nota")); });
+    });
+    $$("#panel-cuerpo [data-abrir-calif]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        califSel = b.getAttribute("data-abrir-calif"); estado.califSel = califSel;
+        ir("calificaciones"); pintarCalificaciones();
+        if (window.innerWidth <= 1255) abrirPanel();
+      });
     });
     $$("#panel-cuerpo [data-editar-ramo]").forEach(function (b) {
       b.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(b.getAttribute("data-editar-ramo"))); });
@@ -1426,6 +1775,13 @@
       html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
         return '<div class="mp-row"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>" + estadoDeRamo(c) + "</small></div>";
       }).join("") : '<p class="muted">Sin ramos.</p>';
+    } else if (sec === "calificaciones") {
+      normalizarCalifs();
+      html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
+        var q = califDe(c.codigo);
+        return '<div class="mp-row"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>P " +
+          fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small></div>";
+      }).join("") : '<p class="muted">Sin ramos.</p>';
     } else if (sec === "tiempo") {
       html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>";
     } else if (sec === "ajustes") {
@@ -1448,7 +1804,7 @@
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
-    pintarTareas(); pintarNotas(); pintarMalla();
+    pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones();
     pintarTemas(); pintarTiempo(); pintarPanel();
     ir(pantalla);
 
@@ -1491,7 +1847,7 @@
           estado = Object.assign(porDefecto(), x);
           if (!estado.prefs) estado.prefs = { inicioSemana: "lunes", hora: "24", panelAncho: "320" };
           guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs();
-          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarTiempo(); pintarPeriodo(); pintarPanel();
+          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarTiempo(); pintarPeriodo(); pintarPanel();
           aviso("Respaldo importado.");
         } catch (err) { aviso("No se pudo importar el archivo."); }
       };
@@ -1607,6 +1963,18 @@
     $("#malla-buscar").addEventListener("input", function (e) { mallaBusqueda = e.target.value; pintarMalla(); });
     $("#malla-filtro").addEventListener("change", function (e) { mallaFiltro = e.target.value; pintarMalla(); });
     $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
+    $("#btn-calif-malla").addEventListener("click", function () { ir("malla"); });
+    $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
+    $("#calif-lista").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-calif]"); if (!b) return;
+      califSel = b.getAttribute("data-calif"); estado.califSel = califSel;
+      estado.ramoSel = califSel; estado.panel.calificaciones = "detalle";
+      guardar(); pintarCalificaciones(); pintarPanel();
+      if (window.innerWidth <= 1255) abrirPanel();
+    });
+    $("#calif-detalle").addEventListener("change", cambioCalif);
+    $("#calif-detalle").addEventListener("click", accionCalif);
+
     $("#ramo-form").addEventListener("submit", function (e) {
       e.preventDefault();
       var cod = $("#ramo-codigo").value.trim().toUpperCase();
@@ -1621,13 +1989,16 @@
       }).filter(function (r) { return r && r !== cod; });
       reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
       if (original && original.codigo !== cod) {
+        var viejo = original.codigo;
         estado.cursos.forEach(function (x) {
-          x.requisitos = x.requisitos.map(function (r) { return r === original.codigo ? cod : r; });
+          x.requisitos = x.requisitos.map(function (r) { return r === viejo ? cod : r; });
           x.requisitos_o = (x.requisitos_o || []).map(function (g) {
-            return g.map(function (r) { return r === original.codigo ? cod : r; });
+            return g.map(function (r) { return r === viejo ? cod : r; });
           });
         });
-        if (estado.ramoSel === original.codigo) estado.ramoSel = cod;
+        if (estado.ramoSel === viejo) estado.ramoSel = cod;
+        if (estado.califSel === viejo) estado.califSel = cod;
+        if (estado.califs && estado.califs[viejo]) { estado.califs[cod] = estado.califs[viejo]; delete estado.califs[viejo]; }
         original.codigo = cod;
       }
       var c = original || { codigo: cod };

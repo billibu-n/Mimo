@@ -261,8 +261,22 @@
     </section>
 
     <section class="seccion" data-pantalla="calificaciones" id="p-calificaciones" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub">Categorías, componentes, examen y eximición.</p></div><div class="sec-acciones"><span class="pill">kit Academics</span></div></div>
-      <div class="card"><h2>El motor llega con M31</h2><p class="muted">La pestaña y su lugar en la barra ya están; el cálculo de notas se porta del viejo.</p></div>
+      <div class="sec-cab">
+        <div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub">Categorías, componentes, examen y eximición. La nota se calcula sola.</p></div>
+        <div class="sec-acciones">
+          <span class="pill">kit Academics</span>
+          <button class="btn" id="btn-calif-malla" type="button">Ver Malla</button>
+        </div>
+      </div>
+      <div class="empty" id="calif-vacio" hidden>
+        <h2>Sin ramos para calificar</h2>
+        <p>Calificaciones usa los ramos de Malla. Crea el primero y vuelve aquí para cargar sus notas.</p>
+        <button class="btn btn-primario" type="button" id="calif-crear-ramo">Crear un ramo en Malla</button>
+      </div>
+      <div class="calif-layout" id="calif-layout">
+        <aside class="calif-lista" id="calif-lista" aria-label="Ramos con notas"></aside>
+        <div id="calif-detalle"></div>
+      </div>
     </section>
 
     <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
