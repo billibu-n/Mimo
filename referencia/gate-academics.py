@@ -17,8 +17,8 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
-APP = RAIZ / "app" / "academics" / "index.html"
+RAIZ = AQUI.parent
+APP = RAIZ / "referencia" / "academics-1.1.2" / "index.html"
 
 sys.path.insert(0, str(AQUI))
 from gatelib import Navegador, desborde, exigir, salir  # noqa: E402

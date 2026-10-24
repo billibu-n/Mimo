@@ -113,6 +113,14 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator("body").get_attribute("data-tema") == "deepsea",
                    "ajustes: el tema se aplica al body", fallas)
+            exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)
+            page.locator("#btn-panel").click()
+            page.wait_for_timeout(80)
+            exigir(not page.locator(".panel").is_visible(), "geometría: el panel se oculta sin mover el pie", fallas)
+            page.locator("#btn-panel").click()
+            page.wait_for_timeout(80)
+            exigir(page.locator(".panel").is_visible(), "geometría: el panel vuelve", fallas)
+            exigir(page.locator(".footer").is_visible(), "geometría: el pie sigue visible", fallas)
             exigir(not errores, f"consola limpia al final — {errores[:3]}", fallas)
         finally:
             ctx.close()

@@ -319,6 +319,8 @@
     }
     $("#panel-cuerpo").innerHTML = html;
     $$("#panel-cuerpo [data-abrir-modal]").forEach(function (b) { b.addEventListener("click", abrirModal); });
+    var pie = $("#pie-centro");
+    if (pie) pie.textContent = nombre(pantalla);
   }
 
   function abrirModal() {
@@ -386,14 +388,20 @@
   }
 
   function abrirPanel() {
+    document.body.classList.remove("panel-oculto");
     document.body.classList.add("panel-abierto");
     $("#btn-panel").setAttribute("aria-expanded", "true");
   }
   function cerrarPanel() {
     document.body.classList.remove("panel-abierto");
+    if (window.innerWidth > 1255) document.body.classList.add("panel-oculto");
     $("#btn-panel").setAttribute("aria-expanded", "false");
   }
   function alternarPanel() {
+    if (window.innerWidth > 1255) {
+      if (document.body.classList.contains("panel-oculto")) abrirPanel(); else cerrarPanel();
+      return;
+    }
     if (document.body.classList.contains("panel-abierto")) cerrarPanel(); else abrirPanel();
   }
   function alternarSplit() {
@@ -426,6 +434,9 @@
     $("#btn-add").addEventListener("click", abrirModal);
     $("#btn-catalogo-ajustes").addEventListener("click", abrirModal);
     $("#btn-panel-ajustes").addEventListener("click", abrirPanel);
+    $("#pie-panel").addEventListener("click", alternarPanel);
+    $("#pie-sync").addEventListener("click", function () { aviso("Guardado en este equipo. El respaldo es un archivo .json."); });
+    $("#pie-ayuda").addEventListener("click", function () { aviso("Panel derecho: Contexto, Detalle, Notas y Bloques. El pie queda fijo; el panel no mueve el header."); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });
     $$(".panel__tab").forEach(function (b) {
@@ -500,6 +511,8 @@
       if (e.key === "Escape") { cerrarModal(); cerrarPanel(); }
     });
     window.addEventListener("resize", function () {
+      if (window.innerWidth > 1255) document.body.classList.remove("panel-abierto");
+      else document.body.classList.remove("panel-oculto");
       if (window.innerWidth <= 1255 && splitOn) {
         splitOn = false;
         document.body.classList.remove("split");
