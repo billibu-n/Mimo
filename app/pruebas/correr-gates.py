@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""correr-gates.py — corre los tres gates de M02 y resume.
+
+Sale 0 solo si los tres salen 0. No oculta la salida: cada gate imprime sus
+medidas y este resumen cita el código de cada uno.
+"""
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+AQUI = Path(__file__).resolve().parent
+GATES = ("gate-ui.py", "gate-datos.py", "gate-bloques.py")
+
+
+def main() -> int:
+    resultados = []
+    for nombre in GATES:
+        print(f"\n=== {nombre} ===", flush=True)
+        p = subprocess.run([sys.executable, str(AQUI / nombre), "--demo"])
+        resultados.append((nombre, p.returncode))
+    print("\n=== RESUMEN M02 ===", flush=True)
+    for nombre, codigo in resultados:
+        print(f"{nombre}: {'VERDE' if codigo == 0 else 'ROJO'} ({codigo})")
+    return 0 if all(c == 0 for _, c in resultados) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

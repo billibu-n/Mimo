@@ -1,0 +1,97 @@
+# Línea base M02 — gates sobre la maqueta v2
+# fecha: 2026-10-24T12:01:18-03:00
+# base: e8af994
+# comando: python3 app/pruebas/correr-gates.py
+
+
+=== gate-ui.py ===
+TABLERO: /home/billibu/sede/trabajo/trabajos/T-46-mimo-v2-base/borradores/clon/app/maqueta/index.html
+[OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
+[OK] 1440: Ajustes es la última pestaña — ['Ajustes']
+[OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
+[OK] 1440: sin desborde horizontal — 0px
+[OK] 1440: consola limpia — []
+[OK] 1440: el split muestra el panel secundario
+[OK] 1440: cerrar el split lo oculta
+[OK] 1440: el tema cambia — clasico -> deepsea
+[OK] 1440: Ajustes declara 9 temas — 9
+[OK] 1100: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
+[OK] 1100: Ajustes es la última pestaña — ['Ajustes']
+[OK] 1100: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
+[OK] 1100: sin desborde horizontal — 0px
+[OK] 1100: consola limpia — []
+[OK] 1100: el panel se abre como cajón
+[OK] 1100: el cajón se cierra
+[OK] 411: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
+[OK] 411: Ajustes es la última pestaña — ['Ajustes']
+[OK] 411: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
+[OK] 411: sin desborde horizontal — 0px
+[OK] 411: consola limpia — []
+[OK] 411: el panel se abre como cajón
+[OK] 411: el cajón se cierra
+RESUMEN gate-ui: 0 choque(s).
+TABLERO: /tmp/mimo-gate-ui-qg4u_4hr/maqueta/index.html
+[OK] 1440: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
+[OK] 1440: Ajustes es la última pestaña — ['Ajustes']
+[OK] 1440: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
+[ROJO] 1440: sin desborde horizontal — 160px
+[OK] 1440: consola limpia — []
+[OK] 1440: el split muestra el panel secundario
+[OK] 1440: cerrar el split lo oculta
+[OK] 1440: el tema cambia — clasico -> deepsea
+[OK] 1440: Ajustes declara 9 temas — 9
+[OK] 1100: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
+[OK] 1100: Ajustes es la última pestaña — ['Ajustes']
+[OK] 1100: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
+[ROJO] 1100: sin desborde horizontal — 500px
+[OK] 1100: consola limpia — []
+[OK] 1100: el panel se abre como cajón
+[OK] 1100: el cajón se cierra
+[OK] 411: base empieza por ['Calendario', 'Tareas', 'Notas'] — ['Calendario', 'Tareas', 'Notas']
+[OK] 411: Ajustes es la última pestaña — ['Ajustes']
+[OK] 411: panel con 4 pestañas — ['Contexto', 'Detalle', 'Notas', 'Bloques']
+[ROJO] 411: sin desborde horizontal — 1189px
+[OK] 411: consola limpia — []
+[OK] 411: el panel se abre como cajón
+[OK] 411: el cajón se cierra
+RESUMEN gate-ui/rota: 3 choque(s).
+DEMO: buena 0, rota 1. El gate discrimina.
+
+=== gate-datos.py ===
+RESPALDO: /home/billibu/sede/trabajo/trabajos/T-46-mimo-v2-base/borradores/clon/app/pruebas/fixtures/respaldo-sintetico.json
+[OK] v3: el documento declara v=3
+[OK] v3: meta.migrado_desde=formato2
+[OK] cursos: 87 de 87
+[OK] aprobados: 18 de 18
+[OK] sesiones: 54 de 54
+[OK] minutos: 3838 de 3838
+[OK] cursos: códigos únicos, sin duplicados
+[OK] sesiones: ids únicos, sin duplicados
+[OK] legacy: conserva las claves del origen
+[OK] ida y vuelta: exportar v3 -> importar v3 conserva el objeto
+RESUMEN gate-datos: 0 choque(s).
+[OK] roto: el catálogo no objeto se rechaza con DatosInvalidos
+RESUMEN gate-datos/roto: 0 choque(s).
+DEMO: respaldo bueno 0, roto detectado. El gate discrimina.
+
+=== gate-bloques.py ===
+[OK] contrato: manifiestos v1.1 válidos — []
+[OK] Tiempo: 4 bloques dentro — 4
+[OK] Tiempo: quitar un hijo deja 3 — 3
+[OK] Tiempo: el padre sigue montado tras quitar un hijo
+[OK] Tiempo: la cuenta baja a 3 — '3 bloques dentro'
+[OK] Tiempo: consola limpia — []
+[OK] catálogo: la ficha del kit Academics existe
+[OK] catálogo: el kit incompleto ofrece Instalar kit
+[OK] kit: instalar Academics suma su aporte — '5 bloques instalados · 11 en el catálogo'
+[OK] kit: tras instalar, la ficha ofrece Quitar kit
+[OK] kit: quitarlo deja solo Tiempo — '1 bloques instalados · 11 en el catálogo'
+[OK] kit: quitarlo no deja pestañas huérfanas — ['Calendario', 'Tareas', 'Notas', 'Tiempo', 'Ajustes']
+RESUMEN gate-bloques: 0 choque(s).
+[OK] roto: sin tiempo, pomodoro queda huérfano — ["crono: padre 'tiempo' no existe", "temporizador: padre 'tiempo' no existe"]
+DEMO: buena 0, huérfano detectado. El gate discrimina.
+
+=== RESUMEN M02 ===
+gate-ui.py: VERDE (0)
+gate-datos.py: VERDE (0)
+gate-bloques.py: VERDE (0)
