@@ -934,6 +934,12 @@
   }
   function fmtNota(v) { return v === null || v === undefined ? "—" : (Math.round(v * 10) / 10).toFixed(1); }
   function fmtNota2(v) { return v === null || v === undefined ? "—" : (Math.round(v * 100) / 100).toFixed(2); }
+  function textoNecesario(v) {
+    if (v === null || v === undefined) return "—";
+    if (v <= 1) return "no hace falta";
+    if (v > 7) return "imposible";
+    return fmtNota2(v);
+  }
   function normalizarCalifs() {
     normalizarCursos();
     if (!estado.califs || typeof estado.califs !== "object") estado.califs = {};
@@ -1130,12 +1136,12 @@
         '<div><b>' + fmtNota(P) + "</b><span>Presentación</span></div>" +
         '<div><b>' + fmtNota(nf) + "</b><span>Final</span></div>" +
         '<div><b>' + esc(est.texto) + "</b><span>Estado</span></div>" +
-        '<div><b>' + (ex.cumple ? "eximido" : q.examen.activo ? fmtNota2(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
+        '<div><b>' + (ex.cumple ? "eximido" : q.examen.activo ? textoNecesario(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
       "</div>" +
       '<div class="calif-ajustes">' +
         '<label class="campo">Nota mínima <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
         '<label class="campo">Meta <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
-        '<span class="muted">Examen para la meta: ' + (q.examen.activo ? fmtNota2(necMeta) : "sin examen") + "</span>" +
+        '<span class="muted">Examen para la meta: ' + (q.examen.activo ? textoNecesario(necMeta) : "sin examen") + "</span>" +
       "</div>" +
       '<section class="calif-bloque"><h3>Categorías <span>peso sobre la presentación</span></h3>' +
         '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>Categoría</th><th class="num">Peso %</th><th class="num">Promedio</th><th></th></tr></thead><tbody>' +
