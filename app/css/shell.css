@@ -522,3 +522,24 @@ body.nav-izq .shell{margin-left:64px}
 .alarma-item.off{opacity:.55}
 .alarma-item .btn{min-height:24px;font-size:10px}
 @media (max-width:520px){.tiempo-config-fila,.alarma-form{flex-direction:column;align-items:stretch}.alarma-form #alarma-hora,.alarma-form #alarma-texto{width:100%}}
+
+/* ---- U6: buscador global ---- */
+.modal-buscar .modal__caja{width:min(680px,100%);padding:var(--sp-4)}
+.buscar-caja .modal__cab{margin-bottom:var(--sp-3)}
+.buscar-input{width:100%;height:var(--sp-8);font-size:var(--fs-lg);padding:0 var(--sp-3);margin-bottom:var(--sp-2)}
+.buscar-resultados{display:flex;flex-direction:column;gap:2px;max-height:52vh;overflow:auto;margin-top:var(--sp-2)}
+.buscar-res{display:grid;grid-template-columns:68px minmax(0,1fr) auto;align-items:center;gap:var(--sp-2);width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);font:inherit;padding:var(--sp-2);cursor:pointer}
+.buscar-res:hover,.buscar-res:focus-visible{background:var(--sup2);border-color:var(--line2)}
+.buscar-tipo{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ac);border:1px solid color-mix(in srgb,var(--ac) 35%,var(--line));border-radius:4px;text-align:center;padding:2px 3px}
+.buscar-txt{min-width:0}
+.buscar-txt b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.buscar-txt small{display:block;color:var(--muted);font-size:var(--fs-xs);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.buscar-flecha{color:var(--muted2);font-size:var(--fs-xs)}
+.buscar-vacio{padding:var(--sp-5) var(--sp-3);text-align:center;color:var(--muted)}
+.buscar-vacio b{display:block;color:var(--fg);font-size:var(--fs-lg);margin-bottom:3px}
+.buscar-vacio p{margin:0 auto;max-width:430px;font-size:var(--fs-sm);line-height:1.5}
+.buscar-resumen{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2);margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--muted)}
+.buscar-resumen span{border:1px solid var(--line2);border-radius:999px;padding:1px 7px}
+.buscar-pie{text-align:center;margin:var(--sp-2) 0 0;font-size:var(--fs-xs)}
+.buscar-pie kbd{border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--muted2)}
+@media (max-width:520px){.modal-buscar .modal__caja{padding:var(--sp-3)}.buscar-res{grid-template-columns:58px minmax(0,1fr)}.buscar-flecha{display:none}.buscar-input{font-size:var(--fs-md)}}

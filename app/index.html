@@ -437,6 +437,15 @@
   </div>
 </div>
 
+<div class="modal modal-buscar" id="modal-buscar" role="dialog" aria-modal="true" aria-labelledby="buscar-tit">
+  <div class="modal__caja buscar-caja">
+    <header class="modal__cab"><div><h2 id="buscar-tit">Buscar en MIMO</h2><p class="muted" id="buscar-sub">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <input class="entrada buscar-input" id="buscar-input" type="search" placeholder="Escribe para buscar…" aria-label="Buscar en MIMO" autocomplete="off">
+    <div class="buscar-resultados" id="buscar-resultados"></div>
+    <p class="buscar-pie muted"><kbd>↑</kbd><kbd>↓</kbd> mover · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> cerrar</p>
+  </div>
+</div>
+
 <div class="menu-ctx" id="menu-ctx" role="menu" aria-label="Acciones del elemento" hidden></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

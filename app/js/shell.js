@@ -2149,6 +2149,79 @@
   }
   function cerrarPeriodo() { $("#modal-periodo").classList.remove("on"); }
 
+  /* ---- U6: buscador global ---- */
+  var buscarAcciones = [];
+  function resultadosBusqueda(q) {
+    var low = String(q || "").toLowerCase().trim(), out = [];
+    if (!low) return out;
+    function tiene() {
+      for (var i = 0; i < arguments.length; i++) {
+        if (String(arguments[i] || "").toLowerCase().indexOf(low) !== -1) return true;
+      }
+      return false;
+    }
+    (estado.tareas || []).forEach(function (t) {
+      if (!tiene(t.titulo, t.contexto, t.nota)) return;
+      out.push({ tipo: "Tarea", titulo: t.titulo, sub: (t.tipo === "proyecto" ? "Proyecto" : "Tarea") + (t.fecha ? " · " + fechaCorta(t.fecha) : "") + (t.contexto ? " · " + t.contexto : ""),
+        run: function () { abrirTarea(t.id); } });
+    });
+    (estado.notas || []).forEach(function (n) {
+      if (!tiene(n.titulo, n.cuerpo, n.contexto, (n.etiquetas || []).join(" "))) return;
+      out.push({ tipo: "Nota", titulo: n.titulo || "Sin título", sub: (n.contexto || "Sin contexto") + " · " + ((n.cuerpo || "").slice(0, 45) || "Vacía"),
+        run: function () { abrirNota(n.id); } });
+    });
+    (estado.eventos || []).forEach(function (ev) {
+      if (!tiene(ev.titulo, ev.contexto, ev.nota)) return;
+      out.push({ tipo: "Evento", titulo: ev.titulo, sub: ev.fecha + (ev.hora ? " · " + ev.hora : "") + (ev.contexto ? " · " + ev.contexto : ""),
+        run: function () { abrirEventoDetalle(ev.id); } });
+    });
+    (estado.cursos || []).forEach(function (c) {
+      if (!tiene(c.codigo, c.nombre)) return;
+      out.push({ tipo: "Ramo", titulo: c.codigo + " — " + c.nombre, sub: creditosDe(c) + " cr · " + estadoDeRamo(c),
+        run: function () {
+          estado.ramoSel = c.codigo; estado.panel.malla = "detalle"; guardar();
+          ir("malla"); pintarMalla(); pintarPanel();
+        } });
+    });
+    (estado.periodos || []).forEach(function (p) {
+      if (!tiene(p.nombre)) return;
+      out.push({ tipo: "Periodo", titulo: p.nombre, sub: p.semanas.length + " semanas · " + (p.id === estado.periodoActivo ? "activo" : "guardado"),
+        run: function () { estado.periodoActivo = p.id; guardar(); pintarPeriodo(); ir("calendario"); aviso("Periodo activo: " + p.nombre); } });
+    });
+    return out.slice(0, 30);
+  }
+  function pintarBusqueda() {
+    var q = $("#buscar-input") ? $("#buscar-input").value.trim() : "";
+    var caja = $("#buscar-resultados"); if (!caja) return;
+    var res = resultadosBusqueda(q);
+    buscarAcciones = res.map(function (r) { return r.run; });
+    if (!q) {
+      caja.innerHTML = '<div class="buscar-vacio"><b>Busca una cosa a la vez</b><p>Tareas, notas, eventos, ramos y periodos. Escribe al menos una letra.</p>' +
+        '<div class="buscar-resumen"><span>' + estado.tareas.length + " tareas</span><span>" + estado.notas.length + " notas</span><span>" +
+        estado.eventos.length + " eventos</span><span>" + (estado.cursos || []).length + " ramos</span></div></div>";
+      if ($("#buscar-sub")) $("#buscar-sub").textContent = "Tareas, notas, eventos, ramos y periodos.";
+      return;
+    }
+    if ($("#buscar-sub")) $("#buscar-sub").textContent = res.length + " resultado" + (res.length === 1 ? "" : "s") + ' para "' + q + '".';
+    caja.innerHTML = res.length ? res.map(function (r, i) {
+      return '<button class="buscar-res" type="button" data-res="' + i + '" data-tipo="' + esc(r.tipo) + '"><span class="buscar-tipo">' + esc(r.tipo) +
+        '</span><span class="buscar-txt"><b>' + esc(r.titulo) + "</b><small>" + esc(r.sub) + "</small></span><span class=\"buscar-flecha\">↵</span></button>";
+    }).join("") : '<div class="buscar-vacio"><b>Sin resultados</b><p>Prueba con el código del ramo, el título de la nota o el nombre de la tarea.</p></div>';
+  }
+  function abrirBusqueda() {
+    var m = $("#modal-buscar"); if (!m) return;
+    m.classList.add("on");
+    $("#buscar-input").value = "";
+    pintarBusqueda();
+    setTimeout(function () { $("#buscar-input").focus(); }, 30);
+  }
+  function cerrarBusqueda() { var m = $("#modal-buscar"); if (m) m.classList.remove("on"); }
+  function ejecutarBusqueda(i) {
+    var fn = buscarAcciones[i];
+    cerrarBusqueda();
+    if (fn) fn();
+  }
+
   function abrirModal() {
     $("#modal").classList.add("on");
     pintarCatalogo();
@@ -2636,7 +2709,26 @@
     $("#btn-pausar").addEventListener("click", pausarTiempo);
     $("#btn-parar").addEventListener("click", pararTiempo);
     $("#btn-reiniciar").addEventListener("click", reiniciarTiempo);
-    $("#btn-buscar").addEventListener("click", function () { aviso("Buscador global Ctrl+K: llega con M27."); });
+    $("#btn-buscar").addEventListener("click", abrirBusqueda);
+    $("#buscar-x").addEventListener("click", cerrarBusqueda);
+    $("#modal-buscar").addEventListener("click", function (e) { if (e.target === $("#modal-buscar")) cerrarBusqueda(); });
+    $("#buscar-input").addEventListener("input", pintarBusqueda);
+    $("#buscar-resultados").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-res]"); if (!b) return;
+      ejecutarBusqueda(parseInt(b.getAttribute("data-res"), 10));
+    });
+    $("#buscar-input").addEventListener("keydown", function (e) {
+      var bs = $$("#buscar-resultados [data-res]");
+      if (e.key === "Escape") { e.preventDefault(); cerrarBusqueda(); return; }
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault(); if (!bs.length) return;
+        var i = bs.indexOf(document.activeElement);
+        if (e.key === "ArrowDown") bs[(i + 1) % bs.length].focus();
+        else bs[(i - 1 + bs.length) % bs.length].focus();
+      } else if (e.key === "Enter" && bs.length) {
+        e.preventDefault(); ejecutarBusqueda(parseInt(bs[0].getAttribute("data-res"), 10));
+      }
+    });
     $("#btn-sync").addEventListener("click", function () { aviso("Guardado en este equipo. La sincronización es opcional."); });
     $("#btn-nuevo").addEventListener("click", abrirPeriodo);
     $("#btn-nuevo-evento").addEventListener("click", function () { abrirEvento(null); });
@@ -2681,9 +2773,10 @@
     });
     document.addEventListener("keydown", function (e) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault(); aviso("Buscador global Ctrl+K: llega con M27.");
+        e.preventDefault(); abrirBusqueda();
       }
       if (e.key === "Escape") {
+        if ($("#modal-buscar").classList.contains("on")) { e.preventDefault(); cerrarBusqueda(); return; }
         if (!$("#menu-ctx").hidden) { e.preventDefault(); cerrarMenu(); return; }
         cerrarModal(); cerrarPanel();
       }
