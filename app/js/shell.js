@@ -687,11 +687,14 @@
         return lista.map(function (r) { return String(r || "").trim().toUpperCase(); })
           .filter(function (r) { return r && r !== cod; });
       }).filter(function (g) { return g.length; });
-      var nivel = parseInt(c.nivel, 10); if (!nivel || nivel < 1) nivel = 1; if (nivel > 99) nivel = 99;
+      var nivel = parseInt(c.nivel, 10);
+      if (!nivel || nivel < 1) nivel = String(c.tipo || "") === "cupo" ? 99 : 1;
+      if (nivel > 99) nivel = 99;
       out.push({
         codigo: cod, nombre: String(c.nombre || cod).trim() || cod,
         creditos: Math.max(0, parseInt(c.creditos, 10) || 0), nivel: nivel,
-        requisitos: reqs, requisitos_o: grupos,
+        requisitos: reqs, requisitos_o: grupos, aprobacion: Number(c.aprobacion) || null,
+        tipo: String(c.tipo || ""), enMalla: c.enMalla !== false && c.en_malla !== false,
         aprobado: !!c.aprobado, enCurso: !!c.enCurso && !c.aprobado
       });
     });
@@ -744,29 +747,95 @@
     });
     return out;
   }
+  function iconoEstado(e) {
+    return { aprobado: "i-check", curso: "i-play", disponible: "i-plus", bloqueado: "i-lock", reprobado: "i-x" }[e] || "i-plus";
+  }
+  function desbloqueaDe(cod) {
+    return estado.cursos.filter(function (x) {
+      if (x.enMalla === false) return false;
+      return (x.requisitos || []).indexOf(cod) !== -1 ||
+        (x.requisitos_o || []).some(function (g) { return g.indexOf(cod) !== -1; });
+    });
+  }
+  function chipRamo(cod, alternativa) {
+    if (!cod) return '<span class="pt-chip bloqueado">' + esc(alternativa) + "</span>";
+    var c = ramoPorCodigo(cod);
+    var e = c ? estadoDeRamo(c) : "bloqueado";
+    return '<button class="pt-chip ' + e + '" type="button" data-chip-ramo="' + esc(cod) + '">' + esc(alternativa || cod) + "</button>";
+  }
+  function detalleMallaHTML() {
+    var c = ramoPorCodigo(estado.ramoSel);
+    if (!c) {
+      return '<div class="malla-detalle__vacio"><span class="malla-detalle__icono">' + icono("i-malla") +
+        "</span><div><b>Elige un ramo</b><p>Las líneas tenues muestran todos los prerrequisitos. Al elegir uno, el grafo enciende en azul lo que necesita y en naranjo lo que desbloquea.</p></div></div>";
+    }
+    var e = estadoDeRamo(c), faltan = faltantesDe(c);
+    var antes = [];
+    (c.requisitos || []).forEach(function (r) {
+      if (antes.map(function (x) { return x.cod; }).indexOf(r) === -1) antes.push({ cod: r, txt: r });
+    });
+    (c.requisitos_o || []).forEach(function (g) {
+      antes.push({ cod: g.length === 1 ? g[0] : null, txt: g.join(" o ") });
+    });
+    var desp = desbloqueaDe(c.codigo);
+    var aprob = Number(c.aprobacion);
+    return '<div class="malla-detalle__cab"><div><span class="malla-detalle__cod">' + esc(c.codigo) + "</span>" +
+      "<h3>" + esc(c.nombre) + "</h3><p>" + creditosDe(c) + " cr · " + esc(etiquetaNivel(c.nivel)) +
+      " · <b class=\"malla-estado-" + e + "\">" + esc(e) + "</b>" +
+      (aprob ? " · " + Math.round(aprob) + " % de aprobación" : "") + "</p></div>" +
+      '<div class="fila"><button class="btn btn--chico" type="button" data-malla-editar="' + esc(c.codigo) + '">Editar</button>' +
+      '<button class="btn btn--chico" type="button" data-malla-limpiar>Quitar selección</button></div></div>' +
+      '<div class="malla-chips"><div><b>Antes necesitas</b>' +
+      (antes.length ? antes.map(function (x) { return chipRamo(x.cod, x.txt); }).join("") : '<span class="muted">Sin prerrequisitos.</span>') +
+      "</div><div><b>Este ramo desbloquea</b>" +
+      (desp.length ? desp.map(function (x) { return chipRamo(x.codigo, x.codigo); }).join("") : '<span class="muted">No desbloquea otro ramo del plan.</span>') +
+      "</div></div>" +
+      (faltan.length ? '<p class="malla-falta">Todavía falta: ' + esc(faltan.join(", ")) + "</p>" : "");
+  }
   function pintarMalla() {
-    var tabla = $("#malla-tablero"); if (!tabla) return;
+    var cols = $("#malla-cols"); if (!cols) return;
     normalizarCursos();
-    var cursos = estado.cursos, total = 0, aprobCred = 0, aprobN = 0, cursoN = 0, libres = 0;
+    var cursos = estado.cursos.filter(function (c) { return c.enMalla !== false; });
+    var total = 0, aprobCred = 0, aprobN = 0, cursoN = 0, libres = 0;
+    var cuenta = { aprobado: 0, curso: 0, disponible: 0, bloqueado: 0, reprobado: 0 };
     cursos.forEach(function (c) {
       var e = estadoDeRamo(c);
       total += creditosDe(c);
-      if (e === "aprobado") { aprobCred += creditosDe(c); aprobN++; }
+      cuenta[e] = (cuenta[e] || 0) + 1;
+      if (e === "aprobado") aprobCred += creditosDe(c);
+      if (e === "aprobado" && c.tipo !== "cupo") aprobN++;
       if (e === "curso") cursoN++;
-      if (e === "disponible") libres++;
+      if (e === "disponible" && c.tipo !== "cupo") libres++;
     });
     var pct = total ? Math.round(aprobCred / total * 100) : 0;
     if ($("#malla-k-creditos")) $("#malla-k-creditos").textContent = aprobCred + " / " + total;
     if ($("#malla-k-pct")) $("#malla-k-pct").textContent = pct + " %";
     if ($("#malla-k-ramos")) $("#malla-k-ramos").textContent = aprobN + (cursoN ? " · " + cursoN + " curso" + (cursoN === 1 ? "" : "s") : "");
     if ($("#malla-k-libres")) $("#malla-k-libres").textContent = String(libres);
-    var vacio = $("#malla-vacio");
+    if ($("#malla-progreso-barra")) $("#malla-progreso-barra").style.width = pct + "%";
+    if ($("#malla-progreso-txt")) $("#malla-progreso-txt").textContent = pct + " %";
+    var pg = $(".malla-progreso"); if (pg) pg.setAttribute("aria-valuenow", String(pct));
+    Object.keys(cuenta).forEach(function (k) { var el = $("#malla-lg-" + k); if (el) el.textContent = String(cuenta[k]); });
+    var nivelesTodos = {};
+    cursos.forEach(function (c) { nivelesTodos[c.nivel] = 1; });
+    if ($("#malla-niveles-cuenta")) $("#malla-niveles-cuenta").textContent = Object.keys(nivelesTodos).length + " niveles";
+    var vacio = $("#malla-vacio"), scroll = $("#malla-scroll"), detalle = $("#malla-detalle");
     if (!cursos.length) {
       if (vacio) vacio.hidden = false;
-      tabla.innerHTML = "";
+      if (scroll) scroll.hidden = true;
+      if (detalle) { detalle.hidden = true; detalle.innerHTML = ""; }
+      cols.innerHTML = "";
+      var svg0 = $("#malla-lineas"); if (svg0) svg0.innerHTML = "";
       return;
     }
     if (vacio) vacio.hidden = true;
+    if (scroll) scroll.hidden = false;
+    if (detalle) detalle.hidden = false;
+    if (estado.ramoSel && !ramoPorCodigo(estado.ramoSel)) estado.ramoSel = null;
+    if ($("#malla-quitar-sel")) $("#malla-quitar-sel").hidden = !estado.ramoSel;
+    if ($("#malla-pista")) $("#malla-pista").textContent = estado.ramoSel
+      ? "Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a pulsarlo para quitar la selección."
+      : "Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.";
     var q = mallaBusqueda.toLowerCase();
     var visibles = cursos.filter(function (c) {
       var e = estadoDeRamo(c);
@@ -777,39 +846,83 @@
       return !q || (c.codigo + " " + c.nombre).toLowerCase().indexOf(q) !== -1;
     });
     if (!visibles.length) {
-      tabla.innerHTML = '<p class="muted malla-sin">Ningún ramo coincide con el filtro.</p>';
+      cols.innerHTML = '<p class="muted malla-sin">Ningún ramo coincide con el filtro.</p>';
+      var svg1 = $("#malla-lineas"); if (svg1) svg1.innerHTML = "";
+      if (detalle) detalle.innerHTML = detalleMallaHTML();
       return;
     }
     var niveles = {};
     visibles.forEach(function (c) { (niveles[c.nivel] = niveles[c.nivel] || []).push(c); });
-    tabla.innerHTML = Object.keys(niveles).map(Number).sort(function (a, b) { return a - b; }).map(function (n) {
+    cols.innerHTML = Object.keys(niveles).map(Number).sort(function (a, b) { return a - b; }).map(function (n) {
       var lista = niveles[n].slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; });
       var cr = lista.reduce(function (a, c) { return a + creditosDe(c); }, 0);
-      var cards = lista.map(function (c) {
-        var e = estadoDeRamo(c), req = requisitosTexto(c);
-        var faltan = faltantesDe(c);
-        var titulo = c.nombre + (req ? " · requiere " + req : "") + (faltan.length ? " · faltan: " + faltan.join(", ") : "");
-        return '<button class="ramo-card ramo-card--' + e + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
-          '<span class="ramo-card__top"><b>' + esc(c.codigo) + '</b><span class="ramo-card__est">' + e + "</span></span>" +
-          '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
-          '<span class="ramo-card__meta">' + creditosDe(c) + " cr · " + esc(etiquetaNivel(c.nivel)) + "</span>" +
-          (req ? '<span class="ramo-card__req">Requiere: ' + esc(req) + "</span>" : "") +
-          (faltan.length && e !== "aprobado" ? '<span class="ramo-card__falta">Falta: ' + esc(faltan.join(", ")) + "</span>" : "") +
-          "</button>";
-      }).join("");
-      return '<section class="malla-nivel"><h3>' + esc(etiquetaNivel(n)) +
-        " <span>" + lista.length + " ramo" + (lista.length === 1 ? "" : "s") + " · " + cr + " cr</span></h3>" +
-        '<div class="malla-ramos">' + cards + "</div></section>";
+      return '<section class="malla-col" data-nivel="' + n + '"><header class="malla-col__cab"><b>' + esc(etiquetaNivel(n)) +
+        "</b><span>" + cr + " cr · " + lista.length + " ramo" + (lista.length === 1 ? "" : "s") + "</span></header>" +
+        '<div class="malla-col__nodos">' + lista.map(function (c) {
+          var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
+          var titulo = c.nombre + (req ? " · requiere " + req : "") + (faltan.length ? " · faltan: " + faltan.join(", ") : "");
+          return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
+            '<span class="ramo-card__top"><b>' + esc(c.codigo) + '</b><span class="ramo-card__ico">' + icono(iconoEstado(e)) + "</span></span>" +
+            '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
+            '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
+            '<span class="ramo-card__est">' + esc(e) + "</span></button>";
+        }).join("") + "</div></section>";
     }).join("");
-    $$("#malla-tablero [data-ramo]").forEach(function (b) {
+    $$("#malla-cols [data-ramo]").forEach(function (b) {
       b.addEventListener("click", function () {
         var cod = b.getAttribute("data-ramo");
         if (mallaRapido) { alternarRamo(cod); return; }
-        estado.ramoSel = cod; estado.panel.malla = "detalle";
+        estado.ramoSel = estado.ramoSel === cod ? null : cod;
+        estado.panel.malla = "detalle";
         guardar(); pintarMalla(); pintarPanel();
-        if (window.innerWidth <= 1255) abrirPanel();
+        if (window.innerWidth <= 1255 && estado.ramoSel) abrirPanel();
       });
     });
+    if (detalle) detalle.innerHTML = detalleMallaHTML();
+    $$("#malla-detalle [data-chip-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        estado.ramoSel = b.getAttribute("data-chip-ramo"); estado.panel.malla = "detalle";
+        guardar(); pintarMalla(); pintarPanel();
+      });
+    });
+    var ed = $("#malla-detalle [data-malla-editar]");
+    if (ed) ed.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(ed.getAttribute("data-malla-editar"))); });
+    var limpiar = $("#malla-detalle [data-malla-limpiar]");
+    if (limpiar) limpiar.addEventListener("click", limpiarSeleccionMalla);
+    if (window.requestAnimationFrame) window.requestAnimationFrame(dibujarLineasMalla); else setTimeout(dibujarLineasMalla, 30);
+  }
+  function limpiarSeleccionMalla() {
+    estado.ramoSel = null; guardar(); pintarMalla(); pintarPanel();
+  }
+  function dibujarLineasMalla() {
+    var cont = $("#malla-tablero"), svg = $("#malla-lineas");
+    if (!cont || !svg) return;
+    var ancho = Math.max(cont.scrollWidth, cont.clientWidth), alto = Math.max(cont.scrollHeight, cont.clientHeight);
+    if (!ancho || !alto) return;
+    svg.setAttribute("viewBox", "0 0 " + ancho + " " + alto);
+    svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
+    var caja = cont.getBoundingClientRect(), nodos = {};
+    $$("#malla-cols [data-ramo]").forEach(function (el) { nodos[el.getAttribute("data-ramo")] = el; });
+    var sel = estado.ramoSel, partes = [];
+    estado.cursos.forEach(function (c) {
+      var destino = nodos[c.codigo]; if (!destino) return;
+      var reqs = (c.requisitos || []).slice();
+      (c.requisitos_o || []).forEach(function (g) {
+        g.forEach(function (r) { if (reqs.indexOf(r) === -1) reqs.push(r); });
+      });
+      reqs.forEach(function (req) {
+        var origen = nodos[req]; if (!origen) return;
+        var clase = sel ? (c.codigo === sel ? "req" : req === sel ? "des" : "tenue") : "tenue";
+        var a = origen.getBoundingClientRect(), b = destino.getBoundingClientRect();
+        var x1 = a.right - caja.left, y1 = a.top + a.height / 2 - caja.top;
+        var x2 = b.left - caja.left, y2 = b.top + b.height / 2 - caja.top;
+        var dx = Math.max(18, Math.abs(x2 - x1) * 0.45);
+        var d = "M" + x1.toFixed(1) + " " + y1.toFixed(1) + " C" + (x1 + dx).toFixed(1) + " " + y1.toFixed(1) + " " +
+          (x2 - dx).toFixed(1) + " " + y2.toFixed(1) + " " + x2.toFixed(1) + " " + y2.toFixed(1);
+        partes.push('<path class="malla-linea malla-linea--' + clase + '" d="' + d + '"/>');
+      });
+    });
+    svg.innerHTML = partes.join("");
   }
   function alternarRamo(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
@@ -857,7 +970,13 @@
     guardar(); pintarMalla(); pintarPanel(); aviso("Ramo borrado.");
   }
   function cursosDesdeDoc(doc) {
-    var raw = [], aprob = {};
+    var raw = [], aprob = {}, enCurso = {};
+    if (doc && doc.estado && typeof doc.estado === "object") {
+      var act = doc.estado.activo;
+      var sem = (doc.estado.sem || {})[act] || {};
+      (sem.ramos || []).forEach(function (r) { if (r && r.codigo) enCurso[String(r.codigo).toUpperCase()] = 1; });
+      ((doc.estado.agregados || {})[act] || []).forEach(function (r) { if (r && r.codigo) enCurso[String(r.codigo).toUpperCase()] = 1; });
+    }
     if (doc && doc.datos && Array.isArray(doc.datos.cursos)) {
       raw = doc.datos.cursos;
       var ap = doc.datos.aprobados;
@@ -878,11 +997,13 @@
       return {
         codigo: cod, nombre: c.nombre || c.name || cod,
         creditos: parseInt(c.creditos || c.credits, 10) || 0,
-        nivel: parseInt(c.nivel || c.semestre_num, 10) || 1,
+        nivel: parseInt(c.nivel, 10) || 0,
+        aprobacion: Number(c.aprobacion) || null,
+        tipo: String(c.tipo || ""), enMalla: c.en_malla !== false,
         requisitos: Array.isArray(c.requisitos) ? c.requisitos : [],
         requisitos_o: Array.isArray(c.requisitos_o) ? c.requisitos_o : [],
         aprobado: !!(c.aprobado || (Array.isArray(aprob) ? aprob.indexOf(cod) !== -1 : aprob[cod])),
-        enCurso: !!c.enCurso || c.estado === "curso"
+        enCurso: !!c.enCurso || c.estado === "curso" || !!enCurso[cod]
       };
     }).filter(Boolean);
   }
@@ -1133,10 +1254,10 @@
         '<p class="muted">' + creditosDe(cur) + " créditos · " + esc(etiquetaNivel(cur.nivel)) + " · meta " + fmtNota(q.meta) + "</p></div>" +
         '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div>" +
       '<div class="calif-resumen">' +
-        '<div><b>' + fmtNota(P) + "</b><span>Presentación</span></div>" +
-        '<div><b>' + fmtNota(nf) + "</b><span>Final</span></div>" +
-        '<div><b>' + esc(est.texto) + "</b><span>Estado</span></div>" +
-        '<div><b>' + (ex.cumple ? "eximido" : q.examen.activo ? textoNecesario(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
+        '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>Presentación</span></div>" +
+        '<div class="calif-caja calif-caja--ok"><b>' + fmtNota(nf) + "</b><span>Final</span></div>" +
+        '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>Estado</span></div>" +
+        '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? "eximido" : q.examen.activo ? textoNecesario(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
       "</div>" +
       '<div class="calif-ajustes">' +
         '<label class="campo">Nota mínima <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
@@ -1969,6 +2090,7 @@
     $("#malla-buscar").addEventListener("input", function (e) { mallaBusqueda = e.target.value; pintarMalla(); });
     $("#malla-filtro").addEventListener("change", function (e) { mallaFiltro = e.target.value; pintarMalla(); });
     $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
+    $("#malla-quitar-sel").addEventListener("click", limpiarSeleccionMalla);
     $("#btn-calif-malla").addEventListener("click", function () { ir("malla"); });
     $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
     $("#calif-lista").addEventListener("click", function (e) {
@@ -2180,6 +2302,7 @@
         $("#contenido-b").hidden = true;
         $("#btn-split").setAttribute("aria-pressed", "false");
       }
+      if (pantalla === "malla") setTimeout(dibujarLineasMalla, 60);
     });
     guardar();
   }

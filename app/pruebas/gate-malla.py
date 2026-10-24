@@ -68,8 +68,10 @@ def main() -> int:
             page.locator('#ramo-form button[type="submit"]').click()
             page.wait_for_timeout(100)
             exigir(page.locator(".ramo-card").count() == 2, "malla: crear un ramo con prerrequisito", fallas)
-            exigir("bloqueado" in page.locator('.ramo-card[data-ramo="MA2001"]').inner_text(),
+            exigir("bloqueado" in page.locator('.ramo-card[data-ramo="MA2001"]').inner_text().lower(),
                    "malla: el prerrequisito pendiente bloquea", fallas)
+            exigir(page.locator(".malla-col").count() == 2, "malla: una columna por nivel", fallas)
+            exigir(page.locator("#malla-lineas path").count() >= 1, "malla: el grafo dibuja los prerrequisitos", fallas)
 
             page.locator('.ramo-card[data-ramo="MA1001"]').click()
             page.wait_for_timeout(100)
@@ -77,12 +79,16 @@ def main() -> int:
                    "malla: seleccionar el ramo abre Detalle", fallas)
             page.locator("#panel-cuerpo [data-toggle-ramo]").click()
             page.wait_for_timeout(100)
-            exigir("disponible" in page.locator('.ramo-card[data-ramo="MA2001"]').inner_text(),
+            exigir("disponible" in page.locator('.ramo-card[data-ramo="MA2001"]').inner_text().lower(),
                    "malla: aprobar el prerrequisito desbloquea", fallas)
             exigir(page.locator("#malla-k-creditos").inner_text().strip() == "6 / 13",
                    "malla: créditos aprobados / total", fallas)
             exigir(page.locator("#malla-k-pct").inner_text().strip() == "46 %",
                    "malla: el porcentaje de la carrera se deriva", fallas)
+            exigir(page.locator(".malla-linea--des").count() >= 1,
+                   "malla: el ramo seleccionado enciende lo que desbloquea", fallas)
+            exigir("ANTES NECESITAS" in page.locator("#malla-detalle").inner_text().upper(),
+                   "malla: el detalle muestra los prerrequisitos", fallas)
 
             page.locator("#malla-rapido").check()
             page.locator('.ramo-card[data-ramo="MA2001"]').click()
@@ -92,9 +98,10 @@ def main() -> int:
             page.locator('.ramo-card[data-ramo="MA2001"]').click()
             page.wait_for_timeout(100)
             page.locator("#malla-rapido").uncheck()
+            page.wait_for_timeout(200)
 
             page.locator('.ramo-card[data-ramo="MA2001"]').click(button="right")
-            page.wait_for_timeout(80)
+            page.wait_for_timeout(160)
             exigir("Editar" in page.locator("#menu-ctx").inner_text(),
                    "malla: el clic derecho ofrece editar", fallas)
             page.locator('#menu-ctx [data-accion="ramo-editar"]').click()
@@ -124,6 +131,7 @@ def main() -> int:
             page.wait_for_timeout(350)
             exigir(page.locator(".ramo-card").count() == 87,
                    f"malla: importa el respaldo v3 — {page.locator('.ramo-card').count()} ramos", fallas)
+            exigir(page.locator(".malla-col").count() >= 5, "malla: la importación arma las columnas", fallas)
             exigir(page.locator("#malla-k-creditos").inner_text().strip() == "96 / 464",
                    "malla: créditos importados 96 / 464", fallas)
             page.locator("#malla-buscar").fill("CUR087")

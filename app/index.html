@@ -37,6 +37,8 @@
   <symbol id="i-bloque" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
   <symbol id="i-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></symbol>
 </defs></svg>
 
@@ -210,7 +212,7 @@
 
     <section class="seccion" data-pantalla="malla" id="p-malla" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub">Cursos, niveles, prerrequisitos y créditos. Clic derecho en un ramo para sus acciones.</p></div>
+        <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub">La carrera se dibuja sola por niveles. Elige un ramo para ver qué necesita y qué desbloquea.</p></div>
         <div class="sec-acciones">
           <span class="pill">kit Academics</span>
           <button class="btn" id="btn-importar-malla" type="button">Importar</button>
@@ -219,13 +221,20 @@
           <input type="file" id="archivo-malla" accept=".json,application/json" hidden>
         </div>
       </div>
-      <div class="kpis">
-        <div class="kpi"><b id="malla-k-creditos">0 / 0</b><span>créditos aprobados</span></div>
-        <div class="kpi"><b id="malla-k-pct">0 %</b><span>de la carrera</span></div>
-        <div class="kpi"><b id="malla-k-ramos">0</b><span>aprobados · en curso</span></div>
-        <div class="kpi"><b id="malla-k-libres">0</b><span>ramos disponibles</span></div>
+      <div class="kpis malla-kpis">
+        <div class="kpi kpi--ok"><b id="malla-k-creditos">0 / 0</b><span>créditos aprobados</span></div>
+        <div class="kpi kpi--ac"><b id="malla-k-pct">0 %</b><span>de la carrera</span></div>
+        <div class="kpi kpi--warn"><b id="malla-k-ramos">0</b><span>aprobados · en curso</span></div>
+        <div class="kpi kpi--q"><b id="malla-k-libres">0</b><span>ramos disponibles</span></div>
       </div>
-      <div class="card" data-ctx-zona="malla">
+      <div class="malla-progreso" role="progressbar" aria-label="Avance de la carrera" aria-valuemin="0" aria-valuemax="100">
+        <div><i id="malla-progreso-barra"></i></div><span id="malla-progreso-txt">0 %</span>
+      </div>
+      <div class="card malla-card" data-ctx-zona="malla">
+        <div class="malla-intro">
+          <div><h2>La carrera, de un vistazo</h2><p>Las columnas son los niveles; las líneas, los prerrequisitos. Selecciona un ramo y el grafo te muestra qué necesitas y qué desbloqueas.</p></div>
+          <span class="pill" id="malla-niveles-cuenta">0 niveles</span>
+        </div>
         <form class="ramo-form" id="ramo-form" hidden>
           <input class="entrada" id="ramo-codigo" type="text" placeholder="Código (MA1001)" aria-label="Código del ramo" autocomplete="off">
           <input class="entrada" id="ramo-nombre" type="text" placeholder="Nombre del ramo" aria-label="Nombre del ramo" autocomplete="off">
@@ -247,7 +256,16 @@
             <option value="bloqueados">Bloqueados</option>
           </select>
           <label class="check"><input type="checkbox" id="malla-rapido"> Modo rápido: marcar aprobado con un clic</label>
+          <button class="btn btn--chico" id="malla-quitar-sel" type="button" hidden>Quitar selección</button>
         </div>
+        <div class="malla-leyenda" id="malla-leyenda">
+          <span><i class="aprobado"></i>aprobado <b id="malla-lg-aprobado">0</b></span>
+          <span><i class="curso"></i>en curso <b id="malla-lg-curso">0</b></span>
+          <span><i class="disponible"></i>disponible <b id="malla-lg-disponible">0</b></span>
+          <span><i class="bloqueado"></i>bloqueado <b id="malla-lg-bloqueado">0</b></span>
+          <span><i class="reprobado"></i>reprobado <b id="malla-lg-reprobado">0</b></span>
+        </div>
+        <p class="malla-pista" id="malla-pista">Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.</p>
         <div class="empty" id="malla-vacio" hidden>
           <h2>Tu malla está vacía</h2>
           <p>Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles.</p>
@@ -256,7 +274,13 @@
             <button class="btn" type="button" id="malla-importar-vacio">Traer una malla desde un archivo</button>
           </div>
         </div>
-        <div id="malla-tablero" class="malla-tablero"></div>
+        <div class="malla-scroll" id="malla-scroll">
+          <div class="malla" id="malla-tablero">
+            <svg class="malla-lineas" id="malla-lineas" aria-hidden="true"></svg>
+            <div class="malla-cols" id="malla-cols"></div>
+          </div>
+        </div>
+        <div class="malla-detalle" id="malla-detalle"></div>
       </div>
     </section>
 
