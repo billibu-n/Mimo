@@ -409,8 +409,9 @@
       <div class="ajustes-grupo"><h2 data-i18n="grupo.datos">Datos</h2><p class="muted" data-i18n="grupo.datos.sub">Lo que entra, sale y se guarda.</p></div>
       <div class="ajustes-grid">
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg><span data-i18n="aj.periodos">Periodos</span></h2><p class="muted" data-i18n="aj.periodos.sub">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes" data-l10n-es="+ Nuevo periodo" data-l10n-en="+ New term" data-l10n-zh="+ 新建学期">+ Nuevo periodo</button></section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="aj.respaldo">Respaldo</span></h2><p class="muted" id="ajustes-datos" data-l10n-es="Datos locales." data-l10n-en="Local data." data-l10n-zh="本地数据。">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar" data-l10n-es="Exportar JSON" data-l10n-en="Export JSON" data-l10n-zh="导出 JSON">Exportar JSON</button><button class="btn" type="button" id="btn-importar" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
-          <p class="muted" data-l10n-es="Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2)." data-l10n-en="Accepts Mimo and Mimo Academics 1.1.2 (format 2) backups." data-l10n-zh="接受 Mimo 和 Mimo Academics 1.1.2（格式 2）备份。">Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2).</p>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="aj.respaldo">Respaldo</span></h2><p class="muted" id="ajustes-datos" data-l10n-es="Datos locales." data-l10n-en="Local data." data-l10n-zh="本地数据。">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar-entorno" data-l10n-es="Exportar entorno" data-l10n-en="Export environment" data-l10n-zh="导出环境">Exportar entorno</button><button class="btn" type="button" id="btn-exportar-malla-aj" data-l10n-es="Exportar malla" data-l10n-en="Export degree plan" data-l10n-zh="导出课程规划">Exportar malla</button><button class="btn" type="button" id="btn-exportar-todo" data-l10n-es="Exportar todo" data-l10n-en="Export all" data-l10n-zh="全部导出">Exportar todo</button></div>
+          <div class="fila"><button class="btn btn-primario" type="button" id="btn-importar" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
+          <p class="muted" data-l10n-es="Entorno y malla son documentos separados; «Exportar todo» los junta. Importar acepta los tres y también el formato 2 de Mimo Academics." data-l10n-en="Environment and degree plan are separate documents; “Export all” joins them. Import accepts all three and the Mimo Academics format 2 as well." data-l10n-zh="环境和课程规划是分开的文档；“全部导出”会将它们合并。导入接受这三种以及 Mimo Academics 格式 2。">Entorno y malla son documentos separados; «Exportar todo» los junta. Importar acepta los tres y también el formato 2 de Mimo Academics.</p>
         </section>
         <section class="card card--ancho" id="sync-card">
           <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg><span data-i18n="aj.sync">Sincronización</span></h2>
@@ -632,6 +633,7 @@
 
 <script src="vendor/katex/katex.min.js"></script>
 <script src="vendor/katex/auto-render.min.js"></script>
+<script src="js/esquema.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/mimo-juego.js"></script>

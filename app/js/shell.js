@@ -7,6 +7,10 @@
   var RESET = /[?&]reset=1\b/.test(location.search);
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function conservar(destino, origen) {
+    Object.keys(origen || {}).forEach(function (k) { if (!(k in destino)) destino[k] = origen[k]; });
+    return destino;
+  }
   var esc = function (s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -857,14 +861,14 @@
 
   function normalizarEventos() {
     estado.eventos = (estado.eventos || []).map(function (e, i) {
-      return {
+      return conservar({
         id: e.id || "e" + i,
         titulo: e.titulo || "Sin título",
         fecha: e.fecha || hoyISO(),
         hora: e.hora || "",
         contexto: e.contexto || "",
         nota: e.nota || ""
-      };
+      }, e);
     });
   }
   function eventoPorId(id) { return estado.eventos.filter(function (e) { return e.id === id; })[0] || null; }
@@ -1018,7 +1022,7 @@
   function normalizarTareas() {
     estado.tareas = (estado.tareas || []).map(function (t, i) {
       var e = t.estado || (t.hecha ? "hecha" : "pendiente");
-      return {
+      return conservar({
         id: t.id || "t" + i,
         titulo: t.titulo || "Sin título",
         tipo: t.tipo === "proyecto" ? "proyecto" : "tarea",
@@ -1031,7 +1035,7 @@
         nota: t.nota || "",
         orden: typeof t.orden === "number" ? t.orden : i,
         creada: t.creada || ""
-      };
+      }, t);
     });
   }
   function tareaPorId(id) { return estado.tareas.filter(function (t) { return t.id === id; })[0] || null; }
@@ -1209,7 +1213,7 @@
       var cerrado = c.cerrado !== undefined ? !!c.cerrado : !!c.aprobado;
       var aprobado = !!c.aprobado && cerrado;
       var resultado = cerrado ? String(c.resultado || (aprobado ? "aprobado" : "reprobado")) : "";
-      out.push({
+      out.push(conservar({
         codigo: cod, nombre: String(c.nombre || cod).trim() || cod,
         creditos: Math.max(0, parseInt(c.creditos, 10) || 0), nivel: nivel,
         requisitos: reqs, requisitos_o: grupos, aprobacion: Number(c.aprobacion) || null,
@@ -1217,8 +1221,13 @@
         cerrado: cerrado, aprobado: aprobado, resultado: resultado,
         notaCierre: c.notaCierre === null || c.notaCierre === undefined ? null : Number(c.notaCierre),
         cerradoEn: String(c.cerradoEn || ""),
-        enCurso: !!c.enCurso && !cerrado
-      });
+        enCurso: !!c.enCurso && !cerrado,
+        alias: String(c.alias || ""), color: String(c.color || ""),
+        semestre: String(c.semestre || ""), semestreNum: Number(c.semestreNum || 0) || 0,
+        desbloquea: Array.isArray(c.desbloquea) ? c.desbloquea.map(String) : [],
+        ficha: c.ficha && typeof c.ficha === "object" ? { descripcion: String(c.ficha.descripcion || ""), temario: String(c.ficha.temario || "") } : null,
+        extra: c.extra && typeof c.extra === "object" ? c.extra : {}
+      }, c));
     });
     estado.cursos = out;
   }
@@ -1566,33 +1575,31 @@
     var lector = new FileReader();
     lector.onload = function () {
       try {
-        var cursos = cursosDesdeDoc(JSON.parse(lector.result));
-        if (!cursos || !cursos.length) { aviso(L("El archivo no trae cursos de malla.", "The file has no degree-plan courses.", "文件中没有课程规划。")); return; }
-        if (estado.cursos.length && !window.confirm(L("¿Reemplazar la malla actual (" + estado.cursos.length + " ramos) por " + cursos.length + "?", "Replace the current plan (" + estado.cursos.length + " courses) with " + cursos.length + "?", "用 " + cursos.length + " 门课程替换当前规划（" + estado.cursos.length + " 门）？"))) return;
-        estado.cursos = cursos; estado.ramoSel = null;
-        normalizarCursos(); guardar(); pintarMalla(); pintarPanel();
-        aviso(L("Malla importada: ", "Plan imported: ", "规划已导入：") + estado.cursos.length + L(" ramos.", " courses.", " 门课程。"));
+        var x = JSON.parse(lector.result);
+        var r = window.MimoEsquema ? MimoEsquema.importar(x, estado) : null;
+        if (!r || !r.estado.cursos) { aviso(L("El archivo no trae cursos de malla.", "The file has no degree-plan courses.", "文件中没有课程规划。")); return; }
+        if (estado.cursos.length && !window.confirm(L("¿Reemplazar la malla actual (" + estado.cursos.length + " ramos) por " + r.estado.cursos.length + "?", "Replace the current plan (" + estado.cursos.length + " courses) with " + r.estado.cursos.length + "?", "用 " + r.estado.cursos.length + " 门课程替换当前规划（" + estado.cursos.length + " 门）？"))) return;
+        var nuevo = Object.assign({}, estado, { cursos: r.estado.cursos, califs: r.estado.califs || {} });
+        reemplazarEstado(nuevo);
+        aviso(L("Malla importada: ", "Degree plan imported: ", "课程规划已导入：") + estado.cursos.length + L(" ramos y ", " courses and ", " 门课程和 ") + Object.keys(estado.califs || {}).length + L(" calificaciones.", " grade records.", " 条成绩记录。"));
       } catch (e) { aviso(L("No se pudo leer la malla.", "The plan could not be read.", "无法读取规划。")); }
     };
     lector.readAsText(file);
   }
   function exportarMalla() {
     normalizarCursos();
-    var blob = new Blob([JSON.stringify({ v: 1, tipo: "mimo-malla", cursos: estado.cursos }, null, 2)],
-      { type: "application/json" });
+    var doc = window.MimoEsquema ? MimoEsquema.exportarMalla(estado) : { v: 1, tipo: "mimo-malla", cursos: estado.cursos };
+    var blob = new Blob([JSON.stringify(doc, null, 2)], { type: "application/json" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "mimo-malla.json"; a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-    aviso(L("Malla exportada.", "Plan exported.", "规划已导出。"));
+    aviso(L("Malla exportada.", "Degree plan exported.", "课程规划已导出。"));
   }
 
-  /* ---- U4b: Calificaciones, notas por categoría, examen y eximición ---- */
   var califSel = null;
-
   function califPorDefecto() {
     return {
-      categorias: [{ nombre: "General", peso: 100 }],
-      componentes: [],
+      categorias: [{ nombre: "General", peso: 100 }], componentes: [],
       examen: { activo: true, peso: 40, nota: null, reemplaza: null },
       eximicion: { activa: false, modo: "todas", condiciones: [] },
       notaMin: 4, meta: 5
@@ -1607,12 +1614,6 @@
     if (n < 1) n = 1;
     return Math.round(n * 10) / 10;
   }
-  function fmtNota(v) { return v === null || v === undefined ? "—" : (Math.round(v * 10) / 10).toFixed(1); }
-
-  /* ---- Puente desde un respaldo de Mimo Academics (formato 2, estado.v3) ----
-     El respaldo viejo no se puede cargar tal cual: su capa `estado` guarda semestres,
-     cursos, notas, tareas y sesiones con otra forma. Esto lo traduce al estado de MIMO
-     universal sin inventar datos: lo que no viene queda vacío. */
   function nivelDeCodigo(cod, tipo) {
     if (String(tipo || "") === "cupo" || /^CUPO/i.test(String(cod || ""))) return 99;
     var m = String(cod || "").match(/(\d)/);
@@ -1760,6 +1761,7 @@
     return n;
   }
 
+  function fmtNota(v) { return v === null || v === undefined ? "—" : (Math.round(v * 10) / 10).toFixed(1); }
   function fmtNota2(v) { return v === null || v === undefined ? "—" : (Math.round(v * 100) / 100).toFixed(2); }
   function textoNecesario(v) {
     if (v === null || v === undefined) return "—";
@@ -1773,11 +1775,13 @@
     var vigentes = {};
     estado.cursos.forEach(function (cur) {
       var q = estado.califs[cur.codigo];
-      if (!q || typeof q !== "object") q = califPorDefecto();
+      if (!q || typeof q !== "object") return;
       if (!Array.isArray(q.categorias) || !q.categorias.length) q.categorias = [{ nombre: "General", peso: 100 }];
       q.categorias = q.categorias.map(function (cat, i) {
-        return { nombre: String(cat.nombre || "Categoría " + (i + 1)), peso: Math.max(0, Number(cat.peso) || 0) };
+        return conservar({ nombre: String(cat.nombre || "Categoría " + (i + 1)), peso: Math.max(0, Number(cat.peso) || 0) }, cat);
       });
+      var sumaCat = q.categorias.reduce(function (a, c) { return a + c.peso; }, 0);
+      if (sumaCat > 0 && sumaCat <= 1.5) q.categorias.forEach(function (c) { c.peso = Math.round(c.peso * 100 / sumaCat * 100) / 100; });
       var vistosCat = {};
       q.categorias.forEach(function (cat) {
         var base = cat.nombre, n = 1;
@@ -1785,11 +1789,11 @@
         vistosCat[cat.nombre] = 1;
       });
       q.componentes = (Array.isArray(q.componentes) ? q.componentes : []).map(function (x, i) {
-        return {
+        return conservar({
           nombre: String(x.nombre || "Componente " + (i + 1)),
           categoria: String(x.categoria || q.categorias[0].nombre),
           nota: notaNum(x.nota), fecha: String(x.fecha || ""), peso: Math.max(0.1, Number(x.peso) || 1)
-        };
+        }, x);
       });
       q.componentes.forEach(function (x) {
         if (!q.categorias.some(function (c) { return c.nombre === x.categoria; })) x.categoria = q.categorias[0].nombre;
@@ -2002,7 +2006,9 @@
     var lista = $("#calif-lista"), det = $("#calif-detalle");
     if (!lista || !det) return;
     normalizarCursos(); normalizarCalifs();
-    var cursos = estado.cursos, vacio = $("#calif-vacio"), layout = $("#calif-layout");
+    var cursos = estado.cursos.filter(function (c) { return estado.califs[c.codigo] || c.enCurso; });
+    if (!cursos.length && estado.cursos.length) cursos = [estado.cursos[0]];
+    var vacio = $("#calif-vacio"), layout = $("#calif-layout");
     if (!cursos.length) {
       if (vacio) vacio.hidden = false;
       if (layout) layout.hidden = true;
@@ -2180,7 +2186,11 @@
   function pintarEstudio() {
     if (!$("#est-grafico")) return;
     normalizarCursos(); normalizarEstudio();
-    var cursos = estado.cursos;
+    var usados = {};
+    (estado.sesiones || []).forEach(function (s) { if (s.ramo) usados[s.ramo] = 1; });
+    Object.keys((estado.estudio && estado.estudio.metasRamo) || {}).forEach(function (cod) { usados[cod] = 1; });
+    var cursos = estado.cursos.filter(function (c) { return c.enCurso || usados[c.codigo]; });
+    if (!cursos.length && estado.cursos.length) cursos = [estado.cursos[0]];
     var semanas = semanasEstudio();
     var meta = Number(estado.estudio.metaSemanal) || 0;
     if ($("#est-meta")) $("#est-meta").value = meta;
@@ -2188,7 +2198,7 @@
     var sel = $("#est-ramo");
     if (sel) {
       var val = sel.value;
-      sel.innerHTML = '<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>' + cursos.map(function (c) {
+      sel.innerHTML = '<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>' + estado.cursos.map(function (c) {
         return '<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>";
       }).join("");
       if (val && (val === "" || ramoPorCodigo(val))) sel.value = val;
@@ -2281,7 +2291,7 @@
   }
   function normalizarNotas() {
     estado.notas = (estado.notas || []).map(function (n, i) {
-      return {
+      return conservar({
         id: n.id || "n" + i,
         titulo: n.titulo || "Sin título",
         cuerpo: n.cuerpo || "",
@@ -2290,7 +2300,7 @@
         enlaces: Array.isArray(n.enlaces) ? n.enlaces : [],
         fijada: !!n.fijada,
         actualizado: n.actualizado || ""
-      };
+      }, n);
     });
   }
   function notaActual() {
@@ -3513,11 +3523,25 @@
       else cerrarSplit();
       pintarAjustes();
     });
-    $("#btn-exportar").addEventListener("click", function () {
-      var blob = new Blob([JSON.stringify(estado, null, 2)], { type: "application/json" });
-      var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mimo-backup.json"; a.click();
+    function descargarJSON(obj, nombre) {
+      var blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+      var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-      aviso(L("Respaldo exportado.", "Backup exported.", "备份已导出。"));
+    }
+    $("#btn-exportar-entorno").addEventListener("click", function () {
+      if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
+      descargarJSON(MimoEsquema.exportarEntorno(estado), "mimo-entorno.json");
+      aviso(L("Entorno exportado. Llévalo junto a la malla.", "Environment exported. Carry it with the degree plan.", "环境已导出。请与课程规划一起携带。"));
+    });
+    $("#btn-exportar-malla-aj").addEventListener("click", function () {
+      if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
+      descargarJSON(MimoEsquema.exportarMalla(estado), "mimo-malla.json");
+      aviso(L("Malla exportada.", "Degree plan exported.", "课程规划已导出。"));
+    });
+    $("#btn-exportar-todo").addEventListener("click", function () {
+      if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
+      descargarJSON(MimoEsquema.exportarBackup(estado), "mimo-backup.json");
+      aviso(L("Respaldo completo exportado: entorno y malla.", "Full backup exported: environment and degree plan.", "完整备份已导出：环境和课程规划。"));
     });
     $("#btn-importar").addEventListener("click", function () { $("#archivo-importar").click(); });
     $("#archivo-importar").addEventListener("change", function (e) {
@@ -3526,16 +3550,12 @@
       lector.onload = function () {
         try {
           var x = JSON.parse(lector.result);
-          var nuevo = null, origen = "";
-          if (x && x.formato === 2 && x.estado && typeof x.estado === "object") {
-            nuevo = convertirAcademics(x); origen = "Mimo Academics";
-          } else if (x && typeof x === "object" && !Array.isArray(x)) {
-            nuevo = x; origen = "MIMO";
-          }
-          if (!nuevo) { aviso(L("Ese archivo no es un respaldo de MIMO.", "That file is not a MIMO backup.", "该文件不是 MIMO 备份。")); return; }
-          if (!window.confirm(L("Se reemplazarán los datos actuales por los de " + origen + ". ¿Continuar?", "Current data will be replaced by " + origen + ". Continue?", "当前数据将被 " + origen + " 替换。继续？"))) return;
-          reemplazarEstado(nuevo);
-          aviso(L("Importados ", "Imported ", "已导入 ") + estado.cursos.length + L(" ramos, ", " courses, ", " 门课程、") + estado.tareas.length + L(" tareas y ", " tasks and ", " 个任务和 ") + estado.sesiones.length + L(" sesiones.", " sessions.", " 个会话。"));
+          var r = window.MimoEsquema ? MimoEsquema.importar(x, estado) : null;
+          if (!r) { aviso(L("Ese archivo no es un respaldo de MIMO.", "That file is not a MIMO backup.", "该文件不是 MIMO 备份。")); return; }
+          if (!window.confirm(L("Se reemplazarán los datos actuales por los de " + r.tipo + ". ¿Continuar?", "Current data will be replaced by " + r.tipo + ". Continue?", "当前数据将被 " + r.tipo + " 替换。继续？"))) return;
+          reemplazarEstado(r.estado);
+          var q = r.resumen || {};
+          aviso(L("Importados ", "Imported ", "已导入 ") + (q.cursos || 0) + L(" ramos, ", " courses, ", " 门课程、") + (q.tareas || 0) + L(" tareas, ", " tasks, ", " 个任务、") + (q.eventos || 0) + L(" eventos y ", " events and ", " 个事件和 ") + (q.sesiones || 0) + L(" sesiones.", " sessions.", " 个会话。"));
         } catch (err) { aviso(L("No se pudo importar el archivo.", "The file could not be imported.", "无法导入文件。")); }
       };
       lector.readAsText(f); e.target.value = "";
