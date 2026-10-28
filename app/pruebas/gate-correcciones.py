@@ -116,6 +116,18 @@ def main() -> int:
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(180)
             exigir(page.locator(".ajustes-grupo").count() == 3,
                    f"ajustes: 3 grupos — {page.locator('.ajustes-grupo').count()}", fallas)
+            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0",
+                   f"marca: versión v1.2.0 — {page.locator('.badge').inner_text().strip()}", fallas)
+            fuente = page.locator(".wordmark").evaluate("e => getComputedStyle(e).fontFamily")
+            exigir("Comfortaa" in fuente, f"marca: wordmark Comfortaa — {fuente}", fallas)
+            columnas = page.locator(".ajustes-grid").first.evaluate(
+                "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
+            exigir(columnas == 2, f"ajustes: dos columnas — {columnas}", fallas)
+            antes = page.locator("#mimo-ic").get_attribute("src")
+            page.locator("#btn-mimo").click(); page.wait_for_timeout(120)
+            despues = page.locator("#mimo-ic").get_attribute("src")
+            exigir(antes != despues and page.locator("#mimo-menu").count() == 0,
+                   "mascota: anima sin abrir menú", fallas)
             exigir(page.locator("#pref-tema-claro option").count() == 4,
                    "ajustes: 4 temas claros", fallas)
             exigir(page.locator("#pref-tema-oscuro option").count() == 5,

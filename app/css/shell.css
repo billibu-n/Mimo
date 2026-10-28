@@ -75,14 +75,17 @@
 .nota-cuerpo{flex:1;width:100%;min-height:250px;border:0;background:transparent;color:var(--fg);resize:vertical;line-height:1.6}
 .nota-meta{font-size:var(--fs-xs);color:var(--muted)}
 
-.temas{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--sp-2);margin-top:var(--sp-3)}
-.tema{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-2);background:var(--bg);color:var(--fg);font-size:var(--fs-sm);text-align:left}
+.temas{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--sp-2);margin-top:var(--sp-3)}
+.tema{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:var(--sp-1) var(--sp-2);background:var(--bg);color:var(--fg);font-size:var(--fs-sm);text-align:left}
 .tema i{width:18px;height:18px;border-radius:50%;background:var(--ac);flex:none}
 .tema[aria-pressed="true"]{outline:2px solid var(--ac);outline-offset:1px}
-.ajustes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--sp-3)}
+.ajustes-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-3);align-items:start}
 .ajustes-grid .card{margin:0}
 .ajustes-grid .card h2{font-size:var(--fs-lg);margin:0 0 var(--sp-1)}
 .ajustes-grid .card h2 .icono{width:18px;height:18px;color:var(--ac);vertical-align:-3px;margin-right:6px}
+.ajustes-pila{display:flex;flex-direction:column;gap:var(--sp-3);min-width:0}
+.ajustes-pila .card{margin:0}
+@media (max-width:900px){.ajustes-grid{grid-template-columns:1fr}}
 .ajustes-grupo{margin:var(--sp-5) 0 var(--sp-2)}
 .ajustes-grupo:first-of-type{margin-top:var(--sp-2)}
 .ajustes-grupo h2{font-size:var(--fs-xl);margin:0}
@@ -231,13 +234,13 @@ body{padding-bottom:var(--alto-pie)}
 @media (max-width:520px){.cal-grid--semana{grid-template-columns:1fr}.cal-semana-dia{min-height:0}}
 
 /* ---- correcciones de cabecera, periodo, split y Tiempo ---- */
+@font-face{font-family:"Comfortaa";src:url("../vendor/fonts/comfortaa-semibold.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
 .marca{display:inline-flex;align-items:center;gap:var(--sp-2);border:0;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:var(--fs-lg);cursor:pointer;padding:0}
+.marca .wordmark{display:inline-flex;align-items:baseline;font-family:"Comfortaa","Trebuchet MS",sans-serif;font-weight:600;font-size:1.5rem;line-height:1;letter-spacing:-.045em;color:var(--fg)}
+.marca .wm-i{position:relative;display:inline-block;padding:0 .01em}
+.marca .wm-i::after{content:"";position:absolute;left:50%;top:-.1em;width:.13em;height:.13em;transform:translateX(-50%);border-radius:50%;background:#e6b800;box-shadow:0 0 0 .045em var(--fg)}
 .marca img{border-radius:50%}
 .marca:hover img{transform:scale(1.06)}
-.mimo-menu{position:absolute;top:calc(var(--alto-topbar) - 2px);left:var(--sp-3);z-index:60;display:flex;flex-direction:column;min-width:190px;padding:var(--sp-1);background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:0 8px 30px rgb(0 0 0 / .18)}
-.mimo-menu[hidden]{display:none}
-.mimo-menu button{border:0;background:transparent;color:var(--fg);text-align:left;padding:var(--sp-2);border-radius:var(--r-sm);font:inherit;font-size:var(--fs-sm);cursor:pointer}
-.mimo-menu button:hover{background:var(--sup2)}
 .navbar .tabs{flex:1;min-width:0}
 .navbar .nav-acciones{margin-left:auto;flex:none}
 .tab{width:40px;justify-content:center;padding:0}

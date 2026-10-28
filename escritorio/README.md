@@ -6,14 +6,14 @@ cd ~/workspace/proyectos/mimo-nuevo/escritorio
 cargo tauri build --bundles rpm        # compila y empaqueta
 ```
 
-Deja el instalable en `src-tauri/target/release/bundle/rpm/Mimo-0.1.0-1.x86_64.rpm` (2,9 MB) y el
+Deja el instalable en `src-tauri/target/release/bundle/rpm/Mimo-1.2.0-1.x86_64.rpm` (2,9 MB) y el
 binario suelto en `src-tauri/target/release/mimo`.
 
 ## Instalar, abrir, desinstalar
 
 ```bash
 # en un Fedora con permisos de administrador
-sudo dnf install ./src-tauri/target/release/bundle/rpm/Mimo-0.1.0-1.x86_64.rpm
+sudo dnf install ./src-tauri/target/release/bundle/rpm/Mimo-1.2.0-1.x86_64.rpm
 mimo                                   # o desde el menu, como "Mimo"
 sudo dnf remove mimo
 ```

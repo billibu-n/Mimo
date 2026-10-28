@@ -3081,25 +3081,6 @@
     });
     $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
     $("#btn-periodo").addEventListener("click", abrirPeriodo);
-    $("#btn-mimo").addEventListener("click", function (e) {
-      e.stopPropagation();
-      $("#mimo-menu").hidden = false;
-    });
-    document.addEventListener("click", function (e) {
-      if (!e.target.closest("#btn-mimo") && !e.target.closest("#mimo-menu")) $("#mimo-menu").hidden = true;
-    });
-    $("#mimo-menu").addEventListener("click", function (e) { e.stopPropagation(); });
-    $$("#mimo-menu [data-menu]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        $("#mimo-menu").hidden = true;
-        var m = b.getAttribute("data-menu");
-        if (m === "periodo") abrirPeriodo();
-        else if (m === "evento") { ir("calendario"); abrirEvento(null); }
-        else if (m === "tarea") { ir("tareas"); abrirFormulario(null); }
-        else if (m === "nota") { ir("notas"); $("#btn-nueva-nota").click(); }
-        else if (m === "ajustes") ir("ajustes");
-      });
-    });
     $("#sesion-x").addEventListener("click", cerrarSesionModal);
     $("#sesion-cancelar").addEventListener("click", cerrarSesionModal);
     $("#modal-sesion").addEventListener("click", function (e) { if (e.target === $("#modal-sesion")) cerrarSesionModal(); });

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MIMO · universal</title>
-<meta name="description" content="MIMO universal: Calendario, Tareas, Notas y Ajustes; bloques instalables.">
+<title>Mimo · universal</title>
+<meta name="description" content="Mimo universal: Calendario, Tareas, Notas y Ajustes; bloques instalables.">
 <link rel="icon" href="maqueta/icon-64.png">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/temas/tema-clasico.css">
@@ -44,8 +44,8 @@
 </defs></svg>
 
 <header class="topbar">
-  <button class="marca" id="btn-mimo" type="button" title="Menú de MIMO"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span>MIMO</span></button>
-  <span class="badge">universal · 0.1</span>
+  <button class="marca" id="btn-mimo" type="button" title="Mimo" aria-label="Mimo"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span class="wordmark" aria-hidden="true">M<span class="wm-i">ı</span>mo</span></button>
+  <span class="badge" title="Versión">v1.2.0</span>
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span>Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
@@ -54,13 +54,6 @@
   <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
   <button class="icono-btn" id="btn-ajustes" type="button" title="Ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
 </header>
-<div class="mimo-menu" id="mimo-menu" hidden>
-  <button type="button" data-menu="periodo">Nuevo periodo</button>
-  <button type="button" data-menu="evento">Nuevo evento</button>
-  <button type="button" data-menu="tarea">Nueva tarea</button>
-  <button type="button" data-menu="nota">Nueva nota</button>
-  <button type="button" data-menu="ajustes">Ajustes</button>
-</div>
 
 <div class="navbar">
   <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
@@ -354,47 +347,53 @@
 
       <div class="ajustes-grupo"><h2>Aplicación</h2><p class="muted">Lo que vale para toda la app.</p></div>
       <div class="ajustes-grid">
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-sol"/></svg>Apariencia</h2><p class="muted">Nueve temas. El botón sol/luna salta entre la pareja claro/oscuro.</p>
-          <div class="temas" id="temas"></div>
-          <div class="pareja-temas">
-            <label class="campo">Tema claro <select class="entrada" id="pref-tema-claro"></select></label>
-            <label class="campo">Tema oscuro <select class="entrada" id="pref-tema-oscuro"></select></label>
-          </div>
-        </section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
-          <label class="campo">La semana empieza en <select class="entrada" id="pref-inicio"><option value="lunes">Lunes</option><option value="domingo">Domingo</option></select></label>
-          <label class="campo">Formato de hora <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
-          <p class="muted" id="ajustes-resumen"></p>
-        </section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg>Navegación</h2><p class="muted">Dónde viven las secciones.</p>
-          <label class="campo">Barra de secciones <select class="entrada" id="pref-nav"><option value="arriba">Arriba</option><option value="izquierda">Izquierda</option></select></label>
-          <p class="muted">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
-        </section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg>Paneles</h2><p class="muted">Ancho y visibilidad del panel derecho.</p>
-          <label class="campo">Ancho <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
-          <label class="check"><input type="checkbox" id="pref-panel-abierto"> Abierto al iniciar</label>
-          <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px">Abrir panel</button>
-        </section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg>Idioma</h2><p class="muted">Motor i18n es/en. Navegación y títulos cambian en caliente.</p>
-          <label class="campo">Idioma <select class="entrada" id="pref-idioma"><option value="es">🇨🇱 Español</option><option value="en">🇬🇧 English</option></select></label>
-          <p class="muted" id="ajustes-idioma">English está en progreso: los textos internos siguen en español.</p>
-        </section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-tiempo"/></svg>Notificaciones</h2><p class="muted">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> Avisos activos</label></section>
+        <div class="ajustes-pila">
+          <section class="card card--apariencia"><h2><svg class="icono" aria-hidden="true"><use href="#i-sol"/></svg>Apariencia</h2><p class="muted">Nueve temas. El botón sol/luna salta entre la pareja claro/oscuro.</p>
+            <div class="temas" id="temas"></div>
+            <div class="pareja-temas">
+              <label class="campo">Tema claro <select class="entrada" id="pref-tema-claro"></select></label>
+              <label class="campo">Tema oscuro <select class="entrada" id="pref-tema-oscuro"></select></label>
+            </div>
+          </section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg>Idioma</h2><p class="muted">Motor i18n es/en. Navegación y títulos cambian en caliente.</p>
+            <label class="campo">Idioma <select class="entrada" id="pref-idioma"><option value="es">🇨🇱 Español</option><option value="en">🇬🇧 English</option></select></label>
+            <p class="muted" id="ajustes-idioma">English está en progreso: los textos internos siguen en español.</p>
+          </section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-tiempo"/></svg>Notificaciones</h2><p class="muted">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> Avisos activos</label></section>
+        </div>
+        <div class="ajustes-pila">
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
+            <label class="campo">La semana empieza en <select class="entrada" id="pref-inicio"><option value="lunes">Lunes</option><option value="domingo">Domingo</option></select></label>
+            <label class="campo">Formato de hora <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
+            <p class="muted" id="ajustes-resumen"></p>
+          </section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg>Navegación</h2><p class="muted">Dónde viven las secciones.</p>
+            <label class="campo">Barra de secciones <select class="entrada" id="pref-nav"><option value="arriba">Arriba</option><option value="izquierda">Izquierda</option></select></label>
+            <p class="muted">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
+          </section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg>Paneles</h2><p class="muted">Ancho y visibilidad del panel derecho.</p>
+            <label class="campo">Ancho <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
+            <label class="check"><input type="checkbox" id="pref-panel-abierto"> Abierto al iniciar</label>
+            <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px">Abrir panel</button>
+          </section>
+        </div>
       </div>
 
       <div class="ajustes-grupo"><h2>Datos</h2><p class="muted">Lo que entra, sale y se guarda.</p></div>
       <div class="ajustes-grid">
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg>Periodos</h2><p class="muted">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
-          <p class="muted">Acepta respaldos de MIMO y de Mimo Academics 1.1.2 (formato 2).</p>
+          <p class="muted">Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2).</p>
         </section>
       </div>
 
       <div class="ajustes-grupo"><h2>Extensiones</h2><p class="muted">Bloques, laboratorio y versión.</p></div>
       <div class="ajustes-grid">
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg>Laboratorio</h2><p class="muted">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>Acerca de</h2><p class="muted">MIMO universal · 0.1 · base 4 + bloques. MIT. Sin red.</p></section>
+        <div class="ajustes-pila">
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg>Laboratorio</h2><p class="muted">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>Acerca de</h2><p class="muted">Mimo universal · 1.2.0 · base 4 + bloques. MIT. Sin red.</p></section>
+        </div>
       </div>
     </section>
   </main>
@@ -473,8 +472,8 @@
 
 <div class="modal modal-buscar" id="modal-buscar" role="dialog" aria-modal="true" aria-labelledby="buscar-tit">
   <div class="modal__caja buscar-caja">
-    <header class="modal__cab"><div><h2 id="buscar-tit">Buscar en MIMO</h2><p class="muted" id="buscar-sub">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
-    <input class="entrada buscar-input" id="buscar-input" type="search" placeholder="Escribe para buscar…" aria-label="Buscar en MIMO" autocomplete="off">
+    <header class="modal__cab"><div><h2 id="buscar-tit">Buscar en Mimo</h2><p class="muted" id="buscar-sub">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <input class="entrada buscar-input" id="buscar-input" type="search" placeholder="Escribe para buscar…" aria-label="Buscar en Mimo" autocomplete="off">
     <div class="buscar-resultados" id="buscar-resultados"></div>
     <p class="buscar-pie muted"><kbd>↑</kbd><kbd>↓</kbd> mover · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> cerrar</p>
   </div>
