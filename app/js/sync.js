@@ -916,7 +916,11 @@
     window.addEventListener("offline", function () { pintarUI(); });
 
     pintarUI();
-    setTimeout(recalcularCambios, 300);
+    setTimeout(function () {
+      recalcularCambios().then(function () {
+        if (esNube() && cambios && !conflicto) marcarPendiente("cambios locales al abrir", !navigator.onLine);
+      });
+    }, 300);
     setTimeout(function () {
       if (esNube()) leerClave(meta.cifrado.sal).then(function (k) {
         if (!k && meta.cifrado.activo) { meta.cifrado.activo = false; guardarMeta(); pintarUI(); }
