@@ -1799,21 +1799,22 @@
         if (!q.categorias.some(function (c) { return c.nombre === x.categoria; })) x.categoria = q.categorias[0].nombre;
       });
       var ex = q.examen || {};
-      q.examen = {
+      q.examen = conservar({
         activo: ex.activo !== false,
         peso: Math.max(0, Math.min(100, Number(ex.peso))),
         nota: notaNum(ex.nota),
         reemplaza: null
-      };
+      }, ex);
       if (isNaN(q.examen.peso)) q.examen.peso = 40;
       var rep = parseInt(ex.reemplaza, 10);
       if (!isNaN(rep) && rep >= 0 && rep < q.componentes.length) q.examen.reemplaza = rep;
       var exi = q.eximicion || {};
-      q.eximicion = { activa: !!exi.activa, modo: exi.modo === "alguna" ? "alguna" : "todas", condiciones: [] };
+      q.eximicion = conservar({ activa: !!exi.activa, modo: exi.modo === "alguna" ? "alguna" : "todas", condiciones: [] }, exi);
+      q.eximicion.condiciones = [];
       (Array.isArray(exi.condiciones) ? exi.condiciones : []).forEach(function (c) {
         var tipo = ["presentacion", "categoria", "componente"].indexOf(c.tipo) !== -1 ? c.tipo : "presentacion";
         var op = [">=", ">", "<=", "<"].indexOf(c.op) !== -1 ? c.op : ">=";
-        q.eximicion.condiciones.push({ tipo: tipo, ref: String(c.ref || ""), op: op, valor: notaNum(c.valor) || 1 });
+        q.eximicion.condiciones.push(conservar({ tipo: tipo, ref: String(c.ref || ""), op: op, valor: notaNum(c.valor) || 1 }, c));
       });
       q.notaMin = notaNum(q.notaMin) || 4;
       q.meta = notaNum(q.meta) || 5;
@@ -2189,6 +2190,8 @@
     var usados = {};
     (estado.sesiones || []).forEach(function (s) { if (s.ramo) usados[s.ramo] = 1; });
     Object.keys((estado.estudio && estado.estudio.metasRamo) || {}).forEach(function (cod) { usados[cod] = 1; });
+    var hist = (estado.estudio && estado.estudio.minutosSemana) || {};
+    Object.keys(hist).forEach(function (w) { Object.keys(hist[w] || {}).forEach(function (cod) { if (cod && cod !== "OTROS") usados[cod] = 1; }); });
     var cursos = estado.cursos.filter(function (c) { return c.enCurso || usados[c.codigo]; });
     if (!cursos.length && estado.cursos.length) cursos = [estado.cursos[0]];
     var semanas = semanasEstudio();
@@ -2214,6 +2217,26 @@
         if (s.fecha >= w.desde && s.fecha <= w.hasta) porSemana[w.desde] += s.minutos;
       });
     });
+    var sesSemCurso = {};
+    ses.forEach(function (s) {
+      semanas.forEach(function (w) {
+        if (s.fecha >= w.desde && s.fecha <= w.hasta) {
+          var k = s.ramo || "_";
+          sesSemCurso[w.desde + "|" + k] = (sesSemCurso[w.desde + "|" + k] || 0) + s.minutos;
+        }
+      });
+    });
+    var histMin = 0;
+    Object.keys(hist).forEach(function (w) {
+      if (porSemana[w] === undefined) return;
+      Object.keys(hist[w] || {}).forEach(function (cod) {
+        var k = !cod || cod === "OTROS" ? "_" : cod;
+        var m = Math.max(0, (Number(hist[w][cod]) || 0) - (sesSemCurso[w + "|" + k] || 0));
+        if (!m) return;
+        histMin += m; totalMin += m; porSemana[w] += m;
+        totalRamo[k] = (totalRamo[k] || 0) + m;
+      });
+    });
     function metaDeSemana(w) {
       var ms = estado.estudio.metasSemana || {};
       return Object.prototype.hasOwnProperty.call(ms, w.desde) ? Math.max(0, Number(ms[w.desde]) || 0) : meta;
@@ -2228,8 +2251,8 @@
     if ($("#est-periodo")) $("#est-periodo").textContent = periodoActivoObj()
       ? L("Periodo ", "Term ", "学期 ") + periodoActivoObj().nombre + " · " + semanas.length + " " + L("semanas", "weeks", "周")
       : L("Últimas ", "Last ", "最近 ") + semanas.length + " " + L("semanas", "weeks", "周");
-    if ($("#est-resumen")) $("#est-resumen").textContent = ses.length
-      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(meta * 60) + " " + L("por semana.", "per week.", "每周。")
+    if ($("#est-resumen")) $("#est-resumen").textContent = ses.length || histMin
+      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + (histMin ? " · " + L("incluye histórico semanal", "includes weekly history", "含每周历史记录") : "") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(meta * 60) + " " + L("por semana.", "per week.", "每周。")
       : L("Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.", "No sessions yet. Log one or use the Time stopwatch.", "还没有会话。记录一次，或使用时间的秒表。");
     var max = Math.max(meta * 60, 1);
     semanas.forEach(function (w) { max = Math.max(max, porSemana[w.desde]); });
@@ -2244,6 +2267,12 @@
           porCurso[k] = (porCurso[k] || 0) + s.minutos;
         }
       });
+      Object.keys(hist[w.desde] || {}).forEach(function (cod) {
+        var k = !cod || cod === "OTROS" ? "_" : cod;
+        var m = Math.max(0, (Number(hist[w.desde][cod]) || 0) - (sesSemCurso[w.desde + "|" + k] || 0));
+        if (!m) return;
+        porCurso[k] = (porCurso[k] || 0) + m;
+      });
       var barras = Object.keys(porCurso).map(function (k) {
         return '<i style="flex:' + porCurso[k] + ';background:' + colorEstudio(k) + '" title="' +
           esc(k === "_" ? L("Sin ramo", "No course", "无课程") : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
@@ -2253,7 +2282,7 @@
         '<div class="est-pila" style="height:' + pct + '%">' + barras + "</div>" +
         '<span class="est-etq">' + esc(w.etiqueta) + "</span></div>";
     }).join("");
-    $("#est-grafico").innerHTML = ses.length || meta
+    $("#est-grafico").innerHTML = totalMin || meta
       ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, meta * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
         fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
       : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
@@ -2819,7 +2848,8 @@
           '<div class="panel__bloque"><span>' + esc(L("Nivel", "Level", "层级")) + '</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +
           (reqR ? '<div class="panel__bloque"><span>' + esc(L("Requiere", "Requires", "需要")) + '</span><small>' + esc(reqR) + "</small></div>" : "") +
           (faltanR.length ? '<h2>' + esc(L("Falta", "Missing", "缺少")) + '</h2><p class="panel__nota">' + esc(faltanR.join(", ")) + "</p>" : "") +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Calificaciones", "Grades", "成绩")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
           '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程")) + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
       } else if (pantalla === "calendario" && ev) {
@@ -2920,7 +2950,8 @@
     $$("#panel-cuerpo [data-abrir-calif]").forEach(function (b) {
       b.addEventListener("click", function () {
         califSel = b.getAttribute("data-abrir-calif"); estado.califSel = califSel;
-        ir("calificaciones"); pintarCalificaciones();
+        if (!estado.califs[califSel]) estado.califs[califSel] = califPorDefecto();
+        guardar(); ir("calificaciones"); pintarCalificaciones();
         if (window.innerWidth <= 1255) abrirPanel();
       });
     });
