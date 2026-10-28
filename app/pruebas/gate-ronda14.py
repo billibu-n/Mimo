@@ -67,8 +67,12 @@ def main() -> int:
             exigir("S1" in etiquetas and "S2" in etiquetas and "REC" in etiquetas and "EX" in etiquetas,
                    f"calendario: S1/S2/REC/EX en el mes — {etiquetas}", fallas)
 
-            # Alto contraste claro.
+            # Tiles de tema simétricos y alto contraste claro.
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
+            medidas = page.locator("#temas .tema").evaluate_all(
+                "els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
+            exigir(len(set(w for w, _ in medidas)) == 1 and len(set(h for _, h in medidas)) == 1,
+                   f"temas: todos los tiles miden igual — {medidas[:3]}", fallas)
             page.locator('#temas .tema[data-tema="alto-contraste-claro"]').click(); page.wait_for_timeout(150)
             colores = page.evaluate("""() => {
               const b = getComputedStyle(document.body);
@@ -99,13 +103,15 @@ def main() -> int:
             page.locator("#split-der").select_option("calendario")
             page.locator("#split-abrir").click(); page.wait_for_timeout(200)
             exigir(page.locator("#contenido-b").is_visible() and
-                   page.locator("#p-tareas").is_visible() and
-                   page.locator("#split-titulo").inner_text() == "Calendario",
-                   f"split: dos secciones — {page.locator('#split-titulo').inner_text()}", fallas)
+                   page.locator("#contenido #p-tareas").is_visible() and
+                   page.locator("#contenido-b #p-calendario").is_visible() and
+                   page.locator("#split-seccion").input_value() == "calendario",
+                   f"split: dos secciones completas — {page.locator('#split-seccion').input_value()}", fallas)
             page.evaluate(DRAG, ['#tabs .tab[data-ir="notas"]', '#contenido-b'])
             page.wait_for_timeout(250)
-            exigir(page.locator("#split-titulo").inner_text() == "Notas",
-                   f"split: arrastrar pestaña al panel — {page.locator('#split-titulo').inner_text()}", fallas)
+            exigir(page.locator("#split-seccion").input_value() == "notas" and
+                   page.locator("#contenido-b #p-notas").is_visible(),
+                   f"split: arrastrar pestaña al panel — {page.locator('#split-seccion').input_value()}", fallas)
             page.evaluate(DRAG, ['#tabs .tab[data-ir="tareas"]', '#tabs .tab[data-ir="notas"]'])
             page.wait_for_timeout(250)
             orden = page.locator("#tabs .tab").evaluate_all("els => els.map(e => e.dataset.ir)")

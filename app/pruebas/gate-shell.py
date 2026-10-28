@@ -226,22 +226,26 @@ def main() -> int:
             page.wait_for_timeout(80)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
                    "split: el diálogo de dos secciones se abre", fallas)
-            page.locator("#split-izq").select_option("tareas")
-            page.locator("#split-der").select_option("calendario")
+            page.locator("#split-izq").select_option("notas")
+            page.locator("#split-der").select_option("tareas")
             page.locator("#split-abrir").click()
-            page.wait_for_timeout(120)
+            page.wait_for_timeout(150)
             exigir(page.locator("#contenido-b").is_visible(), "split: la ventana secundaria se abre", fallas)
+            exigir(page.locator("#contenido-b #p-tareas").is_visible() and
+                   page.locator("#contenido #p-notas").is_visible(),
+                   "split: dos secciones completas, una en cada ventana", fallas)
             page.locator("#split-seccion").select_option("calendario")
-            page.wait_for_timeout(80)
-            exigir(page.locator("#split-cuerpo").inner_text().strip() != "",
-                   "split: la sección elegida se pinta", fallas)
+            page.wait_for_timeout(100)
+            exigir(page.locator("#contenido-b #p-calendario").is_visible(),
+                   "split: la sección elegida se pinta completa", fallas)
             page.locator("#split-seccion").select_option("tareas")
             page.wait_for_timeout(100)
-            exigir(page.locator("#split-cuerpo [data-split-tarea]").count() >= 1,
+            exigir(page.locator("#contenido-b #p-tareas [data-tarea]").count() >= 1,
                    "split: la sección secundaria es interactiva", fallas)
-            page.locator("#split-cuerpo [data-split-tarea]").first.click()
+            page.locator("#contenido-b #p-tareas [data-tarea]").first.click()
             page.wait_for_timeout(100)
-            exigir(page.locator("#p-tareas").is_visible(), "split: abrir una tarea cambia la ventana principal", fallas)
+            exigir("Tarea" in page.locator("#panel-cuerpo").inner_text(),
+                   "split: la interacción de la derecha abre su detalle", fallas)
             page.locator("#btn-cerrar-split").click()
             page.wait_for_timeout(60)
             exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)

@@ -186,6 +186,7 @@
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
   var splitOn = false;
   var tabArrastrada = null;
+  var splitNavHasta = 0;
 
   function guardar() {
     try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
@@ -605,12 +606,42 @@
     pintarAjustes();
   }
 
+  function mostrarPaneles() {
+    $$(".seccion[data-pantalla]").forEach(function (s) {
+      var sid = s.getAttribute("data-pantalla");
+      s.hidden = !(sid === pantalla || (splitOn && sid === estado.splitSeccion));
+    });
+  }
+  function ctxDe(el) {
+    return splitOn && el && el.closest && el.closest("#split-escena") ? estado.splitSeccion : pantalla;
+  }
+  function pintarPanelDe(ctx) {
+    if (ctx === pantalla) pintarPanel(); else pintarPanelEn(ctx);
+  }
   function ir(id) {
     if (secciones().indexOf(id) === -1) return;
+    if (splitOn && Date.now() < splitNavHasta) {
+      if (id === estado.splitSeccion) {
+        if (id === "tareas") pintarTareas();
+        else if (id === "notas") pintarNotas();
+        else if (id === "calendario") pintarCalendario();
+        else if (id === "malla") pintarMalla();
+        else if (id === "calificaciones") pintarCalificaciones();
+        else if (id === "estudio") pintarEstudio();
+        else if (id === "tiempo") pintarTiempo();
+        pintarPanelEn(id);
+        return;
+      }
+      if (id === pantalla) return;
+      estado.splitSeccion = id; guardar(); pintarSplit();
+      return;
+    }
+    if (splitOn && id === estado.splitSeccion) {
+      aviso("Esa sección ya está en la ventana derecha.");
+      return;
+    }
     pantalla = id;
-    $$(".seccion[data-pantalla]").forEach(function (s) {
-      s.hidden = s.getAttribute("data-pantalla") !== id;
-    });
+    mostrarPaneles();
     pintarTabs();
     if (id === "malla") pintarMalla();
     if (id === "calificaciones") pintarCalificaciones();
@@ -657,7 +688,7 @@
     if (!c) return;
     c.innerHTML = TEMAS.map(function (t) {
       return '<button class="tema" type="button" data-tema="' + t[0] + '" aria-pressed="' +
-        (estado.tema === t[0]) + '"><i aria-hidden="true"></i>' + esc(t[1]) +
+        (estado.tema === t[0]) + '"><i aria-hidden="true"></i><span class="tema-nombre">' + esc(t[1]) + "</span>" +
         '<small class="tema-modo">' + (t[2] === "claro" ? "claro" : "oscuro") + "</small></button>";
     }).join("");
     $$("#temas .tema").forEach(function (b) {
@@ -790,8 +821,9 @@
     $$("#cal-grid [data-evento], #cal-agenda [data-evento]").forEach(function (b) {
       b.addEventListener("click", function () {
         estado.eventoSel = b.getAttribute("data-evento");
-        estado.panel[pantalla] = "detalle";
-        guardar(); pintarPanel(); pintarCalendario();
+        var ctx = ctxDe(b);
+        estado.panel[ctx] = "detalle";
+        guardar(); pintarPanelDe(ctx); pintarCalendario();
         if (window.innerWidth <= 1255) abrirPanel();
       });
     });
@@ -899,8 +931,9 @@
       fila.addEventListener("click", function (ev) {
         if (ev.target.getAttribute("data-check") || ev.target.getAttribute("data-add-sub")) return;
         estado.tareaSel = fila.getAttribute("data-tarea");
-        estado.panel[pantalla] = "detalle";
-        guardar(); pintarTareas(); pintarPanel();
+        var ctx = ctxDe(fila);
+        estado.panel[ctx] = "detalle";
+        guardar(); pintarTareas(); pintarPanelDe(ctx);
         if (window.innerWidth <= 1255) abrirPanel();
       });
       fila.addEventListener("keydown", function (ev) {
@@ -2178,7 +2211,10 @@
     if (conClick) {
       $$(destino + " [data-nota]").forEach(function (b) {
         b.addEventListener("click", function () {
-          estado.notaSel = b.getAttribute("data-nota"); guardar(); pintarNotas(); pintarPanel();
+          var ctx = ctxDe(b);
+          estado.notaSel = b.getAttribute("data-nota");
+          estado.panel[ctx] = "detalle";
+          guardar(); pintarNotas(); pintarPanelDe(ctx);
         });
       });
     }
@@ -2575,6 +2611,12 @@
     return '<div class="panel__bloque"><span>Notas enlazadas</span><small>' + ns.map(function (n) {
       return '<button class="btn btn--chico" type="button" data-abrir-enlace="nota:' + esc(n.id) + '">' + esc(n.titulo || "Sin título") + "</button>";
     }).join(" ") + "</small></div>";
+  }
+  function pintarPanelEn(id) {
+    var prev = pantalla;
+    pantalla = id;
+    pintarPanel();
+    pantalla = prev;
   }
   function pintarPanel() {
     var tab = panelTab();
@@ -3009,72 +3051,50 @@
   function opcionesSplit() {
     return secciones();
   }
-  function pintarSplit() {
-    var sel = $("#split-seccion"), cuerpo = $("#split-cuerpo");
-    if (!sel || !cuerpo) return;
-    sel.innerHTML = opcionesSplit().map(function (id) { return '<option value="' + id + '">' + esc(nombre(id)) + "</option>"; }).join("");
-    if (opcionesSplit().indexOf(estado.splitSeccion) === -1) estado.splitSeccion = "tareas";
-    sel.value = estado.splitSeccion;
-    var sec = estado.splitSeccion, html = "";
-    if ($("#split-titulo")) $("#split-titulo").textContent = nombre(sec);
-    if (sec === "calendario") {
-      var evs = (estado.eventos || []).slice().sort(function (a, b) { return (a.fecha + a.hora) < (b.fecha + b.hora) ? -1 : 1; });
-      html = evs.length ? evs.slice(0, 8).map(function (e) {
-        return '<button class="split-item" type="button" data-split-evento="' + esc(e.id) + '"><span>' + esc(e.titulo) + "</span><small>" + esc(e.fecha) + "</small></button>";
-      }).join("") : '<p class="muted">Sin eventos.</p>';
-    } else if (sec === "tareas") {
-      html = estado.tareas.length ? estado.tareas.slice(0, 10).map(function (t) {
-        return '<div class="split-item split-item--tarea"><button class="split-check' + (t.hecha ? " on" : "") + '" type="button" data-split-check="' + esc(t.id) + '" aria-label="Marcar tarea">' + (t.hecha ? "✓" : "") + '</button>' +
-          '<button class="split-open" type="button" data-split-tarea="' + esc(t.id) + '"><span>' + (t.tipo === "proyecto" ? "▸ " : "") + esc(t.titulo) + "</span><small>" + (t.hecha ? "hecha" : "abierta") + "</small></button></div>";
-      }).join("") : '<p class="muted">Sin tareas.</p>';
-    } else if (sec === "notas") {
-      html = estado.notas.length ? estado.notas.slice(0, 8).map(function (n) {
-        return '<button class="split-item" type="button" data-split-nota="' + esc(n.id) + '"><span>' + esc(n.titulo) + "</span><small>" + esc((n.cuerpo || "").slice(0, 32) || "Vacía") + "</small></button>";
-      }).join("") : '<p class="muted">Sin notas.</p>';
-    } else if (sec === "malla") {
-      html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
-        return '<button class="split-item" type="button" data-split-ramo="' + esc(c.codigo) + '"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>" + estadoDeRamo(c) + "</small></button>";
-      }).join("") : '<p class="muted">Sin ramos.</p>';
-    } else if (sec === "calificaciones") {
-      normalizarCalifs();
-      html = (estado.cursos || []).length ? estado.cursos.slice(0, 10).map(function (c) {
-        var q = califDe(c.codigo);
-        return '<button class="split-item" type="button" data-split-calif="' + esc(c.codigo) + '"><span>' + esc(c.codigo) + " · " + esc(c.nombre) + "</span><small>P " +
-          fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small></button>";
-      }).join("") : '<p class="muted">Sin ramos.</p>';
-    } else if (sec === "estudio") {
-      normalizarEstudio();
-      var tot = {}, min = 0;
-      (estado.sesiones || []).forEach(function (x) {
-        min += x.minutos;
-        var k = x.ramo || "_";
-        tot[k] = (tot[k] || 0) + x.minutos;
-      });
-      html = (estado.sesiones || []).length ? '<p class="muted">' + fmtHoras(min) + ' en ' + estado.sesiones.length +
-        ' sesiones.</p>' + Object.keys(tot).slice(0, 8).map(function (k) {
-          var c = k !== "_" ? ramoPorCodigo(k) : null;
-          return '<div class="split-item"><span>' + esc(c ? c.codigo : "Sin ramo") + '</span><small>' + fmtHoras(tot[k]) + "</small></div>";
-        }).join("") : '<p class="muted">Sin sesiones.</p>';
-    } else if (sec === "tiempo") {
-      html = '<p class="muted">Modos: ' + estado.tiempoHijos.length + ". Sesiones: " + (estado.sesiones || []).length + ".</p>" +
-        '<button class="btn btn--chico" type="button" data-split-sec="tiempo">Ir a Tiempo</button>';
-    } else if (sec === "ajustes") {
-      html = '<p class="muted">Atajos de tema en la ventana secundaria.</p><div class="split-temas">' +
-        TEMAS.slice(0, 5).map(function (t) { return '<button type="button" data-split-tema="' + t[0] + '" class="btn btn--chico">' + esc(t[1]) + "</button>"; }).join("") + "</div>";
-    } else {
-      html = '<p class="muted">' + esc(nombre(sec)) + " se abre en la ventana principal.</p>";
+  function seccionEl(id) {
+    return document.querySelector('.seccion[data-pantalla="' + id + '"]');
+  }
+  function devolverSeccionSplit() {
+    var esc = $("#split-escena"); if (!esc) return;
+    var s = esc.querySelector(".seccion[data-pantalla]");
+    if (s) {
+      s.hidden = true;
+      s.classList.remove("en-split");
+      $("#contenido").appendChild(s);
     }
-    cuerpo.innerHTML = html;
-    $$("#split-cuerpo [data-split-evento]").forEach(function (b) { b.addEventListener("click", function () { abrirEventoDetalle(b.getAttribute("data-split-evento")); }); });
-    $$("#split-cuerpo [data-split-tarea]").forEach(function (b) { b.addEventListener("click", function () { abrirTarea(b.getAttribute("data-split-tarea")); }); });
-    $$("#split-cuerpo [data-split-check]").forEach(function (b) {
-      b.addEventListener("click", function (e) { e.stopPropagation(); alternarTarea(b.getAttribute("data-split-check")); pintarSplit(); });
-    });
-    $$("#split-cuerpo [data-split-nota]").forEach(function (b) { b.addEventListener("click", function () { abrirNota(b.getAttribute("data-split-nota")); }); });
-    $$("#split-cuerpo [data-split-ramo]").forEach(function (b) { b.addEventListener("click", function () { estado.ramoSel = b.getAttribute("data-split-ramo"); estado.panel.malla = "detalle"; guardar(); ir("malla"); }); });
-    $$("#split-cuerpo [data-split-calif]").forEach(function (b) { b.addEventListener("click", function () { califSel = b.getAttribute("data-split-calif"); estado.califSel = califSel; ir("calificaciones"); }); });
-    $$("#split-cuerpo [data-split-sec]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-split-sec")); }); });
-    $$("#split-cuerpo [data-split-tema]").forEach(function (b) { b.addEventListener("click", function () { aplicarTema(b.getAttribute("data-split-tema")); pintarSplit(); }); });
+  }
+  function moverSeccionSplit(id) {
+    var esc = $("#split-escena"); if (!esc) return;
+    var ids = opcionesSplit();
+    if (!id || ids.indexOf(id) === -1 || id === pantalla) {
+      id = ids.filter(function (x) { return x !== pantalla; })[0] || "tareas";
+    }
+    var actual = esc.querySelector(".seccion[data-pantalla]");
+    if (actual && actual.getAttribute("data-pantalla") === id) {
+      actual.hidden = false;
+      return;
+    }
+    if (actual) {
+      actual.hidden = true;
+      actual.classList.remove("en-split");
+      $("#contenido").appendChild(actual);
+    }
+    var s = seccionEl(id); if (!s) return;
+    estado.splitSeccion = id;
+    s.hidden = false;
+    s.classList.add("en-split");
+    esc.appendChild(s);
+  }
+  function pintarSplit() {
+    var sel = $("#split-seccion");
+    if (!sel) return;
+    var ids = opcionesSplit();
+    sel.innerHTML = ids.map(function (id) { return '<option value="' + id + '">' + esc(nombre(id)) + "</option>"; }).join("");
+    if (ids.indexOf(estado.splitSeccion) === -1) estado.splitSeccion = ids.filter(function (x) { return x !== pantalla; })[0] || "tareas";
+    if (estado.splitSeccion === pantalla) estado.splitSeccion = ids.filter(function (x) { return x !== pantalla; })[0] || "tareas";
+    sel.value = estado.splitSeccion;
+    if ($("#split-titulo")) $("#split-titulo").textContent = "Ventana derecha";
+    if (splitOn) moverSeccionSplit(estado.splitSeccion);
   }
   function abrirSplit() {
     if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
@@ -3084,13 +3104,17 @@
     $("#btn-split").setAttribute("aria-pressed", "true");
     var lab = $("#lab-split"); if (lab) lab.checked = true;
     pintarSplit();
+    moverSeccionSplit(estado.splitSeccion);
+    mostrarPaneles();
   }
   function cerrarSplit() {
+    devolverSeccionSplit();
     splitOn = false;
     document.body.classList.remove("split");
     $("#contenido-b").hidden = true;
     $("#btn-split").setAttribute("aria-pressed", "false");
     var lab = $("#lab-split"); if (lab) lab.checked = false;
+    mostrarPaneles();
   }
   function alternarSplit() {
     if (splitOn) cerrarSplit(); else abrirSplitModal();
@@ -3148,6 +3172,8 @@
     $("#split-cancelar").addEventListener("click", cerrarSplitModal);
     $("#split-abrir").addEventListener("click", aplicarSplitModal);
     $("#modal-split").addEventListener("click", function (e) { if (e.target === $("#modal-split")) cerrarSplitModal(); });
+    $("#contenido-b").addEventListener("click", function () { splitNavHasta = Date.now() + 350; }, true);
+    $("#contenido-b").addEventListener("change", function () { splitNavHasta = Date.now() + 350; }, true);
     [["#contenido", "izq"], ["#contenido-b", "der"]].forEach(function (par) {
       var zona = $(par[0]); if (!zona) return;
       zona.addEventListener("dragover", function (e) {
@@ -3311,7 +3337,7 @@
       t.nota = t.nota || "";
       if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
       estado.tareaSel = t.id;
-      estado.panel[pantalla] = "detalle";
+      estado.panel[ctxDe($("#tarea-form"))] = "detalle";
       $("#tarea-form").hidden = true;
       formEditId = null;
       if (vistaTareas === "hoy") {
@@ -3518,6 +3544,11 @@
       }
     });
     $("#split-seccion").addEventListener("change", function (e) {
+      if (e.target.value === pantalla) {
+        aviso("Esa sección ya está en la ventana izquierda.");
+        e.target.value = estado.splitSeccion;
+        return;
+      }
       estado.splitSeccion = e.target.value; guardar(); pintarSplit();
     });
     $("#btn-empezar").addEventListener("click", empezarTiempo);
@@ -3562,7 +3593,7 @@
       ev.contexto = $("#evento-contexto").value.trim();
       ev.nota = ev.nota || "";
       estado.eventoSel = ev.id;
-      estado.panel[pantalla] = "detalle";
+      estado.panel[ctxDe($("#evento-form"))] = "detalle";
       $("#evento-form").hidden = true;
       formEventoId = null;
       guardar(); pintarCalendario(); pintarPanel();

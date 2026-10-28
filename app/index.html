@@ -494,9 +494,12 @@
   </main>
 
   <main class="contenido-b" id="contenido-b" hidden aria-label="Vista secundaria">
-    <div class="sec-cab"><div><h2 id="split-titulo">Vista dividida</h2><p class="sec-sub">Arrastra una sección aquí o elige en la lista.</p></div><button class="btn" type="button" id="btn-cerrar-split">Cerrar</button></div>
-    <select class="entrada" id="split-seccion" aria-label="Sección secundaria"></select>
-    <div id="split-cuerpo"></div>
+    <div class="split-barra">
+      <span class="split-etq" id="split-titulo">Ventana derecha</span>
+      <select class="entrada" id="split-seccion" aria-label="Sección secundaria"></select>
+      <button class="btn btn--chico" type="button" id="btn-cerrar-split">Cerrar</button>
+    </div>
+    <div id="split-escena" class="split-escena"></div>
   </main>
 
   <aside class="panel" id="panel" aria-label="Panel de herramientas">
