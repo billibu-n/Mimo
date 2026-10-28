@@ -682,3 +682,20 @@ body.nav-izq .shell{margin-left:64px}
 .split-barra{display:flex;align-items:center;gap:var(--sp-2);position:sticky;top:0;z-index:3;background:var(--bg);padding-bottom:var(--sp-2);border-bottom:1px solid var(--line2);margin-bottom:var(--sp-2)}
 .split-etq{font-size:var(--fs-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .split-barra #split-seccion{flex:1;min-width:0}
+
+/* ---- mapa editable de semanas del periodo ---- */
+.periodo-mapa-cab{grid-column:1/-1;display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-1)}
+.periodo-mapa-cab .muted{font-size:var(--fs-xs);line-height:1.4}
+.periodo-mapa{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:var(--sp-1)}
+.semana-chip{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:var(--r-sm);background:var(--sup);color:var(--fg);padding:var(--sp-1) var(--sp-2);font:inherit;text-align:left;cursor:pointer;min-height:48px}
+.semana-chip b{font-size:var(--fs-sm)}
+.semana-chip span{font-size:var(--fs-xs);font-weight:600}
+.semana-chip small{font-size:10px;color:var(--muted)}
+.semana-chip.tipo-receso{border-left-color:var(--warn)}
+.semana-chip.tipo-receso span{color:var(--warn)}
+.semana-chip.tipo-examenes{border-left-color:var(--bad)}
+.semana-chip.tipo-examenes span{color:var(--bad)}
+.cal-sem-col{font:inherit;cursor:pointer;padding:0}
+.cal-sem-col.tipo-receso{color:var(--warn);border-color:var(--warn)}
+.cal-sem-col.tipo-examenes{color:var(--bad);border-color:var(--bad)}
+@media (max-width:520px){.periodo-mapa{grid-template-columns:repeat(3,minmax(0,1fr))}}

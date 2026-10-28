@@ -13,7 +13,11 @@ Mide sobre app/index.html:
   8. las pestañas se reordenan con arrastre;
   9. borrar una nota se puede deshacer desde el aviso;
  10. un componente de Calificaciones con fecha pasa al calendario;
- 11. la meta de Estudio se puede fijar por semana del periodo.
+ 11. la meta de Estudio se puede fijar por semana del periodo;
+ 12. el mapa de semanas permite receso/exámenes arbitrarios y el calendario los cambia;
+ 13. ESC cierra la ventana de periodo;
+ 14. Ctrl+1..4 sigue el orden actual de las pestañas, incluso tras reordenar;
+ 15. la pantalla de carga se retira al terminar el arranque.
 """
 from __future__ import annotations
 
@@ -67,6 +71,27 @@ def main() -> int:
             exigir("S1" in etiquetas and "S2" in etiquetas and "REC" in etiquetas and "EX" in etiquetas,
                    f"calendario: S1/S2/REC/EX en el mes — {etiquetas}", fallas)
 
+            # Las semanas también se cambian desde el calendario.
+            page.locator(".cal-sem-col.tipo-clases").first.click(); page.wait_for_timeout(250)
+            tipos = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).periodos[0].semanas.map(w => w.tipo)")
+            exigir(tipos[0] == "receso",
+                   f"calendario: clic en SEM cambia el tipo — {tipos}", fallas)
+
+            # ESC cierra la ventana de periodo y Ctrl+1..4 sigue el orden de las pestañas.
+            page.locator("#btn-nuevo").click(); page.wait_for_timeout(120)
+            page.keyboard.press("Escape"); page.wait_for_timeout(150)
+            exigir(not page.locator("#modal-periodo").evaluate("e => e.classList.contains('on')"),
+                   "teclado: ESC cierra el periodo", fallas)
+            page.keyboard.press("Control+2"); page.wait_for_timeout(100)
+            exigir(page.locator("#tabs .tab.on").get_attribute("data-ir") == "tareas",
+                   "teclado: Ctrl+2 va a la segunda pestaña", fallas)
+            page.keyboard.press("Control+4"); page.wait_for_timeout(100)
+            exigir(page.locator("#tabs .tab.on").get_attribute("data-ir") == "ajustes",
+                   "teclado: Ctrl+4 va a Ajustes", fallas)
+            exigir(not page.locator("body").evaluate("e => e.classList.contains('cargando')") and
+                   page.locator("#carga").count() == 0,
+                   "carga: la pantalla de carga se retiró al terminar", fallas)
+
             # Tiles de tema simétricos y alto contraste claro.
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
             medidas = page.locator("#temas .tema").evaluate_all(
@@ -118,6 +143,9 @@ def main() -> int:
             exigir(orden.index("tareas") > orden.index("notas"),
                    f"split: reordenar pestañas — {orden}", fallas)
             page.locator("#btn-cerrar-split").click(); page.wait_for_timeout(100)
+            page.keyboard.press("Control+2"); page.wait_for_timeout(100)
+            exigir(page.locator("#tabs .tab.on").get_attribute("data-ir") == "notas",
+                   "teclado: Ctrl+2 respeta el orden reordenado", fallas)
 
             # Deshacer un borrado.
             page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(120)

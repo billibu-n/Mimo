@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mimo · universal</title>
 <meta name="description" content="Mimo universal: Calendario, Tareas, Notas y Ajustes; bloques instalables.">
+<style>
+  /* Pantalla de carga crítica: pinta antes que el CSS de la app para evitar el pestañeo. */
+  html, body { margin: 0; background: #f8fafc; color: #1e293b; }
+  body.cargando { overflow: hidden; }
+  #carga { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px; background: #f8fafc; color: #1e293b;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; transition: opacity .28s ease, visibility .28s ease; }
+  #carga img { width: 56px; height: 56px; border-radius: 50%; }
+  #carga strong { font-size: 1.5rem; letter-spacing: .06em; }
+  #carga > span { font-size: .85rem; color: #64748b; }
+  #carga .carga-barra { width: 140px; height: 3px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin-top: 6px; }
+  #carga .carga-barra i { display: block; width: 40%; height: 100%; border-radius: inherit; background: #2563eb; animation: carga-mueve 1s ease-in-out infinite; }
+  body:not(.cargando) #carga { opacity: 0; visibility: hidden; pointer-events: none; }
+  @keyframes carga-mueve { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
+  @media (prefers-reduced-motion: reduce) { #carga .carga-barra i { animation: none; width: 100%; } }
+</style>
 <link rel="icon" href="img/icon-64.png">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/temas/tema-clasico.css">
@@ -21,7 +37,13 @@
 <link rel="stylesheet" href="css/shell.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
 </head>
-<body data-tema="clasico">
+<body data-tema="clasico" class="cargando">
+<div id="carga" role="status" aria-live="polite">
+  <img src="img/icon-64.png" alt="" width="56" height="56">
+  <strong>Mimo</strong>
+  <span>Cargando…</span>
+  <span class="carga-barra" aria-hidden="true"><i></i></span>
+</div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
@@ -541,6 +563,8 @@
       <label class="campo">Semanas <input class="entrada" id="periodo-semanas" type="number" min="1" max="30" value="18" aria-label="Semanas"></label>
       <label class="campo">Receso <input class="entrada" id="periodo-receso" type="number" min="0" max="10" value="1" aria-label="Semanas de receso"></label>
       <label class="campo">Exámenes <input class="entrada" id="periodo-examenes" type="number" min="0" max="10" value="3" aria-label="Semanas de exámenes"></label>
+      <div class="periodo-mapa-cab"><b>Mapa de semanas</b><span class="muted">Haz clic en una semana para cambiarla. Los exámenes van al final por defecto; puedes moverlos.</span></div>
+      <div class="periodo-mapa" id="periodo-mapa"></div>
       <div class="fila"><button class="btn btn-primario" type="submit">Crear periodo</button><button class="btn" type="button" id="periodo-cancelar">Cancelar</button></div>
     </form>
     <h3>Periodos</h3>

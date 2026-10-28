@@ -182,6 +182,7 @@
   var calCursor = new Date();
   var formEventoId = null;
   var formPeriodoId = null;
+  var mapaPeriodo = null;
   var formAlarmaId = null;
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
   var splitOn = false;
@@ -807,7 +808,11 @@
             var sem = semanaDePeriodo(iso2) || semanaDePeriodo(isoFecha(new Date(f2.getTime() + 3 * 86400000)));
             var etiqueta = sem ? (sem.numero ? "S" + sem.numero : sem.tipo === "receso" ? "REC" : sem.tipo === "examenes" ? "EX" : "—") : "—";
             var titulo = sem ? (sem.numero ? "Semana " + sem.numero + " de clases del periodo" : "Semana de " + sem.tipo) : "Fuera del periodo activo";
-            html += '<div class="cal-sem-col" title="' + titulo + '">' + etiqueta + "</div>";
+            if (sem) {
+              html += '<button class="cal-sem-col tipo-' + sem.tipo + '" type="button" data-semana="' + sem.desde + '" title="' + titulo + '. Clic para cambiar el tipo">' + etiqueta + "</button>";
+            } else {
+              html += '<div class="cal-sem-col" title="' + titulo + '">' + etiqueta + "</div>";
+            }
           }
         }
         var evs2 = eventosDe(iso2); if (f2.getMonth() === m) visibles += evs2.length;
@@ -815,6 +820,12 @@
           (evs2.length ? '<div class="cal-eventos">' + evs2.slice(0, 2).map(chipEvento).join("") + (evs2.length > 2 ? '<span class="cal-mas">+' + (evs2.length - 2) + "</span>" : "") + "</div>" : "") + "</div>";
       }
       grid.innerHTML = html;
+      $$("#cal-grid [data-semana]").forEach(function (b) {
+        b.addEventListener("click", function (e) {
+          e.stopPropagation();
+          cambiarTipoSemanaCalendario(b.getAttribute("data-semana"));
+        });
+      });
     }
     $("#cal-cuenta").textContent = visibles + " evento" + (visibles === 1 ? "" : "s");
     $("#cal-vacio").hidden = visibles > 0;
@@ -2868,6 +2879,59 @@
     }
     pintarCalendario();
   }
+  function tipoSemanaTexto(t) {
+    return t === "receso" ? "Receso" : t === "examenes" ? "Exámenes" : "Clases";
+  }
+  function siguienteTipoSemana(t) {
+    return t === "clases" ? "receso" : t === "receso" ? "examenes" : "clases";
+  }
+  function regenerarMapaPeriodo() {
+    var total = Math.max(1, parseInt($("#periodo-semanas").value, 10) || 18);
+    var receso = Math.max(0, parseInt($("#periodo-receso").value, 10) || 0);
+    var exam = Math.max(0, parseInt($("#periodo-examenes").value, 10) || 0);
+    var clases = Math.max(0, total - receso - exam);
+    mapaPeriodo = [];
+    for (var i = 0; i < total; i++) {
+      mapaPeriodo.push({ tipo: i < clases ? "clases" : i < clases + receso ? "receso" : "examenes" });
+    }
+    pintarMapaPeriodo();
+  }
+  function pintarMapaPeriodo() {
+    var c = $("#periodo-mapa"); if (!c) return;
+    if (!mapaPeriodo) regenerarMapaPeriodo();
+    var inicio = $("#periodo-inicio").value || hoyISO();
+    var base = new Date(inicio + "T12:00:00");
+    c.innerHTML = mapaPeriodo.map(function (w, i) {
+      var d = new Date(base.getTime()); d.setDate(d.getDate() + i * 7);
+      var etiqueta = d.getDate() + "/" + (d.getMonth() + 1);
+      return '<button class="semana-chip tipo-' + w.tipo + '" type="button" data-mapa-semana="' + i + '" title="Clic para cambiar el tipo">' +
+        "<b>S" + (i + 1) + "</b><span>" + tipoSemanaTexto(w.tipo) + "</span><small>" + etiqueta + "</small></button>";
+    }).join("");
+    $$("#periodo-mapa [data-mapa-semana]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = parseInt(b.getAttribute("data-mapa-semana"), 10);
+        if (!mapaPeriodo[i]) return;
+        mapaPeriodo[i].tipo = siguienteTipoSemana(mapaPeriodo[i].tipo);
+        actualizarContadoresMapa();
+        pintarMapaPeriodo();
+      });
+    });
+  }
+  function actualizarContadoresMapa() {
+    if (!mapaPeriodo) return;
+    var receso = mapaPeriodo.filter(function (w) { return w.tipo === "receso"; }).length;
+    var exam = mapaPeriodo.filter(function (w) { return w.tipo === "examenes"; }).length;
+    $("#periodo-receso").value = receso;
+    $("#periodo-examenes").value = exam;
+  }
+  function cambiarTipoSemanaCalendario(desde) {
+    var p = periodoActivoObj();
+    var w = p && (p.semanas || []).filter(function (x) { return x.desde === desde; })[0];
+    if (!w) return;
+    w.tipo = siguienteTipoSemana(w.tipo || "clases");
+    guardar(); pintarPeriodo();
+    aviso("Semana marcada como " + tipoSemanaTexto(w.tipo).toLowerCase() + ".");
+  }
   function abrirPeriodo(id) {
     if (typeof id !== "string") id = null;
     formPeriodoId = id;
@@ -2882,6 +2946,8 @@
     $("#periodo-semanas").value = semanas.length || 18;
     $("#periodo-receso").value = p ? receso : 1;
     $("#periodo-examenes").value = p ? exam : 3;
+    mapaPeriodo = p ? semanas.map(function (w) { return { tipo: w.tipo || "clases" }; }) : null;
+    if (p) pintarMapaPeriodo(); else regenerarMapaPeriodo();
     $("#modal-periodo").classList.add("on");
     pintarPeriodo();
     $("#periodo-nombre").focus();
@@ -2890,6 +2956,7 @@
   function cerrarPeriodo() {
     $("#modal-periodo").classList.remove("on");
     formPeriodoId = null;
+    mapaPeriodo = null;
     $("#periodo-tit").textContent = "Nuevo periodo";
     $("#periodo-form button[type=submit]").textContent = "Crear periodo";
   }
@@ -2972,6 +3039,18 @@
     pintarCatalogo();
   }
   function cerrarModal() { $("#modal").classList.remove("on"); }
+  function cerrarCapaSuperior() {
+    if ($("#modal-sync-conflict").classList.contains("on")) { $("#sync-conf-cancelar").click(); return true; }
+    if ($("#modal-split").classList.contains("on")) { cerrarSplitModal(); return true; }
+    if ($("#modal-periodo").classList.contains("on")) { cerrarPeriodo(); return true; }
+    if ($("#modal-sesion").classList.contains("on")) { cerrarSesionModal(); return true; }
+    if ($("#modal").classList.contains("on")) { cerrarModal(); return true; }
+    if (!$("#evento-form").hidden) { $("#evento-cancelar").click(); return true; }
+    if (!$("#tarea-form").hidden) { $("#tarea-cancelar").click(); return true; }
+    if (splitOn) { cerrarSplit(); return true; }
+    if (document.body.classList.contains("panel-abierto")) { cerrarPanel(); return true; }
+    return false;
+  }
   function estaKit(id) {
     var b = BLOQUES[id];
     return b && b.tipo === "pack" && b.instala.every(instalado);
@@ -3150,6 +3229,14 @@
     ir(izq); abrirSplit();
   }
 
+  function quitarCarga() {
+    document.body.classList.remove("cargando");
+    var c = $("#carga");
+    if (c) {
+      c.setAttribute("aria-hidden", "true");
+      setTimeout(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 350);
+    }
+  }
   function init() {
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
@@ -3197,6 +3284,11 @@
     $("#btn-add").addEventListener("click", abrirModal);
     $("#btn-catalogo-ajustes").addEventListener("click", abrirModal);
     $("#btn-periodo-ajustes").addEventListener("click", abrirPeriodo);
+    ["#periodo-semanas", "#periodo-receso", "#periodo-examenes"].forEach(function (sel) {
+      var el = $(sel); if (!el) return;
+      el.addEventListener("input", function () { mapaPeriodo = null; regenerarMapaPeriodo(); });
+    });
+    $("#periodo-inicio").addEventListener("change", function () { if (mapaPeriodo) pintarMapaPeriodo(); });
     $("#pref-inicio").addEventListener("change", function (e) { estado.prefs.inicioSemana = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
     $("#pref-hora").addEventListener("change", function (e) { estado.prefs.hora = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
     $("#pref-panel-ancho").addEventListener("change", function (e) { estado.prefs.panelAncho = e.target.value; guardar(); aplicarPrefs(); });
@@ -3521,15 +3613,14 @@
       var nombre = $("#periodo-nombre").value.trim(); if (!nombre) return;
       var inicio = $("#periodo-inicio").value || hoyISO();
       var total = Math.max(1, parseInt($("#periodo-semanas").value, 10) || 18);
-      var receso = Math.max(0, parseInt($("#periodo-receso").value, 10) || 0);
-      var exam = Math.max(0, parseInt($("#periodo-examenes").value, 10) || 0);
-      var clases = Math.max(0, total - receso - exam);
-      var semanas = [], base = new Date(inicio + "T12:00:00");
+      if (!mapaPeriodo || mapaPeriodo.length !== total) regenerarMapaPeriodo();
+      var semanas = [], base = new Date(inicio + "T12:00:00"), clases = 0, receso = 0, exam = 0;
       for (var i = 0; i < total; i++) {
         var d = new Date(base.getTime()); d.setDate(d.getDate() + i * 7);
         var fin = new Date(d.getTime()); fin.setDate(fin.getDate() + 6);
-        var tipo = i < clases ? "clases" : i < clases + receso ? "receso" : "examenes";
-        semanas.push({ n: i + 1, desde: d.toISOString().slice(0, 10), hasta: fin.toISOString().slice(0, 10), tipo: tipo });
+        var tipo = (mapaPeriodo[i] && mapaPeriodo[i].tipo) || "clases";
+        if (tipo === "receso") receso++; else if (tipo === "examenes") exam++; else { tipo = "clases"; clases++; }
+        semanas.push({ n: i + 1, desde: isoDeFecha(d), hasta: isoDeFecha(fin), tipo: tipo });
       }
       var existente = formPeriodoId ? (estado.periodos || []).filter(function (x) { return x.id === formPeriodoId; })[0] : null;
       var p = existente || { id: "p" + Date.now(), nombre: nombre, inicio: inicio, semanas: semanas };
@@ -3620,9 +3711,15 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault(); abrirBusqueda();
       }
+      if ((e.ctrlKey || e.metaKey) && /^[1-9]$/.test(e.key)) {
+        var orden = secciones(), indice = parseInt(e.key, 10) - 1;
+        if (orden[indice]) { e.preventDefault(); ir(orden[indice]); }
+        return;
+      }
       if (e.key === "Escape") {
         if ($("#modal-buscar").classList.contains("on")) { e.preventDefault(); cerrarBusqueda(); return; }
         if (!$("#menu-ctx").hidden) { e.preventDefault(); cerrarMenu(); return; }
+        if (cerrarCapaSuperior()) { e.preventDefault(); return; }
         cerrarModal(); cerrarPanel();
       }
     });
@@ -3639,6 +3736,7 @@
       if (pantalla === "malla") setTimeout(dibujarLineasMalla, 60);
     });
     guardar();
+    setTimeout(quitarCarga, 30);
   }
 
   window.MimoHost = {
@@ -3651,5 +3749,8 @@
     guardar: guardar
   };
 
+  setTimeout(function () {
+    if (document.body.classList.contains("cargando")) quitarCarga();
+  }, 5000);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
