@@ -88,6 +88,8 @@
   var vistaCalendario = estado.vistaCalendario || "mes";
   var calCursor = new Date();
   var formEventoId = null;
+  var formPeriodoId = null;
+  var formAlarmaId = null;
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
   var splitOn = false;
 
@@ -287,6 +289,7 @@
         } });
       }
       if (pi.length) pi.push({ sep: true });
+      pi.push({ accion: "periodo-editar", texto: "Editar periodo", run: function () { abrirPeriodo(p.id); } });
       pi.push({ accion: "periodo-borrar", texto: "Borrar periodo", peligro: true, run: function () { borrarPeriodo(p.id); } });
       return { titulo: menuTitulo("Periodo", p.nombre), items: pi };
     }
@@ -2072,20 +2075,49 @@
     } else if (cfg && estado.tiempoModo === "alarmas") {
       cfg.innerHTML = '<form class="alarma-form" id="alarma-form"><input class="entrada" id="alarma-hora" type="time" aria-label="Hora de la alarma">' +
         '<input class="entrada" id="alarma-texto" type="text" placeholder="Para qué es" aria-label="Texto de la alarma">' +
-        '<button class="btn btn--chico btn-primario" type="submit">+ Alarma</button></form>' +
+        '<button class="btn btn--chico btn-primario" id="alarma-add" type="submit">+ Alarma</button>' +
+        '<button class="btn btn--chico" id="alarma-cancelar" type="button" hidden>Cancelar</button></form>' +
         '<div class="alarma-lista" id="alarma-lista"></div>';
       $("#alarma-form").addEventListener("submit", function (e) {
         e.preventDefault();
         var hora = $("#alarma-hora").value;
         if (!hora) { aviso("Elige una hora para la alarma."); return; }
-        estado.alarmas.push({ id: "a" + Date.now(), hora: hora, texto: $("#alarma-texto").value.trim() || "Alarma", activa: true, ultima: "" });
-        guardar(); pintarTiempo(); aviso("Alarma a las " + hora + ".");
+        var texto = $("#alarma-texto").value.trim() || "Alarma";
+        var a = formAlarmaId ? (estado.alarmas || []).filter(function (x) { return x.id === formAlarmaId; })[0] : null;
+        if (a) {
+          a.hora = hora; a.texto = texto; a.ultima = ""; formAlarmaId = null;
+          guardar(); pintarTiempo(); aviso("Alarma corregida a las " + hora + ".");
+        } else {
+          estado.alarmas.push({ id: "a" + Date.now(), hora: hora, texto: texto, activa: true, ultima: "" });
+          guardar(); pintarTiempo(); aviso("Alarma a las " + hora + ".");
+        }
+      });
+      if (formAlarmaId) {
+        var ae = (estado.alarmas || []).filter(function (x) { return x.id === formAlarmaId; })[0];
+        if (ae) {
+          $("#alarma-hora").value = ae.hora; $("#alarma-texto").value = ae.texto;
+          $("#alarma-add").textContent = "Guardar"; $("#alarma-cancelar").hidden = false;
+        } else formAlarmaId = null;
+      }
+      $("#alarma-cancelar").addEventListener("click", function () {
+        formAlarmaId = null; $("#alarma-hora").value = ""; $("#alarma-texto").value = ""; pintarTiempo();
       });
       $("#alarma-lista").innerHTML = (estado.alarmas || []).length ? estado.alarmas.map(function (a) {
         return '<div class="alarma-item' + (a.activa ? "" : " off") + '"><b>' + esc(a.hora) + "</b><span>" + esc(a.texto) + "</span>" +
           '<button class="btn btn--chico" type="button" data-alarma-toggle="' + esc(a.id) + '">' + (a.activa ? "Activa" : "Apagada") + "</button>" +
+          '<button class="calif-x" type="button" data-alarma-editar="' + esc(a.id) + '" title="Editar alarma" aria-label="Editar alarma">✎</button>' +
           '<button class="calif-x" type="button" data-alarma-borrar="' + esc(a.id) + '" title="Quitar alarma" aria-label="Quitar alarma">×</button></div>';
       }).join("") : '<p class="muted">Sin alarmas.</p>';
+      $$("#alarma-lista [data-alarma-editar]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var a = estado.alarmas.filter(function (x) { return x.id === b.getAttribute("data-alarma-editar"); })[0];
+          if (!a) return;
+          formAlarmaId = a.id;
+          $("#alarma-hora").value = a.hora; $("#alarma-texto").value = a.texto;
+          $("#alarma-hora").focus();
+          aviso("Editando la alarma de las " + a.hora + ". Guarda para aplicar.");
+        });
+      });
       $$("#alarma-lista [data-alarma-toggle]").forEach(function (b) {
         b.addEventListener("click", function () {
           var a = estado.alarmas.filter(function (x) { return x.id === b.getAttribute("data-alarma-toggle"); })[0];
@@ -2227,6 +2259,7 @@
     if (estado.tiempoHijos.indexOf(id) === -1) return;
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
     estado.tiempoModo = id;
+    formAlarmaId = null;
     if (id === "temporizador") { tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60); tempInicial = tempSeg; }
     if (id === "pomodoro") { pomoSeg = Math.round(duracionPomo() * 60); pomoInicial = pomoSeg; }
     guardar(); pintarTiempo();
@@ -2416,10 +2449,14 @@
       pl.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
         return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + x.semanas.length + ' semanas</small></span>' +
           '<span class="fila"><button class="btn btn--chico" type="button" data-periodo-aj="' + x.id + '">Usar</button>' +
+          '<button class="btn btn--chico" type="button" data-editar-periodo="' + x.id + '">Editar</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">Borrar</button></span></div>';
       }).join("") : '<p class="muted">Sin periodos. Crea el primero.</p>';
       $$("#ajustes-periodos [data-periodo-aj]").forEach(function (x) {
         x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo-aj"); guardar(); pintarPeriodo(); pintarAjustes(); });
+      });
+      $$("#ajustes-periodos [data-editar-periodo]").forEach(function (x) {
+        x.addEventListener("click", function () { abrirPeriodo(x.getAttribute("data-editar-periodo")); });
       });
       $$("#ajustes-periodos [data-borrar-periodo]").forEach(function (x) {
         x.addEventListener("click", function () { borrarPeriodo(x.getAttribute("data-borrar-periodo")); });
@@ -2448,23 +2485,45 @@
       lista.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
         return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + esc(x.inicio) + " · " + x.semanas.length + " semanas</small></span>" +
           '<span class="fila"><button class="btn btn--chico" type="button" data-periodo="' + x.id + '">Usar</button>' +
+          '<button class="btn btn--chico" type="button" data-editar-periodo="' + x.id + '">Editar</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">Borrar</button></span></div>';
       }).join("") : '<p class="muted">Todavía no hay periodos.</p>';
       $$("#periodos-lista [data-periodo]").forEach(function (x) {
         x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo"); guardar(); pintarPeriodo(); aviso("Periodo activo."); });
+      });
+      $$("#periodos-lista [data-editar-periodo]").forEach(function (x) {
+        x.addEventListener("click", function () { abrirPeriodo(x.getAttribute("data-editar-periodo")); });
       });
       $$("#periodos-lista [data-borrar-periodo]").forEach(function (x) {
         x.addEventListener("click", function () { borrarPeriodo(x.getAttribute("data-borrar-periodo")); });
       });
     }
   }
-  function abrirPeriodo() {
+  function abrirPeriodo(id) {
+    if (typeof id !== "string") id = null;
+    formPeriodoId = id;
+    var p = id ? (estado.periodos || []).filter(function (x) { return x.id === id; })[0] : null;
+    $("#periodo-tit").textContent = p ? "Editar periodo" : "Nuevo periodo";
+    $("#periodo-form button[type=submit]").textContent = p ? "Guardar periodo" : "Crear periodo";
+    $("#periodo-nombre").value = p ? p.nombre : "";
+    $("#periodo-inicio").value = p ? (p.inicio || hoyISO()) : hoyISO();
+    var semanas = p && Array.isArray(p.semanas) ? p.semanas : [];
+    var receso = semanas.filter(function (w) { return w.tipo === "receso"; }).length;
+    var exam = semanas.filter(function (w) { return w.tipo === "examenes"; }).length;
+    $("#periodo-semanas").value = semanas.length || 18;
+    $("#periodo-receso").value = p ? receso : 1;
+    $("#periodo-examenes").value = p ? exam : 3;
     $("#modal-periodo").classList.add("on");
-    $("#periodo-inicio").value = hoyISO();
     pintarPeriodo();
     $("#periodo-nombre").focus();
+    $("#periodo-nombre").select();
   }
-  function cerrarPeriodo() { $("#modal-periodo").classList.remove("on"); }
+  function cerrarPeriodo() {
+    $("#modal-periodo").classList.remove("on");
+    formPeriodoId = null;
+    $("#periodo-tit").textContent = "Nuevo periodo";
+    $("#periodo-form button[type=submit]").textContent = "Crear periodo";
+  }
 
   /* ---- U6: buscador global ---- */
   var buscarAcciones = [];
@@ -3066,10 +3125,17 @@
         var tipo = i < clases ? "clases" : i < clases + receso ? "receso" : "examenes";
         semanas.push({ n: i + 1, desde: d.toISOString().slice(0, 10), hasta: fin.toISOString().slice(0, 10), tipo: tipo });
       }
-      var p = { id: "p" + Date.now(), nombre: nombre, inicio: inicio, semanas: semanas };
-      estado.periodos = estado.periodos || []; estado.periodos.push(p); estado.periodoActivo = p.id;
-      guardar(); pintarPeriodo(); cerrarPeriodo(); $("#periodo-nombre").value = "";
-      aviso("Periodo creado: " + clases + " clases, " + receso + " receso, " + exam + " exámenes.");
+      var existente = formPeriodoId ? (estado.periodos || []).filter(function (x) { return x.id === formPeriodoId; })[0] : null;
+      var p = existente || { id: "p" + Date.now(), nombre: nombre, inicio: inicio, semanas: semanas };
+      p.nombre = nombre; p.inicio = inicio; p.semanas = semanas;
+      if (existente) {
+        guardar(); pintarPeriodo(); cerrarPeriodo();
+        aviso("Periodo guardado: " + clases + " clases, " + receso + " receso, " + exam + " exámenes.");
+      } else {
+        estado.periodos = estado.periodos || []; estado.periodos.push(p); estado.periodoActivo = p.id;
+        guardar(); pintarPeriodo(); cerrarPeriodo(); $("#periodo-nombre").value = "";
+        aviso("Periodo creado: " + clases + " clases, " + receso + " receso, " + exam + " exámenes.");
+      }
     });
     $("#split-seccion").addEventListener("change", function (e) {
       estado.splitSeccion = e.target.value; guardar(); pintarSplit();

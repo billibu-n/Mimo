@@ -123,6 +123,14 @@ def main() -> int:
             exigir("Español" in page.locator("#pref-idioma").inner_text(),
                    "ajustes: idioma con bandera", fallas)
 
+            page.locator("[data-editar-periodo]").first.click(); page.wait_for_timeout(150)
+            page.locator("#periodo-nombre").fill("Primavera 2026 bis")
+            page.locator("#periodo-semanas").fill("3")
+            page.locator("#periodo-form button[type=submit]").click(); page.wait_for_timeout(150)
+            d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
+            exigir(d["periodos"][0]["nombre"] == "Primavera 2026 bis" and len(d["periodos"][0]["semanas"]) == 3,
+                   f"periodo: editado a 3 semanas — {d['periodos'][0]['nombre']}, {len(d['periodos'][0]['semanas'])}", fallas)
+
             page.locator('#tabs [data-ir="tiempo"]').click(); page.wait_for_timeout(180)
             page.locator('[data-hijo="temporizador"]').click(); page.wait_for_timeout(180)
             ins = page.locator("#reloj .rlj")
@@ -132,6 +140,18 @@ def main() -> int:
             page.wait_for_timeout(150)
             vals = [page.locator("#reloj .rlj").nth(i).input_value() for i in range(3)]
             exigir(vals == ["00", "02", "00"], f"reloj: queda en 00:02:00 — {vals}", fallas)
+
+            page.locator('[data-hijo="alarmas"]').click(); page.wait_for_timeout(180)
+            page.locator("#alarma-hora").fill("07:30")
+            page.locator("#alarma-texto").fill("Desayuno")
+            page.locator("#alarma-form button[type=submit]").click(); page.wait_for_timeout(180)
+            page.locator("[data-alarma-editar]").first.click(); page.wait_for_timeout(120)
+            page.locator("#alarma-hora").fill("08:00")
+            page.locator("#alarma-texto").fill("Desayuno largo")
+            page.locator("#alarma-form button[type=submit]").click(); page.wait_for_timeout(180)
+            d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
+            exigir(d["alarmas"][0]["hora"] == "08:00" and d["alarmas"][0]["texto"] == "Desayuno largo",
+                   f"alarma: editada a 08:00 — {d['alarmas'][0]}", fallas)
 
             page.locator("[data-editar-sesion]").first.click(); page.wait_for_timeout(150)
             page.locator("#sesion-duracion").fill("1:30")
