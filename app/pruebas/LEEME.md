@@ -1,24 +1,18 @@
 # Arnés de gates de MIMO v2 (M02)
 
-**Esto mide la maqueta congelada, no la app.** La app empieza en M10. Los gates se escribieron
-antes para que M10–M12 tengan una línea base y no se declaren verdes por impresión.
+**Esto mide la app real (`app/index.html`), no la maqueta.** Los gates existen para no declarar
+verde por impresión: cada uno devuelve 0/1 y cita su medida.
 
 ## Correr
 
 ```bash
-python3 app/pruebas/gate-ui.py --demo
-python3 app/pruebas/gate-shell.py
-python3 app/pruebas/gate-diseno.py --demo
-python3 app/pruebas/gate-datos.py --demo
-python3 app/pruebas/gate-bloques.py --demo
-# o los tres:
-python3 app/pruebas/correr-gates.py
+python3 app/pruebas/correr-gates.py     # los 11 gates, resumen al final
 ```
 
 El viejo está en `referencia/academics-1.1.2/` y no entra en esta suite: es oráculo, no producto.
 
-Cada gate con `--demo` exige **dos** cosas: la maqueta buena sale 0 y el fixture roto sale 1. Un
-gate que no discrimina es un gate roto.
+Los gates que aceptan `--demo` exigen **dos** cosas: la app buena sale 0 y el fixture roto sale 1.
+Un gate que no discrimina es un gate roto.
 
 ## Qué mide cada uno
 
@@ -28,6 +22,8 @@ gate que no discrimina es un gate roto.
 | `gate-shell` | el shell universal: instalar Tiempo, quitar hijo, kit Academics, tarea, nota, panel por sección, temas | sin demo: mide `app/index.html` |
 | `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 9 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
+| `gate-busqueda` | Ctrl+K encuentra tareas, notas, eventos, ramos y periodos y navega | sin demo: mide `app/index.html` |
+| `gate-correcciones` | respaldo académico importado (ramos, tareas, sesiones, metas, bloques), reloj editable, sesión corregida, clic derecho, pareja de temas, 3 grupos de Ajustes y KaTeX en Notas | importación incompleta, reloj no editable, tema sin pareja o fórmula rota |
 | `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
 
 ## Fixtures

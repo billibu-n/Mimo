@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="css/temas/tema-alto-contraste.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/shell.css">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
 </head>
 <body data-tema="clasico">
 
@@ -175,7 +176,7 @@
             <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas">
             <select class="entrada" id="nota-vinculo" aria-label="Enlazar a"><option value="">Enlazar a…</option></select>
           </div>
-          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe en Markdown: # título, **negrita**, - lista, [enlace](https://…)" aria-label="Cuerpo de la nota" disabled></textarea>
+          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe tu nota. Fórmulas: $...$ o $$...$$" aria-label="Cuerpo de la nota" disabled></textarea>
           <div id="nota-preview" class="nota-preview" hidden></div>
           <p class="muted" id="nota-meta">Sin nota abierta.</p>
         </div>
@@ -329,9 +330,10 @@
           <form class="est-form" id="est-form">
             <select class="entrada" id="est-ramo" aria-label="Ramo"></select>
             <input class="entrada" id="est-fecha" type="date" aria-label="Fecha">
-            <input class="entrada" id="est-minutos" type="number" min="1" max="1440" step="1" value="60" aria-label="Minutos">
+            <input class="entrada" id="est-minutos" type="text" inputmode="decimal" value="1:00:00" placeholder="2:30:21" aria-label="Duración: horas:minutos:segundos o minutos">
             <button class="btn btn-primario" type="submit">Registrar</button>
           </form>
+          <p class="muted">Acepta <b>90</b> (minutos), <b>1:30</b> (h:m) o <b>2:30:21</b> (h:m:s).</p>
           <hr class="est-sep">
           <label class="campo">Meta semanal <input class="entrada est-num" id="est-meta" type="number" min="0" max="100" step="0.5" value="10"> h</label>
           <p class="muted" id="est-resumen">Sin sesiones todavía.</p>
@@ -348,33 +350,51 @@
     </section>
 
     <section class="seccion" data-pantalla="ajustes" id="p-ajustes" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.ajustes">Ajustes</h1><p class="sec-sub">Apariencia, navegación, paneles, bloques y laboratorio.</p></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.ajustes">Ajustes</h1><p class="sec-sub">Apariencia, idioma, datos y extensiones, en ese orden.</p></div></div>
+
+      <div class="ajustes-grupo"><h2>Aplicación</h2><p class="muted">Lo que vale para toda la app.</p></div>
       <div class="ajustes-grid">
-        <section class="card"><h2>Apariencia</h2><p class="muted">Nueve temas del viejo. Se aplican a toda la app.</p><div class="temas" id="temas"></div></section>
-        <section class="card"><h2>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-sol"/></svg>Apariencia</h2><p class="muted">Nueve temas. El botón sol/luna salta entre la pareja claro/oscuro.</p>
+          <div class="temas" id="temas"></div>
+          <div class="pareja-temas">
+            <label class="campo">Tema claro <select class="entrada" id="pref-tema-claro"></select></label>
+            <label class="campo">Tema oscuro <select class="entrada" id="pref-tema-oscuro"></select></label>
+          </div>
+        </section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
           <label class="campo">La semana empieza en <select class="entrada" id="pref-inicio"><option value="lunes">Lunes</option><option value="domingo">Domingo</option></select></label>
           <label class="campo">Formato de hora <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
           <p class="muted" id="ajustes-resumen"></p>
         </section>
-        <section class="card"><h2>Navegación</h2><p class="muted">Dónde viven las secciones.</p>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg>Navegación</h2><p class="muted">Dónde viven las secciones.</p>
           <label class="campo">Barra de secciones <select class="entrada" id="pref-nav"><option value="arriba">Arriba</option><option value="izquierda">Izquierda</option></select></label>
           <p class="muted">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
         </section>
-        <section class="card"><h2>Paneles</h2><p class="muted">Ancho y visibilidad del panel derecho.</p>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg>Paneles</h2><p class="muted">Ancho y visibilidad del panel derecho.</p>
           <label class="campo">Ancho <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
           <label class="check"><input type="checkbox" id="pref-panel-abierto"> Abierto al iniciar</label>
           <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px">Abrir panel</button>
         </section>
-        <section class="card"><h2>Idioma</h2><p class="muted">Motor i18n es/en. Las claves se declaran con <code>data-i18n</code>.</p>
-          <label class="campo">Idioma <select class="entrada" id="pref-idioma"><option value="es">Español</option><option value="en">English</option></select></label>
-          <p class="muted" id="ajustes-idioma">Los textos de navegación y secciones cambian en caliente.</p>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg>Idioma</h2><p class="muted">Motor i18n es/en. Navegación y títulos cambian en caliente.</p>
+          <label class="campo">Idioma <select class="entrada" id="pref-idioma"><option value="es">🇨🇱 Español</option><option value="en">🇬🇧 English</option></select></label>
+          <p class="muted" id="ajustes-idioma">English está en progreso: los textos internos siguen en español.</p>
         </section>
-        <section class="card"><h2>Periodos</h2><p class="muted">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
-        <section class="card"><h2>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
-        <section class="card"><h2>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div></section>
-        <section class="card"><h2>Notificaciones</h2><p class="muted">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> Avisos activos</label></section>
-        <section class="card"><h2>Laboratorio</h2><p class="muted">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
-        <section class="card"><h2>Acerca de</h2><p class="muted">MIMO universal · 0.1 · base 4 + bloques. MIT. Sin red.</p></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-tiempo"/></svg>Notificaciones</h2><p class="muted">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> Avisos activos</label></section>
+      </div>
+
+      <div class="ajustes-grupo"><h2>Datos</h2><p class="muted">Lo que entra, sale y se guarda.</p></div>
+      <div class="ajustes-grid">
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg>Periodos</h2><p class="muted">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
+          <p class="muted">Acepta respaldos de MIMO y de Mimo Academics 1.1.2 (formato 2).</p>
+        </section>
+      </div>
+
+      <div class="ajustes-grupo"><h2>Extensiones</h2><p class="muted">Bloques, laboratorio y versión.</p></div>
+      <div class="ajustes-grid">
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg>Laboratorio</h2><p class="muted">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>Acerca de</h2><p class="muted">MIMO universal · 0.1 · base 4 + bloques. MIT. Sin red.</p></section>
       </div>
     </section>
   </main>
@@ -437,6 +457,20 @@
   </div>
 </div>
 
+<div class="modal" id="modal-sesion" role="dialog" aria-modal="true" aria-labelledby="sesion-tit">
+  <div class="modal__caja">
+    <header class="modal__cab"><div><h2 id="sesion-tit">Editar sesión de estudio</h2><p class="muted">Corrige lo que registró Tiempo o una sesión manual.</p></div><button class="icono-btn" id="sesion-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <form id="sesion-form">
+      <input type="hidden" id="sesion-id">
+      <label class="campo">Fecha <input class="entrada" id="sesion-fecha" type="date"></label>
+      <label class="campo">Duración <input class="entrada" id="sesion-duracion" type="text" inputmode="decimal" placeholder="2:30:21"></label>
+      <label class="campo">Ramo <select class="entrada" id="sesion-ramo"></select></label>
+      <label class="campo">Hora <input class="entrada" id="sesion-hora" type="time"></label>
+      <div class="fila"><button class="btn btn-primario" type="submit">Guardar</button><button class="btn" type="button" id="sesion-cancelar">Cancelar</button><button class="btn btn-peligro" type="button" id="sesion-borrar">Borrar</button></div>
+    </form>
+  </div>
+</div>
+
 <div class="modal modal-buscar" id="modal-buscar" role="dialog" aria-modal="true" aria-labelledby="buscar-tit">
   <div class="modal__caja buscar-caja">
     <header class="modal__cab"><div><h2 id="buscar-tit">Buscar en MIMO</h2><p class="muted" id="buscar-sub">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
@@ -450,6 +484,8 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="vendor/katex/katex.min.js"></script>
+<script src="vendor/katex/auto-render.min.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/mimo-juego.js"></script>
 </body>

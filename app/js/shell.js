@@ -23,9 +23,9 @@
     return d[k] || I18N.es[k] || k;
   }
   var TEMAS = [
-    ["clasico", "Clásico"], ["deepsea", "DeepSea"], ["medianoche", "Medianoche"],
-    ["negro", "Negro"], ["vino", "Vino"], ["bosque", "Bosque"],
-    ["sepia", "Sepia"], ["pinky", "Pinky"], ["alto-contraste", "Alto contraste"]
+    ["clasico", "Clásico", "claro"], ["deepsea", "DeepSea", "oscuro"], ["medianoche", "Medianoche", "oscuro"],
+    ["negro", "Negro", "oscuro"], ["vino", "Vino", "oscuro"], ["bosque", "Bosque", "claro"],
+    ["sepia", "Sepia", "claro"], ["pinky", "Pinky", "claro"], ["alto-contraste", "Alto contraste", "oscuro"]
   ];
   var BLOQUES = {
     tiempo: { nombre: "Tiempo", tipo: "seccion", icono: "i-tiempo", desc: "Cronómetro, temporizador, pomodoro y alarmas." },
@@ -44,8 +44,9 @@
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
-      alarmas: [], estudio: { metaSemanal: 10, metasRamo: {} }, splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true },
+      alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true,
+        temaClaro: "clasico", temaOscuro: "deepsea" },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -65,8 +66,12 @@
           if (!d.califs || typeof d.califs !== "object") d.califs = {};
           if (!d.pomo || typeof d.pomo !== "object") d.pomo = { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 };
           if (!Array.isArray(d.alarmas)) d.alarmas = [];
-          if (!d.estudio || typeof d.estudio !== "object") d.estudio = { metaSemanal: 10, metasRamo: {} };
+          if (!d.estudio || typeof d.estudio !== "object") d.estudio = { metaSemanal: 10, metasRamo: {}, metasSemana: {} };
           if (!d.estudio.metasRamo || typeof d.estudio.metasRamo !== "object") d.estudio.metasRamo = {};
+          if (!d.estudio.metasSemana || typeof d.estudio.metasSemana !== "object") d.estudio.metasSemana = {};
+          if (!d.prefs || typeof d.prefs !== "object") d.prefs = {};
+          if (!d.prefs.temaClaro) d.prefs.temaClaro = "clasico";
+          if (!d.prefs.temaOscuro) d.prefs.temaOscuro = "deepsea";
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
@@ -161,11 +166,48 @@
     if (estado.periodoActivo === id) estado.periodoActivo = estado.periodos.length ? estado.periodos[0].id : null;
     guardar(); pintarPeriodo(); aviso("Periodo borrado. Sus eventos no se tocan.");
   }
-  function borrarSesion(indice) {
-    var s = (estado.sesiones || [])[indice]; if (!s) return;
-    if (!window.confirm("¿Borrar la sesión de " + s.minutos + " min del " + s.fecha + "?")) return;
-    estado.sesiones.splice(indice, 1);
+  function borrarSesion(ref) {
+    var lista = estado.sesiones || [];
+    var idx = typeof ref === "number" ? ref : lista.map(function (s) { return s.id; }).indexOf(String(ref));
+    var s = lista[idx]; if (!s) return;
+    if (!window.confirm("¿Borrar la sesión de " + fmtDuracion(s.minutos) + " del " + s.fecha + "?")) return;
+    lista.splice(idx, 1);
     guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión borrada.");
+  }
+  function duracionInput(min) {
+    var total = Math.max(0, Math.round((Number(min) || 0) * 60));
+    var h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+    return [h, m, s].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+  }
+  function abrirSesionModal(id) {
+    var s = (estado.sesiones || []).filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    $("#sesion-id").value = s.id;
+    $("#sesion-fecha").value = s.fecha || hoyISO();
+    $("#sesion-duracion").value = duracionInput(s.minutos);
+    $("#sesion-hora").value = s.hora || "";
+    var ops = ['<option value="">Sin ramo</option>'];
+    (estado.cursos || []).forEach(function (c) { ops.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
+    $("#sesion-ramo").innerHTML = ops.join("");
+    $("#sesion-ramo").value = s.ramo || "";
+    $("#modal-sesion").classList.add("on");
+    $("#sesion-duracion").focus();
+    $("#sesion-duracion").select();
+  }
+  function cerrarSesionModal() { $("#modal-sesion").classList.remove("on"); }
+  function guardarSesionModal(e) {
+    if (e) e.preventDefault();
+    var id = $("#sesion-id").value;
+    var s = (estado.sesiones || []).filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    var minutos = Math.min(1440, parseDuracion($("#sesion-duracion").value));
+    if (!minutos) { aviso("La duración no puede quedar en cero."); return; }
+    s.fecha = $("#sesion-fecha").value || s.fecha || hoyISO();
+    s.minutos = Math.round(minutos * 100) / 100;
+    s.ramo = $("#sesion-ramo").value || "";
+    s.hora = $("#sesion-hora").value || "";
+    guardar(); cerrarSesionModal(); pintarTiempo(); pintarEstudio();
+    aviso("Sesión corregida: " + fmtDuracion(s.minutos) + ".");
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || "Sin título"); }
   function menuDeContexto(el) {
@@ -251,11 +293,14 @@
 
     var sEl = el.closest("[data-sesion]");
     if (sEl) {
-      var i = parseInt(sEl.getAttribute("data-sesion"), 10);
-      var s = (estado.sesiones || [])[i];
+      var sid = sEl.getAttribute("data-sesion");
+      var s = (estado.sesiones || []).filter(function (x) { return x.id === sid; })[0] ||
+              (estado.sesiones || [])[parseInt(sid, 10)];
       if (!s) return null;
-      return { titulo: menuTitulo("Sesión", s.fecha), items: [
-        { accion: "sesion-borrar", texto: "Borrar sesión", peligro: true, run: function () { borrarSesion(i); } }
+      return { titulo: menuTitulo("Sesión", fmtDuracion(s.minutos) + " · " + s.fecha), items: [
+        { accion: "sesion-editar", texto: "Editar sesión", run: function () { abrirSesionModal(s.id); } },
+        { sep: true },
+        { accion: "sesion-borrar", texto: "Borrar sesión", peligro: true, run: function () { borrarSesion(s.id); } }
       ] };
     }
 
@@ -369,9 +414,26 @@
     if (window.innerWidth <= 1255) cerrarPanel();
   }
 
-  function aplicarTema(t) {
+  function temaModo(id) {
+    var t = TEMAS.filter(function (x) { return x[0] === id; })[0];
+    return t && t[2] === "claro" ? "claro" : "oscuro";
+  }
+  function temasDeModo(modo) {
+    return TEMAS.filter(function (t) { return t[2] === modo; });
+  }
+  function nombreTema(id) {
+    var t = TEMAS.filter(function (x) { return x[0] === id; })[0];
+    return t ? t[1] : id;
+  }
+  function aplicarTema(t, sinPareja) {
+    t = temaValido(t, "clasico");
     document.body.setAttribute("data-tema", t);
     estado.tema = t;
+    if (!estado.prefs) estado.prefs = {};
+    if (!sinPareja) {
+      if (temaModo(t) === "claro") estado.prefs.temaClaro = t;
+      else estado.prefs.temaOscuro = t;
+    }
     pintarTemas();
     pintarTemaIcono();
     guardar();
@@ -379,23 +441,34 @@
   function pintarTemaIcono() {
     var b = $("#btn-tema");
     if (!b) return;
-    var oscuro = estado.tema !== "clasico" && estado.tema !== "bosque" && estado.tema !== "sepia" && estado.tema !== "pinky";
+    var oscuro = temaModo(estado.tema) === "oscuro";
+    var otro = oscuro ? (estado.prefs.temaClaro || "clasico") : (estado.prefs.temaOscuro || "deepsea");
     b.innerHTML = icono(oscuro ? "i-sol" : "i-luna");
-    b.title = oscuro ? "Cambiar a claro" : "Cambiar a oscuro";
+    b.title = "Cambiar a " + (oscuro ? "claro" : "oscuro") + " (" + nombreTema(otro) + ")";
   }
   function pintarTemas() {
     var c = $("#temas");
     if (!c) return;
     c.innerHTML = TEMAS.map(function (t) {
       return '<button class="tema" type="button" data-tema="' + t[0] + '" aria-pressed="' +
-        (estado.tema === t[0]) + '"><i aria-hidden="true"></i>' + esc(t[1]) + "</button>";
+        (estado.tema === t[0]) + '"><i aria-hidden="true"></i>' + esc(t[1]) +
+        '<small class="tema-modo">' + (t[2] === "claro" ? "claro" : "oscuro") + "</small></button>";
     }).join("");
     $$("#temas .tema").forEach(function (b) {
       b.addEventListener("click", function () {
         aplicarTema(b.getAttribute("data-tema"));
-        aviso("Tema " + b.textContent.trim() + " aplicado.");
+        aviso("Tema " + nombreTema(b.getAttribute("data-tema")) + " aplicado.");
       });
     });
+    var sc = $("#pref-tema-claro"), so = $("#pref-tema-oscuro");
+    if (sc) {
+      sc.innerHTML = temasDeModo("claro").map(function (t) { return '<option value="' + t[0] + '">' + esc(t[1]) + "</option>"; }).join("");
+      sc.value = estado.prefs.temaClaro || "clasico";
+    }
+    if (so) {
+      so.innerHTML = temasDeModo("oscuro").map(function (t) { return '<option value="' + t[0] + '">' + esc(t[1]) + "</option>"; }).join("");
+      so.value = estado.prefs.temaOscuro || "deepsea";
+    }
   }
 
   function normalizarEventos() {
@@ -1099,6 +1172,158 @@
     return Math.round(n * 10) / 10;
   }
   function fmtNota(v) { return v === null || v === undefined ? "—" : (Math.round(v * 10) / 10).toFixed(1); }
+
+  /* ---- Puente desde un respaldo de Mimo Academics (formato 2, estado.v3) ----
+     El respaldo viejo no se puede cargar tal cual: su capa `estado` guarda semestres,
+     cursos, notas, tareas y sesiones con otra forma. Esto lo traduce al estado de MIMO
+     universal sin inventar datos: lo que no viene queda vacío. */
+  function nivelDeCodigo(cod, tipo) {
+    if (String(tipo || "") === "cupo" || /^CUPO/i.test(String(cod || ""))) return 99;
+    var m = String(cod || "").match(/(\d)/);
+    var n = m ? parseInt(m[1], 10) : 1;
+    return n >= 1 && n <= 9 ? n : 1;
+  }
+  function temaValido(id, alterno) {
+    return TEMAS.some(function (t) { return t[0] === id; }) ? id : alterno;
+  }
+  function convertirAcademics(x) {
+    var e = x && x.estado;
+    if (!e || typeof e !== "object") return null;
+    var n = porDefecto();
+    var activo = String(e.activo || "");
+    var sem = (e.sem && e.sem[activo]) || {};
+    var viejoCurso = {};
+
+    // 1. Periodos: extras + semestres + las claves de e.sem que falten.
+    var fuentes = [], vistosSem = {};
+    (Array.isArray(e.extras) ? e.extras : []).concat(Array.isArray(x.semestres) ? x.semestres : []).forEach(function (p) {
+      if (!p || !p.id || vistosSem[p.id]) return;
+      vistosSem[p.id] = 1; fuentes.push(p);
+    });
+    Object.keys(e.sem || {}).forEach(function (id) {
+      if (!vistosSem[id]) { vistosSem[id] = 1; fuentes.push({ id: id, nombre: id, semanas: [] }); }
+    });
+    n.periodos = fuentes.map(function (p) {
+      var semanas = (Array.isArray(p.semanas) ? p.semanas : []).map(function (w, i) {
+        return { n: i + 1, desde: String(w.lunes || w.desde || ""), hasta: String(w.domingo || w.hasta || ""), tipo: w.tipo || "clases" };
+      });
+      return { id: String(p.id), nombre: String(p.nombre || p.id), inicio: String(p.inicio || (semanas[0] && semanas[0].desde) || ""), semanas: semanas };
+    });
+    n.periodoActivo = n.periodos.some(function (p) { return p.id === activo; }) ? activo : (n.periodos[0] ? n.periodos[0].id : null);
+
+    // 2. Cursos: los del semestre activo y los aprobados de otros semestres.
+    var cursos = {}, orden = [];
+    function agregarCurso(c, cod) {
+      cod = String(cod || (c && c.codigo) || "").trim().toUpperCase();
+      if (!cod || cursos[cod]) return;
+      if (c) viejoCurso[cod] = c;
+      var aprob = !!(e.aprobados && e.aprobados[cod]);
+      var enActivo = !!(e.agregados && e.agregados[activo] && (e.agregados[activo] || []).some(function (z) {
+        return String(z.codigo || "").toUpperCase() === cod;
+      }));
+      var tipo = /^CUPO/i.test(cod) ? "cupo" : "";
+      cursos[cod] = {
+        codigo: cod, nombre: String((c && (c.nombre || c.alias)) || cod),
+        creditos: Math.max(0, parseInt(c && c.creditos, 10) || 0),
+        nivel: nivelDeCodigo(cod, tipo), requisitos: [], requisitos_o: [], aprobacion: null,
+        tipo: tipo, enMalla: true,
+        cerrado: aprob, aprobado: aprob, resultado: aprob ? "aprobado" : "",
+        notaCierre: null, cerradoEn: "", enCurso: enActivo && !aprob
+      };
+      orden.push(cod);
+    }
+    ((e.agregados && e.agregados[activo]) || []).forEach(function (c) { agregarCurso(c, c && c.codigo); });
+    Object.keys(e.aprobados || {}).forEach(function (cod) { if (e.aprobados[cod]) agregarCurso(null, cod); });
+    n.cursos = orden.map(function (cod) { return cursos[cod]; });
+
+    // 3. Calificaciones: cats/comps/examen/exim del semestre; si faltan, las del curso.
+    var cats = sem.cats || {}, comps = sem.comps || {}, exam = sem.examen || {}, exim = sem.exim || {};
+    var metasRamo = sem.metas_ramo || {};
+    n.califs = {};
+    n.cursos.forEach(function (cur) {
+      var cod = cur.codigo, viejo = viejoCurso[cod] || {};
+      var q = califPorDefecto();
+      var listaCat = cats[cod] || viejo.categorias || [];
+      var listaComp = comps[cod] || viejo.componentes || [];
+      var ex = exam[cod] || viejo.examen || {};
+      var exi = exim[cod] || viejo.eximicion || {};
+      q.categorias = (Array.isArray(listaCat) ? listaCat : []).map(function (cat) {
+        return { nombre: String(cat.nombre || "General"), peso: Math.max(0, Number(cat.peso) || 0) };
+      });
+      if (!q.categorias.length) q.categorias = [{ nombre: "General", peso: 100 }];
+      q.componentes = (Array.isArray(listaComp) ? listaComp : []).map(function (c, i) {
+        return {
+          nombre: String(c.nombre || ("Componente " + (i + 1))),
+          categoria: String(c.categoria || q.categorias[0].nombre),
+          nota: notaNum(c.nota), fecha: String(c.fecha || ""), peso: Math.max(0.1, Number(c.peso) || 1)
+        };
+      });
+      var pesoEx = Number(ex.peso);
+      q.examen = {
+        activo: ex.activo !== false,
+        peso: isNaN(pesoEx) ? 40 : Math.max(0, Math.min(100, Math.round(pesoEx <= 1 ? pesoEx * 100 : pesoEx))),
+        nota: notaNum(ex.nota),
+        reemplaza: null
+      };
+      var rep = parseInt(ex.reemplaza, 10);
+      if (!isNaN(rep) && rep >= 0 && rep < q.componentes.length) q.examen.reemplaza = rep;
+      q.eximicion = {
+        activa: !!exi.activa, modo: exi.modo === "alguna" ? "alguna" : "todas",
+        condiciones: (Array.isArray(exi.condiciones) ? exi.condiciones : []).map(function (c) {
+          return {
+            tipo: ["presentacion", "categoria", "componente"].indexOf(c.tipo) !== -1 ? c.tipo : "presentacion",
+            ref: String(c.ref || ""), op: [">=", ">", "<=", "<"].indexOf(c.op) !== -1 ? c.op : ">=",
+            valor: notaNum(c.valor) || 1
+          };
+        })
+      };
+      var metaRamo = metasRamo[cod] && Number(metasRamo[cod].nota);
+      q.meta = isFinite(metaRamo) && metaRamo > 0 ? Math.min(7, metaRamo) : 5;
+      n.califs[cod] = q;
+    });
+
+    // 4. Tareas: las `nuevas` del semestre, con sus hechas y prioridades.
+    var hechas = sem.hechas || {}, prios = sem.prioridades || {};
+    n.tareas = (Array.isArray(sem.nuevas) ? sem.nuevas : []).map(function (t, i) {
+      var vid = String(t.id || "");
+      var hecha = !!hechas[vid];
+      return {
+        id: "ti" + (vid || i), titulo: String(t.texto || "Sin título"), tipo: "tarea",
+        padre_id: null, estado: hecha ? "hecha" : "pendiente", hecha: hecha,
+        prioridad: prios[vid] || "media", fecha: String(t.fecha || ""),
+        contexto: String(t.ramo && t.ramo !== "OTROS" ? t.ramo : ""),
+        nota: String(t.detalle || ""), orden: i, creada: ""
+      };
+    });
+
+    // 5. Sesiones y metas de estudio.
+    n.sesiones = (Array.isArray(sem.sesiones) ? sem.sesiones : []).map(function (s, i) {
+      return {
+        id: String(s.id || ("si" + i)), fecha: String(s.fecha || ""),
+        minutos: Math.max(0, Number(s.minutos) || 0), ramo: String(s.ramo || "").toUpperCase(),
+        vinculo: "", hora: String(s.hora || ""), tipo: "importado"
+      };
+    });
+    n.estudio = { metaSemanal: Math.max(0, Number((sem.metas || {}).semanal) || 0), metasRamo: {}, metasSemana: {} };
+    Object.keys(metasRamo).forEach(function (cod) {
+      var v = metasRamo[cod];
+      n.estudio.metasRamo[String(cod).toUpperCase()] = Math.max(0, Number(v && (v.horas !== undefined ? v.horas : v)) || 0);
+    });
+
+    // 6. Tema, pareja claro/oscuro e idioma.
+    var av = (e.ajustes && e.ajustes.av) || {};
+    n.tema = temaValido(av.tema, temaValido(av.temaOscuro, "clasico"));
+    n.prefs.temaClaro = temaValido(av.temaClaro, "clasico");
+    n.prefs.temaOscuro = temaValido(av.temaOscuro, "deepsea");
+    var idi = String(e.idioma || (e.ajustes && e.ajustes.idioma) || av.idioma || "es").toLowerCase();
+    n.prefs.idioma = idi === "en" ? "en" : "es";
+    // Un respaldo académico trae datos de Malla, Calificaciones y Estudio: se instalan sus
+    // bloques para que se vean al abrir, sin pedirle al usuario que adivine el catálogo.
+    n.instalados = ["tiempo", "malla", "calificaciones", "estudio", "evaluaciones"];
+    n.kits = { academics: ["malla", "calificaciones", "estudio", "evaluaciones"] };
+    return n;
+  }
+
   function fmtNota2(v) { return v === null || v === undefined ? "—" : (Math.round(v * 100) / 100).toFixed(2); }
   function textoNecesario(v) {
     if (v === null || v === undefined) return "—";
@@ -1422,13 +1647,19 @@
   /* ---- U4c: Estudio, horas por ramo y meta semanal ---- */
   var PALETA_ESTUDIO = ["#2563eb", "#16a34a", "#b45309", "#7c3aed", "#0e7490", "#be123c", "#0f766e", "#a16207", "#dc2626"];
   function normalizarEstudio() {
-    if (!estado.estudio || typeof estado.estudio !== "object") estado.estudio = { metaSemanal: 10, metasRamo: {} };
+    if (!estado.estudio || typeof estado.estudio !== "object") estado.estudio = { metaSemanal: 10, metasRamo: {}, metasSemana: {} };
     estado.estudio.metaSemanal = Math.max(0, Number(estado.estudio.metaSemanal) || 0);
     if (!estado.estudio.metasRamo || typeof estado.estudio.metasRamo !== "object") estado.estudio.metasRamo = {};
+    if (!estado.estudio.metasSemana || typeof estado.estudio.metasSemana !== "object") estado.estudio.metasSemana = {};
+    var vistos = {};
     estado.sesiones = (estado.sesiones || []).map(function (s, i) {
+      var id = String(s.id || ("s" + i));
+      while (vistos[id]) id += "-" + i;
+      vistos[id] = 1;
       return {
-        fecha: String(s.fecha || hoyISO()), minutos: Math.max(0, Number(s.minutos) || 0),
-        ramo: String(s.ramo || "").trim().toUpperCase(), vinculo: String(s.vinculo || "")
+        id: id, fecha: String(s.fecha || hoyISO()), minutos: Math.max(0, Number(s.minutos) || 0),
+        ramo: String(s.ramo || "").trim().toUpperCase(), vinculo: String(s.vinculo || ""),
+        hora: String(s.hora || ""), tipo: String(s.tipo || "")
       };
     });
   }
@@ -1441,6 +1672,24 @@
     if (min <= 0) return "0 h";
     if (min < 60) return Math.round(min) + " min";
     return (Math.round(min / 6) / 10).toString().replace(".", ",") + " h";
+  }
+  function fmtDuracion(min) {
+    var total = Math.round((Number(min) || 0) * 60);
+    var h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+    if (h) return h + " h " + String(m).padStart(2, "0") + " min" + (s ? " " + String(s).padStart(2, "0") + " s" : "");
+    if (m) return m + " min" + (s ? " " + s + " s" : "");
+    return s + " s";
+  }
+  function parseDuracion(txt) {
+    var s = String(txt || "").trim().replace(",", ".");
+    if (!s) return 0;
+    if (s.indexOf(":") !== -1) {
+      var p = s.split(":").map(function (x) { return parseInt(x, 10) || 0; });
+      if (p.length === 2) return p[0] * 60 + p[1];
+      if (p.length === 3) return p[0] * 60 + p[1] + p[2] / 60;
+      return 0;
+    }
+    return Math.max(0, Number(s) || 0);
   }
   function isoDeFecha(d) {
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -1550,9 +1799,10 @@
     var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
     $("#est-sesiones").innerHTML = recientes.length ? recientes.map(function (x) {
       var c = x.s.ramo ? ramoPorCodigo(x.s.ramo) : null;
-      return '<div class="est-sesion"><span><b>' + esc(c ? c.codigo : "Sin ramo") + "</b> " + esc(c ? c.nombre : "") +
-        "</span><small>" + esc(x.s.fecha) + " · " + fmtHoras(x.s.minutos) + '</small>' +
-        '<button class="calif-x" type="button" data-borrar-estudio="' + x.i + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
+      return '<div class="est-sesion" data-sesion="' + esc(x.s.id) + '" title="Clic derecho: editar o borrar"><span><b>' + esc(c ? c.codigo : "Sin ramo") + "</b> " + esc(c ? c.nombre : "") +
+        "</span><small>" + esc(x.s.fecha) + " · " + esc(fmtDuracion(x.s.minutos)) + '</small>' +
+        '<button class="calif-x" type="button" data-editar-estudio="' + esc(x.s.id) + '" title="Editar sesión" aria-label="Editar sesión">✎</button>' +
+        '<button class="calif-x" type="button" data-borrar-estudio="' + esc(x.s.id) + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
     }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
     if (pantalla === "estudio") pintarPanel();
   }
@@ -1581,8 +1831,32 @@
     s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
     return s;
   }
+  function renderMathHTML(html) {
+    if (typeof window.renderMathInElement !== "function") return html;
+    var cont = document.createElement("div");
+    cont.innerHTML = html;
+    try {
+      window.renderMathInElement(cont, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\(", right: "\\)", display: false }
+        ],
+        throwOnError: false,
+        errorColor: "#b91c1c",
+        ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+      });
+    } catch (e) { /* si KaTeX falla, la nota sigue en texto plano */ }
+    return cont.innerHTML;
+  }
   function renderMarkdown(txt) {
-    var lineas = String(txt || "").split("\n"), out = [], lista = false;
+    var guardados = [];
+    var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
+      guardados.push(m);
+      return "@@MATH" + (guardados.length - 1) + "@@";
+    });
+    var lineas = fuente.split("\n"), out = [], lista = false;
     function cerrar() { if (lista) { out.push("</ul>"); lista = false; } }
     lineas.forEach(function (l) {
       var t = l.trim();
@@ -1605,7 +1879,10 @@
       out.push("<p>" + marcaInline(t) + "</p>");
     });
     cerrar();
-    return out.join("");
+    var html = out.join("").replace(/@@MATH(\d+)@@/g, function (_, i) {
+      return esc(guardados[parseInt(i, 10)] || "");
+    });
+    return renderMathHTML(html);
   }
   function pintarNotasLista(destino, conClick) {
     var cont = $(destino);
@@ -1674,14 +1951,46 @@
   }
   function pintaReloj() {
     var modo = estado.tiempoModo || "crono";
+    var reloj = $("#reloj");
+    if (!reloj) return;
     if (modo === "alarmas") {
       var d = new Date();
-      $("#reloj").textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+      reloj.textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
       return;
     }
     var seg = modo === "crono" ? tiempoSeg : modo === "temporizador" ? tempSeg : pomoSeg;
-    var h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60), s = seg % 60;
-    $("#reloj").textContent = [h, m, s].map(function (x) { return String(x).padStart(2, "0"); }).join(":");
+    var h = Math.floor(seg / 3600), m = Math.floor((seg % 3600) / 60), s = Math.floor(seg % 60);
+    if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("rlj")) return;
+    reloj.innerHTML = [["h", h], ["m", m], ["s", s]].map(function (p) {
+      return '<input class="rlj" type="text" inputmode="numeric" maxlength="2" data-parte="' + p[0] +
+        '" value="' + String(p[1]).padStart(2, "0") + '" aria-label="' + (p[0] === "h" ? "Horas" : p[0] === "m" ? "Minutos" : "Segundos") + '">';
+    }).join(":");
+    reloj.classList.toggle("corriendo", !!tiempoInt);
+    $$("#reloj .rlj").forEach(function (inp) {
+      inp.addEventListener("change", ajustarRelojDesdeInputs);
+      inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
+      inp.addEventListener("focus", function () { inp.select(); });
+    });
+  }
+  function ajustarRelojDesdeInputs() {
+    var vals = $$("#reloj .rlj").map(function (inp) {
+      var n = parseInt(inp.value, 10);
+      if (isNaN(n) || n < 0) n = 0;
+      var max = inp.getAttribute("data-parte") === "h" ? 99 : 59;
+      return Math.min(max, n);
+    });
+    var seg = vals[0] * 3600 + vals[1] * 60 + vals[2];
+    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    if (estado.tiempoModo === "crono") tiempoSeg = seg;
+    else if (estado.tiempoModo === "temporizador") { tempSeg = seg; tempInicial = seg; }
+    else if (estado.tiempoModo === "pomodoro") { pomoSeg = seg; pomoInicial = seg; }
+    $$("#reloj .rlj").forEach(function (inp, i) { inp.value = String(vals[i]).padStart(2, "0"); });
+    $("#reloj").classList.remove("corriendo");
+    $("#btn-empezar").disabled = estado.tiempoModo === "alarmas";
+    $("#btn-pausar").disabled = true;
+    $("#btn-parar").disabled = true;
+    guardar(); pintarEstadoTiempo();
+    aviso("Reloj ajustado a " + [vals[0], vals[1], vals[2]].map(function (x) { return String(x).padStart(2, "0"); }).join(":") + ".");
   }
   function pintarEstadoTiempo() {
     var modo = estado.tiempoModo || "crono", txt;
@@ -1812,16 +2121,20 @@
     if ($("#tiempo-horas")) $("#tiempo-horas").textContent = fmtHoras(min);
     var listaSes = $("#tiempo-lista-sesiones");
     if (listaSes) {
-      listaSes.innerHTML = ses.length ? ses.map(function (x, i) {
+      listaSes.innerHTML = ses.length ? ses.map(function (x) {
         var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
         var ram = x.ramo ? ramoPorCodigo(x.ramo) : null;
-        return '<div class="sesion-item" data-sesion="' + i + '" title="Clic derecho: borrar"><span><b>' +
+        return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="Clic derecho: editar o borrar"><span><b>' +
           esc(fechaCorta(x.fecha)) + "</b>" + (ram ? " · " + esc(ram.codigo) : "") + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
-          Number(x.minutos || 0) + " min</small>" +
-          '<button class="sesion-x" type="button" data-borrar-sesion="' + i + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
+          esc(fmtDuracion(x.minutos)) + "</small>" +
+          '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="Editar sesión" aria-label="Editar sesión">✎</button>' +
+          '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
       }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
       $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
-        b.addEventListener("click", function () { borrarSesion(parseInt(b.getAttribute("data-borrar-sesion"), 10)); });
+        b.addEventListener("click", function () { borrarSesion(b.getAttribute("data-borrar-sesion")); });
+      });
+      $$("#tiempo-lista-sesiones [data-editar-sesion]").forEach(function (b) {
+        b.addEventListener("click", function () { abrirSesionModal(b.getAttribute("data-editar-sesion")); });
       });
     }
     var fila = document.querySelector(".tiempo-caja .fila");
@@ -1832,11 +2145,15 @@
     pintaReloj(); pintarEstadoTiempo();
   }
   function registrarSesion(minutos, tipo) {
-    minutos = Math.max(1, Math.round(Number(minutos) || 0));
+    minutos = Math.max(0.01, Math.round((Number(minutos) || 0) * 100) / 100);
     if (!minutos) return;
     estado.sesiones = estado.sesiones || [];
-    estado.sesiones.push({ fecha: hoyISO(), minutos: minutos, vinculo: estado.tiempoVinculo || "",
-      ramo: estado.tiempoRamo || "", tipo: tipo || "crono" });
+    var d = new Date();
+    estado.sesiones.push({
+      id: "s" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+      fecha: hoyISO(), hora: String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"),
+      minutos: minutos, vinculo: estado.tiempoVinculo || "", ramo: estado.tiempoRamo || "", tipo: tipo || "crono"
+    });
     guardar(); pintarTiempo(); pintarEstudio();
   }
   function pitido() {
@@ -2391,7 +2708,8 @@
     ir(pantalla);
 
     $("#btn-tema").addEventListener("click", function () {
-      aplicarTema(estado.tema === "clasico" ? "deepsea" : "clasico");
+      var otro = temaModo(estado.tema) === "oscuro" ? estado.prefs.temaClaro : estado.prefs.temaOscuro;
+      aplicarTema(otro || (temaModo(estado.tema) === "oscuro" ? "clasico" : "deepsea"));
     });
     $("#btn-ajustes").addEventListener("click", function () { ir("ajustes"); });
     $("#btn-panel").addEventListener("click", alternarPanel);
@@ -2407,6 +2725,16 @@
     $("#pref-panel-ancho").addEventListener("change", function (e) { estado.prefs.panelAncho = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-nav").addEventListener("change", function (e) { estado.prefs.navPos = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); aplicarIdioma(); pintarAjustes(); });
+    $("#pref-tema-claro").addEventListener("change", function (e) {
+      estado.prefs.temaClaro = temaValido(e.target.value, "clasico");
+      if (temaModo(estado.tema) === "claro") aplicarTema(estado.prefs.temaClaro, true);
+      else { guardar(); pintarTemaIcono(); }
+    });
+    $("#pref-tema-oscuro").addEventListener("change", function (e) {
+      estado.prefs.temaOscuro = temaValido(e.target.value, "deepsea");
+      if (temaModo(estado.tema) === "oscuro") aplicarTema(estado.prefs.temaOscuro, true);
+      else { guardar(); pintarTemaIcono(); }
+    });
     $("#pref-notif").addEventListener("change", function (e) { estado.prefs.notificaciones = e.target.checked; guardar(); });
     $("#pref-panel-abierto").addEventListener("change", function (e) { estado.prefs.panelAbierto = e.target.checked; guardar(); if (e.target.checked) abrirPanel(); else cerrarPanel(); });
     $("#lab-split").addEventListener("change", function (e) {
@@ -2426,11 +2754,21 @@
       lector.onload = function () {
         try {
           var x = JSON.parse(lector.result);
-          estado = Object.assign(porDefecto(), x);
-          if (!estado.prefs) estado.prefs = { inicioSemana: "lunes", hora: "24", panelAncho: "320" };
-          guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs();
-          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarPanel();
-          aviso("Respaldo importado.");
+          var nuevo = null, origen = "";
+          if (x && x.formato === 2 && x.estado && typeof x.estado === "object") {
+            nuevo = convertirAcademics(x); origen = "Mimo Academics";
+          } else if (x && typeof x === "object" && !Array.isArray(x)) {
+            nuevo = x; origen = "MIMO";
+          }
+          if (!nuevo) { aviso("Ese archivo no es un respaldo de MIMO."); return; }
+          if (!window.confirm("Se reemplazarán los datos actuales por los de " + origen + ". ¿Continuar?")) return;
+          estado = Object.assign(porDefecto(), nuevo);
+          estado.prefs = Object.assign(porDefecto().prefs, nuevo.prefs || {});
+          estado.estudio = Object.assign({ metaSemanal: 10, metasRamo: {}, metasSemana: {} }, nuevo.estudio || {});
+          normalizarEventos(); normalizarTareas(); normalizarNotas(); normalizarCursos(); normalizarCalifs(); normalizarEstudio();
+          guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs(); aplicarIdioma();
+          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel();
+          aviso("Importados " + estado.cursos.length + " ramos, " + estado.tareas.length + " tareas y " + estado.sesiones.length + " sesiones.");
         } catch (err) { aviso("No se pudo importar el archivo."); }
       };
       lector.readAsText(f); e.target.value = "";
@@ -2552,11 +2890,14 @@
       e.preventDefault();
       normalizarEstudio();
       var fecha = $("#est-fecha").value || hoyISO();
-      var minutos = Math.max(1, Math.min(1440, parseInt($("#est-minutos").value, 10) || 0));
-      if (!minutos) return;
-      estado.sesiones.push({ fecha: fecha, minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "" });
+      var minutos = Math.min(1440, parseDuracion($("#est-minutos").value));
+      if (!minutos) { aviso("Escribe una duración: 90, 1:30 o 2:30:21."); return; }
+      estado.sesiones.push({
+        id: "s" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+        fecha: fecha, hora: "", minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "", tipo: "manual"
+      });
       guardar(); pintarEstudio(); pintarTiempo();
-      aviso("Sesión de estudio registrada.");
+      aviso("Sesión de " + fmtDuracion(minutos) + " registrada.");
     });
     $("#est-meta").addEventListener("change", function (e) {
       normalizarEstudio(); estado.estudio.metaSemanal = Math.max(0, Number(e.target.value) || 0);
@@ -2569,8 +2910,10 @@
       guardar(); pintarEstudio();
     });
     $("#est-sesiones").addEventListener("click", function (e) {
+      var be = e.target.closest("[data-editar-estudio]");
+      if (be) { abrirSesionModal(be.getAttribute("data-editar-estudio")); return; }
       var b = e.target.closest("[data-borrar-estudio]"); if (!b) return;
-      borrarSesion(parseInt(b.getAttribute("data-borrar-estudio"), 10));
+      borrarSesion(b.getAttribute("data-borrar-estudio"));
     });
     $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
     $("#calif-lista").addEventListener("click", function (e) {
@@ -2697,6 +3040,13 @@
         else if (m === "nota") { ir("notas"); $("#btn-nueva-nota").click(); }
         else if (m === "ajustes") ir("ajustes");
       });
+    });
+    $("#sesion-x").addEventListener("click", cerrarSesionModal);
+    $("#sesion-cancelar").addEventListener("click", cerrarSesionModal);
+    $("#modal-sesion").addEventListener("click", function (e) { if (e.target === $("#modal-sesion")) cerrarSesionModal(); });
+    $("#sesion-form").addEventListener("submit", guardarSesionModal);
+    $("#sesion-borrar").addEventListener("click", function () {
+      var id = $("#sesion-id").value; cerrarSesionModal(); borrarSesion(id);
     });
     $("#periodo-x").addEventListener("click", cerrarPeriodo);
     $("#periodo-cancelar").addEventListener("click", cerrarPeriodo);
