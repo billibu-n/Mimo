@@ -24,6 +24,7 @@
   var FORMATO_CIFRADO = "mimo-sync-cifrado";
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
+  function L(es, en, zh) { return window.MimoI18n ? window.MimoI18n.L(es, en, zh) : es; }
   var meta = cargarMeta();
   var cola = cargarCola();
   var sincronizando = false, aplicando = false, conflicto = null;
@@ -81,22 +82,22 @@
   function avisar(t) { if (host()) host().aviso(t); }
   function resumen(s) { return host() ? host().resumen(s) : { tareas: 0, notas: 0, eventos: 0, ramos: 0, sesiones: 0, periodos: 0 }; }
   function resumenTexto(r) {
-    return r.tareas + " tareas · " + r.notas + " notas · " + r.eventos + " eventos · " +
-      r.ramos + " ramos · " + r.sesiones + " sesiones";
+    return r.tareas + " " + L("tareas", "tasks", "任务") + " · " + r.notas + " " + L("notas", "notes", "笔记") + " · " + r.eventos + " " + L("eventos", "events", "事件") + " · " +
+      r.ramos + " " + L("ramos", "courses", "门课程") + " · " + r.sesiones + " " + L("sesiones", "sessions", "会话");
   }
   function fecha(ms) {
     if (!ms) return "—";
-    try { return new Date(ms).toLocaleString("es-CL", { dateStyle: "short", timeStyle: "short" }); }
+    try { var i = window.MimoI18n ? window.MimoI18n.idioma() : "es"; var loc = i === "zh" ? "zh-CN" : i === "en" ? "en-US" : "es-CL"; return new Date(ms).toLocaleString(loc, { dateStyle: "short", timeStyle: "short" }); }
     catch (e) { return new Date(ms).toLocaleString(); }
   }
   function hace(iso) {
     if (!iso) return "";
     var ms = Date.now() - new Date(iso).getTime();
     if (!isFinite(ms) || ms < 0) return "";
-    if (ms < 60000) return "hace unos segundos";
-    if (ms < 3600000) return "hace " + Math.floor(ms / 60000) + " min";
-    if (ms < 86400000) return "hace " + Math.floor(ms / 3600000) + " h";
-    return "hace " + Math.floor(ms / 86400000) + " días";
+    if (ms < 60000) return L("hace unos segundos", "seconds ago", "几秒前");
+    if (ms < 3600000) return L("hace ", "", "") + Math.floor(ms / 60000) + L(" min", " min ago", " 分钟前");
+    if (ms < 86400000) return L("hace ", "", "") + Math.floor(ms / 3600000) + L(" h", " h ago", " 小时前");
+    return L("hace ", "", "") + Math.floor(ms / 86400000) + L(" días", " days ago", " 天前");
   }
   function esWebDAV() { return meta.provider === "webdav"; }
   function esNube() { return esWebDAV(); }
@@ -150,9 +151,9 @@
   function leerEnvelope(txt) {
     var x = JSON.parse(txt);
     if (!x || x.formato !== "mimo-sync" || !x.estado || typeof x.estado !== "object") {
-      throw new Error("Ese archivo está corrupto o no es un archivo de sincronización de Mimo.");
+      throw new Error(L("Ese archivo está corrupto o no es un archivo de sincronización de Mimo.", "That file is corrupt or is not a Mimo sync file.", "该文件已损坏，或不是 Mimo 同步文件。"));
     }
-    if (Number(x.version) > VERSION) throw new Error("El archivo es de una versión más nueva de Mimo.");
+    if (Number(x.version) > VERSION) throw new Error(L("El archivo es de una versión más nueva de Mimo.", "The file is from a newer version of Mimo.", "该文件来自更新版本的 Mimo。"));
     x.syncVersion = Math.max(1, Number(x.syncVersion) || 1);
     return x;
   }
@@ -184,13 +185,13 @@
 
   /* ---- cifrado (WebCrypto) ---- */
   function necesitaClave() {
-    var e = new Error("Falta la contraseña de cifrado. Escríbela en Ajustes → Sincronización.");
+    var e = new Error(L("Falta la contraseña de cifrado. Escríbela en Ajustes → Sincronización.", "The encryption password is missing. Enter it in Settings → Sync.", "缺少加密密码。请在设置 → 同步中输入。"));
     e.necesitaClave = true;
     return e;
   }
   async function derivarClave(pass, salB64) {
     if (!(window.crypto && crypto.subtle && crypto.subtle.deriveKey)) {
-      throw new Error("Este navegador no tiene WebCrypto; no se puede cifrar.");
+      throw new Error(L("Este navegador no tiene WebCrypto; no se puede cifrar.", "This browser lacks WebCrypto; encryption is not possible.", "此浏览器缺少 WebCrypto，无法加密。"));
     }
     var base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
     return crypto.subtle.deriveKey(
@@ -224,11 +225,11 @@
   }
   async function descifrar(txt) {
     var x;
-    try { x = JSON.parse(txt); } catch (e) { throw new Error("El archivo remoto está corrupto o no es de Mimo."); }
+    try { x = JSON.parse(txt); } catch (e) { throw new Error(L("El archivo remoto está corrupto o no es de Mimo.", "The remote file is corrupt or is not from Mimo.", "远程文件已损坏，或不是来自 Mimo。")); }
     if (!x || x.formato !== FORMATO_CIFRADO || !x.sal || !x.iv || !x.datos) {
-      throw new Error("El archivo remoto está corrupto o no es de Mimo.");
+      throw new Error(L("El archivo remoto está corrupto o no es de Mimo.", "The remote file is corrupt or is not from Mimo.", "远程文件已损坏，或不是来自 Mimo。"));
     }
-    if (Number(x.version) > 1) throw new Error("El archivo remoto usa un cifrado más nuevo que esta versión.");
+    if (Number(x.version) > 1) throw new Error(L("El archivo remoto usa un cifrado más nuevo que esta versión.", "The remote file uses encryption newer than this version.", "远程文件使用的加密版本比当前版本新。"));
     var key = await claveDeSal(x.sal);
     try {
       var plano = await crypto.subtle.decrypt(
@@ -237,7 +238,7 @@
       meta.cifrado.sal = x.sal; meta.cifrado.activo = true; guardarMeta(); pintarClave();
       return new TextDecoder().decode(plano);
     } catch (e) {
-      throw new Error("Contraseña de cifrado incorrecta o archivo remoto corrupto.");
+      throw new Error(L("Contraseña de cifrado incorrecta o archivo remoto corrupto.", "Wrong encryption password or corrupt remote file.", "加密密码错误或远程文件损坏。"));
     }
   }
   function esCifrado(txt) {
@@ -252,7 +253,7 @@
   }
   function abrirDB() {
     return new Promise(function (resolve, reject) {
-      if (!window.indexedDB) { reject(new Error("IndexedDB no disponible")); return; }
+      if (!window.indexedDB) { reject(new Error(L("IndexedDB no disponible", "IndexedDB unavailable", "IndexedDB 不可用"))); return; }
       var r = indexedDB.open(DB, 2);
       r.onupgradeneeded = function () {
         var db = r.result;
@@ -320,10 +321,10 @@
           }
         } catch (e) {}
       }
-      if (!carpetaTauri) throw new Error("Elige una carpeta de sincronización desde Ajustes.");
+      if (!carpetaTauri) throw new Error(L("Elige una carpeta de sincronización desde Ajustes.", "Choose a sync folder in Settings.", "请在设置中选择同步文件夹。"));
       return { tauri: true, nombre: carpetaTauri.nombre, ruta: carpetaTauri.ruta };
     }
-    if (!soportaCarpeta()) throw new Error("Este navegador no permite elegir una carpeta persistente. Usa el modo Archivo manual.");
+    if (!soportaCarpeta()) throw new Error(L("Este navegador no permite elegir una carpeta persistente. Usa el modo Archivo manual.", "This browser cannot choose a persistent folder. Use Manual file.", "此浏览器无法选择持久文件夹。请使用手动文件。"));
     if (!handleLeido) { carpetaHandle = await leerHandle(); handleLeido = true; }
     if (!carpetaHandle) {
       if (!pedir) return null;
@@ -333,7 +334,7 @@
     if (carpetaHandle.queryPermission) {
       var p = await carpetaHandle.queryPermission({ mode: "readwrite" });
       if (p !== "granted" && pedir) p = await carpetaHandle.requestPermission({ mode: "readwrite" });
-      if (p !== "granted") throw new Error("Falta permiso para escribir en la carpeta elegida.");
+      if (p !== "granted") throw new Error(L("Falta permiso para escribir en la carpeta elegida.", "Permission to write in the chosen folder is missing.", "缺少写入所选文件夹的权限。"));
     }
     return carpetaHandle;
   }
@@ -357,25 +358,25 @@
       await obtenerCarpeta(true);
       if (revEsperada) {
         var actual = await leerCarpeta(true);
-        if (!actual) throw new Error("El archivo remoto desapareció. Vuelve a sincronizar.");
-        if (actual.rev !== revEsperada) throw new Error("El archivo cambió mientras sincronizabas. Vuelve a intentarlo.");
+        if (!actual) throw new Error(L("El archivo remoto desapareció. Vuelve a sincronizar.", "The remote file disappeared. Sync again.", "远程文件消失了。请重新同步。"));
+        if (actual.rev !== revEsperada) throw new Error(L("El archivo cambió mientras sincronizabas. Vuelve a intentarlo.", "The file changed while you were syncing. Try again.", "同步时文件发生了变化。请重试。"));
       }
       await invocarTauri("escribir_carpeta", { texto: texto });
       var vuelta = await invocarTauri("leer_carpeta", {});
-      if (vuelta !== texto) throw new Error("No se pudo verificar la escritura del archivo.");
+      if (vuelta !== texto) throw new Error(L("No se pudo verificar la escritura del archivo.", "The file write could not be verified.", "无法验证文件写入。"));
       return { rev: await hashTexto(texto) };
     }
     var dir = await obtenerCarpeta(true);
     if (revEsperada) {
       var actual = await leerCarpeta(true);
-      if (!actual) throw new Error("El archivo remoto desapareció. Vuelve a sincronizar.");
-      if (actual.rev !== revEsperada) throw new Error("El archivo cambió mientras sincronizabas. Vuelve a intentarlo.");
+      if (!actual) throw new Error(L("El archivo remoto desapareció. Vuelve a sincronizar.", "The remote file disappeared. Sync again.", "远程文件消失了。请重新同步。"));
+      if (actual.rev !== revEsperada) throw new Error(L("El archivo cambió mientras sincronizabas. Vuelve a intentarlo.", "The file changed while you were syncing. Try again.", "同步时文件发生了变化。请重试。"));
     }
     var fh = await dir.getFileHandle(ARCHIVO, { create: true });
     var w = await fh.createWritable();
     await w.write(texto); await w.close();
     var check = await fh.getFile(); var t = await check.text();
-    if (t !== texto) throw new Error("No se pudo verificar la escritura del archivo.");
+    if (t !== texto) throw new Error(L("No se pudo verificar la escritura del archivo.", "The file write could not be verified.", "无法验证文件写入。"));
     return { rev: await hashTexto(texto) };
   }
 
@@ -417,7 +418,7 @@
         peticion: { metodo: metodo, url: url, cabeceras: cab, cuerpo: cuerpo }
       });
     } catch (e) {
-      var y = new Error("No se pudo conectar con el servidor: " + (e && e.message ? e.message : e));
+      var y = new Error(L("No se pudo conectar con el servidor: ", "Could not reach the server: ", "无法连接服务器：") + (e && e.message ? e.message : e));
       y.red = true; y.causa = e; throw y;
     }
     var mapa = r && r.cabeceras ? r.cabeceras : {};
@@ -446,8 +447,8 @@
     try {
       return await fetch(url, o);
     } catch (e) {
-      if (cortado) { var x = new Error("El servidor no respondió en 20 s."); x.red = true; throw x; }
-      var y = new Error("No se pudo conectar con el servidor (red o CORS).");
+      if (cortado) { var x = new Error(L("El servidor no respondió en 20 s.", "The server did not respond within 20 s.", "服务器在 20 秒内没有响应。")); x.red = true; throw x; }
+      var y = new Error(L("No se pudo conectar con el servidor (red o CORS).", "Could not reach the server (network or CORS).", "无法连接服务器（网络或跨域）。"));
       y.red = true; y.causa = e; throw y;
     } finally { clearTimeout(t); }
   }
@@ -458,55 +459,55 @@
       acum += "/" + encodeURIComponent(partes[i]);
       var res = await pedir(acum, { method: "MKCOL" });
       if ([201, 200, 204, 301, 405, 409, 403].indexOf(res.status) === -1) {
-        throw new Error("No se pudo crear la carpeta remota (HTTP " + res.status + ").");
+        throw new Error(L("No se pudo crear la carpeta remota (HTTP " + res.status + ").", "Could not create the remote folder (HTTP " + res.status + ").", "无法创建远程文件夹（HTTP " + res.status + "）。"));
       }
-      if (res.status === 401) throw new Error("El servidor rechazó las credenciales (HTTP 401).");
+      if (res.status === 401) throw new Error(L("El servidor rechazó las credenciales (HTTP 401).", "The server rejected the credentials (HTTP 401).", "服务器拒绝了凭据（HTTP 401）。"));
     }
   }
   async function webdavLeer() {
-    if (!urlBase()) throw new Error("Falta la URL del servidor WebDAV.");
+    if (!urlBase()) throw new Error(L("Falta la URL del servidor WebDAV.", "The WebDAV server URL is missing.", "缺少 WebDAV 服务器 URL。"));
     var res = await pedir(urlArchivo(), { method: "GET" });
     if (res.status === 404) return null;
-    if (res.status === 401 || res.status === 403) throw new Error("El servidor rechazó las credenciales (HTTP " + res.status + ").");
-    if (!res.ok) throw new Error("WebDAV respondió HTTP " + res.status + " al leer.");
+    if (res.status === 401 || res.status === 403) throw new Error(L("El servidor rechazó las credenciales (HTTP " + res.status + ").", "The server rejected the credentials (HTTP " + res.status + ").", "服务器拒绝了凭据（HTTP " + res.status + "）。"));
+    if (!res.ok) throw new Error(L("WebDAV respondió HTTP " + res.status + " al leer.", "WebDAV returned HTTP " + res.status + " while reading.", "WebDAV 读取时返回 HTTP " + res.status + "。"));
     var cuerpo = await res.text();
     var rev = await hashTexto(cuerpo);
     var etag = res.headers.get("ETag") || "";
     if (!esCifrado(cuerpo)) {
-      throw new Error("El archivo remoto no está cifrado. Mimo no aplica texto claro desde WebDAV.");
+      throw new Error(L("El archivo remoto no está cifrado. Mimo no aplica texto claro desde WebDAV.", "The remote file is not encrypted. Mimo does not apply plain text from WebDAV.", "远程文件未加密。Mimo 不会应用来自 WebDAV 的明文。"));
     }
     var texto = await descifrar(cuerpo);
     return { texto: texto, rev: rev, etag: etag, cifrado: true };
   }
   async function webdavEscribir(texto, revEsperada, etagEsperado) {
-    if (!urlBase()) throw new Error("Falta la URL del servidor WebDAV.");
+    if (!urlBase()) throw new Error(L("Falta la URL del servidor WebDAV.", "The WebDAV server URL is missing.", "缺少 WebDAV 服务器 URL。"));
     await asegurarCarpeta();
     var cuerpo = await cifrar(texto);
     var cab = { "Content-Type": "application/json" };
     if (etagEsperado) cab["If-Match"] = etagEsperado;
     else if (revEsperada) {
       var actual = await webdavLeer();
-      if (!actual) throw new Error("El archivo remoto desapareció. Vuelve a sincronizar.");
+      if (!actual) throw new Error(L("El archivo remoto desapareció. Vuelve a sincronizar.", "The remote file disappeared. Sync again.", "远程文件消失了。请重新同步。"));
       if (actual.rev !== revEsperada) {
-        var e = new Error("El archivo remoto cambió mientras sincronizabas."); e.codigo = 412; throw e;
+        var e = new Error(L("El archivo remoto cambió mientras sincronizabas.", "The remote file changed while you were syncing.", "同步时远程文件发生了变化。")); e.codigo = 412; throw e;
       }
     } else cab["If-None-Match"] = "*";
     var res = await pedir(urlArchivo(), { method: "PUT", headers: cab, body: cuerpo });
     if (res.status === 412) {
-      var c = new Error("El archivo remoto cambió mientras sincronizabas."); c.codigo = 412; throw c;
+      var c = new Error(L("El archivo remoto cambió mientras sincronizabas.", "The remote file changed while you were syncing.", "同步时远程文件发生了变化。")); c.codigo = 412; throw c;
     }
-    if (!res.ok) throw new Error("WebDAV respondió HTTP " + res.status + " al escribir.");
+    if (!res.ok) throw new Error(L("WebDAV respondió HTTP " + res.status + " al escribir.", "WebDAV returned HTTP " + res.status + " while writing.", "WebDAV 写入时返回 HTTP " + res.status + "。"));
     return { rev: await hashTexto(cuerpo), etag: res.headers.get("ETag") || "" };
   }
   async function probarWebDAV() {
-    if (!urlBase()) { ultimoError = "Falta la URL del servidor WebDAV."; pintarUI(); return; }
+    if (!urlBase()) { ultimoError = L("Falta la URL del servidor WebDAV.", "The WebDAV server URL is missing.", "缺少 WebDAV 服务器 URL。"); pintarUI(); return; }
     try {
       sincronizando = true; ultimoError = ""; pintarUI();
       var r = await webdavLeer();
-      avisar(r ? "Conexión correcta: hay un archivo remoto de " + r.texto.length + " caracteres." :
-        "Conexión correcta: todavía no hay archivo remoto; se creará al sincronizar.");
+      avisar(r ? L("Conexión correcta: hay un archivo remoto de ", "Connection OK: there is a remote file of ", "连接成功：远程文件大小 ") + r.texto.length + L(" caracteres.", " characters.", " 个字符。") :
+        L("Conexión correcta: todavía no hay archivo remoto; se creará al sincronizar.", "Connection OK: there is no remote file yet; it will be created when you sync.", "连接成功：还没有远程文件；同步时会创建。"));
     } catch (e) {
-      ultimoError = e.message || "No se pudo conectar."; avisar(ultimoError);
+      ultimoError = e.message || L("No se pudo conectar.", "Could not connect.", "无法连接。"); avisar(ultimoError);
     } finally { sincronizando = false; pintarUI(); }
   }
 
@@ -527,7 +528,7 @@
     if (meta.provider === "carpeta") return leerCarpeta(true);
     if (meta.provider === "archivo") {
       var txt = await leerArchivoSeleccionado();
-      if (txt == null) { var e = new Error("Selección cancelada"); e.name = "AbortError"; throw e; }
+      if (txt == null) { var e = new Error(L("Selección cancelada", "Selection cancelled", "已取消选择")); e.name = "AbortError"; throw e; }
       return { texto: txt, nombre: ARCHIVO, rev: await hashTexto(txt) };
     }
     if (meta.provider === "webdav") return webdavLeer();
@@ -544,7 +545,7 @@
       return { rev: await hashTexto(texto) };
     }
     if (meta.provider === "webdav") return webdavEscribir(texto, revEsperada, etagEsperado);
-    throw new Error("No hay un modo de sincronización configurado.");
+    throw new Error(L("No hay un modo de sincronización configurado.", "No sync mode is configured.", "未配置同步方式。"));
   }
 
   /* ---- cola local (offline first) ---- */
@@ -591,23 +592,23 @@
     if (!p) return;
     var tiene = !!meta.cifrado.activo;
     p.textContent = tiene
-      ? "Cifrado activo en este equipo (AES-GCM). La contraseña no se guarda: solo la clave derivada."
-      : "Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.";
+      ? L("Cifrado activo en este equipo (AES-GCM). La contraseña no se guarda: solo la clave derivada.", "Encryption active on this device (AES-GCM). The password is not saved: only the derived key.", "此设备已启用加密（AES-GCM）。密码不保存，只保存派生密钥。")
+      : L("Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.", "No key on this device. Enter it before syncing; nothing is uploaded without it.", "此设备没有密钥。同步前请输入；没有它不会上传任何内容。");
     p.className = "muted" + (tiene ? " ok" : "");
   }
   function pintarUI() {
     var est = $("#sync-estado");
     if (!est) return;
     var texto, clase = "muted";
-    if (!meta.provider) texto = "Sin configurar. Elige un modo para llevar tus datos a otro equipo.";
-    else if (sincronizando) texto = "Sincronizando…";
-    else if (esNube() && !navigator.onLine) texto = "Sin conexión. Tus cambios están guardados aquí; se enviarán al volver la red.";
-    else if (ultimoError) { texto = "Error: " + ultimoError; clase = "muted err"; }
-    else if (conflicto) { texto = "Conflicto: las dos copias cambiaron. Elige una versión."; clase = "muted err"; }
-    else if (esNube() && cola.pendiente) texto = "Cambios en espera de subir a la nube.";
-    else if (cambios) texto = "Cambios locales sin sincronizar.";
-    else if (meta.lastSyncAt) texto = "Sincronizado " + hace(meta.lastSyncAt) + ".";
-    else texto = "Listo para sincronizar.";
+    if (!meta.provider) texto = L("Sin configurar. Elige un modo para llevar tus datos a otro equipo.", "Not configured. Choose a mode to carry your data to another device.", "未配置。选择一种方式把数据带到另一台设备。");
+    else if (sincronizando) texto = L("Sincronizando…", "Syncing…", "同步中…");
+    else if (esNube() && !navigator.onLine) texto = L("Sin conexión. Tus cambios están guardados aquí; se enviarán al volver la red.", "Offline. Your changes are saved here; they will be sent when the network returns.", "离线。更改已保存在此；网络恢复后会发送。");
+    else if (ultimoError) { texto = L("Error: ", "Error: ", "错误：") + ultimoError; clase = "muted err"; }
+    else if (conflicto) { texto = L("Conflicto: las dos copias cambiaron. Elige una versión.", "Conflict: both copies changed. Choose a version.", "冲突：两份副本都改了。请选择一个版本。"); clase = "muted err"; }
+    else if (esNube() && cola.pendiente) texto = L("Cambios en espera de subir a la nube.", "Changes waiting to upload to the cloud.", "更改等待上传到云端。");
+    else if (cambios) texto = L("Cambios locales sin sincronizar.", "Local changes not synced.", "本地更改未同步。");
+    else if (meta.lastSyncAt) texto = L("Sincronizado ", "Synced ", "已同步 ") + hace(meta.lastSyncAt) + ".";
+    else texto = L("Listo para sincronizar.", "Ready to sync.", "可以同步。");
     est.textContent = texto;
     est.className = clase;
     var sel = $("#sync-proveedor"); if (sel) sel.value = meta.provider || "";
@@ -617,21 +618,21 @@
     var m = $("#sync-manual");
     if (m) { m.checked = !!meta.manualOnly; m.disabled = meta.provider === "archivo"; }
     var cn = $("#sync-carpeta-nombre");
-    if (cn) cn.textContent = meta.folderName ? "Carpeta: " + meta.folderName : "Sin carpeta elegida.";
+    if (cn) cn.textContent = meta.folderName ? L("Carpeta: ", "Folder: ", "文件夹：") + meta.folderName : L("Sin carpeta elegida.", "No folder chosen.", "未选择文件夹。");
     var u = $("#sync-ultima");
     if (u) u.textContent = meta.lastSyncAt
-      ? "Última sincronización: " + fecha(meta.lastSyncAt) + (meta.lastRemoteVersion ? " · archivo v" + meta.lastRemoteVersion : "") + "."
-      : "Nunca sincronizado.";
+      ? L("Última sincronización: ", "Last sync: ", "上次同步：") + fecha(meta.lastSyncAt) + (meta.lastRemoteVersion ? " · " + L("archivo v", "file v", "文件 v") + meta.lastRemoteVersion : "") + "."
+      : L("Nunca sincronizado.", "Never synced.", "从未同步。");
     var b = $("#btn-sync");
     if (b) {
       b.classList.toggle("girando", sincronizando);
-      b.title = !meta.provider ? "Configurar sincronización"
-        : sincronizando ? "Sincronizando…"
-        : ultimoError ? "Error de sincronización; clic para reintentar"
-        : conflicto ? "Conflicto de sincronización"
-        : (esNube() && cola.pendiente) ? "Cambios en espera; clic para reintentar"
-        : cambios ? "Hay cambios locales; clic para sincronizar"
-        : "Sincronizado; clic para sincronizar ahora";
+      b.title = !meta.provider ? L("Configurar sincronización", "Set up sync", "设置同步")
+        : sincronizando ? L("Sincronizando…", "Syncing…", "同步中…")
+        : ultimoError ? L("Error de sincronización; clic para reintentar", "Sync error; click to retry", "同步错误；点击重试")
+        : conflicto ? L("Conflicto de sincronización", "Sync conflict", "同步冲突")
+        : (esNube() && cola.pendiente) ? L("Cambios en espera; clic para reintentar", "Changes waiting; click to retry", "更改等待中；点击重试")
+        : cambios ? L("Hay cambios locales; clic para sincronizar", "Local changes; click to sync", "有本地更改；点击同步")
+        : L("Sincronizado; clic para sincronizar ahora", "Synced; click to sync now", "已同步；点击立即同步");
       b.innerHTML = icono(sincronizando ? "i-sync" : (ultimoError || conflicto ? "i-alerta" : "i-check"));
     }
     pintarClave();
@@ -671,9 +672,9 @@
     cerrarConflicto();
     try {
       await subir(c.local, c.localHash, c.remoto);
-      conflicto = null; avisar("Se conservó la copia local y se subió.");
+      conflicto = null; avisar(L("Se conservó la copia local y se subió.", "The local copy was kept and uploaded.", "已保留本地副本并上传。"));
     } catch (e) {
-      ultimoError = e.message || "No se pudo subir la copia local.";
+      ultimoError = e.message || L("No se pudo subir la copia local.", "The local copy could not be uploaded.", "无法上传本地副本。");
       if (esNube()) { var red = esFalloRed(e); marcarPendiente("conflicto", red); if (red) programarReintento(esperaReintento()); }
       avisar(ultimoError);
     }
@@ -691,10 +692,10 @@
       meta.lastRemoteRev = c.remoto.rev; meta.lastRemoteVersion = c.remoto.version;
       meta.lastLocalHash = h; meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
       guardarMeta(); cambios = false; conflicto = null; aplicando = false; limpiarCola();
-      avisar("Se aplicó la copia remota. La copia local quedó como respaldo.");
+      avisar(L("Se aplicó la copia remota. La copia local quedó como respaldo.", "The remote copy was applied. The local copy was kept as a backup.", "已应用远程副本。本地副本保留为备份。"));
     } catch (e) {
       aplicando = false;
-      ultimoError = e.message || "No se pudo aplicar la copia remota.";
+      ultimoError = e.message || L("No se pudo aplicar la copia remota.", "The remote copy could not be applied.", "无法应用远程副本。");
       avisar(ultimoError);
     }
     pintarUI();
@@ -712,9 +713,9 @@
     meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
     guardarMeta(); cambios = false; ultimoError = ""; limpiarCola();
     limpiarCampoClave();
-    avisar(meta.provider === "archivo" ? "Archivo de sincronización guardado. Cópialo a tu nube."
-      : meta.provider === "webdav" ? "Sincronizado y cifrado en la nube."
-      : "Sincronizado.");
+    avisar(meta.provider === "archivo" ? L("Archivo de sincronización guardado. Cópialo a tu nube.", "Sync file saved. Copy it to your cloud.", "同步文件已保存。请复制到你的云端。")
+      : meta.provider === "webdav" ? L("Sincronizado y cifrado en la nube.", "Synced and encrypted in the cloud.", "已同步并加密到云端。")
+      : L("Sincronizado.", "Synced.", "已同步。"));
   }
   async function aplicarRemoto(env, remoto) {
     respaldarLocal();
@@ -726,7 +727,7 @@
     meta.lastLocalHash = h; meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
     guardarMeta(); cambios = false; ultimoError = ""; aplicando = false; limpiarCola();
     limpiarCampoClave();
-    avisar("Datos remotos aplicados. La copia local quedó como respaldo.");
+    avisar(L("Datos remotos aplicados. La copia local quedó como respaldo.", "Remote data applied. The local copy was kept as a backup.", "已应用远程数据。本地副本保留为备份。"));
   }
 
   async function procesarRemoto(remoto, local, localHash, localTieneDatos) {
@@ -762,7 +763,7 @@
     if (sincronizando) return;
     if (conflicto) { abrirConflicto(); return; }
     if (!meta.provider) {
-      avisar("Elige un modo de sincronización en Ajustes.");
+      avisar(L("Elige un modo de sincronización en Ajustes.", "Choose a sync mode in Settings.", "请在设置中选择同步方式。"));
       if (host()) host().ir("ajustes");
       return;
     }
@@ -785,10 +786,10 @@
         } else { throw e; }
       }
     } catch (e) {
-      if (e && e.name === "AbortError") { ultimoError = ""; avisar("Selección cancelada."); }
+      if (e && e.name === "AbortError") { ultimoError = ""; avisar(L("Selección cancelada.", "Selection cancelled.", "已取消选择。")); }
       else {
-        ultimoError = e && e.message ? e.message : "No se pudo sincronizar.";
-        if (e && e.name === "NotAllowedError") ultimoError = "Permiso de carpeta no concedido.";
+        ultimoError = e && e.message ? e.message : L("No se pudo sincronizar.", "Could not sync.", "无法同步。");
+        if (e && e.name === "NotAllowedError") ultimoError = L("Permiso de carpeta no concedido.", "Folder permission not granted.", "未授予文件夹权限。");
         if (e && e.necesitaClave && host()) { host().ir("ajustes"); var campo = $("#sync-webdav-clave"); if (campo) campo.focus(); }
         if (esNube()) {
           var red = esFalloRed(e);
@@ -819,16 +820,16 @@
         if (!info) return;
         carpetaTauri = info;
         meta.provider = "carpeta"; meta.folderName = info.nombre || "carpeta"; meta.manualOnly = true;
-        guardarMeta(); pintarUI(); avisar("Carpeta de sincronización elegida: " + meta.folderName + ".");
+        guardarMeta(); pintarUI(); avisar(L("Carpeta de sincronización elegida: ", "Sync folder chosen: ", "已选择同步文件夹：") + meta.folderName + ".");
         return;
       }
       var h = await window.showDirectoryPicker({ mode: "readwrite", id: "mimo-sync" });
       carpetaHandle = h; handleLeido = true; await guardarHandle(h);
       meta.provider = "carpeta"; meta.folderName = h.name || "carpeta"; meta.manualOnly = true;
-      guardarMeta(); pintarUI(); avisar("Carpeta de sincronización elegida: " + meta.folderName + ".");
+      guardarMeta(); pintarUI(); avisar(L("Carpeta de sincronización elegida: ", "Sync folder chosen: ", "已选择同步文件夹：") + meta.folderName + ".");
     } catch (e) {
       if (e && e.name === "AbortError") return;
-      ultimoError = e.message || "No se pudo elegir la carpeta."; pintarUI(); avisar(ultimoError);
+      ultimoError = e.message || L("No se pudo elegir la carpeta.", "Could not choose the folder.", "无法选择文件夹。"); pintarUI(); avisar(ultimoError);
     }
   }
   function cambiarProveedor() {
@@ -838,7 +839,7 @@
     if (!v) { meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0; meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.folderName = ""; }
     guardarMeta(); cargarCamposWebDAV(); pintarUI();
     if (v === "carpeta" && !proveedorPrueba && soportaCarpeta()) {
-      avisar("Pulsa «Elegir carpeta» para autorizar la carpeta.");
+      avisar(L("Pulsa «Elegir carpeta» para autorizar la carpeta.", "Press “Choose folder” to authorize the folder.", "按“选择文件夹”以授权该文件夹。"));
     }
     if (v === "webdav") {
       var campo = $("#sync-webdav-url"); if (campo) campo.focus();
@@ -846,7 +847,7 @@
     if (v && v !== "webdav") limpiarCola();
   }
   function desconectar() {
-    if (!window.confirm("¿Desconectar la sincronización? No se borran tus datos ni el archivo remoto.")) return;
+    if (!window.confirm(L("¿Desconectar la sincronización? No se borran tus datos ni el archivo remoto.", "Disconnect sync? Your data and the remote file are not deleted.", "断开同步？你的数据和远程文件不会被删除。"))) return;
     meta.provider = ""; meta.folderName = ""; meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
     meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
     meta.webdav.clave = "";
@@ -855,7 +856,7 @@
     if (esTauri()) { try { invocarTauri("olvidar_carpeta", {}).catch(function () {}); } catch (e) {} }
     claveMemo = null; claveSal = "";
     guardarMeta(); conflicto = null; cambios = host().tieneDatos(); limpiarCola(); pintarUI();
-    avisar("Sincronización desconectada.");
+    avisar(L("Sincronización desconectada.", "Sync disconnected.", "同步已断开。"));
   }
   function cambiarManual() {
     meta.manualOnly = !!$("#sync-manual").checked; guardarMeta(); pintarUI();
@@ -891,8 +892,8 @@
         meta.lastRemoteRev = await hashTexto(texto); meta.lastRemoteVersion = env.syncVersion;
         meta.lastLocalHash = h; meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
         guardarMeta(); cambios = false; ultimoError = ""; limpiarCola();
-        avisar("Archivo de sincronización descargado.");
-      } catch (e) { ultimoError = e.message || "No se pudo guardar el archivo."; avisar(ultimoError); }
+        avisar(L("Archivo de sincronización descargado.", "Sync file downloaded.", "同步文件已下载。"));
+      } catch (e) { ultimoError = e.message || L("No se pudo guardar el archivo.", "Could not save the file.", "无法保存文件。"); avisar(ultimoError); }
       finally { sincronizando = false; pintarUI(); }
     })();
   }
@@ -902,13 +903,13 @@
       var txt = await leerArchivoSeleccionado();
       if (txt == null) return;
       await sincronizar(false, { texto: txt, nombre: ARCHIVO, rev: await hashTexto(txt) });
-    } catch (e) { ultimoError = e.message || "No se pudo leer el archivo."; avisar(ultimoError); pintarUI(); }
+    } catch (e) { ultimoError = e.message || L("No se pudo leer el archivo.", "Could not read the file.", "无法读取文件。"); avisar(ultimoError); pintarUI(); }
   }
   async function guardarClaveCifrado() {
     var campo = $("#sync-webdav-clave");
     var pass = campo ? campo.value : "";
     if (!pass || pass.length < 8) {
-      ultimoError = "La contraseña de cifrado debe tener al menos 8 caracteres.";
+      ultimoError = L("La contraseña de cifrado debe tener al menos 8 caracteres.", "The encryption password must be at least 8 characters.", "加密密码至少需要 8 个字符。");
       avisar(ultimoError); pintarUI(); if (campo) campo.focus(); return;
     }
     try {
@@ -919,10 +920,10 @@
       meta.cifrado.sal = sal; meta.cifrado.activo = true;
       guardarMeta();
       ultimoError = "";
-      avisar("Clave de cifrado guardada en este equipo. No se puede recuperar: anótala.");
+      avisar(L("Clave de cifrado guardada en este equipo. No se puede recuperar: anótala.", "Encryption key saved on this device. It cannot be recovered: write it down.", "加密密钥已保存在此设备。无法恢复：请记下它。"));
       pintarUI();
     } catch (e) {
-      ultimoError = e.message || "No se pudo preparar el cifrado."; avisar(ultimoError); pintarUI();
+      ultimoError = e.message || L("No se pudo preparar el cifrado.", "Could not prepare encryption.", "无法准备加密。"); avisar(ultimoError); pintarUI();
     }
   }
   function limpiarCampoClave() {
@@ -934,7 +935,7 @@
     claveMemo = null; claveSal = "";
     limpiarCampoClave();
     meta.cifrado.activo = false; guardarMeta();
-    pintarUI(); avisar("Clave olvidada en este equipo. Se pedirá de nuevo para sincronizar.");
+    pintarUI(); avisar(L("Clave olvidada en este equipo. Se pedirá de nuevo para sincronizar.", "Key forgotten on this device. It will be requested again to sync.", "已忘记此设备上的密钥。同步时会再次请求。"));
   }
   function cargarCamposWebDAV() {
     var u = $("#sync-webdav-url"); if (u) u.value = meta.webdav.url || "";
@@ -962,7 +963,7 @@
     var opcionCarpeta = sel.querySelector('option[value="carpeta"]');
     if (opcionCarpeta && !soportaCarpeta()) {
       opcionCarpeta.disabled = true;
-      opcionCarpeta.textContent = "Carpeta local (no disponible en este navegador)";
+      opcionCarpeta.textContent = L("Carpeta local (no disponible en este navegador)", "Local folder (not available in this browser)", "本地文件夹（此浏览器不可用）");
     }
     sel.addEventListener("change", cambiarProveedor);
     enlazarCamposWebDAV();
@@ -988,7 +989,7 @@
       if (e.target === $("#modal-sync-conflict")) { conflicto = null; cerrarConflicto(); pintarUI(); }
     });
     $("#btn-sync").addEventListener("click", function () {
-      if (!meta.provider) { host().ir("ajustes"); avisar("Elige un modo de sincronización."); return; }
+      if (!meta.provider) { host().ir("ajustes"); avisar(L("Elige un modo de sincronización.", "Choose a sync mode.", "请选择同步方式。")); return; }
       sincronizar(false);
     });
 

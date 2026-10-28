@@ -221,6 +221,10 @@
     return s;
   }
   function tr(k) { return t(k); }
+  function L(es, en, zh) {
+    var i = idioma();
+    return i === "zh" ? zh : i === "en" ? en : es;
+  }
   function localeActual() { return idioma() === "zh" ? "zh-CN" : idioma() === "en" ? "en-US" : "es-CL"; }
   var DIAS_SEMANA = {
     es: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
@@ -319,7 +323,7 @@
     var span = document.createElement("span"); span.textContent = texto; t.appendChild(span);
     if (typeof deshacer === "function") {
       var b = document.createElement("button");
-      b.type = "button"; b.className = "toast__accion"; b.textContent = "Deshacer";
+      b.type = "button"; b.className = "toast__accion"; b.textContent = L("Deshacer", "Undo", "撤销");
       b.addEventListener("click", function () {
         t.classList.remove("on"); clearTimeout(t._t);
         deshacer();
@@ -412,39 +416,40 @@
   }
   function borrarNota(id) {
     var n = notaPorId(id); if (!n) return;
-    if (!window.confirm("¿Borrar la nota \"" + (n.titulo || "Sin título") + "\"?")) return;
+    var tituloN = !n.titulo || n.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : n.titulo;
+    if (!window.confirm(L("¿Borrar la nota \"" + tituloN + "\"?", "Delete the note \"" + tituloN + "\"?", "删除笔记“" + tituloN + "”？"))) return;
     var copia = Object.assign({}, n), pos = estado.notas.map(function (x) { return x.id; }).indexOf(id);
     estado.notas = estado.notas.filter(function (x) { return x.id !== id; });
     if (estado.notaSel === id) estado.notaSel = estado.notas.length ? estado.notas[0].id : null;
     guardar(); pintarNotas(); pintarPanel();
-    aviso("Nota borrada.", function () {
+    aviso(L("Nota borrada.", "Note deleted.", "笔记已删除。"), function () {
       estado.notas.splice(Math.max(0, Math.min(pos, estado.notas.length)), 0, copia);
-      estado.notaSel = copia.id; guardar(); pintarNotas(); pintarPanel(); aviso("Nota restaurada.");
+      estado.notaSel = copia.id; guardar(); pintarNotas(); pintarPanel(); aviso(L("Nota restaurada.", "Note restored.", "笔记已恢复。"));
     });
   }
   function borrarPeriodo(id) {
     var p = (estado.periodos || []).filter(function (x) { return x.id === id; })[0];
     if (!p) return;
-    if (!window.confirm("¿Borrar el periodo \"" + p.nombre + "\" y sus semanas?")) return;
+    if (!window.confirm(L("¿Borrar el periodo \"" + p.nombre + "\" y sus semanas?", "Delete the term \"" + p.nombre + "\" and its weeks?", "删除学期“" + p.nombre + "”及其周次？"))) return;
     var copia = Object.assign({}, p), activo = estado.periodoActivo;
     estado.periodos = estado.periodos.filter(function (x) { return x.id !== id; });
     if (estado.periodoActivo === id) estado.periodoActivo = estado.periodos.length ? estado.periodos[0].id : null;
     guardar(); pintarPeriodo();
-    aviso("Periodo borrado. Sus eventos no se tocan.", function () {
-      estado.periodos.push(copia); estado.periodoActivo = activo; guardar(); pintarPeriodo(); aviso("Periodo restaurado.");
+    aviso(L("Periodo borrado. Sus eventos no se tocan.", "Term deleted. Its events are untouched.", "学期已删除。事件不受影响。"), function () {
+      estado.periodos.push(copia); estado.periodoActivo = activo; guardar(); pintarPeriodo(); aviso(L("Periodo restaurado.", "Term restored.", "学期已恢复。"));
     });
   }
   function borrarSesion(ref) {
     var lista = estado.sesiones || [];
     var idx = typeof ref === "number" ? ref : lista.map(function (s) { return s.id; }).indexOf(String(ref));
     var s = lista[idx]; if (!s) return;
-    if (!window.confirm("¿Borrar la sesión de " + fmtDuracion(s.minutos) + " del " + s.fecha + "?")) return;
+    if (!window.confirm(L("¿Borrar la sesión de " + fmtDuracion(s.minutos) + " del " + s.fecha + "?", "Delete the " + fmtDuracion(s.minutos) + " session on " + s.fecha + "?", "删除 " + s.fecha + " 的 " + fmtDuracion(s.minutos) + " 会话？"))) return;
     var copia = Object.assign({}, s);
     lista.splice(idx, 1);
     guardar(); pintarTiempo(); pintarEstudio();
-    aviso("Sesión borrada.", function () {
+    aviso(L("Sesión borrada.", "Session deleted.", "会话已删除。"), function () {
       lista.splice(Math.max(0, Math.min(idx, lista.length)), 0, copia);
-      guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión restaurada.");
+      guardar(); pintarTiempo(); pintarEstudio(); aviso(L("Sesión restaurada.", "Session restored.", "会话已恢复。"));
     });
   }
   function duracionInput(min) {
@@ -459,7 +464,7 @@
     $("#sesion-fecha").value = s.fecha || hoyISO();
     $("#sesion-duracion").value = duracionInput(s.minutos);
     $("#sesion-hora").value = s.hora || "";
-    var ops = ['<option value="">Sin ramo</option>'];
+    var ops = ['<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>'];
     (estado.cursos || []).forEach(function (c) { ops.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
     $("#sesion-ramo").innerHTML = ops.join("");
     $("#sesion-ramo").value = s.ramo || "";
@@ -474,30 +479,30 @@
     var s = (estado.sesiones || []).filter(function (x) { return x.id === id; })[0];
     if (!s) return;
     var minutos = Math.min(1440, parseDuracion($("#sesion-duracion").value));
-    if (!minutos) { aviso("La duración no puede quedar en cero."); return; }
+    if (!minutos) { aviso(L("La duración no puede quedar en cero.", "Duration cannot be zero.", "时长不能为零。")); return; }
     s.fecha = $("#sesion-fecha").value || s.fecha || hoyISO();
     s.minutos = Math.round(minutos * 100) / 100;
     s.ramo = $("#sesion-ramo").value || "";
     s.hora = $("#sesion-hora").value || "";
     guardar(); cerrarSesionModal(); pintarTiempo(); pintarEstudio();
-    aviso("Sesión corregida: " + fmtDuracion(s.minutos) + ".");
+    aviso(L("Sesión corregida: ", "Session updated: ", "会话已修正：") + fmtDuracion(s.minutos) + ".");
   }
-  function menuTitulo(tipo, texto) { return tipo + " · " + (texto || "Sin título"); }
+  function menuTitulo(tipo, texto) { return tipo + " · " + (texto || L("Sin título", "Untitled", "无标题")); }
   function menuDeContexto(el) {
     var rEl = el.closest("[data-ramo]");
     if (rEl) {
       var r = ramoPorCodigo(rEl.getAttribute("data-ramo"));
       if (!r) return null;
-      return { titulo: menuTitulo("Ramo", r.codigo + " — " + r.nombre), items: [
-        { accion: "ramo-abrir", texto: "Abrir ficha", run: function () {
+      return { titulo: menuTitulo(L("Ramo", "Course", "课程"), r.codigo + " — " + r.nombre), items: [
+        { accion: "ramo-abrir", texto: L("Abrir ficha", "Open details", "打开详情"), run: function () {
           estado.ramoSel = r.codigo; estado.panel.malla = "detalle";
           guardar(); pintarMalla(); pintarPanel();
           if (window.innerWidth <= 1255) abrirPanel();
         } },
         { accion: "ramo-editar", texto: "Editar", run: function () { abrirFormularioRamo(r); } },
-        { accion: "ramo-estado", texto: r.cerrado ? "Reabrir" : "Cerrar curso", run: function () { alternarRamo(r.codigo); } },
+        { accion: "ramo-estado", texto: r.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程"), run: function () { alternarRamo(r.codigo); } },
         { sep: true },
-        { accion: "ramo-borrar", texto: "Borrar ramo", peligro: true, run: function () { borrarRamo(r.codigo); } }
+        { accion: "ramo-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () { borrarRamo(r.codigo); } }
       ] };
     }
 
@@ -506,31 +511,31 @@
       var n = notaPorId(nEl.getAttribute("data-nota"));
       if (!n) return null;
       var ni = [
-        { accion: "nota-abrir", texto: "Abrir", run: function () { abrirNota(n.id); } },
-        { accion: "nota-fijar", texto: n.fijada ? "Quitar fijada" : "Fijar", run: function () {
+        { accion: "nota-abrir", texto: L("Abrir", "Open", "打开"), run: function () { abrirNota(n.id); } },
+        { accion: "nota-fijar", texto: n.fijada ? L("Quitar fijada", "Unpin", "取消置顶") : L("Fijar", "Pin", "置顶"), run: function () {
           n.fijada = !n.fijada; guardar(); pintarNotas(); pintarPanel();
-          aviso(n.fijada ? "Nota fijada." : "Nota suelta.");
+          aviso(n.fijada ? L("Nota fijada.", "Note pinned.", "笔记已置顶。") : L("Nota suelta.", "Note unpinned.", "笔记已取消置顶。"));
         } }
       ];
       if (n.enlaces && n.enlaces.length) {
-        ni.push({ accion: "nota-desenlazar", texto: "Quitar enlace", run: function () {
-          n.enlaces = []; guardar(); pintarNotas(); pintarPanel(); aviso("Enlace quitado.");
+        ni.push({ accion: "nota-desenlazar", texto: L("Quitar enlace", "Remove link", "移除链接"), run: function () {
+          n.enlaces = []; guardar(); pintarNotas(); pintarPanel(); aviso(L("Enlace quitado.", "Link removed.", "链接已移除。"));
         } });
       }
       ni.push({ sep: true });
-      ni.push({ accion: "nota-borrar", texto: "Borrar nota", peligro: true, run: function () { borrarNota(n.id); } });
-      return { titulo: menuTitulo("Nota", n.titulo), items: ni };
+      ni.push({ accion: "nota-borrar", texto: L("Borrar nota", "Delete note", "删除笔记"), peligro: true, run: function () { borrarNota(n.id); } });
+      return { titulo: menuTitulo(L("Nota", "Note", "笔记"), n.titulo), items: ni };
     }
 
     var eEl = el.closest("[data-evento]");
     if (eEl) {
       var ev = eventoPorId(eEl.getAttribute("data-evento"));
       if (!ev) return null;
-      return { titulo: menuTitulo("Evento", ev.titulo), items: [
-        { accion: "evento-abrir", texto: "Abrir detalle", run: function () { abrirEventoDetalle(ev.id); } },
+      return { titulo: menuTitulo(L("Evento", "Event", "事件"), ev.titulo), items: [
+        { accion: "evento-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirEventoDetalle(ev.id); } },
         { accion: "evento-editar", texto: "Editar", run: function () { abrirEvento(ev); } },
         { sep: true },
-        { accion: "evento-borrar", texto: "Borrar evento", peligro: true, run: function () { borrarEvento(ev.id); } }
+        { accion: "evento-borrar", texto: L("Borrar evento", "Delete event", "删除事件"), peligro: true, run: function () { borrarEvento(ev.id); } }
       ] };
     }
 
@@ -538,13 +543,13 @@
     if (tEl) {
       var t = tareaPorId(tEl.getAttribute("data-tarea"));
       if (!t) return null;
-      return { titulo: menuTitulo(t.tipo === "proyecto" ? "Proyecto" : "Tarea", t.titulo), items: [
-        { accion: "tarea-abrir", texto: "Abrir detalle", run: function () { abrirTarea(t.id); } },
+      return { titulo: menuTitulo(t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务"), t.titulo), items: [
+        { accion: "tarea-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirTarea(t.id); } },
         { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(t); } },
-        { accion: "tarea-estado", texto: t.hecha ? "Reabrir" : "Marcar hecha", run: function () { alternarTarea(t.id); } },
-        { accion: "tarea-sub", texto: "Agregar subtarea", run: function () { abrirFormulario(null, t.id); } },
+        { accion: "tarea-estado", texto: t.hecha ? L("Reabrir", "Reopen", "重新打开") : L("Marcar hecha", "Mark done", "标为完成"), run: function () { alternarTarea(t.id); } },
+        { accion: "tarea-sub", texto: L("Agregar subtarea", "Add subtask", "添加子任务"), run: function () { abrirFormulario(null, t.id); } },
         { sep: true },
-        { accion: "tarea-borrar", texto: t.tipo === "proyecto" ? "Borrar proyecto y sus tareas" : "Borrar tarea", peligro: true,
+        { accion: "tarea-borrar", texto: t.tipo === "proyecto" ? L("Borrar proyecto y sus tareas", "Delete project and its tasks", "删除项目及其任务") : L("Borrar tarea", "Delete task", "删除任务"), peligro: true,
           run: function () { borrarTarea(t.id); } }
       ] };
     }
@@ -555,14 +560,14 @@
       if (!p) return null;
       var pi = [];
       if (estado.periodoActivo !== p.id) {
-        pi.push({ accion: "periodo-usar", texto: "Usar este periodo", run: function () {
-          estado.periodoActivo = p.id; guardar(); pintarPeriodo(); aviso("Periodo activo.");
+        pi.push({ accion: "periodo-usar", texto: L("Usar este periodo", "Use this term", "使用此学期"), run: function () {
+          estado.periodoActivo = p.id; guardar(); pintarPeriodo(); aviso(L("Periodo activo.", "Term set active.", "学期已设为当前。"));
         } });
       }
       if (pi.length) pi.push({ sep: true });
-      pi.push({ accion: "periodo-editar", texto: "Editar periodo", run: function () { abrirPeriodo(p.id); } });
-      pi.push({ accion: "periodo-borrar", texto: "Borrar periodo", peligro: true, run: function () { borrarPeriodo(p.id); } });
-      return { titulo: menuTitulo("Periodo", p.nombre), items: pi };
+      pi.push({ accion: "periodo-editar", texto: L("Editar periodo", "Edit term", "编辑学期"), run: function () { abrirPeriodo(p.id); } });
+      pi.push({ accion: "periodo-borrar", texto: L("Borrar periodo", "Delete term", "删除学期"), peligro: true, run: function () { borrarPeriodo(p.id); } });
+      return { titulo: menuTitulo(L("Periodo", "Term", "学期"), p.nombre), items: pi };
     }
 
     var sEl = el.closest("[data-sesion]");
@@ -571,18 +576,18 @@
       var s = (estado.sesiones || []).filter(function (x) { return x.id === sid; })[0] ||
               (estado.sesiones || [])[parseInt(sid, 10)];
       if (!s) return null;
-      return { titulo: menuTitulo("Sesión", fmtDuracion(s.minutos) + " · " + s.fecha), items: [
-        { accion: "sesion-editar", texto: "Editar sesión", run: function () { abrirSesionModal(s.id); } },
+      return { titulo: menuTitulo(L("Sesión", "Session", "会话"), fmtDuracion(s.minutos) + " · " + s.fecha), items: [
+        { accion: "sesion-editar", texto: L("Editar sesión", "Edit session", "编辑会话"), run: function () { abrirSesionModal(s.id); } },
         { sep: true },
-        { accion: "sesion-borrar", texto: "Borrar sesión", peligro: true, run: function () { borrarSesion(s.id); } }
+        { accion: "sesion-borrar", texto: L("Borrar sesión", "Delete session", "删除会话"), peligro: true, run: function () { borrarSesion(s.id); } }
       ] };
     }
 
     var dEl = el.closest("[data-cal-dia]");
     if (dEl) {
       var fecha = dEl.getAttribute("data-cal-dia");
-      return { titulo: "Día " + fecha.split("-").reverse().join("/"), items: [
-        { accion: "dia-evento", texto: "Nuevo evento este día", run: function () { crearEventoEn(fecha); } }
+      return { titulo: L("Día ", "Day ", "日期 ") + fecha.split("-").reverse().join("/"), items: [
+        { accion: "dia-evento", texto: L("Nuevo evento este día", "New event this day", "当天新建事件"), run: function () { crearEventoEn(fecha); } }
       ] };
     }
 
@@ -590,24 +595,24 @@
     if (zEl) {
       var zona = zEl.getAttribute("data-ctx-zona");
       if (zona === "notas") {
-        return { titulo: "Notas", items: [{ accion: "zona-nota", texto: "Nueva nota", run: crearNota }] };
+        return { titulo: L("Notas", "Notes", "笔记"), items: [{ accion: "zona-nota", texto: L("Nueva nota", "New note", "新建笔记"), run: crearNota }] };
       }
       if (zona === "tareas") {
-        return { titulo: "Tareas", items: [
-          { accion: "zona-tarea", texto: "Nueva tarea", run: function () { crearTarea("tarea"); } },
-          { accion: "zona-proyecto", texto: "Nuevo proyecto", run: function () { crearTarea("proyecto"); } }
+        return { titulo: L("Tareas", "Tasks", "任务"), items: [
+          { accion: "zona-tarea", texto: L("Nueva tarea", "New task", "新建任务"), run: function () { crearTarea("tarea"); } },
+          { accion: "zona-proyecto", texto: L("Nuevo proyecto", "New project", "新建项目"), run: function () { crearTarea("proyecto"); } }
         ] };
       }
       if (zona === "calendario") {
-        return { titulo: "Calendario", items: [
-          { accion: "zona-evento", texto: "Nuevo evento", run: function () { crearEventoEn(""); } },
-          { accion: "zona-periodo", texto: "Nuevo periodo", run: abrirPeriodo }
+        return { titulo: L("Calendario", "Calendar", "日历"), items: [
+          { accion: "zona-evento", texto: L("Nuevo evento", "New event", "新建事件"), run: function () { crearEventoEn(""); } },
+          { accion: "zona-periodo", texto: L("Nuevo periodo", "New term", "新建学期"), run: abrirPeriodo }
         ] };
       }
       if (zona === "malla") {
-        return { titulo: "Malla", items: [
-          { accion: "zona-ramo", texto: "Nuevo ramo", run: function () { abrirFormularioRamo(null); } },
-          { accion: "zona-importar-malla", texto: "Importar malla", run: function () { $("#archivo-malla").click(); } }
+        return { titulo: L("Malla", "Degree plan", "课程规划"), items: [
+          { accion: "zona-ramo", texto: L("Nuevo ramo", "New course", "新建课程"), run: function () { abrirFormularioRamo(null); } },
+          { accion: "zona-importar-malla", texto: L("Importar malla", "Import plan", "导入规划"), run: function () { $("#archivo-malla").click(); } }
         ] };
       }
     }
@@ -646,6 +651,17 @@
   function nombre(id) {
     if (["calendario", "tareas", "notas", "ajustes", "tiempo", "malla", "calificaciones", "estudio"].indexOf(id) !== -1) return t("nav." + id);
     return BLOQUES[id] ? BLOQUES[id].nombre : id;
+  }
+  function descripcionBloque(id) {
+    var m = {
+      tiempo: ["Cronómetro, temporizador, pomodoro y alarmas.", "Stopwatch, timer, pomodoro and alarms.", "秒表、计时器、番茄钟和闹钟。"],
+      malla: ["Cursos, niveles y prerrequisitos.", "Courses, levels and prerequisites.", "课程、层级和先修要求。"],
+      calificaciones: ["Categorías, examen y eximición.", "Categories, exam and exemption.", "分类、考试和免考。"],
+      estudio: ["Horas por ramo y metas.", "Hours per course and goals.", "按课程小时和目标。"],
+      evaluaciones: ["Aporta evaluaciones al calendario.", "Adds assessments to the calendar.", "将评估添加到日历。"],
+      academics: ["Kit: Malla, Calificaciones, Estudio y Evaluaciones.", "Kit: plan, grades, study and assessments.", "套件：规划、成绩、学习和评估。"]
+    }[id];
+    return m ? L(m[0], m[1], m[2]) : (BLOQUES[id] ? BLOQUES[id].desc : L("Sección base.", "Base section.", "基础分区。"));
   }
   function iconoDe(id) {
     return { calendario: "i-cal", tareas: "i-tareas", notas: "i-notas", ajustes: "i-ajustes" }[id] ||
@@ -757,7 +773,7 @@
       return;
     }
     if (splitOn && id === estado.splitSeccion) {
-      aviso("Esa sección ya está en la ventana derecha.");
+      aviso(L("Esa sección ya está en la ventana derecha.", "That section is already in the right window.", "该分区已在右侧窗口。"));
       return;
     }
     pantalla = id;
@@ -780,7 +796,18 @@
   }
   function nombreTema(id) {
     var t = TEMAS.filter(function (x) { return x[0] === id; })[0];
-    return t ? t[1] : id;
+    if (!t) return id;
+    var m = {
+      clasico: ["Clásico", "Classic", "经典"],
+      medianoche: ["Medianoche", "Midnight", "午夜"],
+      negro: ["Negro", "Black", "纯黑"],
+      vino: ["Vino", "Wine", "酒红"],
+      bosque: ["Bosque", "Forest", "森林"],
+      sepia: ["Sepia", "Sepia", "棕褐"],
+      "alto-contraste-claro": ["Alto contraste claro", "Light high contrast", "浅色高对比"],
+      "alto-contraste": ["Alto contraste oscuro", "Dark high contrast", "深色高对比"]
+    }[id];
+    return m ? L(m[0], m[1], m[2]) : t[1];
   }
   function aplicarTema(t, sinPareja) {
     t = temaValido(t, "clasico");
@@ -801,29 +828,29 @@
     var oscuro = temaModo(estado.tema) === "oscuro";
     var otro = oscuro ? (estado.prefs.temaClaro || "clasico") : (estado.prefs.temaOscuro || "deepsea");
     b.innerHTML = icono(oscuro ? "i-sol" : "i-luna");
-    b.title = "Cambiar a " + (oscuro ? "claro" : "oscuro") + " (" + nombreTema(otro) + ")";
+    b.title = L("Cambiar a ", "Switch to ", "切换到 ") + (oscuro ? L("claro", "light", "浅色") : L("oscuro", "dark", "深色")) + " (" + nombreTema(otro) + ")";
   }
   function pintarTemas() {
     var c = $("#temas");
     if (!c) return;
     c.innerHTML = TEMAS.map(function (t) {
       return '<button class="tema" type="button" data-tema="' + t[0] + '" aria-pressed="' +
-        (estado.tema === t[0]) + '"><i aria-hidden="true"></i><span class="tema-nombre">' + esc(t[1]) + "</span>" +
-        '<small class="tema-modo">' + (t[2] === "claro" ? "claro" : "oscuro") + "</small></button>";
+        (estado.tema === t[0]) + '"><i aria-hidden="true"></i><span class="tema-nombre">' + esc(nombreTema(t[0])) + "</span>" +
+        '<small class="tema-modo">' + esc(t[2] === "claro" ? L("claro", "light", "浅色") : L("oscuro", "dark", "深色")) + "</small></button>";
     }).join("");
     $$("#temas .tema").forEach(function (b) {
       b.addEventListener("click", function () {
         aplicarTema(b.getAttribute("data-tema"));
-        aviso("Tema " + nombreTema(b.getAttribute("data-tema")) + " aplicado.");
+        aviso(L("Tema ", "Theme ", "主题 ") + nombreTema(b.getAttribute("data-tema")) + L(" aplicado.", " applied.", " 已应用。"));
       });
     });
     var sc = $("#pref-tema-claro"), so = $("#pref-tema-oscuro");
     if (sc) {
-      sc.innerHTML = temasDeModo("claro").map(function (t) { return '<option value="' + t[0] + '">' + esc(t[1]) + "</option>"; }).join("");
+      sc.innerHTML = temasDeModo("claro").map(function (t) { return '<option value="' + t[0] + '">' + esc(nombreTema(t[0])) + "</option>"; }).join("");
       sc.value = estado.prefs.temaClaro || "clasico";
     }
     if (so) {
-      so.innerHTML = temasDeModo("oscuro").map(function (t) { return '<option value="' + t[0] + '">' + esc(t[1]) + "</option>"; }).join("");
+      so.innerHTML = temasDeModo("oscuro").map(function (t) { return '<option value="' + t[0] + '">' + esc(nombreTema(t[0])) + "</option>"; }).join("");
       so.value = estado.prefs.temaOscuro || "deepsea";
     }
   }
@@ -970,13 +997,13 @@
   }
   function borrarEvento(id) {
     var ev = eventoPorId(id); if (!ev) return;
-    if (!window.confirm("¿Borrar \"" + ev.titulo + "\"?")) return;
+    if (!window.confirm(L("¿Borrar \"" + ev.titulo + "\"?", "Delete \"" + ev.titulo + "\"?", "删除“" + ev.titulo + "”？"))) return;
     var copia = Object.assign({}, ev);
     estado.eventos = estado.eventos.filter(function (e) { return e.id !== id; });
     if (estado.eventoSel === id) estado.eventoSel = null;
     guardar(); pintarCalendario(); pintarPanel();
-    aviso("Evento borrado.", function () {
-      estado.eventos.push(copia); estado.eventoSel = copia.id; guardar(); pintarCalendario(); pintarPanel(); aviso("Evento restaurado.");
+    aviso(L("Evento borrado.", "Event deleted.", "事件已删除。"), function () {
+      estado.eventos.push(copia); estado.eventoSel = copia.id; guardar(); pintarCalendario(); pintarPanel(); aviso(L("Evento restaurado.", "Event restored.", "事件已恢复。"));
     });
   }
 
@@ -1030,30 +1057,33 @@
     var total = ds.length;
     return { total: total, hechas: hechas, pct: total ? Math.round(hechas / total * 100) : (t.hecha ? 100 : 0) };
   }
+  function etiquetaPrioridad(p) {
+    return p === "alta" ? L("Alta", "High", "高") : p === "baja" ? L("Baja", "Low", "低") : L("Media", "Medium", "中");
+  }
   function fechaCorta(f) {
-    if (!f) return "sin fecha";
-    if (f === hoyISO()) return "hoy";
+    if (!f) return L("sin fecha", "no date", "无日期");
+    if (f === hoyISO()) return L("hoy", "today", "今天");
     var p = f.split("-");
     return p.length === 3 ? p[2] + "/" + p[1] : f;
   }
   function filaTarea(t, nivel) {
     var p = progreso(t), hijos = hijosDe(t.id);
     var sub = t.tipo === "proyecto"
-      ? '<span class="tarea-progreso" title="' + p.hechas + " de " + p.total + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
+      ? '<span class="tarea-progreso" title="' + esc(L(p.hechas + " de " + p.total, p.hechas + " of " + p.total, p.hechas + "/" + p.total)) + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
       : "";
     var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
-      '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + (t.hecha ? "Marcar abierta" : "Marcar hecha") + '">' + (t.hecha ? "✓" : "") + "</button>" +
-      '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">proyecto</small>' : "") + "</span>" +
+      '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + esc(t.hecha ? L("Marcar abierta", "Mark open", "标为未完成") : L("Marcar hecha", "Mark done", "标为完成")) + '">' + (t.hecha ? "✓" : "") + "</button>" +
+      '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">' + esc(L("proyecto", "project", "项目")) + '</small>' : "") + "</span>" +
       '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
-      '<span class="pill pill--' + esc(t.prioridad) + '">' + esc(t.prioridad) + "</span>" + sub +
-      '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="Agregar una tarea dentro">+</button></div>';
+      '<span class="pill pill--' + esc(t.prioridad) + '">' + esc(etiquetaPrioridad(t.prioridad)) + "</span>" + sub +
+      '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="' + esc(L("Agregar una tarea dentro", "Add a task inside", "添加子任务")) + '">+</button></div>';
     if (hijos.length) html += hijos.map(function (h) { return filaTarea(h, nivel + 1); }).join("");
     return html;
   }
   function tarjetaTablero(t) {
     var p = progreso(t);
     return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="' + esc(tr("cal.clicDerecho")) + '">' +
-      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || "sin contexto") + "</small>" +
+      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
       (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
   }
   function bindTareas() {
@@ -1111,12 +1141,12 @@
       var colSemana = tareas.filter(function (t) { return !t.hecha && t.fecha > hoyISO(); });
       var colHechas = tareas.filter(function (t) { return t.hecha; });
       var col = function (titulo, items) {
-        return '<div class="tablero-col"><h3>' + titulo + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">Nada.</p>') + "</div>";
+        return '<div class="tablero-col"><h3>' + titulo + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(L("Nada.", "Nothing.", "没有。")) + '</p>') + "</div>";
       };
-      lista.innerHTML = '<div class="tablero">' + col("Hoy / atrasadas", colHoy) + col("Próximas", colSemana) + col("Hechas", colHechas) + "</div>";
+      lista.innerHTML = '<div class="tablero">' + col(L("Hoy / atrasadas", "Today / overdue", "今天 / 逾期"), colHoy) + col(L("Próximas", "Upcoming", "即将到来"), colSemana) + col(L("Hechas", "Done", "已完成"), colHechas) + "</div>";
     } else {
       var v = tareas.filter(function (t) { return !t.hecha && t.fecha && t.fecha <= hoyISO(); });
-      lista.innerHTML = v.length ? v.map(function (t) { return filaTarea(t, 0); }).join("") : '<p class="muted">Nada para hoy. Cambia a Árbol o Tablero.</p>';
+      lista.innerHTML = v.length ? v.map(function (t) { return filaTarea(t, 0); }).join("") : '<p class="muted">' + esc(L("Nada para hoy. Cambia a Árbol o Tablero.", "Nothing for today. Switch to Tree or Board.", "今天没有任务。请切换到树状或看板。")) + '</p>';
     }
     bindTareas();
   }
@@ -1124,10 +1154,10 @@
   function opcionesPadre(t) {
     var excluir = {};
     if (t) { excluir[t.id] = 1; descendientes(t).forEach(function (x) { excluir[x.id] = 1; }); }
-    return '<option value="">Sin padre</option>' + estado.tareas.filter(function (x) {
+    return '<option value="">' + esc(L("Sin padre", "No parent", "无父任务")) + '</option>' + estado.tareas.filter(function (x) {
       return !excluir[x.id] && profundidad(x) < 4;
     }).map(function (x) {
-      return '<option value="' + x.id + '">' + esc("— ".repeat(profundidad(x)) + (x.tipo === "proyecto" ? "Proyecto: " : "") + x.titulo) + "</option>";
+      return '<option value="' + x.id + '">' + esc("— ".repeat(profundidad(x)) + (x.tipo === "proyecto" ? L("Proyecto: ", "Project: ", "项目：") : "") + x.titulo) + "</option>";
     }).join("");
   }
   function abrirFormulario(t, padreId) {
@@ -1141,16 +1171,16 @@
     $("#tarea-prioridad").value = t ? t.prioridad : "media";
     $("#tarea-contexto").value = t ? t.contexto : "";
     $("#tarea-form").hidden = false;
-    $("#tarea-form button[type=submit]").textContent = t ? "Guardar" : "Crear";
+    $("#tarea-form button[type=submit]").textContent = t ? L("Guardar", "Save", "保存") : L("Crear", "Create", "创建");
     $("#tarea-titulo").focus();
   }
   function borrarTarea(id) {
     var t = tareaPorId(id); if (!t) return;
     var familia = [t.id].concat(descendientes(t).map(function (x) { return x.id; }));
-    if (!window.confirm("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?")) return;
+    if (!window.confirm(L("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？"))) return;
     estado.tareas = estado.tareas.filter(function (x) { return familia.indexOf(x.id) === -1; });
     if (familia.indexOf(estado.tareaSel) !== -1) estado.tareaSel = null;
-    guardar(); pintarTareas(); pintarPanel(); aviso("Tarea borrada.");
+    guardar(); pintarTareas(); pintarPanel(); aviso(L("Tarea borrada.", "Task deleted.", "任务已删除。"));
   }
 
   /* ---- U4a: Malla de cursos, niveles, prerrequisitos y créditos ---- */
@@ -1197,10 +1227,15 @@
     return (estado.cursos || []).filter(function (x) { return x.codigo === c; })[0] || null;
   }
   function creditosDe(c) { return Number(c.creditos) || 0; }
-  function etiquetaNivel(n) { return Number(n) === 99 ? "Electivos" : "Nivel " + n; }
+  function etiquetaNivel(n) { return Number(n) === 99 ? L("Electivos", "Electives", "选修") : L("Nivel ", "Level ", "层级 ") + n; }
+  function etiquetaEstado(e) {
+    return { aprobado: L("aprobado", "passed", "已通过"), curso: L("en curso", "in progress", "进行中"),
+      disponible: L("disponible", "available", "可选"), bloqueado: L("bloqueado", "locked", "已锁定"),
+      reprobado: L("reprobado", "failed", "未通过") }[e] || e;
+  }
   function requisitosTexto(c) {
     var reqs = (c.requisitos || []).slice();
-    (c.requisitos_o || []).forEach(function (g) { reqs.push(g.join(" o ")); });
+    (c.requisitos_o || []).forEach(function (g) { reqs.push(g.join(L(" o ", " or ", " 或 "))); });
     return reqs.join(" · ");
   }
   // aprobado manda; si no, en curso; si no, disponible solo cuando TODOS los requisitos
@@ -1259,7 +1294,7 @@
     var c = ramoPorCodigo(estado.ramoSel);
     if (!c) {
       return '<div class="malla-detalle__vacio"><span class="malla-detalle__icono">' + icono("i-malla") +
-        "</span><div><b>Elige un ramo</b><p>Las líneas tenues muestran todos los prerrequisitos. Al elegir uno, el grafo enciende en azul lo que necesita y en naranjo lo que desbloquea.</p></div></div>";
+        "</span><div><b>" + esc(L("Elige un ramo", "Pick a course", "选择一门课程")) + "</b><p>" + esc(L("Las líneas tenues muestran todos los prerrequisitos. Al elegir uno, el grafo enciende en azul lo que necesita y en naranjo lo que desbloquea.", "Faint lines show all prerequisites. Pick one and the graph lights blue what it needs and orange what it unlocks.", "浅色线显示所有先修要求。选择后，图表会用蓝色标出所需、橙色标出可解锁。")) + "</p></div></div>";
     }
     var e = estadoDeRamo(c), faltan = faltantesDe(c);
     var antes = [];
@@ -1273,16 +1308,16 @@
     var aprob = Number(c.aprobacion);
     return '<div class="malla-detalle__cab"><div><span class="malla-detalle__cod">' + esc(c.codigo) + "</span>" +
       "<h3>" + esc(c.nombre) + "</h3><p>" + creditosDe(c) + " cr · " + esc(etiquetaNivel(c.nivel)) +
-      " · <b class=\"malla-estado-" + e + "\">" + esc(e) + "</b>" +
-      (aprob ? " · " + Math.round(aprob) + " % de aprobación" : "") + "</p></div>" +
-      '<div class="fila"><button class="btn btn--chico" type="button" data-malla-editar="' + esc(c.codigo) + '">Editar</button>' +
-      '<button class="btn btn--chico" type="button" data-malla-limpiar>Quitar selección</button></div></div>' +
-      '<div class="malla-chips"><div><b>Antes necesitas</b>' +
-      (antes.length ? antes.map(function (x) { return chipRamo(x.cod, x.txt); }).join("") : '<span class="muted">Sin prerrequisitos.</span>') +
-      "</div><div><b>Este ramo desbloquea</b>" +
-      (desp.length ? desp.map(function (x) { return chipRamo(x.codigo, x.codigo); }).join("") : '<span class="muted">No desbloquea otro ramo del plan.</span>') +
+      " · <b class=\"malla-estado-" + e + "\">" + esc(etiquetaEstado(e)) + "</b>" +
+      (aprob ? " · " + Math.round(aprob) + esc(L(" % de aprobación", "% approval", "% 通过率")) : "") + "</p></div>" +
+      '<div class="fila"><button class="btn btn--chico" type="button" data-malla-editar="' + esc(c.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+      '<button class="btn btn--chico" type="button" data-malla-limpiar>' + esc(L("Quitar selección", "Clear selection", "清除选择")) + '</button></div></div>' +
+      '<div class="malla-chips"><div><b>' + esc(L("Antes necesitas", "You need first", "先修要求")) + '</b>' +
+      (antes.length ? antes.map(function (x) { return chipRamo(x.cod, x.txt); }).join("") : '<span class="muted">' + esc(L("Sin prerrequisitos.", "No prerequisites.", "没有先修要求。")) + '</span>') +
+      "</div><div><b>" + esc(L("Este ramo desbloquea", "This course unlocks", "此课程解锁")) + "</b>" +
+      (desp.length ? desp.map(function (x) { return chipRamo(x.codigo, x.codigo); }).join("") : '<span class="muted">' + esc(L("No desbloquea otro ramo del plan.", "It does not unlock another course in the plan.", "它不会解锁规划中的其他课程。")) + '</span>') +
       "</div></div>" +
-      (faltan.length ? '<p class="malla-falta">Todavía falta: ' + esc(faltan.join(", ")) + "</p>" : "");
+      (faltan.length ? '<p class="malla-falta">' + esc(L("Todavía falta: ", "Still missing: ", "还缺：")) + esc(faltan.join(", ")) + "</p>" : "");
   }
   function pintarMalla() {
     var cols = $("#malla-cols"); if (!cols) return;
@@ -1302,7 +1337,7 @@
     var pct = total ? Math.round(aprobCred / total * 100) : 0;
     if ($("#malla-k-creditos")) $("#malla-k-creditos").textContent = aprobCred + " / " + total;
     if ($("#malla-k-pct")) $("#malla-k-pct").textContent = pct + " %";
-    if ($("#malla-k-ramos")) $("#malla-k-ramos").textContent = aprobN + (cursoN ? " · " + cursoN + " curso" + (cursoN === 1 ? "" : "s") : "");
+    if ($("#malla-k-ramos")) $("#malla-k-ramos").textContent = aprobN + (cursoN ? " · " + cursoN + " " + L("curso", "course", "门课程") : "");
     if ($("#malla-k-libres")) $("#malla-k-libres").textContent = String(libres);
     if ($("#malla-progreso-barra")) $("#malla-progreso-barra").style.width = pct + "%";
     if ($("#malla-progreso-txt")) $("#malla-progreso-txt").textContent = pct + " %";
@@ -1310,7 +1345,7 @@
     Object.keys(cuenta).forEach(function (k) { var el = $("#malla-lg-" + k); if (el) el.textContent = String(cuenta[k]); });
     var nivelesTodos = {};
     cursos.forEach(function (c) { nivelesTodos[c.nivel] = 1; });
-    if ($("#malla-niveles-cuenta")) $("#malla-niveles-cuenta").textContent = Object.keys(nivelesTodos).length + " niveles";
+    if ($("#malla-niveles-cuenta")) $("#malla-niveles-cuenta").textContent = Object.keys(nivelesTodos).length + " " + L("niveles", "levels", "个层级");
     var vacio = $("#malla-vacio"), scroll = $("#malla-scroll"), detalle = $("#malla-detalle");
     if (!cursos.length) {
       if (vacio) vacio.hidden = false;
@@ -1326,8 +1361,8 @@
     if (estado.ramoSel && !ramoPorCodigo(estado.ramoSel)) estado.ramoSel = null;
     if ($("#malla-quitar-sel")) $("#malla-quitar-sel").hidden = !estado.ramoSel;
     if ($("#malla-pista")) $("#malla-pista").textContent = estado.ramoSel
-      ? "Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a presionarlo para quitar la selección."
-      : "Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.";
+      ? L("Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a presionarlo para quitar la selección.", "You only see this course's lines: blue what it needs, orange what it unlocks. Press it again to clear the selection.", "只显示这门课程的线：蓝色是所需，橙色是解锁。再次按下可清除选择。")
+      : L("Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.", "Faint lines are prerequisites. Pick a course to light only its own: blue what it needs, orange what it unlocks.", "浅色线是先修要求。选择课程只点亮它的线：蓝色是需要，橙色是解锁。");
     var q = mallaBusqueda.toLowerCase();
     var visibles = cursos.filter(function (c) {
       var e = estadoDeRamo(c);
@@ -1338,7 +1373,7 @@
       return !q || (c.codigo + " " + c.nombre).toLowerCase().indexOf(q) !== -1;
     });
     if (!visibles.length) {
-      cols.innerHTML = '<p class="muted malla-sin">Ningún ramo coincide con el filtro.</p>';
+      cols.innerHTML = '<p class="muted malla-sin">' + esc(L("Ningún ramo coincide con el filtro.", "No course matches the filter.", "没有课程符合筛选条件。")) + '</p>';
       var svg1 = $("#malla-lineas"); if (svg1) svg1.innerHTML = "";
       if (detalle) detalle.innerHTML = detalleMallaHTML();
       return;
@@ -1349,15 +1384,15 @@
       var lista = niveles[n].slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; });
       var cr = lista.reduce(function (a, c) { return a + creditosDe(c); }, 0);
       return '<section class="malla-col" data-nivel="' + n + '"><header class="malla-col__cab"><b>' + esc(etiquetaNivel(n)) +
-        "</b><span>" + cr + " cr · " + lista.length + " ramo" + (lista.length === 1 ? "" : "s") + "</span></header>" +
+        "</b><span>" + cr + " cr · " + lista.length + " " + esc(L("ramo", "course", "门课程")) + "</span></header>" +
         '<div class="malla-col__nodos">' + lista.map(function (c) {
           var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
-          var titulo = c.nombre + (req ? " · requiere " + req : "") + (faltan.length ? " · faltan: " + faltan.join(", ") : "");
+          var titulo = c.nombre + (req ? " · " + L("requiere ", "requires ", "需要 ") + req : "") + (faltan.length ? " · " + L("faltan: ", "missing: ", "缺少：") + faltan.join(", ") : "");
           return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
             '<span class="ramo-card__top"><b>' + esc(c.codigo) + '</b><span class="ramo-card__ico">' + icono(iconoEstado(e)) + "</span></span>" +
             '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
             '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
-            '<span class="ramo-card__est">' + esc(e) + "</span></button>";
+            '<span class="ramo-card__est">' + esc(etiquetaEstado(e)) + "</span></button>";
         }).join("") + "</div></section>";
     }).join("");
     $$("#malla-cols [data-ramo]").forEach(function (b) {
@@ -1421,38 +1456,36 @@
     if (c.cerrado) { reabrirCurso(cod); return; }
     var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
     if (P === null) {
-      if (!window.confirm("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?")) return;
+      if (!window.confirm(L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？"))) return;
       c.cerrado = true; c.aprobado = true; c.resultado = "aprobado";
       c.notaCierre = null; c.cerradoEn = selloLocal(); c.enCurso = false;
       guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
-      aviso(c.codigo + " cerrado como aprobado (sin notas).");
+      aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
       return;
     }
-    if (nf === null) { aviso("Falta la nota del examen o la eximición para cerrar el curso."); return; }
+    if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
     cerrarCurso(cod);
   }
   function cerrarCurso(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
-    if (c.cerrado) { aviso("El curso ya está cerrado."); return; }
+    if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
     var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
-    if (P === null) { aviso("No hay notas para calcular el resultado del curso."); return; }
-    if (nf === null) { aviso("Falta la nota del examen o la eximición para cerrar el curso."); return; }
+    if (P === null) { aviso(L("No hay notas para calcular el resultado del curso.", "There are no grades to calculate the course result.", "没有成绩可计算课程结果。")); return; }
+    if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
     var res = nf >= q.notaMin ? "aprobado" : "reprobado";
-    if (!window.confirm("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) +
-      "? Quedará " + res.toUpperCase() + ".")) return;
+    if (!window.confirm(L("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) + "? Quedará " + res.toUpperCase() + ".", "Close \"" + c.codigo + " — " + c.nombre + "\" with a final grade of " + fmtNota(nf) + "? It will be " + res.toUpperCase() + ".", "以 " + fmtNota(nf) + " 的最终成绩关闭“" + c.codigo + " — " + c.nombre + "”？结果将为 " + res.toUpperCase() + "。"))) return;
     c.cerrado = true; c.aprobado = res === "aprobado"; c.resultado = res;
     c.notaCierre = Math.round(nf * 10) / 10; c.cerradoEn = selloLocal(); c.enCurso = false;
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
-    aviso("Curso cerrado: " + res + " · " + fmtNota(nf));
+    aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
   }
   function reabrirCurso(cod) {
     var c = ramoPorCodigo(cod); if (!c || !c.cerrado) return;
-    if (!window.confirm("¿Reabrir \"" + c.codigo + " — " + c.nombre + "\"? Dejará de contar como " +
-      (c.aprobado ? "aprobado" : "reprobado") + " y volverá a en curso.")) return;
+    if (!window.confirm(L("¿Reabrir \"" + c.codigo + " — " + c.nombre + "\"? Dejará de contar como " + (c.aprobado ? "aprobado" : "reprobado") + " y volverá a en curso.", "Reopen \"" + c.codigo + " — " + c.nombre + "\"? It will stop counting as " + (c.aprobado ? "passed" : "failed") + " and return to in progress.", "重新打开“" + c.codigo + " — " + c.nombre + "”？它将不再计为" + (c.aprobado ? "已通过" : "未通过") + "，并回到进行中。"))) return;
     c.cerrado = false; c.aprobado = false; c.resultado = "";
     c.notaCierre = null; c.cerradoEn = ""; c.enCurso = true;
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
-    aviso("Curso reabierto. Sus notas siguen ahí.");
+    aviso(L("Curso reabierto. Sus notas siguen ahí.", "Course reopened. Its grades are still there.", "课程已重新打开。成绩仍然保留。"));
   }
   function abrirFormularioRamo(c) {
     normalizarCursos();
@@ -1465,7 +1498,7 @@
     $("#ramo-aprobado").checked = !!(c && c.cerrado && c.aprobado);
     $("#ramo-curso").checked = !!(c && !c.cerrado && c.enCurso);
     $("#ramo-form").hidden = false;
-    $("#ramo-form button[type=submit]").textContent = c ? "Guardar" : "Crear";
+    $("#ramo-form button[type=submit]").textContent = c ? L("Guardar", "Save", "保存") : L("Crear", "Create", "创建");
     $("#ramo-codigo").focus(); $("#ramo-codigo").select();
   }
   function cerrarFormularioRamo() {
@@ -1479,8 +1512,7 @@
       return (x.requisitos || []).indexOf(cod) !== -1 ||
         (x.requisitos_o || []).some(function (g) { return g.indexOf(cod) !== -1; });
     }).length;
-    if (!window.confirm("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"? Se borran también sus calificaciones." +
-      (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""))) return;
+    if (!window.confirm(L("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"? Se borran también sus calificaciones." + (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""), "Delete \"" + c.codigo + " — " + c.nombre + "\"? Its grades will also be deleted." + (dependientes ? " It will be removed from the prerequisites of " + dependientes + " course(s)." : ""), "删除“" + c.codigo + " — " + c.nombre + "”？其成绩也会被删除。" + (dependientes ? " 它将从 " + dependientes + " 门课程的先修要求中移除。" : "")))) return;
     estado.cursos = estado.cursos.filter(function (x) { return x.codigo !== cod; });
     if (estado.califs) delete estado.califs[cod];
     estado.cursos.forEach(function (x) {
@@ -1490,7 +1522,7 @@
       }).filter(function (g) { return g.length; });
     });
     if (estado.ramoSel === cod) estado.ramoSel = null;
-    guardar(); pintarMalla(); pintarPanel(); aviso("Ramo borrado.");
+    guardar(); pintarMalla(); pintarPanel(); aviso(L("Ramo borrado.", "Course deleted.", "课程已删除。"));
   }
   function cursosDesdeDoc(doc) {
     var raw = [], aprob = {}, enCurso = {};
@@ -1535,13 +1567,12 @@
     lector.onload = function () {
       try {
         var cursos = cursosDesdeDoc(JSON.parse(lector.result));
-        if (!cursos || !cursos.length) { aviso("El archivo no trae cursos de malla."); return; }
-        if (estado.cursos.length && !window.confirm("¿Reemplazar la malla actual (" + estado.cursos.length +
-          " ramos) por " + cursos.length + "?")) return;
+        if (!cursos || !cursos.length) { aviso(L("El archivo no trae cursos de malla.", "The file has no degree-plan courses.", "文件中没有课程规划。")); return; }
+        if (estado.cursos.length && !window.confirm(L("¿Reemplazar la malla actual (" + estado.cursos.length + " ramos) por " + cursos.length + "?", "Replace the current plan (" + estado.cursos.length + " courses) with " + cursos.length + "?", "用 " + cursos.length + " 门课程替换当前规划（" + estado.cursos.length + " 门）？"))) return;
         estado.cursos = cursos; estado.ramoSel = null;
         normalizarCursos(); guardar(); pintarMalla(); pintarPanel();
-        aviso("Malla importada: " + estado.cursos.length + " ramos.");
-      } catch (e) { aviso("No se pudo leer la malla."); }
+        aviso(L("Malla importada: ", "Plan imported: ", "规划已导入：") + estado.cursos.length + L(" ramos.", " courses.", " 门课程。"));
+      } catch (e) { aviso(L("No se pudo leer la malla.", "The plan could not be read.", "无法读取规划。")); }
     };
     lector.readAsText(file);
   }
@@ -1552,7 +1583,7 @@
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "mimo-malla.json"; a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-    aviso("Malla exportada.");
+    aviso(L("Malla exportada.", "Plan exported.", "规划已导出。"));
   }
 
   /* ---- U4b: Calificaciones, notas por categoría, examen y eximición ---- */
@@ -1850,10 +1881,10 @@
     return (1 - c.examen.peso / 100) * P + (c.examen.peso / 100) * c.examen.nota;
   }
   function estadoCalifDe(c, curso) {
-    if (!curso || !curso.cerrado) return { texto: "en curso", clase: "" };
+    if (!curso || !curso.cerrado) return { texto: L("en curso", "in progress", "进行中"), clase: "" };
     return curso.aprobado
-      ? { texto: "aprobado", clase: "pill-ok" }
-      : { texto: "reprobado", clase: "pill-bad" };
+      ? { texto: L("aprobado", "passed", "已通过"), clase: "pill-ok" }
+      : { texto: L("reprobado", "failed", "未通过"), clase: "pill-bad" };
   }
   function necesarioDe(c, objetivo) {
     if (!c.examen.activo || c.examen.peso <= 0) return null;
@@ -1864,7 +1895,7 @@
     return (objetivo - f0) / (f1 - f0);
   }
   function htmlDetalleCalif(cur, q) {
-    if (!cur) return '<p class="muted">Selecciona un ramo.</p>';
+    if (!cur) return '<p class="muted">' + esc(L("Selecciona un ramo.", "Select a course.", "选择一门课程。")) + '</p>';
     var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q, cur), ex = estadoEximicion(q);
     var necMin = necesarioDe(q, q.notaMin), necMeta = necesarioDe(q, q.meta);
     var filasCat = q.categorias.map(function (cat, i) {
@@ -1872,7 +1903,7 @@
       return '<tr><td><input class="entrada calif-entrada" type="text" data-cat-nombre="' + i + '" value="' + esc(cat.nombre) + '"></td>' +
         '<td class="num"><input class="entrada calif-entrada calif-num" type="number" min="0" max="100" step="5" data-cat-peso="' + i + '" value="' + (Number(cat.peso) || 0) + '"></td>' +
         '<td class="num">' + fmtNota(p) + '</td>' +
-        '<td class="num"><button class="calif-x" type="button" data-accion-calif="cat-quitar" data-i="' + i + '" title="Quitar categoría" aria-label="Quitar categoría">×</button></td></tr>';
+        '<td class="num"><button class="calif-x" type="button" data-accion-calif="cat-quitar" data-i="' + i + '" title="' + esc(L("Quitar categoría", "Remove category", "移除分类")) + '" aria-label="' + esc(L("Quitar categoría", "Remove category", "移除分类")) + '">×</button></td></tr>';
     }).join("");
     var opcionesCat = q.categorias.map(function (cat) {
       return '<option value="' + esc(cat.nombre) + '">' + esc(cat.nombre) + "</option>";
@@ -1880,22 +1911,22 @@
     var filasComp = q.componentes.map(function (comp, i) {
       var reemplaza = q.examen.reemplaza === i;
       var celdaNota = reemplaza
-        ? '<span class="muted">' + (q.examen.nota === null ? "lo pone el examen" : fmtNota(q.examen.nota)) + "</span>"
+        ? '<span class="muted">' + (q.examen.nota === null ? L("lo pone el examen", "set by the exam", "由考试决定") : fmtNota(q.examen.nota)) + "</span>"
         : '<input class="entrada calif-entrada calif-num" type="number" min="1" max="7" step="0.1" data-comp-nota="' + i + '" value="' + (comp.nota === null ? "" : comp.nota) + '">';
       return '<tr><td><input class="entrada calif-entrada" type="text" data-comp-nombre="' + i + '" value="' + esc(comp.nombre) + '"></td>' +
         '<td><select class="entrada calif-entrada" data-comp-cat="' + i + '">' + q.categorias.map(function (cat) {
           return '<option value="' + esc(cat.nombre) + '"' + (cat.nombre === comp.categoria ? " selected" : "") + ">" + esc(cat.nombre) + "</option>";
         }).join("") + "</select></td>" +
         '<td class="num">' + celdaNota + "</td>" +
-        '<td><div class="calif-fecha"><input class="entrada calif-entrada" type="date" data-comp-fecha="' + i + '" value="' + esc(comp.fecha) + '"><button class="btn btn--chico" type="button" data-accion-calif="comp-cal" data-i="' + i + '" title="Pasar al calendario" aria-label="Pasar al calendario">Cal</button></div></td>' +
-        '<td class="num"><button class="calif-x" type="button" data-accion-calif="comp-quitar" data-i="' + i + '" title="Quitar componente" aria-label="Quitar componente">×</button></td></tr>';
+        '<td><div class="calif-fecha"><input class="entrada calif-entrada" type="date" data-comp-fecha="' + i + '" value="' + esc(comp.fecha) + '"><button class="btn btn--chico" type="button" data-accion-calif="comp-cal" data-i="' + i + '" title="' + esc(L("Pasar al calendario", "Send to calendar", "发送到日历")) + '" aria-label="' + esc(L("Pasar al calendario", "Send to calendar", "发送到日历")) + '">Cal</button></div></td>' +
+        '<td class="num"><button class="calif-x" type="button" data-accion-calif="comp-quitar" data-i="' + i + '" title="' + esc(L("Quitar componente", "Remove component", "移除评分项")) + '" aria-label="' + esc(L("Quitar componente", "Remove component", "移除评分项")) + '">×</button></td></tr>';
     }).join("");
     var opcionesComp = q.componentes.map(function (comp, i) {
       return '<option value="' + i + '"' + (q.examen.reemplaza === i ? " selected" : "") + ">" + esc(comp.nombre) + "</option>";
     }).join("");
     var filasCond = q.eximicion.condiciones.map(function (cond, i) {
       var ref = "";
-      if (cond.tipo === "presentacion") ref = '<span class="muted calif-ref">la presentación</span>';
+      if (cond.tipo === "presentacion") ref = '<span class="muted calif-ref">' + esc(L("la presentación", "the presentation grade", "平时成绩")) + '</span>';
       else if (cond.tipo === "categoria") {
         ref = '<select class="entrada calif-entrada" data-cond-ref="' + i + '">' + q.categorias.map(function (cat) {
           return '<option value="' + esc(cat.nombre) + '"' + (cat.nombre === cond.ref ? " selected" : "") + ">" + esc(cat.nombre) + "</option>";
@@ -1907,63 +1938,63 @@
       }
       return '<div class="calif-cond">' +
         '<select class="entrada calif-entrada" data-cond-tipo="' + i + '">' +
-          '<option value="presentacion"' + (cond.tipo === "presentacion" ? " selected" : "") + ">Presentación</option>" +
-          '<option value="categoria"' + (cond.tipo === "categoria" ? " selected" : "") + ">Categoría</option>" +
-          '<option value="componente"' + (cond.tipo === "componente" ? " selected" : "") + ">Componente</option></select>" +
+          '<option value="presentacion"' + (cond.tipo === "presentacion" ? " selected" : "") + ">" + esc(L("Presentación", "Presentation", "平时成绩")) + "</option>" +
+          '<option value="categoria"' + (cond.tipo === "categoria" ? " selected" : "") + ">" + esc(L("Categoría", "Category", "分类")) + "</option>" +
+          '<option value="componente"' + (cond.tipo === "componente" ? " selected" : "") + ">" + esc(L("Componente", "Component", "评分项")) + "</option></select>" +
         ref +
         '<select class="entrada calif-entrada calif-op" data-cond-op="' + i + '">' +
           ["<", "<=", ">=", ">"].map(function (op) { return '<option' + (cond.op === op ? " selected" : "") + ">" + op + "</option>"; }).join("") +
         "</select>" +
         '<input class="entrada calif-entrada calif-num" type="number" min="1" max="7" step="0.1" data-cond-valor="' + i + '" value="' + cond.valor + '">' +
-        '<button class="calif-x" type="button" data-accion-calif="cond-quitar" data-i="' + i + '" title="Quitar condición" aria-label="Quitar condición">×</button></div>';
+        '<button class="calif-x" type="button" data-accion-calif="cond-quitar" data-i="' + i + '" title="' + esc(L("Quitar condición", "Remove condition", "移除条件")) + '" aria-label="' + esc(L("Quitar condición", "Remove condition", "移除条件")) + '">×</button></div>';
     }).join("");
-    var textoExim = !q.eximicion.activa ? "La eximición está desactivada para este ramo." :
-      !q.eximicion.condiciones.length ? "Sin condiciones: con ninguna, el ramo no se exime." :
-      ex.sinDatos ? "Faltan notas para saber si te eximes." :
-      ex.cumple ? "Con estas notas, ya te eximes." : "Con estas notas, todavía no te eximes.";
+    var textoExim = !q.eximicion.activa ? L("La eximición está desactivada para este ramo.", "Exemption is off for this course.", "本课程未启用免考。") :
+      !q.eximicion.condiciones.length ? L("Sin condiciones: con ninguna, el ramo no se exime.", "No conditions: without any, the course is not exempted.", "没有条件：没有条件时课程不能免考。") :
+      ex.sinDatos ? L("Faltan notas para saber si te eximes.", "Grades are missing to know whether you are exempt.", "缺少成绩，无法判断是否免考。") :
+      ex.cumple ? L("Con estas notas, ya te eximes.", "With these grades, you are already exempt.", "按这些成绩，你已免考。") : L("Con estas notas, todavía no te eximes.", "With these grades, you are not exempt yet.", "按这些成绩，你还未免考。");
     var claseFinal = cur.cerrado ? (cur.aprobado ? "ok" : "bad") : "warn";
     var cierre = cur.cerrado
       ? '<div class="calif-cierre calif-cierre--' + (cur.aprobado ? "ok" : "bad") + '"><div><b>Curso cerrado · ' +
-        (cur.aprobado ? "APROBADO" : "REPROBADO") + "</b><span>Final " +
+        esc(cur.aprobado ? L("APROBADO", "PASSED", "已通过") : L("REPROBADO", "FAILED", "未通过")) + "</b><span>" + esc(L("Final ", "Final ", "最终 ")) +
         fmtNota(cur.notaCierre !== null ? cur.notaCierre : nf) + (cur.cerradoEn ? " · " + esc(cur.cerradoEn) : "") +
-        '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">Reabrir curso</button></div>'
-      : '<div class="calif-cierre"><div><b>Curso abierto</b><span>La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">Cerrar curso</button></div>';
+        '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">' + esc(L("Reabrir curso", "Reopen course", "重新打开课程")) + '</button></div>'
+      : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div>';
     return '<div class="card calif-card">' +
       '<div class="calif-cab"><div><h2>' + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
-        '<p class="muted">' + creditosDe(cur) + " créditos · " + esc(etiquetaNivel(cur.nivel)) + " · meta " + fmtNota(q.meta) + "</p></div>" +
+        '<p class="muted">' + creditosDe(cur) + " " + esc(L("créditos", "credits", "学分")) + " · " + esc(etiquetaNivel(cur.nivel)) + " · " + esc(L("meta ", "goal ", "目标 ")) + fmtNota(q.meta) + "</p></div>" +
         '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div>" +
       '<div class="calif-resumen">' +
-        '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>Presentación</span></div>" +
-        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? "Final" : "Final provisional") + "</span></div>" +
-        '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>Estado</span></div>" +
-        '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? "eximido" : q.examen.activo ? textoNecesario(necMin) : "sin examen") + "</b><span>Examen para " + fmtNota(q.notaMin) + "</span></div>" +
+        '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>" + esc(L("Presentación", "Presentation", "平时成绩")) + "</span></div>" +
+        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
+        '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>" + esc(L("Estado", "Status", "状态")) + "</span></div>" +
+        '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? L("eximido", "exempt", "免考") : q.examen.activo ? textoNecesario(necMin) : L("sin examen", "no exam", "无考试")) + "</b><span>" + esc(L("Examen para ", "Exam for ", "考试目标 ")) + fmtNota(q.notaMin) + "</span></div>" +
       "</div>" + cierre +
       '<div class="calif-ajustes">' +
-        '<label class="campo">Nota mínima <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
-        '<label class="campo">Meta <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
-        '<span class="muted">Examen para la meta: ' + (q.examen.activo ? textoNecesario(necMeta) : "sin examen") + "</span>" +
+        '<label class="campo">' + esc(L("Nota mínima", "Minimum grade", "最低成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
+        '<label class="campo">' + esc(L("Meta", "Goal", "目标")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
+        '<span class="muted">' + esc(L("Examen para la meta: ", "Exam for the goal: ", "达成目标的考试：")) + (q.examen.activo ? textoNecesario(necMeta) : L("sin examen", "no exam", "无考试")) + "</span>" +
       "</div>" +
-      '<section class="calif-bloque"><h3>Categorías <span>peso sobre la presentación</span></h3>' +
-        '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>Categoría</th><th class="num">Peso %</th><th class="num">Promedio</th><th></th></tr></thead><tbody>' +
-        (filasCat || '<tr><td colspan="4" class="muted">Sin categorías.</td></tr>') + "</tbody></table></div>" +
-        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">+ Categoría</button></section>' +
-      '<section class="calif-bloque"><h3>Componentes y notas</h3>' +
-        '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>Componente</th><th>Categoría</th><th class="num">Nota</th><th>Fecha</th><th></th></tr></thead><tbody>' +
-        (filasComp || '<tr><td colspan="5" class="muted">Sin componentes todavía.</td></tr>') + "</tbody></table></div>" +
-        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">+ Componente</button></section>' +
-      '<section class="calif-bloque"><h3>Examen</h3><div class="calif-examen">' +
-        '<label class="check"><input type="checkbox" data-exam-activo' + (q.examen.activo ? " checked" : "") + "> Activo</label>" +
-        '<label class="campo">Peso % <input class="entrada calif-num" type="number" min="0" max="100" step="5" data-exam-peso value="' + q.examen.peso + '"></label>' +
-        '<label class="campo">Nota <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-exam-nota value="' + (q.examen.nota === null ? "" : q.examen.nota) + '"></label>' +
-        '<label class="campo">Reemplaza <select class="entrada calif-entrada" data-exam-reemplaza><option value="">—</option>' + opcionesComp + "</select></label>" +
+      '<section class="calif-bloque"><h3>' + esc(L("Categorías", "Categories", "分类")) + ' <span>' + esc(L("peso sobre la presentación", "weight over the presentation grade", "占平时成绩比重")) + '</span></h3>' +
+        '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>' + esc(L("Categoría", "Category", "分类")) + '</th><th class="num">' + esc(L("Peso %", "Weight %", "权重 %")) + '</th><th class="num">' + esc(L("Promedio", "Average", "平均")) + '</th><th></th></tr></thead><tbody>' +
+        (filasCat || '<tr><td colspan="4" class="muted">' + esc(L("Sin categorías.", "No categories.", "没有分类。")) + '</td></tr>') + "</tbody></table></div>" +
+        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">' + esc(L("+ Categoría", "+ Category", "+ 分类")) + '</button></section>' +
+      '<section class="calif-bloque"><h3>' + esc(L("Componentes y notas", "Components and grades", "评分项与成绩")) + '</h3>' +
+        '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>' + esc(L("Componente", "Component", "评分项")) + '</th><th>' + esc(L("Categoría", "Category", "分类")) + '</th><th class="num">' + esc(L("Nota", "Grade", "成绩")) + '</th><th>' + esc(L("Fecha", "Date", "日期")) + '</th><th></th></tr></thead><tbody>' +
+        (filasComp || '<tr><td colspan="5" class="muted">' + esc(L("Sin componentes todavía.", "No components yet.", "还没有评分项。")) + '</td></tr>') + "</tbody></table></div>" +
+        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">' + esc(L("+ Componente", "+ Component", "+ 评分项")) + '</button></section>' +
+      '<section class="calif-bloque"><h3>' + esc(L("Examen", "Exam", "考试")) + '</h3><div class="calif-examen">' +
+        '<label class="check"><input type="checkbox" data-exam-activo' + (q.examen.activo ? " checked" : "") + "> " + esc(L("Activo", "Active", "启用")) + "</label>" +
+        '<label class="campo">' + esc(L("Peso %", "Weight %", "权重 %")) + ' <input class="entrada calif-num" type="number" min="0" max="100" step="5" data-exam-peso value="' + q.examen.peso + '"></label>' +
+        '<label class="campo">' + esc(L("Nota", "Grade", "成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-exam-nota value="' + (q.examen.nota === null ? "" : q.examen.nota) + '"></label>' +
+        '<label class="campo">' + esc(L("Reemplaza", "Replaces", "替代")) + ' <select class="entrada calif-entrada" data-exam-reemplaza><option value="">—</option>' + opcionesComp + "</select></label>" +
       "</div></section>" +
-      '<section class="calif-bloque"><h3>Eximición</h3>' +
-        '<label class="check"><input type="checkbox" data-exim-activa' + (q.eximicion.activa ? " checked" : "") + "> El ramo se puede eximir</label>" +
-        '<label class="campo">Deben cumplirse <select class="entrada" data-exim-modo>' +
-          '<option value="todas"' + (q.eximicion.modo === "todas" ? " selected" : "") + ">Todas</option>" +
-          '<option value="alguna"' + (q.eximicion.modo === "alguna" ? " selected" : "") + ">Al menos una</option></select></label>" +
-        (filasCond || '<p class="muted">Sin condiciones: mientras no haya ninguna, el ramo no se exime.</p>') +
-        '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">+ Condición</button>' +
+      '<section class="calif-bloque"><h3>' + esc(L("Eximición", "Exemption", "免考")) + '</h3>' +
+        '<label class="check"><input type="checkbox" data-exim-activa' + (q.eximicion.activa ? " checked" : "") + "> " + esc(L("El ramo se puede eximir", "The course can be exempted", "课程可以免考")) + "</label>" +
+        '<label class="campo">' + esc(L("Deben cumplirse", "Must meet", "须满足")) + ' <select class="entrada" data-exim-modo>' +
+          '<option value="todas"' + (q.eximicion.modo === "todas" ? " selected" : "") + ">" + esc(L("Todas", "All", "全部")) + "</option>" +
+          '<option value="alguna"' + (q.eximicion.modo === "alguna" ? " selected" : "") + ">" + esc(L("Al menos una", "At least one", "至少一项")) + "</option></select></label>" +
+        (filasCond || '<p class="muted">' + esc(L("Sin condiciones: mientras no haya ninguna, el ramo no se exime.", "No conditions: while there are none, the course is not exempted.", "没有条件：在添加条件前，课程不能免考。")) + '</p>') +
+        '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">' + esc(L("+ Condición", "+ Condition", "+ 条件")) + '</button>' +
         '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p></section>" +
       "</div>";
   }
@@ -1985,7 +2016,7 @@
       var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
       return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
         '<span class="calif-item__nom"><b>' + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
-        '<small>P ' + fmtNota(presentacionDe(q)) + " · Final " + fmtNota(notaFinalDe(q)) + "</small>" +
+        '<small>' + esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(notaFinalDe(q)) + "</small>" +
         '<em class="pill ' + est.clase + '">' + esc(est.texto) + "</em></button>";
     }).join("");
     det.innerHTML = htmlDetalleCalif(ramoPorCodigo(califSel), califDe(califSel));
@@ -2051,18 +2082,18 @@
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
     if (accion === "comp-cal") {
       var comp = q.componentes[i];
-      if (!comp || !comp.fecha) { aviso("Ponle una fecha al componente primero."); return; }
+      if (!comp || !comp.fecha) { aviso(L("Ponle una fecha al componente primero.", "Give the component a date first.", "请先给评分项设置日期。")); return; }
       sincronizarEventoComp(q, i, true);
       guardar(); pintarCalificaciones(); pintarCalendario();
-      aviso("Componente pasado al calendario.");
+      aviso(L("Componente pasado al calendario.", "Component sent to the calendar.", "评分项已发送到日历。"));
       return;
     }
     if (accion === "cat-add") q.categorias.push({ nombre: "Categoría " + (q.categorias.length + 1), peso: 0 });
     else if (accion === "comp-add") q.componentes.push({ nombre: "Componente " + (q.componentes.length + 1), categoria: q.categorias[0].nombre, nota: null, fecha: "", peso: 1 });
     else if (accion === "cond-add") q.eximicion.condiciones.push({ tipo: "presentacion", ref: "", op: ">=", valor: 5 });
     else if (accion === "cat-quitar") {
-      if (q.categorias.length <= 1) { aviso("Debe quedar al menos una categoría."); return; }
-      if (!window.confirm("¿Quitar la categoría \"" + q.categorias[i].nombre + "\"?")) return;
+      if (q.categorias.length <= 1) { aviso(L("Debe quedar al menos una categoría.", "At least one category must remain.", "至少保留一个分类。")); return; }
+      if (!window.confirm(L("¿Quitar la categoría \"" + q.categorias[i].nombre + "\"?", "Remove the category \"" + q.categorias[i].nombre + "\"?", "移除分类“" + q.categorias[i].nombre + "”？"))) return;
       var nombre = q.categorias[i].nombre;
       q.categorias.splice(i, 1);
       q.componentes.forEach(function (x) { if (x.categoria === nombre) x.categoria = q.categorias[0].nombre; });
@@ -2157,7 +2188,7 @@
     var sel = $("#est-ramo");
     if (sel) {
       var val = sel.value;
-      sel.innerHTML = '<option value="">Sin ramo</option>' + cursos.map(function (c) {
+      sel.innerHTML = '<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>' + cursos.map(function (c) {
         return '<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>";
       }).join("");
       if (val && (val === "" || ramoPorCodigo(val))) sel.value = val;
@@ -2185,11 +2216,11 @@
     if ($("#est-k-semanas")) $("#est-k-semanas").textContent = String(sobre);
     if ($("#est-k-promedio")) $("#est-k-promedio").textContent = fmtHoras(prom);
     if ($("#est-periodo")) $("#est-periodo").textContent = periodoActivoObj()
-      ? "Periodo " + periodoActivoObj().nombre + " · " + semanas.length + " semanas"
-      : "Últimas " + semanas.length + " semanas";
+      ? L("Periodo ", "Term ", "学期 ") + periodoActivoObj().nombre + " · " + semanas.length + " " + L("semanas", "weeks", "周")
+      : L("Últimas ", "Last ", "最近 ") + semanas.length + " " + L("semanas", "weeks", "周");
     if ($("#est-resumen")) $("#est-resumen").textContent = ses.length
-      ? ses.length + " sesiones · " + fmtHoras(totalMin) + " registradas · meta " + fmtHoras(meta * 60) + " por semana."
-      : "Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.";
+      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(meta * 60) + " " + L("por semana.", "per week.", "每周。")
+      : L("Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.", "No sessions yet. Log one or use the Time stopwatch.", "还没有会话。记录一次，或使用时间的秒表。");
     var max = Math.max(meta * 60, 1);
     semanas.forEach(function (w) { max = Math.max(max, porSemana[w.desde]); });
     max *= 1.15;
@@ -2205,7 +2236,7 @@
       });
       var barras = Object.keys(porCurso).map(function (k) {
         return '<i style="flex:' + porCurso[k] + ';background:' + colorEstudio(k) + '" title="' +
-          esc(k === "_" ? "Sin ramo" : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
+          esc(k === "_" ? L("Sin ramo", "No course", "无课程") : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
       }).join("");
       return '<div class="est-col" title="' + esc(w.etiqueta) + " · " + fmtHoras(total) + '">' +
         '<span class="est-total">' + (total ? fmtHoras(total) : "") + "</span>" +
@@ -2213,16 +2244,16 @@
         '<span class="est-etq">' + esc(w.etiqueta) + "</span></div>";
     }).join("");
     $("#est-grafico").innerHTML = ses.length || meta
-      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, meta * 60 / max * 100) + '%"><span>meta ' +
+      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, meta * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
         fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
-      : '<p class="empty">Sin horas todavía. Registra una sesión para ver el gráfico.</p>';
+      : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
     var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
       return '<span><i style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
     });
-    if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>Sin ramo ' + fmtHoras(totalRamo._) + "</span>");
+    if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>' + esc(L("Sin ramo ", "No course ", "无课程 ")) + fmtHoras(totalRamo._) + "</span>");
     $("#est-leyenda").innerHTML = leyenda.join("");
     if ($("#est-metas-semana")) {
-      $("#est-metas-semana").innerHTML = '<span class="muted">Meta por semana:</span>' + semanas.map(function (w) {
+      $("#est-metas-semana").innerHTML = '<span class="muted">' + esc(L("Meta por semana:", "Goal per week:", "每周目标：")) + '</span>' + semanas.map(function (w) {
         var v = metaDeSemana(w);
         return '<label class="est-meta-sem">' + esc(w.etiqueta) + ' <input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-semana="' + esc(w.desde) + '" value="' + v + '"> h</label>';
       }).join("");
@@ -2233,19 +2264,19 @@
       return '<tr><td><i class="est-punto" style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " — " + esc(c.nombre) + "</td>" +
         '<td class="num">' + fmtHoras(h) + "</td>" +
         '<td class="num"><input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-ramo="' + esc(c.codigo) + '" value="' + m + '"> h</td>' +
-        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % de " + (m * semanas.length) + " h" : "sin meta") + "</small></td></tr>";
+        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + (m * semanas.length) + " h" : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
     }).join("");
-    if (totalRamo._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>Sin ramo</td><td class="num">' +
-      fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">Asigna un ramo para medirlo</td></tr>';
-    $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">Sin ramos. Crea uno en Malla.</td></tr>';
+    if (totalRamo._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>' + esc(L("Sin ramo", "No course", "无课程")) + '</td><td class="num">' +
+      fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
+    $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">' + esc(L("Sin ramos. Crea uno en Malla.", "No courses. Create one in the plan.", "没有课程。请在课程规划中创建。")) + '</td></tr>';
     var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
     $("#est-sesiones").innerHTML = recientes.length ? recientes.map(function (x) {
       var c = x.s.ramo ? ramoPorCodigo(x.s.ramo) : null;
-      return '<div class="est-sesion" data-sesion="' + esc(x.s.id) + '" title="Clic derecho: editar o borrar"><span><b>' + esc(c ? c.codigo : "Sin ramo") + "</b> " + esc(c ? c.nombre : "") +
+      return '<div class="est-sesion" data-sesion="' + esc(x.s.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' + esc(c ? c.codigo : L("Sin ramo", "No course", "无课程")) + "</b> " + esc(c ? c.nombre : "") +
         "</span><small>" + esc(x.s.fecha) + " · " + esc(fmtDuracion(x.s.minutos)) + '</small>' +
-        '<button class="calif-x" type="button" data-editar-estudio="' + esc(x.s.id) + '" title="Editar sesión" aria-label="Editar sesión">✎</button>' +
-        '<button class="calif-x" type="button" data-borrar-estudio="' + esc(x.s.id) + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
-    }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
+        '<button class="calif-x" type="button" data-editar-estudio="' + esc(x.s.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+        '<button class="calif-x" type="button" data-borrar-estudio="' + esc(x.s.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+    }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + '</p>';
     if (pantalla === "estudio") pintarPanel();
   }
   function normalizarNotas() {
@@ -2335,8 +2366,8 @@
     }).sort(function (a, b) { return (b.fijada ? 1 : 0) - (a.fijada ? 1 : 0); });
     cont.innerHTML = vis.map(function (n) {
       return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '" title="' + esc(t("cal.clicDerecho")) + '"><b>' +
-        (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") + "</b><small>" +
-        esc((n.cuerpo || "").slice(0, 70) || "Vacía") + (n.contexto ? " · " + esc(n.contexto) : "") + "</small></button>";
+        (n.fijada ? "★ " : "") + esc(!n.titulo || n.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : n.titulo) + "</b><small>" +
+        esc((n.cuerpo || "").slice(0, 70) || L("Vacía", "Empty", "空白")) + (n.contexto ? " · " + esc(n.contexto) : "") + "</small></button>";
     }).join("");
     if (conClick) {
       $$(destino + " [data-nota]").forEach(function (b) {
@@ -2370,24 +2401,25 @@
     $("#nota-cuerpo").value = n ? n.cuerpo : "";
     $("#nota-contexto").value = n ? n.contexto : "";
     $("#nota-etiquetas").value = n ? n.etiquetas.join(", ") : "";
-    $("#nota-fijar").textContent = n && n.fijada ? "Fijada" : "Fijar";
+    $("#nota-fijar").textContent = n && n.fijada ? L("Fijada", "Pinned", "已置顶") : L("Fijar", "Pin", "置顶");
     $("#nota-fijar").setAttribute("aria-pressed", n && n.fijada ? "true" : "false");
     var sel = $("#nota-vinculo");
-    var ops = ['<option value="">Enlazar a…</option>'];
-    estado.tareas.forEach(function (t) { ops.push('<option value="tarea:' + t.id + '">Tarea · ' + esc(t.titulo) + "</option>"); });
-    estado.eventos.forEach(function (e) { ops.push('<option value="evento:' + e.id + '">Evento · ' + esc(e.titulo) + "</option>"); });
+    var ops = ['<option value="">' + esc(L("Enlazar a…", "Link to…", "链接到…")) + '</option>'];
+    estado.tareas.forEach(function (t) { ops.push('<option value="tarea:' + t.id + '">' + esc(L("Tarea", "Task", "任务")) + " · " + esc(t.titulo) + "</option>"); });
+    estado.eventos.forEach(function (e) { ops.push('<option value="evento:' + e.id + '">' + esc(L("Evento", "Event", "事件")) + " · " + esc(e.titulo) + "</option>"); });
     sel.innerHTML = ops.join("");
     sel.value = n ? notaVinculoActual(n) : "";
-    $("#nota-modo").textContent = notaModo === "preview" ? "Editar" : "Vista previa";
+    $("#nota-modo").textContent = notaModo === "preview" ? L("Editar", "Edit", "编辑") : L("Vista previa", "Preview", "预览");
     $("#nota-cuerpo").hidden = notaModo === "preview";
     $("#nota-preview").hidden = notaModo !== "preview";
     $("#nota-preview").innerHTML = notaModo === "preview" && n ? renderMarkdown(n.cuerpo) : "";
-    $("#nota-meta").textContent = n ? "Guardada en este equipo · " + n.actualizado : "Sin nota abierta.";
+    $("#nota-meta").textContent = n ? L("Guardada en este equipo · ", "Saved on this device · ", "已保存到本设备 · ") + n.actualizado : L("Sin nota abierta.", "No note open.", "没有打开的笔记。");
   }
 
   function nombreModo(id) {
-    var h = HIJOS.filter(function (x) { return x[0] === id; })[0];
-    return h ? h[1] : id;
+    var n = { crono: ["Cronómetro", "Stopwatch", "秒表"], temporizador: ["Temporizador", "Timer", "计时器"],
+      pomodoro: ["Pomodoro", "Pomodoro", "番茄钟"], alarmas: ["Alarmas", "Alarms", "闹钟"] }[id];
+    return n ? L(n[0], n[1], n[2]) : id;
   }
   function duracionPomo() {
     var p = estado.pomo || {};
@@ -2408,7 +2440,7 @@
     if (document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("rlj")) return;
     reloj.innerHTML = [["h", h], ["m", m], ["s", s]].map(function (p) {
       return '<input class="rlj" type="text" inputmode="numeric" maxlength="2" data-parte="' + p[0] +
-        '" value="' + String(p[1]).padStart(2, "0") + '" aria-label="' + (p[0] === "h" ? "Horas" : p[0] === "m" ? "Minutos" : "Segundos") + '">';
+        '" value="' + String(p[1]).padStart(2, "0") + '" aria-label="' + (p[0] === "h" ? L("Horas", "Hours", "小时") : p[0] === "m" ? L("Minutos", "Minutes", "分钟") : L("Segundos", "Seconds", "秒")) + '">';
     }).join(":");
     reloj.classList.toggle("corriendo", !!tiempoInt);
     $$("#reloj .rlj").forEach(function (inp) {
@@ -2435,21 +2467,21 @@
     $("#btn-pausar").disabled = true;
     $("#btn-parar").disabled = true;
     guardar(); pintarEstadoTiempo();
-    aviso("Reloj ajustado a " + [vals[0], vals[1], vals[2]].map(function (x) { return String(x).padStart(2, "0"); }).join(":") + ".");
+    aviso(L("Reloj ajustado a ", "Clock set to ", "时钟已设为 ") + [vals[0], vals[1], vals[2]].map(function (x) { return String(x).padStart(2, "0"); }).join(":") + ".");
   }
   function pintarEstadoTiempo() {
     var modo = estado.tiempoModo || "crono", txt;
     if (modo === "alarmas") {
       var act = (estado.alarmas || []).filter(function (a) { return a.activa; }).length;
-      txt = "Alarmas · " + act + " activa" + (act === 1 ? "" : "s");
+      txt = L("Alarmas", "Alarms", "闹钟") + " · " + act + " " + L(act === 1 ? "activa" : "activas", "active", "启用");
     } else if (modo === "pomodoro") {
-      var fase = estado.pomo.fase === "trabajo" ? "trabajo" : estado.pomo.fase === "corto" ? "pausa corta" : "pausa larga";
-      txt = "Pomodoro · " + fase + (tiempoInt ? " · corriendo" : " · parado");
+      var fase = estado.pomo.fase === "trabajo" ? L("trabajo", "work", "工作") : estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息");
+      txt = L("Pomodoro", "Pomodoro", "番茄钟") + " · " + fase + (tiempoInt ? L(" · corriendo", " · running", " · 运行中") : L(" · parado", " · stopped", " · 已停止"));
     } else {
-      txt = nombreModo(modo) + (tiempoInt ? " · corriendo" : modo === "temporizador" && tempSeg ? " · listo" : " · parado");
+      txt = nombreModo(modo) + (tiempoInt ? L(" · corriendo", " · running", " · 运行中") : modo === "temporizador" && tempSeg ? L(" · listo", " · ready", " · 就绪") : L(" · parado", " · stopped", " · 已停止"));
     }
     if (estado.tiempoRamo && modo !== "alarmas") txt += " · " + estado.tiempoRamo;
-    if (estado.tiempoVinculo && modo !== "alarmas") txt += " · tarea";
+    if (estado.tiempoVinculo && modo !== "alarmas") txt += " · " + L("tarea", "task", "任务");
     $("#tiempo-estado").textContent = txt;
   }
   function pintarTiempo() {
@@ -2458,10 +2490,10 @@
     if (estado.tiempoHijos.indexOf(estado.tiempoModo) === -1) estado.tiempoModo = estado.tiempoHijos[0] || "crono";
     var html = estado.tiempoHijos.map(function (id) {
       return '<button class="estante' + (id === estado.tiempoModo ? " on" : "") + '" type="button" data-hijo="' + id + '"><span>' +
-        esc(nombreModo(id)) + '</span><span class="quitar" data-quitar-hijo="' + id + '" role="button" tabindex="0" title="Quitar de Tiempo">×</span></button>';
+        esc(nombreModo(id)) + '</span><span class="quitar" data-quitar-hijo="' + id + '" role="button" tabindex="0" title="' + esc(L("Quitar de Tiempo", "Remove from Time", "从时间中移除")) + '">×</span></button>';
     }).join("");
     html += '<button class="estante estante-add" type="button" id="btn-add-hijo">+</button>';
-    html += '<button class="btn" type="button" id="btn-editar-tiempo">Editar</button>';
+    html += '<button class="btn" type="button" id="btn-editar-tiempo">' + esc(L("Editar", "Edit", "编辑")) + '</button>';
     c.innerHTML = html;
     $$("#estanteria-tiempo [data-hijo]").forEach(function (b) {
       b.addEventListener("click", function (ev) {
@@ -2476,36 +2508,36 @@
         estado.tiempoHijos = estado.tiempoHijos.filter(function (h) { return h !== id; });
         if (estado.tiempoModo === id) cambiarModoTiempo(estado.tiempoHijos[0] || "crono");
         else { guardar(); pintarTiempo(); }
-        aviso("Bloque quitado de Tiempo. El padre y sus datos siguen.");
+        aviso(L("Bloque quitado de Tiempo. El padre y sus datos siguen.", "Block removed from Time. The parent and its data remain.", "已从时间中移除模块。父级和数据仍然保留。"));
       });
     });
     $("#btn-editar-tiempo").addEventListener("click", function () {
       document.body.classList.toggle("edit-tiempo");
-      aviso(document.body.classList.contains("edit-tiempo") ? "Editar Tiempo: quita un bloque con ×." : "Edición cerrada.");
+      aviso(document.body.classList.contains("edit-tiempo") ? L("Editar Tiempo: quita un bloque con ×.", "Edit Time: remove a block with ×.", "编辑时间：用 × 移除模块。") : L("Edición cerrada.", "Editing closed.", "编辑已关闭。"));
     });
     $("#btn-add-hijo").addEventListener("click", function () {
       var falta = HIJOS.filter(function (h) { return estado.tiempoHijos.indexOf(h[0]) === -1; })[0];
-      if (!falta) { aviso("Los 4 bloques de Tiempo ya están dentro."); return; }
-      estado.tiempoHijos.push(falta[0]); guardar(); pintarTiempo(); aviso(falta[1] + " agregado a Tiempo.");
+      if (!falta) { aviso(L("Los 4 bloques de Tiempo ya están dentro.", "All 4 Time blocks are already inside.", "4 个时间模块都已在内。")); return; }
+      estado.tiempoHijos.push(falta[0]); guardar(); pintarTiempo(); aviso(nombreModo(falta[0]) + L(" agregado a Tiempo.", " added to Time.", " 已添加到时间。"));
     });
     var cfg = $("#tiempo-config");
     if (cfg) cfg.innerHTML = "";
     if (estado.tiempoModo === "temporizador" && !tiempoInt && tempSeg === 0) tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
     if (estado.tiempoModo === "pomodoro" && !tiempoInt && pomoSeg === 0) pomoSeg = Math.round(duracionPomo() * 60);
     if (cfg && estado.tiempoModo === "temporizador") {
-      cfg.innerHTML = '<div class="tiempo-config-fila"><label class="campo">Minutos <input class="entrada tiempo-num" id="temp-min" type="number" min="0.1" max="180" step="0.1" value="' +
-        (Number(estado.tempMin) || 25) + '"></label><span class="muted">Cuenta atrás; al llegar a cero registra la sesión.</span></div>';
+      cfg.innerHTML = '<div class="tiempo-config-fila"><label class="campo">' + esc(L("Minutos", "Minutes", "分钟")) + ' <input class="entrada tiempo-num" id="temp-min" type="number" min="0.1" max="180" step="0.1" value="' +
+        (Number(estado.tempMin) || 25) + '"></label><span class="muted">' + esc(L("Cuenta atrás; al llegar a cero registra la sesión.", "Countdown; at zero it logs the session.", "倒计时；归零时记录会话。")) + '</span></div>';
       $("#temp-min").addEventListener("change", function (e) {
         estado.tempMin = Math.max(0.1, Number(e.target.value) || 25);
         if (!tiempoInt) { tempSeg = Math.round(estado.tempMin * 60); tempInicial = tempSeg; pintaReloj(); }
         guardar(); pintarEstadoTiempo();
       });
     } else if (cfg && estado.tiempoModo === "pomodoro") {
-      cfg.innerHTML = '<div class="tiempo-config-fila"><label class="campo">Trabajo <input class="entrada tiempo-num" id="pomo-trabajo" type="number" min="0.1" max="180" step="0.1" value="' + estado.pomo.trabajo + '"></label>' +
-        '<label class="campo">Corto <input class="entrada tiempo-num" id="pomo-corto" type="number" min="0.1" max="60" step="0.1" value="' + estado.pomo.corto + '"></label>' +
-        '<label class="campo">Largo <input class="entrada tiempo-num" id="pomo-largo" type="number" min="0.1" max="120" step="0.1" value="' + estado.pomo.largo + '"></label>' +
-        '<label class="campo">Cada <input class="entrada tiempo-num" id="pomo-cada" type="number" min="1" max="12" step="1" value="' + estado.pomo.cada + '"></label></div>' +
-        '<p class="muted">Fase actual: <b>' + esc(estado.pomo.fase) + "</b> · " + (estado.pomo.trabajos || 0) + " trabajo(s) completados. Al terminar una fase se detiene para que decidas seguir.</p>";
+      cfg.innerHTML = '<div class="tiempo-config-fila"><label class="campo">' + esc(L("Trabajo", "Work", "工作")) + ' <input class="entrada tiempo-num" id="pomo-trabajo" type="number" min="0.1" max="180" step="0.1" value="' + estado.pomo.trabajo + '"></label>' +
+        '<label class="campo">' + esc(L("Corto", "Short", "短")) + ' <input class="entrada tiempo-num" id="pomo-corto" type="number" min="0.1" max="60" step="0.1" value="' + estado.pomo.corto + '"></label>' +
+        '<label class="campo">' + esc(L("Largo", "Long", "长")) + ' <input class="entrada tiempo-num" id="pomo-largo" type="number" min="0.1" max="120" step="0.1" value="' + estado.pomo.largo + '"></label>' +
+        '<label class="campo">' + esc(L("Cada", "Every", "每")) + ' <input class="entrada tiempo-num" id="pomo-cada" type="number" min="1" max="12" step="1" value="' + estado.pomo.cada + '"></label></div>' +
+        '<p class="muted">' + esc(L("Fase actual: ", "Current phase: ", "当前阶段：")) + "<b>" + esc(estado.pomo.fase === "trabajo" ? L("trabajo", "work", "工作") : estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息")) + "</b> · " + (estado.pomo.trabajos || 0) + esc(L(" trabajo(s) completados. Al terminar una fase se detiene para que decidas seguir.", " work session(s) completed. At the end of a phase it stops so you decide whether to continue.", " 个工作阶段已完成。阶段结束时会暂停，由你决定是否继续。")) + "</p>";
       ["trabajo", "corto", "largo"].forEach(function (k) {
         $("#pomo-" + k).addEventListener("change", function (e) {
           estado.pomo[k] = Math.max(0.1, Number(e.target.value) || 1);
@@ -2515,23 +2547,23 @@
       });
       $("#pomo-cada").addEventListener("change", function (e) { estado.pomo.cada = Math.max(1, Number(e.target.value) || 4); guardar(); });
     } else if (cfg && estado.tiempoModo === "alarmas") {
-      cfg.innerHTML = '<form class="alarma-form" id="alarma-form"><input class="entrada" id="alarma-hora" type="time" aria-label="Hora de la alarma">' +
-        '<input class="entrada" id="alarma-texto" type="text" placeholder="Para qué es" aria-label="Texto de la alarma">' +
-        '<button class="btn btn--chico btn-primario" id="alarma-add" type="submit">+ Alarma</button>' +
-        '<button class="btn btn--chico" id="alarma-cancelar" type="button" hidden>Cancelar</button></form>' +
+      cfg.innerHTML = '<form class="alarma-form" id="alarma-form"><input class="entrada" id="alarma-hora" type="time" aria-label="' + esc(L("Hora de la alarma", "Alarm time", "闹钟时间")) + '">' +
+        '<input class="entrada" id="alarma-texto" type="text" placeholder="' + esc(L("Para qué es", "What it is for", "用途")) + '" aria-label="' + esc(L("Texto de la alarma", "Alarm text", "闹钟文字")) + '">' +
+        '<button class="btn btn--chico btn-primario" id="alarma-add" type="submit">' + esc(L("+ Alarma", "+ Alarm", "+ 闹钟")) + '</button>' +
+        '<button class="btn btn--chico" id="alarma-cancelar" type="button" hidden>' + esc(L("Cancelar", "Cancel", "取消")) + '</button></form>' +
         '<div class="alarma-lista" id="alarma-lista"></div>';
       $("#alarma-form").addEventListener("submit", function (e) {
         e.preventDefault();
         var hora = $("#alarma-hora").value;
-        if (!hora) { aviso("Elige una hora para la alarma."); return; }
-        var texto = $("#alarma-texto").value.trim() || "Alarma";
+        if (!hora) { aviso(L("Elige una hora para la alarma.", "Choose a time for the alarm.", "请选择闹钟时间。")); return; }
+        var texto = $("#alarma-texto").value.trim() || L("Alarma", "Alarm", "闹钟");
         var a = formAlarmaId ? (estado.alarmas || []).filter(function (x) { return x.id === formAlarmaId; })[0] : null;
         if (a) {
           a.hora = hora; a.texto = texto; a.ultima = ""; formAlarmaId = null;
-          guardar(); pintarTiempo(); aviso("Alarma corregida a las " + hora + ".");
+          guardar(); pintarTiempo(); aviso(L("Alarma corregida a las ", "Alarm updated to ", "闹钟已改为 ") + hora + ".");
         } else {
           estado.alarmas.push({ id: "a" + Date.now(), hora: hora, texto: texto, activa: true, ultima: "" });
-          guardar(); pintarTiempo(); aviso("Alarma a las " + hora + ".");
+          guardar(); pintarTiempo(); aviso(L("Alarma a las ", "Alarm at ", "闹钟设为 ") + hora + ".");
         }
       });
       if (formAlarmaId) {
@@ -2546,10 +2578,10 @@
       });
       $("#alarma-lista").innerHTML = (estado.alarmas || []).length ? estado.alarmas.map(function (a) {
         return '<div class="alarma-item' + (a.activa ? "" : " off") + '"><b>' + esc(a.hora) + "</b><span>" + esc(a.texto) + "</span>" +
-          '<button class="btn btn--chico" type="button" data-alarma-toggle="' + esc(a.id) + '">' + (a.activa ? "Activa" : "Apagada") + "</button>" +
-          '<button class="calif-x" type="button" data-alarma-editar="' + esc(a.id) + '" title="Editar alarma" aria-label="Editar alarma">✎</button>' +
-          '<button class="calif-x" type="button" data-alarma-borrar="' + esc(a.id) + '" title="Quitar alarma" aria-label="Quitar alarma">×</button></div>';
-      }).join("") : '<p class="muted">Sin alarmas.</p>';
+          '<button class="btn btn--chico" type="button" data-alarma-toggle="' + esc(a.id) + '">' + esc(a.activa ? L("Activa", "Active", "启用") : L("Apagada", "Off", "关闭")) + "</button>" +
+          '<button class="calif-x" type="button" data-alarma-editar="' + esc(a.id) + '" title="' + esc(L("Editar alarma", "Edit alarm", "编辑闹钟")) + '" aria-label="' + esc(L("Editar alarma", "Edit alarm", "编辑闹钟")) + '">✎</button>' +
+          '<button class="calif-x" type="button" data-alarma-borrar="' + esc(a.id) + '" title="' + esc(L("Quitar alarma", "Remove alarm", "移除闹钟")) + '" aria-label="' + esc(L("Quitar alarma", "Remove alarm", "移除闹钟")) + '">×</button></div>';
+      }).join("") : '<p class="muted">' + esc(L("Sin alarmas.", "No alarms.", "没有闹钟。")) + '</p>';
       $$("#alarma-lista [data-alarma-editar]").forEach(function (b) {
         b.addEventListener("click", function () {
           var a = estado.alarmas.filter(function (x) { return x.id === b.getAttribute("data-alarma-editar"); })[0];
@@ -2557,7 +2589,7 @@
           formAlarmaId = a.id;
           $("#alarma-hora").value = a.hora; $("#alarma-texto").value = a.texto;
           $("#alarma-hora").focus();
-          aviso("Editando la alarma de las " + a.hora + ". Guarda para aplicar.");
+          aviso(L("Editando la alarma de las ", "Editing the alarm at ", "正在编辑闹钟 ") + a.hora + L(". Guarda para aplicar.", ". Save to apply.", "。保存后生效。"));
         });
       });
       $$("#alarma-lista [data-alarma-toggle]").forEach(function (b) {
@@ -2569,22 +2601,22 @@
       $$("#alarma-lista [data-alarma-borrar]").forEach(function (b) {
         b.addEventListener("click", function () {
           estado.alarmas = estado.alarmas.filter(function (x) { return x.id !== b.getAttribute("data-alarma-borrar"); });
-          guardar(); pintarTiempo(); aviso("Alarma quitada.");
+          guardar(); pintarTiempo(); aviso(L("Alarma quitada.", "Alarm removed.", "闹钟已移除。"));
         });
       });
     } else if (cfg && estado.tiempoModo === "crono") {
-      cfg.innerHTML = '<p class="muted">Cuenta hacia arriba. Al parar, la sesión se guarda con el ramo y la tarea elegidos.</p>';
+      cfg.innerHTML = '<p class="muted">' + esc(L("Cuenta hacia arriba. Al parar, la sesión se guarda con el ramo y la tarea elegidos.", "Counts up. When you stop, the session is saved with the chosen course and task.", "向上计时。停止时会用所选课程和任务保存会话。")) + '</p>';
     }
     var v = $("#tiempo-vinculo");
     if (v) {
-      var ops = ['<option value="">Sin vínculo</option>'];
+      var ops = ['<option value="">' + esc(L("Sin vínculo", "No link", "无关联")) + '</option>'];
       estado.tareas.forEach(function (t) { ops.push('<option value="' + t.id + '">' + esc(t.titulo) + "</option>"); });
       v.innerHTML = ops.join(""); v.value = estado.tiempoVinculo || "";
       v.onchange = function () { estado.tiempoVinculo = v.value; guardar(); };
     }
     var r = $("#tiempo-ramo");
     if (r) {
-      var opsR = ['<option value="">Sin ramo</option>'];
+      var opsR = ['<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>'];
       (estado.cursos || []).forEach(function (c) { opsR.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
       r.innerHTML = opsR.join(""); r.value = estado.tiempoRamo || "";
       r.onchange = function () { estado.tiempoRamo = r.value; guardar(); };
@@ -2598,12 +2630,12 @@
       listaSes.innerHTML = ses.length ? ses.map(function (x) {
         var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
         var ram = x.ramo ? ramoPorCodigo(x.ramo) : null;
-        return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="Clic derecho: editar o borrar"><span><b>' +
+        return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' +
           esc(fechaCorta(x.fecha)) + "</b>" + (ram ? " · " + esc(ram.codigo) : "") + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
           esc(fmtDuracion(x.minutos)) + "</small>" +
-          '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="Editar sesión" aria-label="Editar sesión">✎</button>' +
-          '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="Borrar sesión" aria-label="Borrar sesión">×</button></div>';
-      }).join("") : '<p class="muted">Sin sesiones todavía.</p>';
+          '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+          '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+      }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + '</p>';
       $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
         b.addEventListener("click", function () { borrarSesion(b.getAttribute("data-borrar-sesion")); });
       });
@@ -2647,7 +2679,7 @@
       if (tempSeg <= 0) {
         tempSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
         registrarSesion(tempInicial / 60, "temporizador");
-        aviso("Temporizador terminado. Sesión registrada."); pitido(); pintarTiempo(); return;
+        aviso(L("Temporizador terminado. Sesión registrada.", "Timer finished. Session logged.", "计时结束。会话已记录。")); pitido(); pintarTiempo(); return;
       }
     } else if (modo === "pomodoro") {
       pomoSeg--;
@@ -2657,10 +2689,10 @@
           registrarSesion(pomoInicial / 60, "pomodoro");
           estado.pomo.trabajos = (estado.pomo.trabajos || 0) + 1;
           estado.pomo.fase = estado.pomo.trabajos % (estado.pomo.cada || 4) === 0 ? "largo" : "corto";
-          aviso("Pomodoro completado. Descansa: " + estado.pomo.fase + ".");
+          aviso(L("Pomodoro completado. Descansa: ", "Pomodoro complete. Rest: ", "番茄钟完成。休息：") + (estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息")) + ".");
         } else {
           estado.pomo.fase = "trabajo";
-          aviso("Pausa terminada. Vuelve al trabajo.");
+          aviso(L("Pausa terminada. Vuelve al trabajo.", "Break over. Back to work.", "休息结束。回到工作。"));
         }
         guardar(); pitido(); pintarTiempo(); return;
       }
@@ -2711,11 +2743,11 @@
     var hoy = hoyISO();
     (estado.alarmas || []).forEach(function (a) {
       if (!a.activa || a.hora !== hh || a.ultima === hoy) return;
-      a.ultima = hoy; guardar(); aviso("Alarma: " + a.texto); pitido();
+      a.ultima = hoy; guardar(); aviso(L("Alarma: ", "Alarm: ", "闹钟：") + a.texto); pitido();
       try {
         if (estado.prefs.notificaciones !== false && typeof Notification !== "undefined") {
           if (Notification.permission === "granted") {
-            new Notification("Mimo · alarma", { body: a.texto, tag: "mimo-" + a.id });
+            new Notification("Mimo · " + L("alarma", "alarm", "闹钟"), { body: a.texto, tag: "mimo-" + a.id });
           } else if (Notification.permission === "default") {
             Notification.requestPermission();
           }
@@ -2725,8 +2757,8 @@
   }
   function tarjetaPanel(id) {
     var b = BLOQUES[id] || { nombre: nombre(id), desc: "Sección base." };
-    return '<div class="panel__bloque"><span>' + esc(b.nombre) + "</span><small>" +
-      (BASE.indexOf(id) !== -1 ? "base" : "instalado") + "</small></div>";
+    return '<div class="panel__bloque"><span>' + esc(nombre(id)) + "</span><small>" +
+      (BASE.indexOf(id) !== -1 ? L("base", "base", "基础") : L("instalado", "installed", "已安装")) + "</small></div>";
   }
   function panelTab() { return estado.panel[pantalla] || "contexto"; }
   function notasEnlazadasA(tipo, id) {
@@ -2763,23 +2795,23 @@
       var ramo = ramoPorCodigo(estado.ramoSel);
       if (pantalla === "calificaciones" && ramo) {
         var qc = califDe(ramo.codigo), estC = estadoCalifDe(qc, ramo);
-        html = "<h2>Calificaciones</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
-          '<div class="panel__bloque"><span>Presentación</span><small>' + fmtNota(presentacionDe(qc)) + "</small></div>" +
-          '<div class="panel__bloque"><span>Final</span><small>' + fmtNota(notaFinalDe(qc)) + "</small></div>" +
-          '<div class="panel__bloque"><span>Estado</span><small>' + esc(estC.texto) + "</small></div>" +
-          '<div class="panel__bloque"><span>Componentes</span><small>' + qc.componentes.length + " · " + qc.categorias.length + " categorías</small></div>" +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">Abrir</button></div>';
+        html = "<h2>" + esc(L("Calificaciones", "Grades", "成绩")) + "</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
+          '<div class="panel__bloque"><span>' + esc(L("Presentación", "Presentation", "平时成绩")) + '</span><small>' + fmtNota(presentacionDe(qc)) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(L("Final", "Final", "最终")) + '</span><small>' + fmtNota(notaFinalDe(qc)) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(L("Estado", "Status", "状态")) + '</span><small>' + esc(estC.texto) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(L("Componentes", "Components", "评分项")) + '</span><small>' + qc.componentes.length + " · " + qc.categorias.length + " " + esc(L("categorías", "categories", "分类")) + "</small></div>" +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Abrir", "Open", "打开")) + '</button></div>';
       } else if (pantalla === "malla" && ramo) {
         var estR = estadoDeRamo(ramo), faltanR = faltantesDe(ramo), reqR = requisitosTexto(ramo);
-        html = "<h2>Ramo</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
-          '<div class="panel__bloque"><span>Estado</span><small>' + esc(estR) + "</small></div>" +
-          '<div class="panel__bloque"><span>Créditos</span><small>' + creditosDe(ramo) + "</small></div>" +
-          '<div class="panel__bloque"><span>Nivel</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +
-          (reqR ? '<div class="panel__bloque"><span>Requiere</span><small>' + esc(reqR) + "</small></div>" : "") +
-          (faltanR.length ? '<h2>Falta</h2><p class="panel__nota">' + esc(faltanR.join(", ")) + "</p>" : "") +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">Editar</button>' +
-          '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? "Reabrir" : "Cerrar curso") + "</button>" +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">Borrar</button></div>';
+        html = "<h2>" + esc(L("Ramo", "Course", "课程")) + "</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
+          '<div class="panel__bloque"><span>' + esc(L("Estado", "Status", "状态")) + '</span><small>' + esc(etiquetaEstado(estR)) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(L("Créditos", "Credits", "学分")) + '</span><small>' + creditosDe(ramo) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(L("Nivel", "Level", "层级")) + '</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +
+          (reqR ? '<div class="panel__bloque"><span>' + esc(L("Requiere", "Requires", "需要")) + '</span><small>' + esc(reqR) + "</small></div>" : "") +
+          (faltanR.length ? '<h2>' + esc(L("Falta", "Missing", "缺少")) + '</h2><p class="panel__nota">' + esc(faltanR.join(", ")) + "</p>" : "") +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程")) + "</button>" +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
       } else if (pantalla === "calendario" && ev) {
         html = "<h2>" + esc(t("panel.evento")) + "</h2><h3>" + esc(ev.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(ev.fecha) + "</small></div>" +
@@ -2794,7 +2826,7 @@
         html = "<h2>" + esc(t(tareaP.tipo === "proyecto" ? "panel.proyecto" : "panel.tarea")) + "</h2><h3>" + esc(tareaP.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(t(tareaP.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
-          '<div class="panel__bloque"><span>' + esc(t("panel.prioridad")) + '</span><small>' + esc(tareaP.prioridad) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.prioridad")) + '</span><small>' + esc(etiquetaPrioridad(tareaP.prioridad)) + "</small></div>" +
           (tareaP.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(tareaP.contexto) + "</small></div>" : "") +
           (padre ? '<div class="panel__bloque"><span>' + esc(t("panel.dentroDe")) + '</span><small>' + esc(padre.titulo) + "</small></div>" : "") +
           (tareaP.tipo === "proyecto" ? '<h2>' + esc(t("panel.progreso")) + '</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + esc(tf("panel.progresoTareas", { hechas: p.hechas, total: p.total })) + "</p>" +
@@ -2806,36 +2838,36 @@
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + tareaP.id + '">' + esc(t("acc.borrar")) + "</button></div>";
 
       } else if (pantalla === "notas" && n) {
-        html = "<h2>Detalle de la nota</h2><h3>" + (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") +
-          '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>" +
-          (n.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(n.contexto) + "</small></div>" : "") +
-          (n.etiquetas.length ? '<div class="panel__bloque"><span>Etiquetas</span><small>' + esc(n.etiquetas.join(", ")) + "</small></div>" : "") +
-          (n.enlaces.length ? '<div class="panel__bloque"><span>Enlazada a</span><small><button class="btn btn--chico" type="button" data-abrir-enlace="' + esc(n.enlaces[0].tipo) + ':' + esc(n.enlaces[0].id) + '">' + esc(n.enlaces[0].titulo) + "</button></small></div>" : "") +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">Abrir</button>' +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">Borrar</button></div>';
+        html = "<h2>" + esc(L("Detalle de la nota", "Note details", "笔记详情")) + "</h2><h3>" + (n.fijada ? "★ " : "") + esc(!n.titulo || n.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : n.titulo) +
+          '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || L("Vacía", "Empty", "空白")) + "</p>" +
+          (n.contexto ? '<div class="panel__bloque"><span>' + esc(L("Contexto", "Context", "情境")) + '</span><small>' + esc(n.contexto) + "</small></div>" : "") +
+          (n.etiquetas.length ? '<div class="panel__bloque"><span>' + esc(L("Etiquetas", "Tags", "标签")) + '</span><small>' + esc(n.etiquetas.join(", ")) + "</small></div>" : "") +
+          (n.enlaces.length ? '<div class="panel__bloque"><span>' + esc(L("Enlazada a", "Linked to", "链接到")) + '</span><small><button class="btn btn--chico" type="button" data-abrir-enlace="' + esc(n.enlaces[0].tipo) + ':' + esc(n.enlaces[0].id) + '">' + esc(n.enlaces[0].titulo) + "</button></small></div>" : "") +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">' + esc(L("Abrir", "Open", "打开")) + '</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
       } else {
         html = '<h2>' + esc(t("panel.detalle")) + '</h2><p class="panel__nota">' + esc(t("panel.detalleVacio")) + '</p>';
       }
     } else if (tab === "notas") {
       var nn = notaActual();
-      html = '<h2>Nota abierta</h2>' + (nn
-        ? "<h3>" + esc(nn.titulo || "Sin título") + '</h3><p class="panel__nota">' + esc((nn.cuerpo || "").slice(0, 240) || "Vacía") + "</p>"
-        : '<p class="panel__nota">Sin nota abierta. Crea una en Notas.</p>');
+      html = '<h2>' + esc(L("Nota abierta", "Open note", "打开的笔记")) + '</h2>' + (nn
+        ? "<h3>" + esc(!nn.titulo || nn.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : nn.titulo) + '</h3><p class="panel__nota">' + esc((nn.cuerpo || "").slice(0, 240) || L("Vacía", "Empty", "空白")) + "</p>"
+        : '<p class="panel__nota">' + esc(L("Sin nota abierta. Crea una en Notas.", "No note open. Create one in Notes.", "没有打开的笔记。请在笔记中创建。")) + '</p>');
     } else if (tab === "bloques") {
-      html = '<h2>Base fija</h2>' + ["calendario", "tareas", "notas", "ajustes"].map(tarjetaPanel).join("") +
-        '<h2>Instalados</h2>' + (estado.instalados.length ? estado.instalados.map(tarjetaPanel).join("")
-          : '<p class="panel__nota">Ninguno. La app funciona solo con la base.</p>') +
-        '<button class="btn panel__anadir" type="button" data-abrir-modal>+ Agregar bloque o kit</button>';
+      html = '<h2>' + esc(L("Base fija", "Fixed base", "固定基础")) + '</h2>' + ["calendario", "tareas", "notas", "ajustes"].map(tarjetaPanel).join("") +
+        '<h2>' + esc(L("Instalados", "Installed", "已安装")) + '</h2>' + (estado.instalados.length ? estado.instalados.map(tarjetaPanel).join("")
+          : '<p class="panel__nota">' + esc(L("Ninguno. La app funciona solo con la base.", "None. The app works with the base alone.", "没有。应用仅靠基础模块也能运行。")) + '</p>') +
+        '<button class="btn panel__anadir" type="button" data-abrir-modal>' + esc(L("+ Agregar bloque o kit", "+ Add block or kit", "+ 添加模块或套件")) + '</button>';
     } else {
       var cuentas = {
         calendario: [estado.eventos.length + " " + t(estado.eventos.length === 1 ? "cal.evento" : "cal.eventos"), estado.eventos.length ? t("panel.proximoEvento") : t("panel.sinEventos")],
-        tareas: [estado.tareas.length + " tareas", estado.tareas.filter(function (x) { return !x.hecha; }).length + " abiertas"],
-        notas: [estado.notas.length + " notas", "Lista y editor en la misma sección."],
-        malla: [(estado.cursos || []).length + " ramos", "Cursos, niveles, prerrequisitos y créditos."],
-        calificaciones: [(estado.cursos || []).length + " ramos", "Notas por categoría, examen y eximición."],
-        estudio: [(estado.sesiones || []).length + " sesiones", "Horas por ramo y meta semanal."],
-        tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
-        ajustes: [TEMAS.length + " temas", "Apariencia, paneles, bloques y laboratorio."]
+        tareas: [estado.tareas.length + " " + L("tareas", "tasks", "任务"), estado.tareas.filter(function (x) { return !x.hecha; }).length + " " + L("abiertas", "open", "未完成")],
+        notas: [estado.notas.length + " " + L("notas", "notes", "笔记"), L("Lista y editor en la misma sección.", "List and editor in the same section.", "列表和编辑器在同一分区。")],
+        malla: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Cursos, niveles, prerrequisitos y créditos.", "Courses, levels, prerequisites and credits.", "课程、层级、先修要求和学分。")],
+        calificaciones: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Notas por categoría, examen y eximición.", "Grades by category, exam and exemption.", "按分类、考试和免考计算成绩。")],
+        estudio: [(estado.sesiones || []).length + " " + L("sesiones", "sessions", "会话"), L("Horas por ramo y meta semanal.", "Hours per course and weekly goal.", "按课程小时和每周目标。")],
+        tiempo: [estado.tiempoHijos.length + " " + L("bloques dentro", "blocks inside", "个模块"), L("Cronómetro, temporizador, pomodoro y alarmas.", "Stopwatch, timer, pomodoro and alarms.", "秒表、计时器、番茄钟和闹钟。")],
+        ajustes: [TEMAS.length + " " + L("temas", "themes", "主题"), L("Apariencia, paneles, bloques y laboratorio.", "Appearance, panels, blocks and lab.", "外观、面板、模块和实验室。")]
       }[pantalla] || [t("panel.sinContexto"), t("panel.estaSeccion")];
       html = "<h2>" + esc(nombre(pantalla)) + '</h2><p class="panel__nota">' + esc(cuentas[1]) +
         '</p><div class="panel__bloque"><span>' + esc(t("panel.ahora")) + '</span><small>' + esc(cuentas[0]) + "</small></div>";
@@ -2936,12 +2968,30 @@
       var v = t(el.getAttribute("data-i18n-aria"));
       if (v) el.setAttribute("aria-label", v);
     });
+    var suf = idioma() === "zh" ? "zh" : idioma() === "en" ? "en" : "es";
+    $$("[data-l10n-es]").forEach(function (el) {
+      var v = el.getAttribute("data-l10n-" + suf) || el.getAttribute("data-l10n-es");
+      if (v != null) el.textContent = v;
+    });
+    $$("[data-l10n-ph-es]").forEach(function (el) {
+      var v = el.getAttribute("data-l10n-ph-" + suf) || el.getAttribute("data-l10n-ph-es");
+      if (v != null) el.setAttribute("placeholder", v);
+    });
+    $$("[data-l10n-aria-es]").forEach(function (el) {
+      var v = el.getAttribute("data-l10n-aria-" + suf) || el.getAttribute("data-l10n-aria-es");
+      if (v != null) el.setAttribute("aria-label", v);
+    });
+    $$("[data-l10n-title-es]").forEach(function (el) {
+      var v = el.getAttribute("data-l10n-title-" + suf) || el.getAttribute("data-l10n-title-es");
+      if (v != null) el.setAttribute("title", v);
+    });
     pintarBandera();
     pintarTabs();
   }
   function repintarIdioma() {
     aplicarIdioma();
     pintarTemaIcono();
+    pintarTemas();
     pintarPeriodo();
     pintarCalendario();
     pintarTareas();
@@ -2956,11 +3006,11 @@
   }
   function pintarAjustes() {
     var p = estado.prefs || {};
-    var b = $("#ajustes-bloques"); if (b) b.textContent = estado.instalados.length + " bloques instalados.";
+    var b = $("#ajustes-bloques"); if (b) b.textContent = estado.instalados.length + " " + L("bloques instalados.", "blocks installed.", "个模块已安装。");
     var r = $("#ajustes-resumen");
-    if (r) r.textContent = estado.tareas.length + " tareas · " + estado.eventos.length + " eventos · " + estado.notas.length + " notas · " + (estado.cursos || []).length + " ramos · " + (estado.periodos || []).length + " periodos.";
+    if (r) r.textContent = estado.tareas.length + " " + L("tareas", "tasks", "任务") + " · " + estado.eventos.length + " " + L("eventos", "events", "事件") + " · " + estado.notas.length + " " + L("notas", "notes", "笔记") + " · " + (estado.cursos || []).length + " " + L("ramos", "courses", "门课程") + " · " + (estado.periodos || []).length + " " + L("periodos", "terms", "学期") + ".";
     var d = $("#ajustes-datos");
-    if (d) d.textContent = "Datos en este equipo: " + estado.tareas.length + " tareas, " + estado.eventos.length + " eventos, " + estado.notas.length + " notas, " + (estado.cursos || []).length + " ramos. Nada sale de aquí.";
+    if (d) d.textContent = L("Datos en este equipo: ", "Data on this device: ", "此设备上的数据：") + estado.tareas.length + " " + L("tareas", "tasks", "任务") + ", " + estado.eventos.length + " " + L("eventos", "events", "事件") + ", " + estado.notas.length + " " + L("notas", "notes", "笔记") + ", " + (estado.cursos || []).length + " " + L("ramos", "courses", "门课程") + ". " + L("Nada sale de aquí.", "Nothing leaves this device.", "不会离开此设备。");
     var pl = $("#ajustes-periodos");
     if ($("#ajustes-idioma")) {
       var nombres = { es: "Español (Latinoamérica)", en: "English", zh: "中文（简体）" };
@@ -2974,10 +3024,10 @@
     if (pl) {
       pl.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
         return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + x.semanas.length + ' semanas</small></span>' +
-          '<span class="fila"><button class="btn btn--chico" type="button" data-periodo-aj="' + x.id + '">Usar</button>' +
-          '<button class="btn btn--chico" type="button" data-editar-periodo="' + x.id + '">Editar</button>' +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">Borrar</button></span></div>';
-      }).join("") : '<p class="muted">Sin periodos. Crea el primero.</p>';
+          '<span class="fila"><button class="btn btn--chico" type="button" data-periodo-aj="' + x.id + '">' + esc(L("Usar", "Use", "使用")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-editar-periodo="' + x.id + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></span></div>';
+      }).join("") : '<p class="muted">' + esc(L("Sin periodos. Crea el primero.", "No terms. Create the first one.", "没有学期。创建第一个。")) + '</p>';
       $$("#ajustes-periodos [data-periodo-aj]").forEach(function (x) {
         x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo-aj"); guardar(); pintarPeriodo(); pintarAjustes(); });
       });
@@ -3009,13 +3059,13 @@
     var lista = $("#periodos-lista");
     if (lista) {
       lista.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
-        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + esc(x.inicio) + " · " + x.semanas.length + " semanas</small></span>" +
-          '<span class="fila"><button class="btn btn--chico" type="button" data-periodo="' + x.id + '">Usar</button>' +
-          '<button class="btn btn--chico" type="button" data-editar-periodo="' + x.id + '">Editar</button>' +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">Borrar</button></span></div>';
-      }).join("") : '<p class="muted">Todavía no hay periodos.</p>';
+        return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + esc(x.inicio) + " · " + x.semanas.length + " " + L("semanas", "weeks", "周") + '</small></span>' +
+          '<span class="fila"><button class="btn btn--chico" type="button" data-periodo="' + x.id + '">' + esc(L("Usar", "Use", "使用")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-editar-periodo="' + x.id + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-periodo="' + x.id + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></span></div>';
+      }).join("") : '<p class="muted">' + esc(L("Todavía no hay periodos.", "No terms yet.", "还没有学期。")) + '</p>';
       $$("#periodos-lista [data-periodo]").forEach(function (x) {
-        x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo"); guardar(); pintarPeriodo(); aviso("Periodo activo."); });
+        x.addEventListener("click", function () { estado.periodoActivo = x.getAttribute("data-periodo"); guardar(); pintarPeriodo(); aviso(L("Periodo activo.", "Term set active.", "学期已设为当前。")); });
       });
       $$("#periodos-lista [data-editar-periodo]").forEach(function (x) {
         x.addEventListener("click", function () { abrirPeriodo(x.getAttribute("data-editar-periodo")); });
@@ -3027,7 +3077,7 @@
     pintarCalendario();
   }
   function tipoSemanaTexto(t) {
-    return t === "receso" ? "Receso" : t === "examenes" ? "Exámenes" : "Clases";
+    return t === "receso" ? L("Receso", "Break", "假期") : t === "examenes" ? L("Exámenes", "Exams", "考试") : L("Clases", "Classes", "课程");
   }
   function siguienteTipoSemana(t) {
     return t === "clases" ? "receso" : t === "receso" ? "examenes" : "clases";
@@ -3051,7 +3101,7 @@
     c.innerHTML = mapaPeriodo.map(function (w, i) {
       var d = new Date(base.getTime()); d.setDate(d.getDate() + i * 7);
       var etiqueta = d.getDate() + "/" + (d.getMonth() + 1);
-      return '<button class="semana-chip tipo-' + w.tipo + '" type="button" data-mapa-semana="' + i + '" title="Clic para cambiar el tipo">' +
+      return '<button class="semana-chip tipo-' + w.tipo + '" type="button" data-mapa-semana="' + i + '" title="' + esc(L("Clic para cambiar el tipo", "Click to change the type", "点击更改类型")) + '">' +
         "<b>S" + (i + 1) + "</b><span>" + tipoSemanaTexto(w.tipo) + "</span><small>" + etiqueta + "</small></button>";
     }).join("");
     $$("#periodo-mapa [data-mapa-semana]").forEach(function (b) {
@@ -3077,14 +3127,14 @@
     if (!w) return;
     w.tipo = siguienteTipoSemana(w.tipo || "clases");
     guardar(); pintarPeriodo();
-    aviso("Semana marcada como " + tipoSemanaTexto(w.tipo).toLowerCase() + ".");
+    aviso(L("Semana marcada como ", "Week marked as ", "已标记为 ") + tipoSemanaTexto(w.tipo).toLowerCase() + ".");
   }
   function abrirPeriodo(id) {
     if (typeof id !== "string") id = null;
     formPeriodoId = id;
     var p = id ? (estado.periodos || []).filter(function (x) { return x.id === id; })[0] : null;
-    $("#periodo-tit").textContent = p ? "Editar periodo" : "Nuevo periodo";
-    $("#periodo-form button[type=submit]").textContent = p ? "Guardar periodo" : "Crear periodo";
+    $("#periodo-tit").textContent = p ? L("Editar periodo", "Edit term", "编辑学期") : L("Nuevo periodo", "New term", "新建学期");
+    $("#periodo-form button[type=submit]").textContent = p ? L("Guardar periodo", "Save term", "保存学期") : L("Crear periodo", "Create term", "创建学期");
     $("#periodo-nombre").value = p ? p.nombre : "";
     $("#periodo-inicio").value = p ? (p.inicio || hoyISO()) : hoyISO();
     var semanas = p && Array.isArray(p.semanas) ? p.semanas : [];
@@ -3104,8 +3154,8 @@
     $("#modal-periodo").classList.remove("on");
     formPeriodoId = null;
     mapaPeriodo = null;
-    $("#periodo-tit").textContent = "Nuevo periodo";
-    $("#periodo-form button[type=submit]").textContent = "Crear periodo";
+    $("#periodo-tit").textContent = L("Nuevo periodo", "New term", "新建学期");
+    $("#periodo-form button[type=submit]").textContent = L("Crear periodo", "Create term", "创建学期");
   }
 
   /* ---- U6: buscador global ---- */
@@ -3121,22 +3171,22 @@
     }
     (estado.tareas || []).forEach(function (t) {
       if (!tiene(t.titulo, t.contexto, t.nota)) return;
-      out.push({ tipo: "Tarea", titulo: t.titulo, sub: (t.tipo === "proyecto" ? "Proyecto" : "Tarea") + (t.fecha ? " · " + fechaCorta(t.fecha) : "") + (t.contexto ? " · " + t.contexto : ""),
+      out.push({ tipo: L("Tarea", "Task", "任务"), titulo: t.titulo, sub: (t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务")) + (t.fecha ? " · " + fechaCorta(t.fecha) : "") + (t.contexto ? " · " + t.contexto : ""),
         run: function () { abrirTarea(t.id); } });
     });
     (estado.notas || []).forEach(function (n) {
       if (!tiene(n.titulo, n.cuerpo, n.contexto, (n.etiquetas || []).join(" "))) return;
-      out.push({ tipo: "Nota", titulo: n.titulo || "Sin título", sub: (n.contexto || "Sin contexto") + " · " + ((n.cuerpo || "").slice(0, 45) || "Vacía"),
+      out.push({ tipo: L("Nota", "Note", "笔记"), titulo: n.titulo || L("Sin título", "Untitled", "无标题"), sub: (n.contexto || L("Sin contexto", "No context", "无情境")) + " · " + ((n.cuerpo || "").slice(0, 45) || L("Vacía", "Empty", "空白")),
         run: function () { abrirNota(n.id); } });
     });
     (estado.eventos || []).forEach(function (ev) {
       if (!tiene(ev.titulo, ev.contexto, ev.nota)) return;
-      out.push({ tipo: "Evento", titulo: ev.titulo, sub: ev.fecha + (ev.hora ? " · " + ev.hora : "") + (ev.contexto ? " · " + ev.contexto : ""),
+      out.push({ tipo: L("Evento", "Event", "事件"), titulo: ev.titulo, sub: ev.fecha + (ev.hora ? " · " + ev.hora : "") + (ev.contexto ? " · " + ev.contexto : ""),
         run: function () { abrirEventoDetalle(ev.id); } });
     });
     (estado.cursos || []).forEach(function (c) {
       if (!tiene(c.codigo, c.nombre)) return;
-      out.push({ tipo: "Ramo", titulo: c.codigo + " — " + c.nombre, sub: creditosDe(c) + " cr · " + estadoDeRamo(c),
+      out.push({ tipo: L("Ramo", "Course", "课程"), titulo: c.codigo + " — " + c.nombre, sub: creditosDe(c) + " cr · " + etiquetaEstado(estadoDeRamo(c)),
         run: function () {
           estado.ramoSel = c.codigo; estado.panel.malla = "detalle"; guardar();
           ir("malla"); pintarMalla(); pintarPanel();
@@ -3144,8 +3194,8 @@
     });
     (estado.periodos || []).forEach(function (p) {
       if (!tiene(p.nombre)) return;
-      out.push({ tipo: "Periodo", titulo: p.nombre, sub: p.semanas.length + " semanas · " + (p.id === estado.periodoActivo ? "activo" : "guardado"),
-        run: function () { estado.periodoActivo = p.id; guardar(); pintarPeriodo(); ir("calendario"); aviso("Periodo activo: " + p.nombre); } });
+      out.push({ tipo: L("Periodo", "Term", "学期"), titulo: p.nombre, sub: p.semanas.length + " " + L("semanas", "weeks", "周") + " · " + (p.id === estado.periodoActivo ? L("activo", "active", "当前") : L("guardado", "saved", "已保存")),
+        run: function () { estado.periodoActivo = p.id; guardar(); pintarPeriodo(); ir("calendario"); aviso(L("Periodo activo: ", "Active term: ", "当前学期：") + p.nombre); } });
     });
     return out.slice(0, 30);
   }
@@ -3155,17 +3205,17 @@
     var res = resultadosBusqueda(q);
     buscarAcciones = res.map(function (r) { return r.run; });
     if (!q) {
-      caja.innerHTML = '<div class="buscar-vacio"><b>Busca una cosa a la vez</b><p>Tareas, notas, eventos, ramos y periodos. Escribe al menos una letra.</p>' +
-        '<div class="buscar-resumen"><span>' + estado.tareas.length + " tareas</span><span>" + estado.notas.length + " notas</span><span>" +
-        estado.eventos.length + " eventos</span><span>" + (estado.cursos || []).length + " ramos</span></div></div>";
-      if ($("#buscar-sub")) $("#buscar-sub").textContent = "Tareas, notas, eventos, ramos y periodos.";
+      caja.innerHTML = '<div class="buscar-vacio"><b>' + esc(L("Busca una cosa a la vez", "Search one thing at a time", "一次搜索一件事")) + '</b><p>' + esc(L("Tareas, notas, eventos, ramos y periodos. Escribe al menos una letra.", "Tasks, notes, events, courses and terms. Type at least one letter.", "任务、笔记、事件、课程和学期。至少输入一个字母。")) + '</p>' +
+        '<div class="buscar-resumen"><span>' + estado.tareas.length + " " + L("tareas", "tasks", "任务") + '</span><span>' + estado.notas.length + " " + L("notas", "notes", "笔记") + '</span><span>' +
+        estado.eventos.length + " " + L("eventos", "events", "事件") + '</span><span>' + (estado.cursos || []).length + " " + L("ramos", "courses", "门课程") + '</span></div></div>';
+      if ($("#buscar-sub")) $("#buscar-sub").textContent = L("Tareas, notas, eventos, ramos y periodos.", "Tasks, notes, events, courses and terms.", "任务、笔记、事件、课程和学期。");
       return;
     }
-    if ($("#buscar-sub")) $("#buscar-sub").textContent = res.length + " resultado" + (res.length === 1 ? "" : "s") + ' para "' + q + '".';
+    if ($("#buscar-sub")) $("#buscar-sub").textContent = res.length + " " + L("resultados", "results", "条结果") + ' ' + L("para ", "for ", "：") + '"' + q + '".';
     caja.innerHTML = res.length ? res.map(function (r, i) {
       return '<button class="buscar-res" type="button" data-res="' + i + '" data-tipo="' + esc(r.tipo) + '"><span class="buscar-tipo">' + esc(r.tipo) +
         '</span><span class="buscar-txt"><b>' + esc(r.titulo) + "</b><small>" + esc(r.sub) + "</small></span><span class=\"buscar-flecha\">↵</span></button>";
-    }).join("") : '<div class="buscar-vacio"><b>Sin resultados</b><p>Prueba con el código del ramo, el título de la nota o el nombre de la tarea.</p></div>';
+    }).join("") : '<div class="buscar-vacio"><b>' + esc(L("Sin resultados", "No results", "没有结果")) + '</b><p>' + esc(L("Prueba con el código del ramo, el título de la nota o el nombre de la tarea.", "Try the course code, the note title or the task name.", "试试课程代码、笔记标题或任务名称。")) + '</p></div>';
   }
   function abrirBusqueda() {
     var m = $("#modal-buscar"); if (!m) return;
@@ -3207,23 +3257,23 @@
     var base = ["calendario", "tareas", "notas", "ajustes"];
     var html = base.map(function (id) {
       return '<article class="bcard"><div class="bcard__nom">' + esc(nombre(id)) +
-        ' <span class="pill">base</span></div><div class="bcard__desc">Sección fija. No se quita.</div>' +
-        '<div class="bcard__pie"><span>base fija</span><span class="pill">fija</span></div></article>';
+        ' <span class="pill">' + esc(L("base", "base", "基础")) + '</span></div><div class="bcard__desc">' + esc(L("Sección fija. No se quita.", "Fixed section. It cannot be removed.", "固定分区，不能移除。")) + '</div>' +
+        '<div class="bcard__pie"><span>' + esc(L("base fija", "fixed base", "固定基础")) + '</span><span class="pill">' + esc(L("fija", "fixed", "固定")) + '</span></div></article>';
     }).join("");
     html += ids.filter(function (id) { return id !== "evaluaciones"; }).map(function (id) {
       var b = BLOQUES[id];
       var esta = b.tipo === "pack" ? estaKit(id) : instalado(id);
       var accion = b.tipo === "pack"
         ? '<button class="btn btn--chico ' + (esta ? "btn-peligro" : "btn-primario") + '" type="button" data-' +
-          (esta ? "quitar" : "instalar") + '="' + id + '">' + (esta ? "Quitar kit" : "Instalar kit") + "</button>"
+          (esta ? "quitar" : "instalar") + '="' + id + '">' + (esta ? L("Quitar kit", "Remove kit", "移除套件") : L("Instalar kit", "Install kit", "安装套件")) + "</button>"
         : '<button class="btn btn--chico ' + (esta ? "btn-peligro" : "") + '" type="button" data-' +
-          (esta ? "quitar" : "instalar") + '="' + id + '">' + (esta ? "Quitar" : "Instalar") + "</button>";
-      return '<article class="bcard"><div class="bcard__nom">' + esc(b.nombre) +
-        ' <span class="pill">v1.0</span></div><div class="bcard__desc">' + esc(b.desc) +
-        '</div><div class="bcard__pie"><span>' + (b.tipo === "pack" ? "kit" : b.tipo) + "</span>" + accion + "</div></article>";
+          (esta ? "quitar" : "instalar") + '="' + id + '">' + (esta ? L("Quitar", "Remove", "移除") : L("Instalar", "Install", "安装")) + "</button>";
+      return '<article class="bcard"><div class="bcard__nom">' + esc(nombre(id)) +
+        ' <span class="pill">v1.0</span></div><div class="bcard__desc">' + esc(descripcionBloque(id)) +
+        '</div><div class="bcard__pie"><span>' + esc(b.tipo === "pack" ? L("kit", "kit", "套件") : b.tipo) + "</span>" + accion + "</div></article>";
     }).join("");
     $("#catalogo").innerHTML = html;
-    $("#modal-sub").textContent = estado.instalados.length + " bloques instalados · " + (ids.length + 4) + " en el catálogo";
+    $("#modal-sub").textContent = estado.instalados.length + " " + L("bloques instalados", "blocks installed", "个模块已安装") + " · " + (ids.length + 4) + " " + L("en el catálogo", "in the catalog", "个在目录中");
     $$("#catalogo [data-instalar]").forEach(function (x) {
       x.addEventListener("click", function () { instalar(x.getAttribute("data-instalar")); });
     });
@@ -3238,10 +3288,10 @@
       var faltan = b.instala.filter(function (h) { return !instalado(h); });
       faltan.forEach(function (h) { estado.instalados.push(h); });
       estado.kits[id] = (estado.kits[id] || []).concat(faltan);
-      aviso(faltan.length ? b.nombre + ": " + faltan.length + " bloque(s) agregado(s)." : b.nombre + " ya estaba completo.");
+      aviso(faltan.length ? nombre(id) + ": " + faltan.length + " " + L("bloque(s) agregado(s).", "block(s) added.", "个模块已添加。") : nombre(id) + " " + L("ya estaba completo.", "was already complete.", "已经完整。"));
     } else if (!instalado(id)) {
       estado.instalados.push(id);
-      aviso(b.nombre + " instalado. Aparece en la barra.");
+      aviso(nombre(id) + " " + L("instalado. Aparece en la barra.", "installed. It appears in the bar.", "已安装，会出现在栏中。"));
     }
     guardar(); pintarTabs(); pintarCatalogo(); pintarPanel();
     if (b.tipo === "seccion") ir(id);
@@ -3254,7 +3304,7 @@
     if (b.tipo === "pack") delete estado.kits[id];
     guardar(); pintarTabs(); pintarCatalogo(); pintarPanel();
     if (fuera.indexOf(pantalla) !== -1) ir("calendario");
-    aviso(b.nombre + " quitado. Tus datos se conservan.");
+    aviso(nombre(id) + " " + L("quitado. Tus datos se conservan.", "removed. Your data is preserved.", "已移除。你的数据保留。"));
   }
 
   function abrirPanel() {
@@ -3319,11 +3369,11 @@
     if (ids.indexOf(estado.splitSeccion) === -1) estado.splitSeccion = ids.filter(function (x) { return x !== pantalla; })[0] || "tareas";
     if (estado.splitSeccion === pantalla) estado.splitSeccion = ids.filter(function (x) { return x !== pantalla; })[0] || "tareas";
     sel.value = estado.splitSeccion;
-    if ($("#split-titulo")) $("#split-titulo").textContent = "Ventana derecha";
+    if ($("#split-titulo")) $("#split-titulo").textContent = L("Ventana derecha", "Right window", "右侧窗口");
     if (splitOn) moverSeccionSplit(estado.splitSeccion);
   }
   function abrirSplit() {
-    if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
+    if (window.innerWidth <= 1255) { aviso(L("La vista dividida necesita al menos 1256 px.", "Split view needs at least 1256 px.", "分屏视图至少需要 1256 px。")); return; }
     splitOn = true;
     document.body.classList.add("split");
     $("#contenido-b").hidden = false;
@@ -3346,7 +3396,7 @@
     if (splitOn) cerrarSplit(); else abrirSplitModal();
   }
   function abrirSplitModal() {
-    if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
+    if (window.innerWidth <= 1255) { aviso(L("La vista dividida necesita al menos 1256 px.", "Split view needs at least 1256 px.", "分屏视图至少需要 1256 px。")); return; }
     var izq = $("#split-izq"), der = $("#split-der");
     if (!izq || !der) return;
     var opciones = secciones().map(function (id) {
@@ -3368,7 +3418,7 @@
     var izq = $("#split-izq").value, der = $("#split-der").value;
     if (izq === der) {
       $("#split-aviso").hidden = false;
-      $("#split-aviso").textContent = "Elige dos secciones distintas para verlas al mismo tiempo.";
+      $("#split-aviso").textContent = L("Elige dos secciones distintas para verlas al mismo tiempo.", "Choose two different sections to see them at the same time.", "选择两个不同的分区以便同时查看。");
       return;
     }
     estado.splitSeccion = der;
@@ -3467,7 +3517,7 @@
       var blob = new Blob([JSON.stringify(estado, null, 2)], { type: "application/json" });
       var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "mimo-backup.json"; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-      aviso("Respaldo exportado.");
+      aviso(L("Respaldo exportado.", "Backup exported.", "备份已导出。"));
     });
     $("#btn-importar").addEventListener("click", function () { $("#archivo-importar").click(); });
     $("#archivo-importar").addEventListener("change", function (e) {
@@ -3482,18 +3532,18 @@
           } else if (x && typeof x === "object" && !Array.isArray(x)) {
             nuevo = x; origen = "MIMO";
           }
-          if (!nuevo) { aviso("Ese archivo no es un respaldo de MIMO."); return; }
-          if (!window.confirm("Se reemplazarán los datos actuales por los de " + origen + ". ¿Continuar?")) return;
+          if (!nuevo) { aviso(L("Ese archivo no es un respaldo de MIMO.", "That file is not a MIMO backup.", "该文件不是 MIMO 备份。")); return; }
+          if (!window.confirm(L("Se reemplazarán los datos actuales por los de " + origen + ". ¿Continuar?", "Current data will be replaced by " + origen + ". Continue?", "当前数据将被 " + origen + " 替换。继续？"))) return;
           reemplazarEstado(nuevo);
-          aviso("Importados " + estado.cursos.length + " ramos, " + estado.tareas.length + " tareas y " + estado.sesiones.length + " sesiones.");
-        } catch (err) { aviso("No se pudo importar el archivo."); }
+          aviso(L("Importados ", "Imported ", "已导入 ") + estado.cursos.length + L(" ramos, ", " courses, ", " 门课程、") + estado.tareas.length + L(" tareas y ", " tasks and ", " 个任务和 ") + estado.sesiones.length + L(" sesiones.", " sessions.", " 个会话。"));
+        } catch (err) { aviso(L("No se pudo importar el archivo.", "The file could not be imported.", "无法导入文件。")); }
       };
       lector.readAsText(f); e.target.value = "";
     });
     $("#btn-panel-ajustes").addEventListener("click", abrirPanel);
     $("#pie-panel").addEventListener("click", alternarPanel);
-    $("#pie-sync").addEventListener("click", function () { aviso("Guardado en este equipo. El respaldo es un archivo .json."); });
-    $("#pie-ayuda").addEventListener("click", function () { aviso("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10."); });
+    $("#pie-sync").addEventListener("click", function () { aviso(L("Guardado en este equipo. El respaldo es un archivo .json.", "Saved on this device. The backup is a .json file.", "已保存到本设备。备份是一个 .json 文件。")); });
+    $("#pie-ayuda").addEventListener("click", function () { aviso(L("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10.", "Right-click a note, task, event, term or session to open its actions and delete. Shift+F10 also works.", "右键点击笔记、任务、事件、学期或会话可打开操作并删除。也可按 Shift+F10。")); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });
 
@@ -3608,13 +3658,13 @@
       normalizarEstudio();
       var fecha = $("#est-fecha").value || hoyISO();
       var minutos = Math.min(1440, parseDuracion($("#est-minutos").value));
-      if (!minutos) { aviso("Escribe una duración: 90, 1:30 o 2:30:21."); return; }
+      if (!minutos) { aviso(L("Escribe una duración: 90, 1:30 o 2:30:21.", "Enter a duration: 90, 1:30 or 2:30:21.", "输入时长：90、1:30 或 2:30:21。")); return; }
       estado.sesiones.push({
         id: "s" + Date.now() + "-" + Math.floor(Math.random() * 1000),
         fecha: fecha, hora: "", minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "", tipo: "manual"
       });
       guardar(); pintarEstudio(); pintarTiempo();
-      aviso("Sesión de " + fmtDuracion(minutos) + " registrada.");
+      aviso(L("Sesión de ", "Session of ", "会话 ") + fmtDuracion(minutos) + L(" registrada.", " logged.", " 已记录。"));
     });
     $("#est-meta").addEventListener("change", function (e) {
       normalizarEstudio(); estado.estudio.metaSemanal = Math.max(0, Number(e.target.value) || 0);
@@ -3653,11 +3703,11 @@
       e.preventDefault();
       var cod = $("#ramo-codigo").value.trim().toUpperCase();
       var nombre = $("#ramo-nombre").value.trim();
-      if (!cod || !nombre) { aviso("Código y nombre son obligatorios."); return; }
+      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
       normalizarCursos();
       var original = formRamoId ? ramoPorCodigo(formRamoId) : null;
       var choque = ramoPorCodigo(cod);
-      if (choque && (!original || choque.codigo !== original.codigo)) { aviso("Ese código ya existe."); return; }
+      if (choque && (!original || choque.codigo !== original.codigo)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
       var reqs = $("#ramo-requisitos").value.split(/[,;]+/).map(function (r) {
         return r.trim().toUpperCase();
       }).filter(function (r) { return r && r !== cod; });
@@ -3774,16 +3824,16 @@
       p.nombre = nombre; p.inicio = inicio; p.semanas = semanas;
       if (existente) {
         guardar(); pintarPeriodo(); cerrarPeriodo();
-        aviso("Periodo guardado: " + clases + " clases, " + receso + " receso, " + exam + " exámenes.");
+        aviso(L("Periodo guardado: ", "Term saved: ", "学期已保存：") + clases + L(" clases, ", " classes, ", " 节课程、") + receso + L(" receso, ", " break, ", " 周假期、") + exam + L(" exámenes.", " exams.", " 周考试。"));
       } else {
         estado.periodos = estado.periodos || []; estado.periodos.push(p); estado.periodoActivo = p.id;
         guardar(); pintarPeriodo(); cerrarPeriodo(); $("#periodo-nombre").value = "";
-        aviso("Periodo creado: " + clases + " clases, " + receso + " receso, " + exam + " exámenes.");
+        aviso(L("Periodo creado: ", "Term created: ", "学期已创建：") + clases + L(" clases, ", " classes, ", " 节课程、") + receso + L(" receso, ", " break, ", " 周假期、") + exam + L(" exámenes.", " exams.", " 周考试。"));
       }
     });
     $("#split-seccion").addEventListener("change", function (e) {
       if (e.target.value === pantalla) {
-        aviso("Esa sección ya está en la ventana izquierda.");
+        aviso(L("Esa sección ya está en la ventana izquierda.", "That section is already in the left window.", "该分区已在左侧窗口。"));
         e.target.value = estado.splitSeccion;
         return;
       }
@@ -3835,7 +3885,7 @@
       $("#evento-form").hidden = true;
       formEventoId = null;
       guardar(); pintarCalendario(); pintarPanel();
-      aviso("Evento guardado.");
+      aviso(L("Evento guardado.", "Event saved.", "事件已保存。"));
     });
     $$("#vista-calendario button").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -3885,6 +3935,8 @@
     guardar();
     setTimeout(quitarCarga, 30);
   }
+
+  window.MimoI18n = { L: L, idioma: idioma, t: t };
 
   window.MimoHost = {
     snapshot: function () { return JSON.parse(JSON.stringify(estado)); },

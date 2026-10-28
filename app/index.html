@@ -136,39 +136,39 @@
       <div class="sec-cab">
         <div><h1 data-i18n="nav.tareas">Tareas</h1><p class="sec-sub" data-i18n="sub.tareas">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
         <div class="sec-acciones">
-          <div class="conmutador" id="vista-tareas" role="group" aria-label="Vista de tareas"><button type="button" class="on" data-vista="hoy">Hoy</button><button type="button" data-vista="arbol">Árbol</button><button type="button" data-vista="tablero">Tablero</button></div>
-          <button class="btn btn-primario" id="btn-nueva-tarea" type="button">+ Nueva tarea</button>
+          <div class="conmutador" id="vista-tareas" role="group" aria-label="Vista de tareas" data-l10n-aria-es="Vista de tareas" data-l10n-aria-en="Task view" data-l10n-aria-zh="任务视图"><button type="button" class="on" data-vista="hoy" data-l10n-es="Hoy" data-l10n-en="Today" data-l10n-zh="今天">Hoy</button><button type="button" data-vista="arbol" data-l10n-es="Árbol" data-l10n-en="Tree" data-l10n-zh="树状">Árbol</button><button type="button" data-vista="tablero" data-l10n-es="Tablero" data-l10n-en="Board" data-l10n-zh="看板">Tablero</button></div>
+          <button class="btn btn-primario" id="btn-nueva-tarea" type="button" data-l10n-es="+ Nueva tarea" data-l10n-en="+ New task" data-l10n-zh="+ 新建任务">+ Nueva tarea</button>
         </div>
       </div>
       <div class="kpis">
-        <div class="kpi"><b id="kpi-hoy">0</b><span>para hoy</span></div>
-        <div class="kpi"><b id="kpi-abiertas">0</b><span>abiertas</span></div>
-        <div class="kpi"><b id="kpi-hechas">0</b><span>hechas</span></div>
-        <div class="kpi"><b id="kpi-progreso">0 %</b><span>del total</span></div>
+        <div class="kpi"><b id="kpi-hoy">0</b><span data-l10n-es="para hoy" data-l10n-en="due today" data-l10n-zh="今日到期">para hoy</span></div>
+        <div class="kpi"><b id="kpi-abiertas">0</b><span data-l10n-es="abiertas" data-l10n-en="open" data-l10n-zh="未完成">abiertas</span></div>
+        <div class="kpi"><b id="kpi-hechas">0</b><span data-l10n-es="hechas" data-l10n-en="done" data-l10n-zh="已完成">hechas</span></div>
+        <div class="kpi"><b id="kpi-progreso">0 %</b><span data-l10n-es="del total" data-l10n-en="of total" data-l10n-zh="总计">del total</span></div>
       </div>
       <div class="card" data-ctx-zona="tareas">
         <form class="tarea-form" id="tarea-form" hidden>
-          <input class="entrada" id="tarea-titulo" type="text" placeholder="¿Qué hay que hacer?" aria-label="Título de la tarea" autocomplete="off">
-          <select class="entrada" id="tarea-tipo" aria-label="Tipo">
-            <option value="tarea">Tarea</option>
-            <option value="proyecto">Proyecto</option>
+          <input class="entrada" id="tarea-titulo" type="text" placeholder="¿Qué hay que hacer?" aria-label="Título de la tarea" data-l10n-ph-es="¿Qué hay que hacer?" data-l10n-ph-en="What needs doing?" data-l10n-ph-zh="要做什么？" data-l10n-aria-es="Título de la tarea" data-l10n-aria-en="Task title" data-l10n-aria-zh="任务标题" autocomplete="off">
+          <select class="entrada" id="tarea-tipo" aria-label="Tipo" data-l10n-aria-es="Tipo" data-l10n-aria-en="Type" data-l10n-aria-zh="类型">
+            <option value="tarea" data-l10n-es="Tarea" data-l10n-en="Task" data-l10n-zh="任务">Tarea</option>
+            <option value="proyecto" data-l10n-es="Proyecto" data-l10n-en="Project" data-l10n-zh="项目">Proyecto</option>
           </select>
-          <select class="entrada" id="tarea-padre" aria-label="Dentro de"></select>
-          <input class="entrada" id="tarea-fecha" type="date" aria-label="Fecha">
-          <select class="entrada" id="tarea-prioridad" aria-label="Prioridad">
-            <option value="alta">Alta</option>
-            <option value="media" selected>Media</option>
-            <option value="baja">Baja</option>
+          <select class="entrada" id="tarea-padre" aria-label="Dentro de" data-l10n-aria-es="Dentro de" data-l10n-aria-en="Inside" data-l10n-aria-zh="所属"></select>
+          <input class="entrada" id="tarea-fecha" type="date" aria-label="Fecha" data-l10n-aria-es="Fecha" data-l10n-aria-en="Date" data-l10n-aria-zh="日期">
+          <select class="entrada" id="tarea-prioridad" aria-label="Prioridad" data-l10n-aria-es="Prioridad" data-l10n-aria-en="Priority" data-l10n-aria-zh="优先级">
+            <option value="alta" data-l10n-es="Alta" data-l10n-en="High" data-l10n-zh="高">Alta</option>
+            <option value="media" selected data-l10n-es="Media" data-l10n-en="Medium" data-l10n-zh="中">Media</option>
+            <option value="baja" data-l10n-es="Baja" data-l10n-en="Low" data-l10n-zh="低">Baja</option>
           </select>
-          <input class="entrada" id="tarea-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
-          <button class="btn btn-primario" type="submit">Crear</button>
-          <button class="btn" type="button" id="tarea-cancelar">Cancelar</button>
+          <input class="entrada" id="tarea-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto" data-l10n-ph-es="Contexto (opcional)" data-l10n-ph-en="Context (optional)" data-l10n-ph-zh="情境（可选）" data-l10n-aria-es="Contexto" data-l10n-aria-en="Context" data-l10n-aria-zh="情境">
+          <button class="btn btn-primario" type="submit" data-l10n-es="Crear" data-l10n-en="Create" data-l10n-zh="创建">Crear</button>
+          <button class="btn" type="button" id="tarea-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
         </form>
         <div id="tareas-lista" class="tareas-lista" data-ctx-zona="tareas"></div>
         <div class="empty" id="tareas-vacio">
-          <h2>Sin tareas todavía</h2>
-          <p>Una tarea puede ser un proyecto: las tareas dentro suben su progreso.</p>
-          <button class="btn btn-primario" type="button" id="tareas-crear">Crear la primera tarea</button>
+          <h2 data-l10n-es="Sin tareas todavía" data-l10n-en="No tasks yet" data-l10n-zh="还没有任务">Sin tareas todavía</h2>
+          <p data-l10n-es="Una tarea puede ser un proyecto: las tareas dentro suben su progreso." data-l10n-en="A task can be a project: the tasks inside raise its progress." data-l10n-zh="任务可以是项目：里面的任务会提升进度。">Una tarea puede ser un proyecto: las tareas dentro suben su progreso.</p>
+          <button class="btn btn-primario" type="button" id="tareas-crear" data-l10n-es="Crear la primera tarea" data-l10n-en="Create the first task" data-l10n-zh="创建第一个任务">Crear la primera tarea</button>
         </div>
       </div>
     </section>
@@ -176,58 +176,58 @@
     <section class="seccion" data-pantalla="notas" id="p-notas" hidden>
       <div class="sec-cab">
         <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub" data-i18n="sub.notas">El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.</p></div>
-        <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button">+ Nueva nota</button></div>
+        <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button" data-l10n-es="+ Nueva nota" data-l10n-en="+ New note" data-l10n-zh="+ 新建笔记">+ Nueva nota</button></div>
       </div>
       <div class="notas-layout">
-        <aside class="notas-lista" aria-label="Lista de notas" data-ctx-zona="notas">
-          <input class="entrada" id="buscar-nota" type="search" placeholder="Buscar nota…" aria-label="Buscar nota">
-          <p class="nota-pista">Clic derecho: fijar o borrar.</p>
+        <aside class="notas-lista" aria-label="Lista de notas" data-ctx-zona="notas" data-l10n-aria-es="Lista de notas" data-l10n-aria-en="Notes list" data-l10n-aria-zh="笔记列表">
+          <input class="entrada" id="buscar-nota" type="search" placeholder="Buscar nota…" aria-label="Buscar nota" data-l10n-ph-es="Buscar nota…" data-l10n-ph-en="Search notes…" data-l10n-ph-zh="搜索笔记…" data-l10n-aria-es="Buscar nota" data-l10n-aria-en="Search note" data-l10n-aria-zh="搜索笔记">
+          <p class="nota-pista" data-l10n-es="Clic derecho: fijar o borrar." data-l10n-en="Right-click: pin or delete." data-l10n-zh="右键：置顶或删除。">Clic derecho: fijar o borrar.</p>
           <div id="notas-items"></div>
-          <p class="muted" id="notas-vacio">Sin notas todavía.</p>
+          <p class="muted" id="notas-vacio" data-l10n-es="Sin notas todavía." data-l10n-en="No notes yet." data-l10n-zh="还没有笔记。">Sin notas todavía.</p>
         </aside>
         <div class="nota-editor card">
-          <input class="nota-titulo" id="nota-titulo" type="text" placeholder="Título de la nota" aria-label="Título de la nota" disabled>
+          <input class="nota-titulo" id="nota-titulo" type="text" placeholder="Título de la nota" aria-label="Título de la nota" data-l10n-ph-es="Título de la nota" data-l10n-ph-en="Note title" data-l10n-ph-zh="笔记标题" data-l10n-aria-es="Título de la nota" data-l10n-aria-en="Note title" data-l10n-aria-zh="笔记标题" disabled>
           <div class="nota-toolbar">
-            <button class="btn btn--chico" id="nota-modo" type="button">Vista previa</button>
-            <button class="btn btn--chico" id="nota-fijar" type="button">Fijar</button>
-            <button class="btn btn--chico btn-peligro" id="btn-borrar-nota" type="button" disabled>Borrar</button>
-            <input class="entrada" id="nota-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
-            <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas">
-            <select class="entrada" id="nota-vinculo" aria-label="Enlazar a"><option value="">Enlazar a…</option></select>
+            <button class="btn btn--chico" id="nota-modo" type="button" data-l10n-es="Vista previa" data-l10n-en="Preview" data-l10n-zh="预览">Vista previa</button>
+            <button class="btn btn--chico" id="nota-fijar" type="button" data-l10n-es="Fijar" data-l10n-en="Pin" data-l10n-zh="置顶">Fijar</button>
+            <button class="btn btn--chico btn-peligro" id="btn-borrar-nota" type="button" data-l10n-es="Borrar" data-l10n-en="Delete" data-l10n-zh="删除" disabled>Borrar</button>
+            <input class="entrada" id="nota-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto" data-l10n-ph-es="Contexto (opcional)" data-l10n-ph-en="Context (optional)" data-l10n-ph-zh="情境（可选）" data-l10n-aria-es="Contexto" data-l10n-aria-en="Context" data-l10n-aria-zh="情境">
+            <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas" data-l10n-ph-es="Etiquetas: demo, idea" data-l10n-ph-en="Tags: demo, idea" data-l10n-ph-zh="标签：demo, idea" data-l10n-aria-es="Etiquetas" data-l10n-aria-en="Tags" data-l10n-aria-zh="标签">
+            <select class="entrada" id="nota-vinculo" aria-label="Enlazar a" data-l10n-aria-es="Enlazar a" data-l10n-aria-en="Link to" data-l10n-aria-zh="链接到"><option value="" data-l10n-es="Enlazar a…" data-l10n-en="Link to…" data-l10n-zh="链接到…">Enlazar a…</option></select>
           </div>
-          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe tu nota. Fórmulas: $...$ o $$...$$" aria-label="Cuerpo de la nota" disabled></textarea>
+          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe tu nota. Fórmulas: $...$ o $$...$$" aria-label="Cuerpo de la nota" data-l10n-ph-es="Escribe tu nota. Fórmulas: $...$ o $$...$$" data-l10n-ph-en="Write your note. Formulas: $...$ or $$...$$" data-l10n-ph-zh="写笔记。公式：$...$ 或 $$...$$" data-l10n-aria-es="Cuerpo de la nota" data-l10n-aria-en="Note body" data-l10n-aria-zh="笔记正文" disabled></textarea>
           <div id="nota-preview" class="nota-preview" hidden></div>
-          <p class="muted" id="nota-meta">Sin nota abierta.</p>
+          <p class="muted" id="nota-meta" data-l10n-es="Sin nota abierta." data-l10n-en="No note open." data-l10n-zh="没有打开的笔记。">Sin nota abierta.</p>
         </div>
       </div>
     </section>
 
     <section class="seccion" data-pantalla="tiempo" id="p-tiempo" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.tiempo">Tiempo</h1><p class="sec-sub" data-i18n="sub.tiempo">Los modos viven arriba; se agregan y se quitan como bloques.</p></div><div class="sec-acciones"><span class="pill pill-ok">instalado</span></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.tiempo">Tiempo</h1><p class="sec-sub" data-i18n="sub.tiempo">Los modos viven arriba; se agregan y se quitan como bloques.</p></div><div class="sec-acciones"><span class="pill pill-ok" data-l10n-es="instalado" data-l10n-en="installed" data-l10n-zh="已安装">instalado</span></div></div>
       <div class="card tiempo-barra">
-        <div class="estanteria" id="estanteria-tiempo" aria-label="Modos dentro de Tiempo"></div>
+        <div class="estanteria" id="estanteria-tiempo" aria-label="Modos dentro de Tiempo" data-l10n-aria-es="Modos dentro de Tiempo" data-l10n-aria-en="Modes inside Time" data-l10n-aria-zh="时间内的模式"></div>
       </div>
       <div class="tiempo-layout">
         <div class="card tiempo-caja">
           <div class="tiempo-reloj" id="reloj">00:00:00</div>
           <p class="muted" id="tiempo-estado">Cronómetro · parado</p>
           <div class="fila">
-            <button class="btn btn-primario" id="btn-empezar" type="button">Empezar</button>
-            <button class="btn" id="btn-pausar" type="button" disabled>Pausar</button>
-            <button class="btn" id="btn-parar" type="button" disabled>Parar</button>
-            <button class="btn" id="btn-reiniciar" type="button">Reiniciar</button>
+            <button class="btn btn-primario" id="btn-empezar" type="button" data-l10n-es="Empezar" data-l10n-en="Start" data-l10n-zh="开始">Empezar</button>
+            <button class="btn" id="btn-pausar" type="button" data-l10n-es="Pausar" data-l10n-en="Pause" data-l10n-zh="暂停" disabled>Pausar</button>
+            <button class="btn" id="btn-parar" type="button" data-l10n-es="Parar" data-l10n-en="Stop" data-l10n-zh="停止" disabled>Parar</button>
+            <button class="btn" id="btn-reiniciar" type="button" data-l10n-es="Reiniciar" data-l10n-en="Reset" data-l10n-zh="重置">Reiniciar</button>
           </div>
           <div class="tiempo-config" id="tiempo-config"></div>
         </div>
         <div class="card">
-          <h2>Vínculo con Estudio</h2>
-          <p class="muted">El tiempo que registres se guarda con este vínculo y Estudio lo suma por ramo.</p>
-          <label class="campo">Tarea <select class="entrada" id="tiempo-vinculo" aria-label="Vínculo de la sesión"></select></label>
-          <label class="campo">Ramo <select class="entrada" id="tiempo-ramo" aria-label="Ramo de la sesión"></select></label>
-          <div class="mp-kpi"><div><b id="tiempo-sesiones">0</b><span>sesiones</span></div><div><b id="tiempo-horas">0 h</b><span>registradas</span></div></div>
-          <h3 class="sesiones-tit">Sesiones</h3>
-          <div id="tiempo-lista-sesiones" class="sesiones-lista"><p class="muted">Sin sesiones todavía.</p></div>
-          <p class="muted" style="margin-top:8px">Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos. Clic derecho en una sesión para borrarla.</p>
+          <h2 data-l10n-es="Vínculo con Estudio" data-l10n-en="Link to Study" data-l10n-zh="关联学习">Vínculo con Estudio</h2>
+          <p class="muted" data-l10n-es="El tiempo que registres se guarda con este vínculo y Estudio lo suma por ramo." data-l10n-en="Logged time is saved with this link and Study adds it per course." data-l10n-zh="记录的时间会保存在此关联下，学习会按课程汇总。">El tiempo que registres se guarda con este vínculo y Estudio lo suma por ramo.</p>
+          <label class="campo"><span data-l10n-es="Tarea" data-l10n-en="Task" data-l10n-zh="任务">Tarea</span> <select class="entrada" id="tiempo-vinculo" aria-label="Vínculo de la sesión" data-l10n-aria-es="Vínculo de la sesión" data-l10n-aria-en="Session link" data-l10n-aria-zh="会话关联"></select></label>
+          <label class="campo"><span data-l10n-es="Ramo" data-l10n-en="Course" data-l10n-zh="课程">Ramo</span> <select class="entrada" id="tiempo-ramo" aria-label="Ramo de la sesión" data-l10n-aria-es="Ramo de la sesión" data-l10n-aria-en="Session course" data-l10n-aria-zh="会话课程"></select></label>
+          <div class="mp-kpi"><div><b id="tiempo-sesiones">0</b><span data-l10n-es="sesiones" data-l10n-en="sessions" data-l10n-zh="会话">sesiones</span></div><div><b id="tiempo-horas">0 h</b><span data-l10n-es="registradas" data-l10n-en="logged" data-l10n-zh="已记录">registradas</span></div></div>
+          <h3 class="sesiones-tit" data-l10n-es="Sesiones" data-l10n-en="Sessions" data-l10n-zh="会话">Sesiones</h3>
+          <div id="tiempo-lista-sesiones" class="sesiones-lista"><p class="muted" data-l10n-es="Sin sesiones todavía." data-l10n-en="No sessions yet." data-l10n-zh="还没有会话。">Sin sesiones todavía.</p></div>
+          <p class="muted" style="margin-top:8px" data-l10n-es="Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos. Clic derecho en una sesión para borrarla." data-l10n-en="Removing a mode from the shelf does not uninstall Time or delete its data. Right-click a session to delete it." data-l10n-zh="从架子上移除模式不会卸载时间，也不会删除数据。右键点击会话可删除。">Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos. Clic derecho en una sesión para borrarla.</p>
         </div>
       </div>
     </section>
@@ -237,63 +237,63 @@
         <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub" data-i18n="sub.malla">La carrera se dibuja sola por niveles. Elige un ramo para ver qué necesita y qué desbloquea.</p></div>
         <div class="sec-acciones">
           <span class="pill">kit Academics</span>
-          <button class="btn" id="btn-importar-malla" type="button">Importar</button>
-          <button class="btn" id="btn-exportar-malla" type="button">Exportar</button>
-          <button class="btn btn-primario" id="btn-nuevo-ramo" type="button">+ Nuevo ramo</button>
+          <button class="btn" id="btn-importar-malla" type="button" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button>
+          <button class="btn" id="btn-exportar-malla" type="button" data-l10n-es="Exportar" data-l10n-en="Export" data-l10n-zh="导出">Exportar</button>
+          <button class="btn btn-primario" id="btn-nuevo-ramo" type="button" data-l10n-es="+ Nuevo ramo" data-l10n-en="+ New course" data-l10n-zh="+ 新建课程">+ Nuevo ramo</button>
           <input type="file" id="archivo-malla" accept=".json,application/json" hidden>
         </div>
       </div>
       <div class="kpis malla-kpis">
-        <div class="kpi kpi--ok"><b id="malla-k-creditos">0 / 0</b><span>créditos aprobados</span></div>
-        <div class="kpi kpi--ac"><b id="malla-k-pct">0 %</b><span>de la carrera</span></div>
-        <div class="kpi kpi--warn"><b id="malla-k-ramos">0</b><span>aprobados · en curso</span></div>
-        <div class="kpi kpi--q"><b id="malla-k-libres">0</b><span>ramos disponibles</span></div>
+        <div class="kpi kpi--ok"><b id="malla-k-creditos">0 / 0</b><span data-l10n-es="créditos aprobados" data-l10n-en="approved credits" data-l10n-zh="已通过学分">créditos aprobados</span></div>
+        <div class="kpi kpi--ac"><b id="malla-k-pct">0 %</b><span data-l10n-es="de la carrera" data-l10n-en="of the degree" data-l10n-zh="占学位">de la carrera</span></div>
+        <div class="kpi kpi--warn"><b id="malla-k-ramos">0</b><span data-l10n-es="aprobados · en curso" data-l10n-en="approved · in progress" data-l10n-zh="已通过 · 进行中">aprobados · en curso</span></div>
+        <div class="kpi kpi--q"><b id="malla-k-libres">0</b><span data-l10n-es="ramos disponibles" data-l10n-en="available courses" data-l10n-zh="可选课程">ramos disponibles</span></div>
       </div>
-      <div class="malla-progreso" role="progressbar" aria-label="Avance de la carrera" aria-valuemin="0" aria-valuemax="100">
+      <div class="malla-progreso" role="progressbar" aria-label="Avance de la carrera" data-l10n-aria-es="Avance de la carrera" data-l10n-aria-en="Degree progress" data-l10n-aria-zh="学位进度" aria-valuemin="0" aria-valuemax="100">
         <div><i id="malla-progreso-barra"></i></div><span id="malla-progreso-txt">0 %</span>
       </div>
       <div class="card malla-card" data-ctx-zona="malla">
         <div class="malla-intro">
-          <div><h2>La carrera, de un vistazo</h2><p>Las columnas son los niveles; las líneas, los prerrequisitos. Selecciona un ramo y el grafo te muestra qué necesitas y qué desbloqueas.</p></div>
-          <span class="pill" id="malla-niveles-cuenta">0 niveles</span>
+          <div><h2 data-l10n-es="La carrera, de un vistazo" data-l10n-en="Your degree at a glance" data-l10n-zh="学位一览">La carrera, de un vistazo</h2><p data-l10n-es="Las columnas son los niveles; las líneas, los prerrequisitos. Selecciona un ramo y el grafo te muestra qué necesitas y qué desbloqueas." data-l10n-en="Columns are levels; lines are prerequisites. Select a course and the graph shows what you need and what it unlocks." data-l10n-zh="列是层级，线是先修要求。选择一门课程，图表会显示你需要什么、能解锁什么。">Las columnas son los niveles; las líneas, los prerrequisitos. Selecciona un ramo y el grafo te muestra qué necesitas y qué desbloqueas.</p></div>
+          <span class="pill" id="malla-niveles-cuenta" data-l10n-es="0 niveles" data-l10n-en="0 levels" data-l10n-zh="0 个层级">0 niveles</span>
         </div>
         <form class="ramo-form" id="ramo-form" hidden>
-          <input class="entrada" id="ramo-codigo" type="text" placeholder="Código (MA1001)" aria-label="Código del ramo" autocomplete="off">
-          <input class="entrada" id="ramo-nombre" type="text" placeholder="Nombre del ramo" aria-label="Nombre del ramo" autocomplete="off">
-          <input class="entrada" id="ramo-creditos" type="number" min="0" max="40" value="6" aria-label="Créditos">
-          <input class="entrada" id="ramo-nivel" type="number" min="1" max="99" value="1" aria-label="Nivel">
-          <input class="entrada" id="ramo-requisitos" type="text" placeholder="Requisitos: MA1001, FI2001" aria-label="Requisitos">
-          <label class="check"><input type="checkbox" id="ramo-aprobado"> Aprobado (cierra)</label>
-          <label class="check"><input type="checkbox" id="ramo-curso"> En curso</label>
-          <button class="btn btn-primario" type="submit">Crear</button>
-          <button class="btn" type="button" id="ramo-cancelar">Cancelar</button>
+          <input class="entrada" id="ramo-codigo" type="text" placeholder="Código (MA1001)" aria-label="Código del ramo" data-l10n-ph-es="Código (MA1001)" data-l10n-ph-en="Code (MA1001)" data-l10n-ph-zh="代码（MA1001）" data-l10n-aria-es="Código del ramo" data-l10n-aria-en="Course code" data-l10n-aria-zh="课程代码" autocomplete="off">
+          <input class="entrada" id="ramo-nombre" type="text" placeholder="Nombre del ramo" aria-label="Nombre del ramo" data-l10n-ph-es="Nombre del ramo" data-l10n-ph-en="Course name" data-l10n-ph-zh="课程名称" data-l10n-aria-es="Nombre del ramo" data-l10n-aria-en="Course name" data-l10n-aria-zh="课程名称" autocomplete="off">
+          <input class="entrada" id="ramo-creditos" type="number" min="0" max="40" value="6" aria-label="Créditos" data-l10n-aria-es="Créditos" data-l10n-aria-en="Credits" data-l10n-aria-zh="学分">
+          <input class="entrada" id="ramo-nivel" type="number" min="1" max="99" value="1" aria-label="Nivel" data-l10n-aria-es="Nivel" data-l10n-aria-en="Level" data-l10n-aria-zh="层级">
+          <input class="entrada" id="ramo-requisitos" type="text" placeholder="Requisitos: MA1001, FI2001" aria-label="Requisitos" data-l10n-ph-es="Requisitos: MA1001, FI2001" data-l10n-ph-en="Prerequisites: MA1001, FI2001" data-l10n-ph-zh="先修：MA1001, FI2001" data-l10n-aria-es="Requisitos" data-l10n-aria-en="Prerequisites" data-l10n-aria-zh="先修要求">
+          <label class="check"><input type="checkbox" id="ramo-aprobado"> <span data-l10n-es="Aprobado (cierra)" data-l10n-en="Passed (closes)" data-l10n-zh="已通过（关闭）">Aprobado (cierra)</span></label>
+          <label class="check"><input type="checkbox" id="ramo-curso"> <span data-l10n-es="En curso" data-l10n-en="In progress" data-l10n-zh="进行中">En curso</span></label>
+          <button class="btn btn-primario" type="submit" data-l10n-es="Crear" data-l10n-en="Create" data-l10n-zh="创建">Crear</button>
+          <button class="btn" type="button" id="ramo-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
         </form>
         <div class="malla-barra">
-          <input class="entrada" id="malla-buscar" type="search" placeholder="Buscar por código o nombre…" aria-label="Buscar ramo">
-          <select class="entrada" id="malla-filtro" aria-label="Filtrar ramos">
-            <option value="todos">Todos</option>
-            <option value="aprobados">Aprobados</option>
-            <option value="curso">En curso</option>
-            <option value="disponibles">Disponibles</option>
-            <option value="bloqueados">Bloqueados</option>
+          <input class="entrada" id="malla-buscar" type="search" placeholder="Buscar por código o nombre…" aria-label="Buscar ramo" data-l10n-ph-es="Buscar por código o nombre…" data-l10n-ph-en="Search by code or name…" data-l10n-ph-zh="按代码或名称搜索…" data-l10n-aria-es="Buscar ramo" data-l10n-aria-en="Search course" data-l10n-aria-zh="搜索课程">
+          <select class="entrada" id="malla-filtro" aria-label="Filtrar ramos" data-l10n-aria-es="Filtrar ramos" data-l10n-aria-en="Filter courses" data-l10n-aria-zh="筛选课程">
+            <option value="todos" data-l10n-es="Todos" data-l10n-en="All" data-l10n-zh="全部">Todos</option>
+            <option value="aprobados" data-l10n-es="Aprobados" data-l10n-en="Passed" data-l10n-zh="已通过">Aprobados</option>
+            <option value="curso" data-l10n-es="En curso" data-l10n-en="In progress" data-l10n-zh="进行中">En curso</option>
+            <option value="disponibles" data-l10n-es="Disponibles" data-l10n-en="Available" data-l10n-zh="可选">Disponibles</option>
+            <option value="bloqueados" data-l10n-es="Bloqueados" data-l10n-en="Locked" data-l10n-zh="已锁定">Bloqueados</option>
           </select>
-          <label class="check"><input type="checkbox" id="malla-rapido"> Modo rápido: marcar aprobado con un clic</label>
-          <button class="btn btn--chico" id="malla-quitar-sel" type="button" hidden>Quitar selección</button>
+          <label class="check"><input type="checkbox" id="malla-rapido"> <span data-l10n-es="Modo rápido: marcar aprobado con un clic" data-l10n-en="Quick mode: mark passed with one click" data-l10n-zh="快速模式：一键标为已通过">Modo rápido: marcar aprobado con un clic</span></label>
+          <button class="btn btn--chico" id="malla-quitar-sel" type="button" data-l10n-es="Quitar selección" data-l10n-en="Clear selection" data-l10n-zh="清除选择" hidden>Quitar selección</button>
         </div>
         <div class="malla-leyenda" id="malla-leyenda">
-          <span><i class="aprobado"></i>aprobado <b id="malla-lg-aprobado">0</b></span>
-          <span><i class="curso"></i>en curso <b id="malla-lg-curso">0</b></span>
-          <span><i class="disponible"></i>disponible <b id="malla-lg-disponible">0</b></span>
-          <span><i class="bloqueado"></i>bloqueado <b id="malla-lg-bloqueado">0</b></span>
-          <span><i class="reprobado"></i>reprobado <b id="malla-lg-reprobado">0</b></span>
+          <span><i class="aprobado"></i><span data-l10n-es="aprobado" data-l10n-en="passed" data-l10n-zh="已通过">aprobado</span> <b id="malla-lg-aprobado">0</b></span>
+          <span><i class="curso"></i><span data-l10n-es="en curso" data-l10n-en="in progress" data-l10n-zh="进行中">en curso</span> <b id="malla-lg-curso">0</b></span>
+          <span><i class="disponible"></i><span data-l10n-es="disponible" data-l10n-en="available" data-l10n-zh="可选">disponible</span> <b id="malla-lg-disponible">0</b></span>
+          <span><i class="bloqueado"></i><span data-l10n-es="bloqueado" data-l10n-en="locked" data-l10n-zh="已锁定">bloqueado</span> <b id="malla-lg-bloqueado">0</b></span>
+          <span><i class="reprobado"></i><span data-l10n-es="reprobado" data-l10n-en="failed" data-l10n-zh="未通过">reprobado</span> <b id="malla-lg-reprobado">0</b></span>
         </div>
-        <p class="malla-pista" id="malla-pista">Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.</p>
+        <p class="malla-pista" id="malla-pista" data-l10n-es="Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea." data-l10n-en="Faint lines are prerequisites. Pick a course to light only its own: blue what it needs, orange what it unlocks." data-l10n-zh="浅色线是先修要求。选择课程只点亮它的线：蓝色是需要，橙色是解锁。">Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.</p>
         <div class="empty" id="malla-vacio" hidden>
-          <h2>Tu malla está vacía</h2>
-          <p>Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles.</p>
+          <h2 data-l10n-es="Tu malla está vacía" data-l10n-en="Your degree plan is empty" data-l10n-zh="你的课程规划为空">Tu malla está vacía</h2>
+          <p data-l10n-es="Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles." data-l10n-en="A course is a subject: code, name, credits and which other courses it depends on. As you create them, the plan builds itself by level." data-l10n-zh="课程是一门学科：代码、名称、学分以及依赖哪些课程。创建后，规划会按层级自动排列。">Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles.</p>
           <div class="fila" style="justify-content:center">
-            <button class="btn btn-primario" type="button" id="malla-crear">Crear el primer ramo</button>
-            <button class="btn" type="button" id="malla-importar-vacio">Traer una malla desde un archivo</button>
+            <button class="btn btn-primario" type="button" id="malla-crear" data-l10n-es="Crear el primer ramo" data-l10n-en="Create the first course" data-l10n-zh="创建第一门课程">Crear el primer ramo</button>
+            <button class="btn" type="button" id="malla-importar-vacio" data-l10n-es="Traer una malla desde un archivo" data-l10n-en="Import a degree plan from a file" data-l10n-zh="从文件导入课程规划">Traer una malla desde un archivo</button>
           </div>
         </div>
         <div class="malla-scroll" id="malla-scroll">
@@ -311,16 +311,16 @@
         <div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub" data-i18n="sub.calificaciones">Categorías, componentes, examen y eximición. La nota se calcula sola.</p></div>
         <div class="sec-acciones">
           <span class="pill">kit Academics</span>
-          <button class="btn" id="btn-calif-malla" type="button">Ver Malla</button>
+          <button class="btn" id="btn-calif-malla" type="button" data-l10n-es="Ver Malla" data-l10n-en="View plan" data-l10n-zh="查看规划">Ver Malla</button>
         </div>
       </div>
       <div class="empty" id="calif-vacio" hidden>
-        <h2>Sin ramos para calificar</h2>
-        <p>Calificaciones usa los ramos de Malla. Crea el primero y vuelve aquí para cargar sus notas.</p>
-        <button class="btn btn-primario" type="button" id="calif-crear-ramo">Crear un ramo en Malla</button>
+        <h2 data-l10n-es="Sin ramos para calificar" data-l10n-en="No courses to grade" data-l10n-zh="没有可评分的课程">Sin ramos para calificar</h2>
+        <p data-l10n-es="Calificaciones usa los ramos de Malla. Crea el primero y vuelve aquí para cargar sus notas." data-l10n-en="Grades uses the courses from your degree plan. Create the first one and come back to enter its grades." data-l10n-zh="成绩使用课程规划中的课程。创建第一门课程后回来录入成绩。">Calificaciones usa los ramos de Malla. Crea el primero y vuelve aquí para cargar sus notas.</p>
+        <button class="btn btn-primario" type="button" id="calif-crear-ramo" data-l10n-es="Crear un ramo en Malla" data-l10n-en="Create a course in the plan" data-l10n-zh="在规划中创建课程">Crear un ramo en Malla</button>
       </div>
       <div class="calif-layout" id="calif-layout">
-        <aside class="calif-lista" id="calif-lista" aria-label="Ramos con notas"></aside>
+        <aside class="calif-lista" id="calif-lista" aria-label="Ramos con notas" data-l10n-aria-es="Ramos con notas" data-l10n-aria-en="Courses with grades" data-l10n-aria-zh="有成绩的课程"></aside>
         <div id="calif-detalle"></div>
       </div>
     </section>
@@ -328,43 +328,43 @@
     <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
       <div class="sec-cab">
         <div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub" data-i18n="sub.estudio">Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.</p></div>
-        <div class="sec-acciones"><span class="pill">kit Academics</span><button class="btn" id="btn-estudio-malla" type="button">Ver Malla</button></div>
+        <div class="sec-acciones"><span class="pill">kit Academics</span><button class="btn" id="btn-estudio-malla" type="button" data-l10n-es="Ver Malla" data-l10n-en="View plan" data-l10n-zh="查看规划">Ver Malla</button></div>
       </div>
       <div class="kpis">
-        <div class="kpi kpi--ac"><b id="est-k-horas">0 h</b><span>horas registradas</span></div>
-        <div class="kpi kpi--ok"><b id="est-k-sesiones">0</b><span>sesiones</span></div>
-        <div class="kpi kpi--warn"><b id="est-k-semanas">0</b><span>semanas sobre la meta</span></div>
-        <div class="kpi kpi--q"><b id="est-k-promedio">0 h</b><span>promedio por semana</span></div>
+        <div class="kpi kpi--ac"><b id="est-k-horas">0 h</b><span data-l10n-es="horas registradas" data-l10n-en="logged hours" data-l10n-zh="已记录小时">horas registradas</span></div>
+        <div class="kpi kpi--ok"><b id="est-k-sesiones">0</b><span data-l10n-es="sesiones" data-l10n-en="sessions" data-l10n-zh="会话">sesiones</span></div>
+        <div class="kpi kpi--warn"><b id="est-k-semanas">0</b><span data-l10n-es="semanas sobre la meta" data-l10n-en="weeks above goal" data-l10n-zh="超过目标的周数">semanas sobre la meta</span></div>
+        <div class="kpi kpi--q"><b id="est-k-promedio">0 h</b><span data-l10n-es="promedio por semana" data-l10n-en="average per week" data-l10n-zh="每周平均">promedio por semana</span></div>
       </div>
       <div class="estudio-layout">
         <div class="card est-grafico-card">
-          <h2>Horas por semana</h2>
-          <p class="muted" id="est-periodo">Periodo activo</p>
+          <h2 data-l10n-es="Horas por semana" data-l10n-en="Hours per week" data-l10n-zh="每周小时">Horas por semana</h2>
+          <p class="muted" id="est-periodo" data-l10n-es="Periodo activo" data-l10n-en="Active term" data-l10n-zh="当前学期">Periodo activo</p>
           <div class="est-grafico" id="est-grafico"></div>
           <div class="est-leyenda" id="est-leyenda"></div>
           <div class="est-metas-semana" id="est-metas-semana"></div>
         </div>
         <div class="card">
-          <h2>Registrar estudio</h2>
-          <p class="muted">Una sesión suelta para lo que no pasó por el cronómetro.</p>
+          <h2 data-l10n-es="Registrar estudio" data-l10n-en="Log study" data-l10n-zh="记录学习">Registrar estudio</h2>
+          <p class="muted" data-l10n-es="Una sesión suelta para lo que no pasó por el cronómetro." data-l10n-en="A one-off session for what did not go through the stopwatch." data-l10n-zh="用于记录未经过秒表的学习时段。">Una sesión suelta para lo que no pasó por el cronómetro.</p>
           <form class="est-form" id="est-form">
-            <select class="entrada" id="est-ramo" aria-label="Ramo"></select>
-            <input class="entrada" id="est-fecha" type="date" aria-label="Fecha">
-            <input class="entrada" id="est-minutos" type="text" inputmode="decimal" value="1:00:00" placeholder="2:30:21" aria-label="Duración: horas:minutos:segundos o minutos">
-            <button class="btn btn-primario" type="submit">Registrar</button>
+            <select class="entrada" id="est-ramo" aria-label="Ramo" data-l10n-aria-es="Ramo" data-l10n-aria-en="Course" data-l10n-aria-zh="课程"></select>
+            <input class="entrada" id="est-fecha" type="date" aria-label="Fecha" data-l10n-aria-es="Fecha" data-l10n-aria-en="Date" data-l10n-aria-zh="日期">
+            <input class="entrada" id="est-minutos" type="text" inputmode="decimal" value="1:00:00" placeholder="2:30:21" aria-label="Duración: horas:minutos:segundos o minutos" data-l10n-aria-es="Duración: horas:minutos:segundos o minutos" data-l10n-aria-en="Duration: hours:minutes:seconds or minutes" data-l10n-aria-zh="时长：小时:分钟:秒 或 分钟">
+            <button class="btn btn-primario" type="submit" data-l10n-es="Registrar" data-l10n-en="Log" data-l10n-zh="记录">Registrar</button>
           </form>
-          <p class="muted">Acepta <b>90</b> (minutos), <b>1:30</b> (h:m) o <b>2:30:21</b> (h:m:s).</p>
+          <p class="muted" data-l10n-es="Acepta 90 (minutos), 1:30 (h:m) o 2:30:21 (h:m:s)." data-l10n-en="Accepts 90 (minutes), 1:30 (h:m) or 2:30:21 (h:m:s)." data-l10n-zh="接受 90（分钟）、1:30（时:分）或 2:30:21（时:分:秒）。">Acepta <b>90</b> (minutos), <b>1:30</b> (h:m) o <b>2:30:21</b> (h:m:s).</p>
           <hr class="est-sep">
-          <label class="campo">Meta semanal <input class="entrada est-num" id="est-meta" type="number" min="0" max="100" step="0.5" value="10"> h</label>
-          <p class="muted" id="est-resumen">Sin sesiones todavía.</p>
+          <label class="campo"><span data-l10n-es="Meta semanal" data-l10n-en="Weekly goal" data-l10n-zh="每周目标">Meta semanal</span> <input class="entrada est-num" id="est-meta" type="number" min="0" max="100" step="0.5" value="10"> h</label>
+          <p class="muted" id="est-resumen" data-l10n-es="Sin sesiones todavía." data-l10n-en="No sessions yet." data-l10n-zh="还没有会话。">Sin sesiones todavía.</p>
         </div>
       </div>
       <div class="card">
-        <h2>Horas por ramo</h2>
-        <div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th>Ramo</th><th class="num">Horas</th><th class="num">Meta semanal</th><th>Avance</th></tr></thead><tbody id="est-tabla"></tbody></table></div>
+        <h2 data-l10n-es="Horas por ramo" data-l10n-en="Hours per course" data-l10n-zh="按课程小时">Horas por ramo</h2>
+        <div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th data-l10n-es="Ramo" data-l10n-en="Course" data-l10n-zh="课程">Ramo</th><th class="num" data-l10n-es="Horas" data-l10n-en="Hours" data-l10n-zh="小时">Horas</th><th class="num" data-l10n-es="Meta semanal" data-l10n-en="Weekly goal" data-l10n-zh="每周目标">Meta semanal</th><th data-l10n-es="Avance" data-l10n-en="Progress" data-l10n-zh="进度">Avance</th></tr></thead><tbody id="est-tabla"></tbody></table></div>
       </div>
       <div class="card">
-        <h2>Sesiones recientes</h2>
+        <h2 data-l10n-es="Sesiones recientes" data-l10n-en="Recent sessions" data-l10n-zh="最近会话">Sesiones recientes</h2>
         <div id="est-sesiones" class="est-sesiones"></div>
       </div>
     </section>
@@ -396,10 +396,10 @@
           </section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg><span data-i18n="aj.navegacion">Navegación</span></h2><p class="muted" data-i18n="aj.navegacion.sub">Dónde viven las secciones.</p>
             <label class="campo"><span data-i18n="aj.barra">Barra de secciones</span> <select class="entrada" id="pref-nav"><option value="arriba" data-i18n="aj.arriba">Arriba</option><option value="izquierda" data-i18n="aj.izquierda">Izquierda</option></select></label>
-            <p class="muted">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
+            <p class="muted" data-l10n-es="Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo." data-l10n-en="Top is the horizontal bar; left is a vertical rail, like the old app." data-l10n-zh="顶部是水平栏；左侧是垂直栏，类似旧版。">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
           </section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg><span data-i18n="aj.paneles">Paneles</span></h2><p class="muted" data-i18n="aj.paneles.sub">Ancho y visibilidad del panel derecho.</p>
-            <label class="campo"><span data-i18n="aj.ancho">Ancho</span> <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
+            <label class="campo"><span data-i18n="aj.ancho">Ancho</span> <select class="entrada" id="pref-panel-ancho"><option value="280" data-l10n-es="Angosto · 280" data-l10n-en="Narrow · 280" data-l10n-zh="窄 · 280">Angosto · 280</option><option value="320" selected data-l10n-es="Normal · 320" data-l10n-en="Normal · 320" data-l10n-zh="标准 · 320">Normal · 320</option><option value="360" data-l10n-es="Ancho · 360" data-l10n-en="Wide · 360" data-l10n-zh="宽 · 360">Ancho · 360</option></select></label>
             <label class="check"><input type="checkbox" id="pref-panel-abierto"> <span data-i18n="aj.abierto">Abierto al iniciar</span></label>
             <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px" data-i18n="aj.abrirPanel">Abrir panel</button>
           </section>
@@ -408,108 +408,108 @@
 
       <div class="ajustes-grupo"><h2 data-i18n="grupo.datos">Datos</h2><p class="muted" data-i18n="grupo.datos.sub">Lo que entra, sale y se guarda.</p></div>
       <div class="ajustes-grid">
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg><span data-i18n="aj.periodos">Periodos</span></h2><p class="muted" data-i18n="aj.periodos.sub">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="aj.respaldo">Respaldo</span></h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
-          <p class="muted">Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2).</p>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg><span data-i18n="aj.periodos">Periodos</span></h2><p class="muted" data-i18n="aj.periodos.sub">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes" data-l10n-es="+ Nuevo periodo" data-l10n-en="+ New term" data-l10n-zh="+ 新建学期">+ Nuevo periodo</button></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="aj.respaldo">Respaldo</span></h2><p class="muted" id="ajustes-datos" data-l10n-es="Datos locales." data-l10n-en="Local data." data-l10n-zh="本地数据。">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar" data-l10n-es="Exportar JSON" data-l10n-en="Export JSON" data-l10n-zh="导出 JSON">Exportar JSON</button><button class="btn" type="button" id="btn-importar" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
+          <p class="muted" data-l10n-es="Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2)." data-l10n-en="Accepts Mimo and Mimo Academics 1.1.2 (format 2) backups." data-l10n-zh="接受 Mimo 和 Mimo Academics 1.1.2（格式 2）备份。">Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2).</p>
         </section>
         <section class="card card--ancho" id="sync-card">
           <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg><span data-i18n="aj.sync">Sincronización</span></h2>
           <p class="muted sync-estado" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
 
           <div class="sync-modo">
-            <label for="sync-proveedor">Modo</label>
+            <label for="sync-proveedor" data-l10n-es="Modo" data-l10n-en="Mode" data-l10n-zh="模式">Modo</label>
             <select class="entrada" id="sync-proveedor">
-              <option value="">Elegir…</option>
-              <option value="webdav">WebDAV / Nextcloud (cifrado)</option>
-              <option value="carpeta">Carpeta local (un clic)</option>
-              <option value="archivo">Archivo manual (descargar/cargar)</option>
+              <option value="" data-l10n-es="Elegir…" data-l10n-en="Choose…" data-l10n-zh="选择…">Elegir…</option>
+              <option value="webdav" data-l10n-es="WebDAV / Nextcloud (cifrado)" data-l10n-en="WebDAV / Nextcloud (encrypted)" data-l10n-zh="WebDAV / Nextcloud（加密）">WebDAV / Nextcloud (cifrado)</option>
+              <option value="carpeta" data-l10n-es="Carpeta local (un clic)" data-l10n-en="Local folder (one click)" data-l10n-zh="本地文件夹（一键）">Carpeta local (un clic)</option>
+              <option value="archivo" data-l10n-es="Archivo manual (descargar/cargar)" data-l10n-en="Manual file (download/upload)" data-l10n-zh="手动文件（下载/上传）">Archivo manual (descargar/cargar)</option>
             </select>
           </div>
 
           <div id="sync-webdav" hidden>
             <div class="sync-columnas">
               <section class="sync-bloque" aria-labelledby="sync-conexion-tit">
-                <h3 id="sync-conexion-tit">Conexión</h3>
-                <p class="sync-nota">WebDAV no crea cuentas: la cuenta la da tu proveedor (Nextcloud, ownCloud u otro).</p>
+                <h3 id="sync-conexion-tit" data-l10n-es="Conexión" data-l10n-en="Connection" data-l10n-zh="连接">Conexión</h3>
+                <p class="sync-nota" data-l10n-es="WebDAV no crea cuentas: la cuenta la da tu proveedor (Nextcloud, ownCloud u otro)." data-l10n-en="WebDAV does not create accounts: your provider gives you one (Nextcloud, ownCloud or another)." data-l10n-zh="WebDAV 不创建账户：账户由你的服务商提供（Nextcloud、ownCloud 等）。">WebDAV no crea cuentas: la cuenta la da tu proveedor (Nextcloud, ownCloud u otro).</p>
 
-                <label class="sync-campo">Servidor
+                <label class="sync-campo"><span data-l10n-es="Servidor" data-l10n-en="Server" data-l10n-zh="服务器">Servidor</span>
                   <input class="entrada" id="sync-webdav-url" type="url" autocomplete="off" spellcheck="false"
                     placeholder="https://nube.ejemplo/remote.php/dav/files/tu-usuario">
-                  <span class="sync-pista">La dirección WebDAV de tu cuenta, no la página de inicio.</span>
+                  <span class="sync-pista" data-l10n-es="La dirección WebDAV de tu cuenta, no la página de inicio." data-l10n-en="Your account WebDAV address, not the home page." data-l10n-zh="你账户的 WebDAV 地址，不是首页。">La dirección WebDAV de tu cuenta, no la página de inicio.</span>
                 </label>
 
                 <div class="sync-dos">
-                  <label class="sync-campo">Usuario
+                  <label class="sync-campo"><span data-l10n-es="Usuario" data-l10n-en="User" data-l10n-zh="用户">Usuario</span>
                     <input class="entrada" id="sync-webdav-usuario" type="text" autocomplete="username" spellcheck="false">
                   </label>
-                  <label class="sync-campo">Contraseña de aplicación
+                  <label class="sync-campo"><span data-l10n-es="Contraseña de aplicación" data-l10n-en="App password" data-l10n-zh="应用密码">Contraseña de aplicación</span>
                     <input class="entrada" id="sync-webdav-clave-acceso" type="password" autocomplete="off">
                   </label>
                 </div>
 
-                <label class="sync-campo">Carpeta remota
+                <label class="sync-campo"><span data-l10n-es="Carpeta remota" data-l10n-en="Remote folder" data-l10n-zh="远程文件夹">Carpeta remota</span>
                   <input class="entrada" id="sync-webdav-carpeta" type="text" value="Mimo" autocomplete="off" spellcheck="false">
                 </label>
 
                 <div class="sync-fila">
-                  <button class="btn" id="sync-webdav-probar" type="button">Probar conexión</button>
-                  <span class="sync-sin-cuenta">¿No tienes cuenta? <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer">Crea una en Nextcloud</a></span>
+                  <button class="btn" id="sync-webdav-probar" type="button" data-l10n-es="Probar conexión" data-l10n-en="Test connection" data-l10n-zh="测试连接">Probar conexión</button>
+                  <span class="sync-sin-cuenta"><span data-l10n-es="¿No tienes cuenta?" data-l10n-en="No account?" data-l10n-zh="没有账户？">¿No tienes cuenta?</span> <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer">data-l10n-es="Crea una en Nextcloud" data-l10n-en="Create one in Nextcloud" data-l10n-zh="在 Nextcloud 创建一个"</a></span>
                 </div>
 
-                <p class="sync-nota sync-nota--final">Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual.</p>
+                <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual." data-l10n-en="Use an app password, not your account password. It is saved in this browser local storage; use a revocable password. The server must allow CORS from this page; if the browser blocks the connection, use Manual file." data-l10n-zh="请使用应用密码，而不是账户密码。它会保存在此浏览器的本地存储中；请使用可撤销的密码。服务器必须允许此页面跨域；如果浏览器阻止连接，请使用手动文件。">Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual.</p>
               </section>
 
               <section class="sync-bloque sync-bloque--cifrado" aria-labelledby="sync-cifrado-tit">
-                <h3 id="sync-cifrado-tit">Cifrado</h3>
-                <p class="sync-nota"><b>Obligatorio antes de subir.</b> El archivo se cifra en este equipo con AES-GCM y una clave derivada de tu contraseña. La contraseña no se guarda; sin ella no se puede leer la copia remota, ni siquiera tú. Anótala.</p>
+                <h3 id="sync-cifrado-tit" data-l10n-es="Cifrado" data-l10n-en="Encryption" data-l10n-zh="加密">Cifrado</h3>
+                <p class="sync-nota"><b data-l10n-es="Obligatorio antes de subir." data-l10n-en="Required before uploading." data-l10n-zh="上传前必填。">Obligatorio antes de subir.</b> <span data-l10n-es="El archivo se cifra en este equipo con AES-GCM y una clave derivada de tu contraseña. La contraseña no se guarda; sin ella no se puede leer la copia remota, ni siquiera tú. Anótala." data-l10n-en="The file is encrypted on this device with AES-GCM and a key derived from your password. The password is not saved; without it the remote copy cannot be read, not even by you. Write it down." data-l10n-zh="文件在此设备上用 AES-GCM 和由密码派生的密钥加密。密码不会保存；没有它，远程副本无法读取，连你也不行。请记下它。">El archivo se cifra en este equipo con AES-GCM y una clave derivada de tu contraseña. La contraseña no se guarda; sin ella no se puede leer la copia remota, ni siquiera tú. Anótala.</span></p>
 
-                <label class="sync-campo">Contraseña de cifrado
+                <label class="sync-campo"><span data-l10n-es="Contraseña de cifrado" data-l10n-en="Encryption password" data-l10n-zh="加密密码">Contraseña de cifrado</span>
                   <input class="entrada" id="sync-webdav-clave" type="password" autocomplete="new-password"
-                    placeholder="Mínimo 8 caracteres">
+                    placeholder="Mínimo 8 caracteres" data-l10n-ph-es="Mínimo 8 caracteres" data-l10n-ph-en="At least 8 characters" data-l10n-ph-zh="至少 8 个字符">
                 </label>
 
                 <div class="sync-fila sync-fila--botones">
-                  <button class="btn" id="sync-webdav-guardar-clave" type="button">Guardar clave</button>
-                  <button class="btn" id="sync-webdav-olvidar-clave" type="button">Olvidar clave</button>
+                  <button class="btn" id="sync-webdav-guardar-clave" type="button" data-l10n-es="Guardar clave" data-l10n-en="Save key" data-l10n-zh="保存密钥">Guardar clave</button>
+                  <button class="btn" id="sync-webdav-olvidar-clave" type="button" data-l10n-es="Olvidar clave" data-l10n-en="Forget key" data-l10n-zh="忘记密钥">Olvidar clave</button>
                 </div>
 
-                <p class="sync-nota sync-nota--final" id="sync-webdav-clave-estado">Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.</p>
+                <p class="sync-nota sync-nota--final" id="sync-webdav-clave-estado" data-l10n-es="Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada." data-l10n-en="No key on this device. Enter it before syncing; nothing is uploaded without it." data-l10n-zh="此设备没有密钥。同步前请输入；没有它不会上传任何内容。">Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.</p>
               </section>
             </div>
           </div>
 
           <div id="sync-carpeta" hidden>
-            <p class="muted" id="sync-carpeta-nombre">Sin carpeta elegida.</p>
-            <button class="btn" id="sync-elegir-carpeta" type="button">Elegir carpeta…</button>
+            <p class="muted" id="sync-carpeta-nombre" data-l10n-es="Sin carpeta elegida." data-l10n-en="No folder chosen." data-l10n-zh="未选择文件夹。">Sin carpeta elegida.</p>
+            <button class="btn" id="sync-elegir-carpeta" type="button" data-l10n-es="Elegir carpeta…" data-l10n-en="Choose folder…" data-l10n-zh="选择文件夹…">Elegir carpeta…</button>
           </div>
 
           <div id="sync-archivo" hidden>
-            <p class="muted">Guarda <code>mimo-sync.json</code> en tu nube y cárgalo en el otro equipo.</p>
+            <p class="muted"><span data-l10n-es="Guarda " data-l10n-en="Save " data-l10n-zh="保存 ">Guarda</span> <code>mimo-sync.json</code> <span data-l10n-es="en tu nube y cárgalo en el otro equipo." data-l10n-en="in your cloud and load it on the other device." data-l10n-zh="到你的云端，并在另一台设备上加载。">en tu nube y cárgalo en el otro equipo.</span></p>
             <div class="sync-fila">
-              <button class="btn" id="sync-guardar-archivo" type="button">Guardar archivo</button>
-              <button class="btn" id="sync-cargar-archivo" type="button">Cargar archivo</button>
+              <button class="btn" id="sync-guardar-archivo" type="button" data-l10n-es="Guardar archivo" data-l10n-en="Save file" data-l10n-zh="保存文件">Guardar archivo</button>
+              <button class="btn" id="sync-cargar-archivo" type="button" data-l10n-es="Cargar archivo" data-l10n-en="Load file" data-l10n-zh="加载文件">Cargar archivo</button>
               <input type="file" id="sync-archivo-input" accept=".json,application/json" hidden>
             </div>
           </div>
 
           <div class="sync-acciones">
-            <label class="check"><input type="checkbox" id="sync-manual" checked> Solo sincronizar a mano (sin automático; un envío pendiente se reintenta al volver la red)</label>
+            <label class="check"><input type="checkbox" id="sync-manual" checked> <span data-l10n-es="Solo sincronizar a mano (sin automático; un envío pendiente se reintenta al volver la red)" data-l10n-en="Sync manually only (no automatic; a pending upload retries when the network returns)" data-l10n-zh="仅手动同步（不自动；待上传内容会在网络恢复时重试）">Solo sincronizar a mano (sin automático; un envío pendiente se reintenta al volver la red)</span></label>
             <div class="sync-fila sync-fila--acciones">
-              <button class="btn btn-primario" id="sync-ahora" type="button">Sincronizar ahora</button>
-              <button class="btn" id="sync-desconectar" type="button">Desconectar</button>
+              <button class="btn btn-primario" id="sync-ahora" type="button" data-l10n-es="Sincronizar ahora" data-l10n-en="Sync now" data-l10n-zh="立即同步">Sincronizar ahora</button>
+              <button class="btn" id="sync-desconectar" type="button" data-l10n-es="Desconectar" data-l10n-en="Disconnect" data-l10n-zh="断开连接">Desconectar</button>
             </div>
-            <p class="muted" id="sync-ultima">Nunca sincronizado.</p>
-            <p class="muted" id="sync-ayuda">WebDAV/Nextcloud sube siempre cifrado. El archivo manual y la carpeta local guardan JSON en claro: úsalos solo en un medio de confianza. Dropbox y OneDrive quedan para después.</p>
+            <p class="muted" id="sync-ultima" data-l10n-es="Nunca sincronizado." data-l10n-en="Never synced." data-l10n-zh="从未同步。">Nunca sincronizado.</p>
+            <p class="muted" id="sync-ayuda" data-l10n-es="WebDAV/Nextcloud sube siempre cifrado. El archivo manual y la carpeta local guardan JSON en claro: úsalos solo en un medio de confianza. Dropbox y OneDrive quedan para después." data-l10n-en="WebDAV/Nextcloud always uploads encrypted. The manual file and local folder store plain JSON: use them only on a trusted medium. Dropbox and OneDrive are for later." data-l10n-zh="WebDAV/Nextcloud 始终加密上传。手动文件和本地文件夹保存明文 JSON：仅在可信介质上使用。Dropbox 和 OneDrive 以后再说。">WebDAV/Nextcloud sube siempre cifrado. El archivo manual y la carpeta local guardan JSON en claro: úsalos solo en un medio de confianza. Dropbox y OneDrive quedan para después.</p>
           </div>
         </section>
       </div>
 
       <div class="ajustes-grupo"><h2 data-i18n="grupo.extensiones">Extensiones</h2><p class="muted" data-i18n="grupo.extensiones.sub">Bloques, laboratorio y versión.</p></div>
       <div class="ajustes-grid">
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Agregar bloque o kit</button></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques" data-l10n-es="0 bloques instalados." data-l10n-en="0 blocks installed." data-l10n-zh="0 个模块已安装。">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes" data-l10n-es="Agregar bloque o kit" data-l10n-en="Add block or kit" data-l10n-zh="添加模块或套件">Agregar bloque o kit</button></section>
         <div class="ajustes-pila">
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Laboratorio</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted">Mimo universal · 1.2.0 · base 4 + bloques. MIT. Sin red.</p></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Laboratorio</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> <span data-l10n-es="Vista dividida" data-l10n-en="Split view" data-l10n-zh="分屏视图">Vista dividida</span></label></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo universal · 1.2.0 · base 4 + bloques. MIT. Sin red." data-l10n-en="Mimo universal · 1.2.0 · base 4 + blocks. MIT. No network." data-l10n-zh="Mimo universal · 1.2.0 · 基础 4 + 模块。MIT。无网络。">Mimo universal · 1.2.0 · base 4 + bloques. MIT. Sin red.</p></section>
         </div>
       </div>
     </section>
@@ -517,9 +517,9 @@
 
   <main class="contenido-b" id="contenido-b" hidden aria-label="Vista secundaria">
     <div class="split-barra">
-      <span class="split-etq" id="split-titulo">Ventana derecha</span>
-      <select class="entrada" id="split-seccion" aria-label="Sección secundaria"></select>
-      <button class="btn btn--chico" type="button" id="btn-cerrar-split">Cerrar</button>
+      <span class="split-etq" id="split-titulo" data-l10n-es="Ventana derecha" data-l10n-en="Right window" data-l10n-zh="右侧窗口">Ventana derecha</span>
+      <select class="entrada" id="split-seccion" aria-label="Sección secundaria" data-l10n-aria-es="Sección secundaria" data-l10n-aria-en="Secondary section" data-l10n-aria-zh="次分区"></select>
+      <button class="btn btn--chico" type="button" id="btn-cerrar-split" data-l10n-es="Cerrar" data-l10n-en="Close" data-l10n-zh="关闭">Cerrar</button>
     </div>
     <div id="split-escena" class="split-escena"></div>
   </main>
@@ -547,8 +547,8 @@
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-tit">
   <div class="modal__caja">
-    <header class="modal__cab"><div><h2 id="modal-tit">Bloques y kits</h2><p class="muted" id="modal-sub"></p></div><button class="icono-btn" id="modal-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
-    <p class="muted">Instalar es una promesa que se cumple: el bloque aparece en la barra, monta su pantalla y se puede quitar sin borrar tus datos.</p>
+    <header class="modal__cab"><div><h2 id="modal-tit" data-l10n-es="Bloques y kits" data-l10n-en="Blocks and kits" data-l10n-zh="模块与套件">Bloques y kits</h2><p class="muted" id="modal-sub"></p></div><button class="icono-btn" id="modal-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <p class="muted" data-l10n-es="Instalar es una promesa que se cumple: el bloque aparece en la barra, monta su pantalla y se puede quitar sin borrar tus datos." data-l10n-en="Installing is a promise kept: the block appears in the bar, mounts its screen and can be removed without deleting your data." data-l10n-zh="安装就是兑现承诺：模块会出现在栏中、加载自己的界面，并可移除而不删除你的数据。">Instalar es una promesa que se cumple: el bloque aparece en la barra, monta su pantalla y se puede quitar sin borrar tus datos.</p>
     <div class="catalogo" id="catalogo"></div>
   </div>
 </div>
@@ -556,77 +556,77 @@
 
 <div class="modal" id="modal-periodo" role="dialog" aria-modal="true" aria-labelledby="periodo-tit">
   <div class="modal__caja">
-    <header class="modal__cab"><div><h2 id="periodo-tit">Nuevo periodo</h2><p class="muted">Define el arco completo: clases, receso y exámenes.</p></div><button class="icono-btn" id="periodo-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <header class="modal__cab"><div><h2 id="periodo-tit" data-l10n-es="Nuevo periodo" data-l10n-en="New term" data-l10n-zh="新建学期">Nuevo periodo</h2><p class="muted" data-l10n-es="Define el arco completo: clases, receso y exámenes." data-l10n-en="Define the whole arc: classes, break and exams." data-l10n-zh="定义完整周期：课程、假期和考试。">Define el arco completo: clases, receso y exámenes.</p></div><button class="icono-btn" id="periodo-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
     <form id="periodo-form" class="periodo-form">
-      <input class="entrada" id="periodo-nombre" type="text" placeholder="Nombre del periodo (ej. Primavera 2026)" aria-label="Nombre del periodo" required>
-      <label class="campo">Inicio <input class="entrada" id="periodo-inicio" type="date" aria-label="Inicio"></label>
-      <label class="campo">Semanas <input class="entrada" id="periodo-semanas" type="number" min="1" max="30" value="18" aria-label="Semanas"></label>
-      <label class="campo">Receso <input class="entrada" id="periodo-receso" type="number" min="0" max="10" value="1" aria-label="Semanas de receso"></label>
-      <label class="campo">Exámenes <input class="entrada" id="periodo-examenes" type="number" min="0" max="10" value="3" aria-label="Semanas de exámenes"></label>
-      <div class="periodo-mapa-cab"><b>Mapa de semanas</b><span class="muted">Haz clic en una semana para cambiarla. Los exámenes van al final por defecto; puedes moverlos.</span></div>
+      <input class="entrada" id="periodo-nombre" type="text" placeholder="Nombre del periodo (ej. Primavera 2026)" aria-label="Nombre del periodo" data-l10n-ph-es="Nombre del periodo (ej. Primavera 2026)" data-l10n-ph-en="Term name (e.g. Spring 2026)" data-l10n-ph-zh="学期名称（例：2026 春季）" data-l10n-aria-es="Nombre del periodo" data-l10n-aria-en="Term name" data-l10n-aria-zh="学期名称" required>
+      <label class="campo"><span data-l10n-es="Inicio" data-l10n-en="Start" data-l10n-zh="开始">Inicio</span> <input class="entrada" id="periodo-inicio" type="date" aria-label="Inicio" data-l10n-aria-es="Inicio" data-l10n-aria-en="Start" data-l10n-aria-zh="开始"></label>
+      <label class="campo"><span data-l10n-es="Semanas" data-l10n-en="Weeks" data-l10n-zh="周数">Semanas</span> <input class="entrada" id="periodo-semanas" type="number" min="1" max="30" value="18" aria-label="Semanas" data-l10n-aria-es="Semanas" data-l10n-aria-en="Weeks" data-l10n-aria-zh="周数"></label>
+      <label class="campo"><span data-l10n-es="Receso" data-l10n-en="Break" data-l10n-zh="假期">Receso</span> <input class="entrada" id="periodo-receso" type="number" min="0" max="10" value="1" aria-label="Semanas de receso" data-l10n-aria-es="Semanas de receso" data-l10n-aria-en="Break weeks" data-l10n-aria-zh="假期周数"></label>
+      <label class="campo"><span data-l10n-es="Exámenes" data-l10n-en="Exams" data-l10n-zh="考试">Exámenes</span> <input class="entrada" id="periodo-examenes" type="number" min="0" max="10" value="3" aria-label="Semanas de exámenes" data-l10n-aria-es="Semanas de exámenes" data-l10n-aria-en="Exam weeks" data-l10n-aria-zh="考试周数"></label>
+      <div class="periodo-mapa-cab"><b data-l10n-es="Mapa de semanas" data-l10n-en="Week map" data-l10n-zh="周次地图">Mapa de semanas</b><span class="muted" data-l10n-es="Haz clic en una semana para cambiarla. Los exámenes van al final por defecto; puedes moverlos." data-l10n-en="Click a week to change it. Exams go at the end by default; you can move them." data-l10n-zh="点击某周即可更改。考试默认在最后，也可以移动。">Haz clic en una semana para cambiarla. Los exámenes van al final por defecto; puedes moverlos.</span></div>
       <div class="periodo-mapa" id="periodo-mapa"></div>
-      <div class="fila"><button class="btn btn-primario" type="submit">Crear periodo</button><button class="btn" type="button" id="periodo-cancelar">Cancelar</button></div>
+      <div class="fila"><button class="btn btn-primario" type="submit" data-l10n-es="Crear periodo" data-l10n-en="Create term" data-l10n-zh="创建学期">Crear periodo</button><button class="btn" type="button" id="periodo-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button></div>
     </form>
-    <h3>Periodos</h3>
+    <h3 data-l10n-es="Periodos" data-l10n-en="Terms" data-l10n-zh="学期">Periodos</h3>
     <div id="periodos-lista"></div>
   </div>
 </div>
 
 <div class="modal" id="modal-sesion" role="dialog" aria-modal="true" aria-labelledby="sesion-tit">
   <div class="modal__caja">
-    <header class="modal__cab"><div><h2 id="sesion-tit">Editar sesión de estudio</h2><p class="muted">Corrige lo que registró Tiempo o una sesión manual.</p></div><button class="icono-btn" id="sesion-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <header class="modal__cab"><div><h2 id="sesion-tit" data-l10n-es="Editar sesión de estudio" data-l10n-en="Edit study session" data-l10n-zh="编辑学习会话">Editar sesión de estudio</h2><p class="muted" data-l10n-es="Corrige lo que registró Tiempo o una sesión manual." data-l10n-en="Fix what Time or a manual session logged." data-l10n-zh="修正时间或手动记录的会话。">Corrige lo que registró Tiempo o una sesión manual.</p></div><button class="icono-btn" id="sesion-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
     <form id="sesion-form">
       <input type="hidden" id="sesion-id">
-      <label class="campo">Fecha <input class="entrada" id="sesion-fecha" type="date"></label>
-      <label class="campo">Duración <input class="entrada" id="sesion-duracion" type="text" inputmode="decimal" placeholder="2:30:21"></label>
-      <label class="campo">Ramo <select class="entrada" id="sesion-ramo"></select></label>
-      <label class="campo">Hora <input class="entrada" id="sesion-hora" type="time"></label>
-      <div class="fila"><button class="btn btn-primario" type="submit">Guardar</button><button class="btn" type="button" id="sesion-cancelar">Cancelar</button><button class="btn btn-peligro" type="button" id="sesion-borrar">Borrar</button></div>
+      <label class="campo"><span data-l10n-es="Fecha" data-l10n-en="Date" data-l10n-zh="日期">Fecha</span> <input class="entrada" id="sesion-fecha" type="date"></label>
+      <label class="campo"><span data-l10n-es="Duración" data-l10n-en="Duration" data-l10n-zh="时长">Duración</span> <input class="entrada" id="sesion-duracion" type="text" inputmode="decimal" placeholder="2:30:21"></label>
+      <label class="campo"><span data-l10n-es="Ramo" data-l10n-en="Course" data-l10n-zh="课程">Ramo</span> <select class="entrada" id="sesion-ramo"></select></label>
+      <label class="campo"><span data-l10n-es="Hora" data-l10n-en="Time" data-l10n-zh="时间">Hora</span> <input class="entrada" id="sesion-hora" type="time"></label>
+      <div class="fila"><button class="btn btn-primario" type="submit" data-l10n-es="Guardar" data-l10n-en="Save" data-l10n-zh="保存">Guardar</button><button class="btn" type="button" id="sesion-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button><button class="btn btn-peligro" type="button" id="sesion-borrar" data-l10n-es="Borrar" data-l10n-en="Delete" data-l10n-zh="删除">Borrar</button></div>
     </form>
   </div>
 </div>
 
 <div class="modal" id="modal-split" role="dialog" aria-modal="true" aria-labelledby="split-modal-tit">
   <div class="modal__caja split-caja">
-    <header class="modal__cab"><div><h2 id="split-modal-tit">Abrir dos secciones</h2><p class="muted">Elige qué va a la izquierda y qué a la derecha. También puedes arrastrar las pestañas a cada lado.</p></div><button class="icono-btn" id="split-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <header class="modal__cab"><div><h2 id="split-modal-tit" data-l10n-es="Abrir dos secciones" data-l10n-en="Open two sections" data-l10n-zh="打开两个分区">Abrir dos secciones</h2><p class="muted" data-l10n-es="Elige qué va a la izquierda y qué a la derecha. También puedes arrastrar las pestañas a cada lado." data-l10n-en="Choose what goes left and what goes right. You can also drag tabs to either side." data-l10n-zh="选择左侧和右侧的内容。也可以把标签拖到任一侧。">Elige qué va a la izquierda y qué a la derecha. También puedes arrastrar las pestañas a cada lado.</p></div><button class="icono-btn" id="split-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
     <div class="split-dos">
-      <label class="campo">Izquierda <select class="entrada" id="split-izq"></select></label>
-      <label class="campo">Derecha <select class="entrada" id="split-der"></select></label>
+      <label class="campo"><span data-l10n-es="Izquierda" data-l10n-en="Left" data-l10n-zh="左侧">Izquierda</span> <select class="entrada" id="split-izq"></select></label>
+      <label class="campo"><span data-l10n-es="Derecha" data-l10n-en="Right" data-l10n-zh="右侧">Derecha</span> <select class="entrada" id="split-der"></select></label>
     </div>
-    <p class="muted" id="split-aviso">La ventana necesita al menos 1256 px de ancho.</p>
-    <div class="fila"><button class="btn btn-primario" id="split-abrir" type="button">Abrir vista dividida</button><button class="btn" id="split-cancelar" type="button">Cancelar</button></div>
+    <p class="muted" id="split-aviso" data-l10n-es="La ventana necesita al menos 1256 px de ancho." data-l10n-en="The window needs at least 1256 px of width." data-l10n-zh="窗口至少需要 1256 px 宽。">La ventana necesita al menos 1256 px de ancho.</p>
+    <div class="fila"><button class="btn btn-primario" id="split-abrir" type="button" data-l10n-es="Abrir vista dividida" data-l10n-en="Open split view" data-l10n-zh="打开分屏">Abrir vista dividida</button><button class="btn" id="split-cancelar" type="button" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button></div>
   </div>
 </div>
 
 <div class="modal" id="modal-sync-conflict" role="dialog" aria-modal="true" aria-labelledby="sync-conf-tit">
   <div class="modal__caja sync-conf-caja">
-    <header class="modal__cab"><div><h2 id="sync-conf-tit">Conflicto de sincronización</h2><p class="muted">Las dos copias cambiaron desde la última vez. Elige cuál conservar.</p></div><button class="icono-btn" id="sync-conf-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
-    <p class="muted">La copia que no elijas queda guardada como respaldo local; el archivo remoto no se toca hasta que decidas.</p>
+    <header class="modal__cab"><div><h2 id="sync-conf-tit" data-l10n-es="Conflicto de sincronización" data-l10n-en="Sync conflict" data-l10n-zh="同步冲突">Conflicto de sincronización</h2><p class="muted" data-l10n-es="Las dos copias cambiaron desde la última vez. Elige cuál conservar." data-l10n-en="Both copies changed since last time. Choose which one to keep." data-l10n-zh="两份副本自上次以来都发生了变化。请选择保留哪一份。">Las dos copias cambiaron desde la última vez. Elige cuál conservar.</p></div><button class="icono-btn" id="sync-conf-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <p class="muted" data-l10n-es="La copia que no elijas queda guardada como respaldo local; el archivo remoto no se toca hasta que decidas." data-l10n-en="The copy you do not choose is saved as a local backup; the remote file is untouched until you decide." data-l10n-zh="未选择的副本会保存为本地备份；在你决定前不会改动远程文件。">La copia que no elijas queda guardada como respaldo local; el archivo remoto no se toca hasta que decidas.</p>
     <table class="sync-tabla">
-      <thead><tr><th></th><th>Última modificación</th><th>Contenido</th></tr></thead>
+      <thead><tr><th></th><th data-l10n-es="Última modificación" data-l10n-en="Last modified" data-l10n-zh="最后修改">Última modificación</th><th data-l10n-es="Contenido" data-l10n-en="Content" data-l10n-zh="内容">Contenido</th></tr></thead>
       <tbody>
-        <tr><td><b>Local</b></td><td id="sync-conf-local-fecha">—</td><td id="sync-conf-local-resumen">—</td></tr>
-        <tr><td><b>Remoto</b></td><td id="sync-conf-remoto-fecha">—</td><td id="sync-conf-remoto-resumen">—</td></tr>
+        <tr><td><b data-l10n-es="Local" data-l10n-en="Local" data-l10n-zh="本地">Local</b></td><td id="sync-conf-local-fecha">—</td><td id="sync-conf-local-resumen">—</td></tr>
+        <tr><td><b data-l10n-es="Remoto" data-l10n-en="Remote" data-l10n-zh="远程">Remoto</b></td><td id="sync-conf-remoto-fecha">—</td><td id="sync-conf-remoto-resumen">—</td></tr>
       </tbody>
     </table>
     <div class="fila">
-      <button class="btn" id="sync-conf-remoto" type="button">Usar remoto</button>
-      <button class="btn btn-primario" id="sync-conf-local" type="button">Usar local</button>
-      <button class="btn" id="sync-conf-cancelar" type="button">Cancelar</button>
+      <button class="btn" id="sync-conf-remoto" type="button" data-l10n-es="Usar remoto" data-l10n-en="Use remote" data-l10n-zh="使用远程">Usar remoto</button>
+      <button class="btn btn-primario" id="sync-conf-local" type="button" data-l10n-es="Usar local" data-l10n-en="Use local" data-l10n-zh="使用本地">Usar local</button>
+      <button class="btn" id="sync-conf-cancelar" type="button" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
     </div>
   </div>
 </div>
 
 <div class="modal modal-buscar" id="modal-buscar" role="dialog" aria-modal="true" aria-labelledby="buscar-tit">
   <div class="modal__caja buscar-caja">
-    <header class="modal__cab"><div><h2 id="buscar-tit">Buscar en Mimo</h2><p class="muted" id="buscar-sub">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
-    <input class="entrada buscar-input" id="buscar-input" type="search" placeholder="Escribe para buscar…" aria-label="Buscar en Mimo" autocomplete="off">
+    <header class="modal__cab"><div><h2 id="buscar-tit" data-l10n-es="Buscar en Mimo" data-l10n-en="Search Mimo" data-l10n-zh="在 Mimo 中搜索">Buscar en Mimo</h2><p class="muted" id="buscar-sub" data-l10n-es="Tareas, notas, eventos, ramos y periodos." data-l10n-en="Tasks, notes, events, courses and terms." data-l10n-zh="任务、笔记、事件、课程和学期。">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <input class="entrada buscar-input" id="buscar-input" type="search" placeholder="Escribe para buscar…" aria-label="Buscar en Mimo" data-l10n-ph-es="Escribe para buscar…" data-l10n-ph-en="Type to search…" data-l10n-ph-zh="输入以搜索…" data-l10n-aria-es="Buscar en Mimo" data-l10n-aria-en="Search Mimo" data-l10n-aria-zh="在 Mimo 中搜索" autocomplete="off">
     <div class="buscar-resultados" id="buscar-resultados"></div>
-    <p class="buscar-pie muted"><kbd>↑</kbd><kbd>↓</kbd> mover · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> cerrar</p>
+    <p class="buscar-pie muted"><kbd>↑</kbd><kbd>↓</kbd> <span data-l10n-es="mover" data-l10n-en="move" data-l10n-zh="移动">mover</span> · <kbd>Enter</kbd> <span data-l10n-es="abrir" data-l10n-en="open" data-l10n-zh="打开">abrir</span> · <kbd>Esc</kbd> <span data-l10n-es="cerrar" data-l10n-en="close" data-l10n-zh="关闭">cerrar</span></p>
   </div>
 </div>
 
-<div class="menu-ctx" id="menu-ctx" role="menu" aria-label="Acciones del elemento" hidden></div>
+<div class="menu-ctx" id="menu-ctx" role="menu" aria-label="Acciones del elemento" data-l10n-aria-es="Acciones del elemento" data-l10n-aria-en="Item actions" data-l10n-aria-zh="项目操作" hidden></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
