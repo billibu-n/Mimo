@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permisos de la ventana principal de Mimo. Solo el nucleo: la pagina no lee ni escribe el disco. El unico comando propio es http_pedir (HTTP/HTTPS nativo), que no expone archivos ni shell.",
+  "description": "Permisos de la ventana principal de Mimo. Solo el nucleo: la pagina no recibe permisos de fs ni de shell. Los comandos propios son http_pedir (HTTP/HTTPS nativo) y la carpeta de sincronizacion (dialogo nativo; Rust solo lee y escribe mimo-sync.json dentro de la carpeta elegida).",
   "windows": ["main"],
   "permissions": [
     "core:default"

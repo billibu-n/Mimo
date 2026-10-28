@@ -3,9 +3,11 @@
 // Carga `escritorio/app/index.html`, que `preparar-frontend.sh` copia desde la app universal
 // (`<proyecto>/app/`) con lista blanca: index.html, css/, js/, img/ y vendor/.
 //
-// El unico extra nativo es `http_pedir`: un puente HTTP con reqwest que usa la app para WebDAV.
-// El WebView de Tauri no exime a `fetch` de CORS; el puente si, porque la peticion sale de Rust.
-// La pagina no recibe acceso al disco ni al shell: solo puede pedir HTTP(S) por este comando.
+// Dos extras nativos, y nada mas:
+//   - `http_pedir`: puente HTTP con reqwest; el WebView no exime a `fetch` de CORS y Rust si.
+//   - la carpeta de sincronizacion: dialogo nativo y lectura/escritura de `mimo-sync.json`.
+// La pagina no recibe acceso libre al disco: el Rust recuerda la carpeta elegida y solo escribe
+// ese archivo dentro de ella. Tampoco hay shell.
 //
 // La sonda (`MIMO_SONDA=1`) mide la ventana real y no se usa en el uso normal.
 
@@ -13,7 +15,13 @@
 
 use std::collections::HashMap;
 use std::fs;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::time::Duration;
+
+use tauri::{Manager, State};
+use tauri_plugin_dialog::DialogExt;
 
 #[derive(serde::Deserialize)]
 struct PeticionHttp {
@@ -30,6 +38,160 @@ struct RespuestaHttp {
     estado: u16,
     cabeceras: HashMap<String, String>,
     cuerpo: String,
+}
+
+/// Carpeta de sincronizacion recordada por el proceso. El disco solo guarda la ruta elegida;
+/// el contenido vive en `<carpeta>/mimo-sync.json`.
+struct CarpetaSync(Mutex<Option<PathBuf>>);
+
+#[derive(serde::Serialize)]
+struct CarpetaInfo {
+    ruta: String,
+    nombre: String,
+}
+
+fn config_carpeta(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|e| format!("config: {e}"))?;
+    fs::create_dir_all(&dir).map_err(|e| format!("config: {e}"))?;
+    Ok(dir.join("sync-folder.txt"))
+}
+
+fn guardar_ruta(app: &tauri::AppHandle, ruta: &Path) -> Result<(), String> {
+    let cfg = config_carpeta(app)?;
+    fs::write(&cfg, ruta.to_string_lossy().as_bytes())
+        .map_err(|e| format!("no se pudo recordar la carpeta: {e}"))
+}
+
+fn info_carpeta(ruta: &Path) -> CarpetaInfo {
+    CarpetaInfo {
+        ruta: ruta.to_string_lossy().to_string(),
+        nombre: ruta
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "carpeta".into()),
+    }
+}
+
+/// Ruta recordada. `MIMO_CARPETA_PRUEBA` permite a `gate-tauri` probar la ida y vuelta sin
+/// abrir un dialogo; en uso normal solo cuenta el archivo de configuracion.
+fn ruta_guardada(app: &tauri::AppHandle) -> Option<PathBuf> {
+    if let Ok(prueba) = std::env::var("MIMO_CARPETA_PRUEBA") {
+        let p = PathBuf::from(prueba);
+        if p.is_dir() {
+            return Some(p);
+        }
+    }
+    let cfg = config_carpeta(app).ok()?;
+    let texto = fs::read_to_string(cfg).ok()?;
+    let p = PathBuf::from(texto.trim());
+    if p.is_dir() {
+        Some(p)
+    } else {
+        None
+    }
+}
+
+fn ruta_activa(estado: &CarpetaSync) -> Result<PathBuf, String> {
+    estado
+        .0
+        .lock()
+        .map_err(|_| "carpeta bloqueada".to_string())?
+        .clone()
+        .ok_or_else(|| "Elige una carpeta de sincronización.".to_string())
+}
+
+/// Abre el dialogo nativo de carpetas. WebKitGTK no tiene File System Access; este es el sustituto.
+#[tauri::command]
+async fn elegir_carpeta(app: tauri::AppHandle) -> Result<Option<CarpetaInfo>, String> {
+    let seleccion = tauri::async_runtime::spawn_blocking({
+        let app = app.clone();
+        move || {
+            app.dialog()
+                .file()
+                .set_title("Elegir carpeta de sincronización")
+                .blocking_pick_folder()
+                .and_then(|f| f.into_path().ok())
+        }
+    })
+    .await
+    .map_err(|e| format!("diálogo: {e}"))?;
+    let Some(ruta) = seleccion else {
+        return Ok(None);
+    };
+    if !ruta.is_dir() {
+        return Err("La carpeta elegida no existe.".into());
+    }
+    guardar_ruta(&app, &ruta)?;
+    *app.state::<CarpetaSync>()
+        .0
+        .lock()
+        .map_err(|_| "carpeta bloqueada".to_string())? = Some(ruta.clone());
+    Ok(Some(info_carpeta(&ruta)))
+}
+
+/// Devuelve la carpeta recordada, si sigue existiendo. No abre dialogos.
+#[tauri::command]
+fn carpeta_guardada(app: tauri::AppHandle, estado: State<CarpetaSync>) -> Option<CarpetaInfo> {
+    let ruta = {
+        let actual = estado.0.lock().ok().and_then(|g| g.clone());
+        actual.or_else(|| ruta_guardada(&app))?
+    };
+    if !ruta.is_dir() {
+        return None;
+    }
+    if let Ok(mut g) = estado.0.lock() {
+        *g = Some(ruta.clone());
+    }
+    Some(info_carpeta(&ruta))
+}
+
+/// Lee `mimo-sync.json` de la carpeta elegida. Si no existe todavia, devuelve None.
+#[tauri::command]
+fn leer_carpeta(estado: State<CarpetaSync>) -> Result<Option<String>, String> {
+    let dir = ruta_activa(estado.inner())?;
+    match fs::read_to_string(dir.join("mimo-sync.json")) {
+        Ok(texto) => Ok(Some(texto)),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(format!("leer carpeta: {e}")),
+    }
+}
+
+/// Escribe `mimo-sync.json` de forma atomica (temporal + rename) y verifica la lectura.
+#[tauri::command]
+fn escribir_carpeta(estado: State<CarpetaSync>, texto: String) -> Result<(), String> {
+    let dir = ruta_activa(estado.inner())?;
+    let destino = dir.join("mimo-sync.json");
+    let temporal = dir.join(".mimo-sync.json.tmp");
+    {
+        let mut f = fs::File::create(&temporal).map_err(|e| format!("crear temporal: {e}"))?;
+        f.write_all(texto.as_bytes())
+            .map_err(|e| format!("escribir temporal: {e}"))?;
+        f.sync_all()
+            .map_err(|e| format!("sincronizar temporal: {e}"))?;
+    }
+    fs::rename(&temporal, &destino).map_err(|e| format!("reemplazar archivo: {e}"))?;
+    let vuelta = fs::read_to_string(&destino).map_err(|e| format!("verificar: {e}"))?;
+    if vuelta != texto {
+        return Err("No se pudo verificar la escritura del archivo.".into());
+    }
+    Ok(())
+}
+
+/// Olvida la carpeta (al desconectar). No borra archivos del usuario.
+#[tauri::command]
+fn olvidar_carpeta(app: tauri::AppHandle, estado: State<CarpetaSync>) -> Result<(), String> {
+    if let Ok(mut g) = estado.0.lock() {
+        *g = None;
+    }
+    let cfg = config_carpeta(&app)?;
+    match fs::remove_file(cfg) {
+        Ok(_) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(format!("no se pudo olvidar la carpeta: {e}")),
+    }
 }
 
 fn ruta_sonda() -> String {
@@ -221,13 +383,35 @@ const GUION_SONDA: &str = r#"
     document.title = 'SONDA SIN INVOKE';
     return;
   }
+  try {
+    var info = await inv('carpeta_guardada');
+    r.carpeta_nativa = info ? { nombre: info.nombre, ruta: info.ruta } : null;
+    if (info) {
+      var cuerpo = '{"prueba":"carpeta-nativa","n":1}';
+      await inv('escribir_carpeta', { texto: cuerpo });
+      r.carpeta_texto = await inv('leer_carpeta');
+      r.carpeta_archivo = info.ruta + '/mimo-sync.json';
+    }
+  } catch (e) {
+    r.carpeta_error = String(e);
+  }
   inv('sonda_informe', { payload: JSON.stringify(r) });
 })();
 "#;
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![sonda_informe, http_pedir])
+        .plugin(tauri_plugin_dialog::init())
+        .manage(CarpetaSync(Mutex::new(None)))
+        .invoke_handler(tauri::generate_handler![
+            sonda_informe,
+            http_pedir,
+            elegir_carpeta,
+            carpeta_guardada,
+            leer_carpeta,
+            escribir_carpeta,
+            olvidar_carpeta
+        ])
         .setup(|app| {
             lanzar_sonda(app.handle());
             Ok(())

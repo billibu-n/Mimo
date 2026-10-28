@@ -28,6 +28,7 @@
   var cola = cargarCola();
   var sincronizando = false, aplicando = false, conflicto = null;
   var carpetaHandle = null, handleLeido = false;
+  var carpetaTauri = null; /* { ruta, nombre } cuando la app corre en Tauri */
   var cambios = false, ultimoError = "";
   var timerAuto = null, timerEstado = null, timerAutoLargo = null, timerReintento = null, timerVigia = null;
   var proveedorPrueba = null;
@@ -245,7 +246,10 @@
   }
 
   /* ---- carpeta local (File System Access) ---- */
-  function soportaCarpeta() { return typeof window.showDirectoryPicker === "function" && !proveedorPrueba; }
+  function soportaCarpeta() {
+    if (proveedorPrueba) return false;
+    return esTauri() || typeof window.showDirectoryPicker === "function";
+  }
   function abrirDB() {
     return new Promise(function (resolve, reject) {
       if (!window.indexedDB) { reject(new Error("IndexedDB no disponible")); return; }
@@ -306,6 +310,19 @@
   }
   async function obtenerCarpeta(pedir) {
     if (proveedorPrueba) return proveedorPrueba;
+    if (esTauri()) {
+      if (!carpetaTauri) {
+        try {
+          var guardada = await invocarTauri("carpeta_guardada", {});
+          if (guardada) {
+            carpetaTauri = guardada;
+            if (meta.folderName !== guardada.nombre) { meta.folderName = guardada.nombre; guardarMeta(); }
+          }
+        } catch (e) {}
+      }
+      if (!carpetaTauri) throw new Error("Elige una carpeta de sincronización desde Ajustes.");
+      return { tauri: true, nombre: carpetaTauri.nombre, ruta: carpetaTauri.ruta };
+    }
     if (!soportaCarpeta()) throw new Error("Este navegador no permite elegir una carpeta persistente. Usa el modo Archivo manual.");
     if (!handleLeido) { carpetaHandle = await leerHandle(); handleLeido = true; }
     if (!carpetaHandle) {
@@ -321,6 +338,12 @@
     return carpetaHandle;
   }
   async function leerCarpeta(pedir) {
+    if (esTauri()) {
+      var info = await obtenerCarpeta(true);
+      var t = await invocarTauri("leer_carpeta", {});
+      if (t == null) return null;
+      return { texto: t, nombre: info.nombre || ARCHIVO, rev: await hashTexto(t) };
+    }
     var dir = await obtenerCarpeta(pedir); if (!dir) return null;
     var fh;
     try { fh = await dir.getFileHandle(ARCHIVO, { create: false }); }
@@ -330,6 +353,18 @@
     return { texto: texto, nombre: dir.name || ARCHIVO, rev: await hashTexto(texto) };
   }
   async function escribirCarpeta(texto, revEsperada) {
+    if (esTauri()) {
+      await obtenerCarpeta(true);
+      if (revEsperada) {
+        var actual = await leerCarpeta(true);
+        if (!actual) throw new Error("El archivo remoto desapareció. Vuelve a sincronizar.");
+        if (actual.rev !== revEsperada) throw new Error("El archivo cambió mientras sincronizabas. Vuelve a intentarlo.");
+      }
+      await invocarTauri("escribir_carpeta", { texto: texto });
+      var vuelta = await invocarTauri("leer_carpeta", {});
+      if (vuelta !== texto) throw new Error("No se pudo verificar la escritura del archivo.");
+      return { rev: await hashTexto(texto) };
+    }
     var dir = await obtenerCarpeta(true);
     if (revEsperada) {
       var actual = await leerCarpeta(true);
@@ -779,6 +814,14 @@
   /* ---- configuración ---- */
   async function elegirCarpeta() {
     try {
+      if (esTauri()) {
+        var info = await invocarTauri("elegir_carpeta", {});
+        if (!info) return;
+        carpetaTauri = info;
+        meta.provider = "carpeta"; meta.folderName = info.nombre || "carpeta"; meta.manualOnly = true;
+        guardarMeta(); pintarUI(); avisar("Carpeta de sincronización elegida: " + meta.folderName + ".");
+        return;
+      }
       var h = await window.showDirectoryPicker({ mode: "readwrite", id: "mimo-sync" });
       carpetaHandle = h; handleLeido = true; await guardarHandle(h);
       meta.provider = "carpeta"; meta.folderName = h.name || "carpeta"; meta.manualOnly = true;
@@ -808,6 +851,8 @@
     meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
     meta.webdav.clave = "";
     carpetaHandle = null; handleLeido = true; borrarHandle();
+    carpetaTauri = null;
+    if (esTauri()) { try { invocarTauri("olvidar_carpeta", {}).catch(function () {}); } catch (e) {} }
     claveMemo = null; claveSal = "";
     guardarMeta(); conflicto = null; cambios = host().tieneDatos(); limpiarCola(); pintarUI();
     avisar("Sincronización desconectada.");

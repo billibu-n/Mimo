@@ -13,8 +13,8 @@ cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
 `cargo tauri build` ejecuta `preparar-frontend.sh` antes de compilar (`beforeBuildCommand`), así que
 el paso manual solo hace falta para inspeccionar el frontend preparado.
 
-Deja el instalable en `release/Mimo-1.2.0-1.x86_64.rpm` (5,38 MiB) y el binario suelto en
-`release/mimo` (17,7 MB). `CARGO_TARGET_DIR` saca los 3 GB de compilación de `~/sede`; `release/`
+Deja el instalable en `release/Mimo-1.2.0-1.x86_64.rpm` (5,54 MiB) y el binario suelto en
+`release/mimo` (18,4 MB). `CARGO_TARGET_DIR` saca los 3 GB de compilación de `~/sede`; `release/`
 está ignorado en git y es un enlace a `~/sede/respaldos/mimo-1.2.0-release` para no gastar el
 presupuesto de la casa. El RPM **no está firmado**; se
 declara como hueco hasta que haya clave de firma.
@@ -45,12 +45,17 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
   ETag. Existe porque el WebView de Tauri **no exime a `fetch` de CORS**; la petición nativa sí.
   La app lo detecta y lo usa solo dentro de Tauri; en el navegador sigue usando `fetch`. Solo
   admite `http`/`https`.
+- **Carpeta de sincronización nativa:** WebKitGTK no tiene File System Access, así que el diálogo
+  lo abre Tauri (`tauri-plugin-dialog`) y Rust lee/escribe `mimo-sync.json` de forma atómica
+  (temporal + `rename` + verificación). La ruta elegida se recuerda en la configuración de la app;
+  la página no elige rutas ni escribe otros archivos. Si se desconoce, la app pide «Elegir carpeta».
 - **Sonda:** `MIMO_SONDA=1 ./release/mimo` escribe `MIMO_SONDA_SALIDA` (por
   defecto `/tmp/mimo-sonda.json`) y sale. Mide navegación, nota en `localStorage`, Ajustes y una
   sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
   `DISPLAY` o `WAYLAND_DISPLAY`.
-- **Gate:** `python3 app/pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia y la
-  sync nativa contra `app/pruebas/webdav.py` (27 medidas). No está en `correr-gates.py` porque
-  necesita compilar y abrir ventana; se corre aparte al cerrar U6c.
+- **Gate:** `python3 app/pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia, la
+  sync nativa contra `app/pruebas/webdav.py` y la ida y vuelta de la carpeta nativa (30 medidas).
+  No está en `correr-gates.py` porque necesita compilar y abrir ventana; se corre aparte al cerrar
+  U6c.
 - Requisitos (Fedora, ya instalados aquí): `cargo` y `cargo-tauri` 2.12, `rpmbuild`,
   `webkit2gtk-4.1`, `javascriptcoregtk-4.1`, `libsoup-3.0`, `librsvg2`, `gtk3` y `fakeroot`.

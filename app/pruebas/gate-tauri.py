@@ -9,7 +9,8 @@ Mide el binario real, no el HTML suelto:
   4. WebDAV funciona por el puente HTTP nativo (sin CORS) contra un servidor local;
   5. el remoto queda cifrado y con Basic auth;
   6. el estado sobrevive a cerrar y abrir el binario;
-  7. el RPM y el binario existen y pesan lo esperado.
+  7. la carpeta nativa recuerda la ruta, escribe `mimo-sync.json` de forma atomica y lo relee;
+  8. el RPM y el binario existen y pesan lo esperado.
 
 Requiere el binario ya compilado:
   cd escritorio && ./preparar-frontend.sh
@@ -83,8 +84,11 @@ def main() -> int:
         td = Path(td)
         for d in ("data", "cache", "config"):
             (td / d).mkdir()
+        carpeta = td / "carpeta-sync"
+        carpeta.mkdir()
         env = os.environ.copy()
         env.update({
+            "MIMO_CARPETA_PRUEBA": str(carpeta),
             "MIMO_WEBDAV_URL": srv.url,
             "MIMO_WEBDAV_USER": "mimo",
             "MIMO_WEBDAV_PASS": "prueba",
@@ -119,6 +123,13 @@ def main() -> int:
         exigir(sync.get("provider") == "webdav" and sync.get("version", 0) >= 1 and
                sync.get("pendiente") is False and sync.get("conflicto") is False,
                f"tauri: sync WebDAV cerrada — {sync}", fallas)
+        exigir((r.get("carpeta_nativa") or {}).get("nombre") == "carpeta-sync",
+               f"tauri: carpeta nativa recordada — {r.get('carpeta_nativa')} {r.get('carpeta_error')}", fallas)
+        exigir(r.get("carpeta_texto") == '{"prueba":"carpeta-nativa","n":1}',
+               f"tauri: ida y vuelta nativa — {r.get('carpeta_texto')}", fallas)
+        exigir((carpeta / "mimo-sync.json").exists() and
+               (carpeta / "mimo-sync.json").read_text(encoding="utf-8") == '{"prueba":"carpeta-nativa","n":1}',
+               "tauri: mimo-sync.json escrito en la carpeta elegida", fallas)
         exigir(r.get("errores") == [], f"tauri: sin errores JS — {r.get('errores')}", fallas)
 
         ruta = "/Mimo/mimo-sync.json.enc"
