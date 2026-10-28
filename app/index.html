@@ -390,63 +390,93 @@
         </section>
         <section class="card card--ancho" id="sync-card">
           <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg>Sincronización</h2>
-          <p class="muted" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
-          <label class="campo">Modo <select class="entrada" id="sync-proveedor">
-            <option value="">Elegir…</option>
-            <option value="webdav">WebDAV / Nextcloud (cifrado)</option>
-            <option value="carpeta">Carpeta local (un clic)</option>
-            <option value="archivo">Archivo manual (descargar/cargar)</option>
-          </select></label>
+          <p class="muted sync-estado" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
+
+          <div class="sync-modo">
+            <label for="sync-proveedor">Modo</label>
+            <select class="entrada" id="sync-proveedor">
+              <option value="">Elegir…</option>
+              <option value="webdav">WebDAV / Nextcloud (cifrado)</option>
+              <option value="carpeta">Carpeta local (un clic)</option>
+              <option value="archivo">Archivo manual (descargar/cargar)</option>
+            </select>
+          </div>
+
           <div id="sync-webdav" hidden>
-            <label class="sync-campo">Servidor
-              <input class="entrada" id="sync-webdav-url" type="url" autocomplete="off" spellcheck="false"
-                placeholder="https://nube.ejemplo/remote.php/dav/files/tu-usuario">
-            </label>
-            <div class="sync-dos">
-              <label class="sync-campo">Usuario
-                <input class="entrada" id="sync-webdav-usuario" type="text" autocomplete="username" spellcheck="false">
-              </label>
-              <label class="sync-campo">Contraseña de aplicación
-                <input class="entrada" id="sync-webdav-clave-acceso" type="password" autocomplete="off">
-              </label>
-            </div>
-            <label class="sync-campo">Carpeta remota
-              <input class="entrada" id="sync-webdav-carpeta" type="text" value="Mimo" autocomplete="off" spellcheck="false">
-            </label>
-            <div class="fila">
-              <button class="btn" id="sync-webdav-probar" type="button">Probar conexión</button>
-            </div>
-            <p class="muted">Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña de aplicación revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual.</p>
-            <div class="sync-cifrado">
-              <p><b>Cifrado obligatorio.</b> Antes de subir, el archivo se cifra en este equipo con AES-GCM y una clave derivada de tu contraseña. La contraseña no se guarda; sin ella no se puede leer la copia remota, ni siquiera tú. Anótala.</p>
-              <div class="fila">
-                <input class="entrada" id="sync-webdav-clave" type="password" autocomplete="new-password"
-                  placeholder="Contraseña de cifrado (mínimo 8)">
-                <button class="btn" id="sync-webdav-guardar-clave" type="button">Guardar clave</button>
-                <button class="btn" id="sync-webdav-olvidar-clave" type="button">Olvidar clave</button>
-              </div>
-              <p class="muted" id="sync-webdav-clave-estado">Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.</p>
+            <div class="sync-columnas">
+              <section class="sync-bloque" aria-labelledby="sync-conexion-tit">
+                <h3 id="sync-conexion-tit">Conexión</h3>
+                <p class="sync-nota">WebDAV no crea cuentas: la cuenta la da tu proveedor (Nextcloud, ownCloud u otro).</p>
+
+                <label class="sync-campo">Servidor
+                  <input class="entrada" id="sync-webdav-url" type="url" autocomplete="off" spellcheck="false"
+                    placeholder="https://nube.ejemplo/remote.php/dav/files/tu-usuario">
+                  <span class="sync-pista">La dirección WebDAV de tu cuenta, no la página de inicio.</span>
+                </label>
+
+                <div class="sync-dos">
+                  <label class="sync-campo">Usuario
+                    <input class="entrada" id="sync-webdav-usuario" type="text" autocomplete="username" spellcheck="false">
+                  </label>
+                  <label class="sync-campo">Contraseña de aplicación
+                    <input class="entrada" id="sync-webdav-clave-acceso" type="password" autocomplete="off">
+                  </label>
+                </div>
+
+                <label class="sync-campo">Carpeta remota
+                  <input class="entrada" id="sync-webdav-carpeta" type="text" value="Mimo" autocomplete="off" spellcheck="false">
+                </label>
+
+                <div class="sync-fila">
+                  <button class="btn" id="sync-webdav-probar" type="button">Probar conexión</button>
+                  <span class="sync-sin-cuenta">¿No tienes cuenta? <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer">Crea una en Nextcloud</a></span>
+                </div>
+
+                <p class="sync-nota sync-nota--final">Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual.</p>
+              </section>
+
+              <section class="sync-bloque sync-bloque--cifrado" aria-labelledby="sync-cifrado-tit">
+                <h3 id="sync-cifrado-tit">Cifrado</h3>
+                <p class="sync-nota"><b>Obligatorio antes de subir.</b> El archivo se cifra en este equipo con AES-GCM y una clave derivada de tu contraseña. La contraseña no se guarda; sin ella no se puede leer la copia remota, ni siquiera tú. Anótala.</p>
+
+                <label class="sync-campo">Contraseña de cifrado
+                  <input class="entrada" id="sync-webdav-clave" type="password" autocomplete="new-password"
+                    placeholder="Mínimo 8 caracteres">
+                </label>
+
+                <div class="sync-fila sync-fila--botones">
+                  <button class="btn" id="sync-webdav-guardar-clave" type="button">Guardar clave</button>
+                  <button class="btn" id="sync-webdav-olvidar-clave" type="button">Olvidar clave</button>
+                </div>
+
+                <p class="sync-nota sync-nota--final" id="sync-webdav-clave-estado">Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.</p>
+              </section>
             </div>
           </div>
+
           <div id="sync-carpeta" hidden>
             <p class="muted" id="sync-carpeta-nombre">Sin carpeta elegida.</p>
             <button class="btn" id="sync-elegir-carpeta" type="button">Elegir carpeta…</button>
           </div>
+
           <div id="sync-archivo" hidden>
             <p class="muted">Guarda <code>mimo-sync.json</code> en tu nube y cárgalo en el otro equipo.</p>
-            <div class="fila">
+            <div class="sync-fila">
               <button class="btn" id="sync-guardar-archivo" type="button">Guardar archivo</button>
               <button class="btn" id="sync-cargar-archivo" type="button">Cargar archivo</button>
               <input type="file" id="sync-archivo-input" accept=".json,application/json" hidden>
             </div>
           </div>
-          <label class="check"><input type="checkbox" id="sync-manual" checked> Solo sincronizar a mano (sin automático; un envío pendiente se reintenta al volver la red)</label>
-          <div class="fila">
-            <button class="btn btn-primario" id="sync-ahora" type="button">Sincronizar ahora</button>
-            <button class="btn" id="sync-desconectar" type="button">Desconectar</button>
+
+          <div class="sync-acciones">
+            <label class="check"><input type="checkbox" id="sync-manual" checked> Solo sincronizar a mano (sin automático; un envío pendiente se reintenta al volver la red)</label>
+            <div class="sync-fila sync-fila--acciones">
+              <button class="btn btn-primario" id="sync-ahora" type="button">Sincronizar ahora</button>
+              <button class="btn" id="sync-desconectar" type="button">Desconectar</button>
+            </div>
+            <p class="muted" id="sync-ultima">Nunca sincronizado.</p>
+            <p class="muted" id="sync-ayuda">WebDAV/Nextcloud sube siempre cifrado. El archivo manual y la carpeta local guardan JSON en claro: úsalos solo en un medio de confianza. Dropbox y OneDrive quedan para después.</p>
           </div>
-          <p class="muted" id="sync-ultima">Nunca sincronizado.</p>
-          <p class="muted" id="sync-ayuda">WebDAV/Nextcloud sube siempre cifrado. El archivo manual y la carpeta local guardan JSON en claro: úsalos solo en un medio de confianza. Dropbox y OneDrive quedan para después.</p>
         </section>
       </div>
 

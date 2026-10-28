@@ -10,7 +10,9 @@ Mide sobre app/index.html:
   4. el clic derecho sobre una sesión ofrece Editar y Borrar;
   5. el tema claro/oscuro salta entre la pareja configurada;
   6. Ajustes queda en tres grupos y con los selectores de pareja;
-  7. Notas renderiza $...$ y $$...$$ con KaTeX, sin errores de consola.
+  7. Notas renderiza $...$ y $$...$$ con KaTeX, sin errores de consola;
+  8. la tarjeta de sincronización tiene aire (padding, columnas y campos), ofrece
+     el registro de Nextcloud y no desborda en móvil.
 
 Uso: python3 app/pruebas/gate-correcciones.py
 """
@@ -135,6 +137,31 @@ def main() -> int:
             exigir("Español" in page.locator("#pref-idioma").inner_text(),
                    "ajustes: idioma con bandera", fallas)
 
+            page.locator("#sync-proveedor").select_option("webdav")
+            page.wait_for_timeout(250)
+            reg = page.locator("#sync-webdav-registro")
+            exigir(reg.is_visible() and "nextcloud.com" in (reg.get_attribute("href") or "") and
+                   reg.get_attribute("target") == "_blank",
+                   "sync: ofrece crear cuenta de Nextcloud en otra pestaña", fallas)
+            aire = page.evaluate("""() => {
+              const q = s => document.querySelector(s);
+              const c = getComputedStyle(q('#sync-card'));
+              const cols = getComputedStyle(q('.sync-columnas'));
+              const campo = getComputedStyle(q('.sync-campo'));
+              const acc = getComputedStyle(q('.sync-acciones'));
+              return {
+                pad: parseFloat(c.paddingTop),
+                colGap: parseFloat(cols.columnGap),
+                campoGap: parseFloat(campo.marginBottom),
+                accGap: parseFloat(acc.rowGap),
+              };
+            }""")
+            exigir(aire["pad"] >= 20 and aire["colGap"] >= 24 and aire["campoGap"] >= 12 and aire["accGap"] >= 12,
+                   f"sync: espaciado con aire — {aire}", fallas)
+            columnas_sync = page.locator(".sync-columnas").evaluate(
+                "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
+            exigir(columnas_sync == 2, f"sync: conexión y cifrado en dos columnas — {columnas_sync}", fallas)
+
             page.locator("[data-editar-periodo]").first.click(); page.wait_for_timeout(150)
             page.locator("#periodo-nombre").fill("Primavera 2026 bis")
             page.locator("#periodo-semanas").fill("3")
@@ -193,6 +220,16 @@ def main() -> int:
                    f"notas: 2 fórmulas KaTeX — {page.locator('#nota-preview .katex').count()}", fallas)
             exigir(page.locator("#nota-preview .katex-error").count() == 0,
                    "notas: sin fórmulas rotas", fallas)
+
+            page.set_viewport_size({"width": 411, "height": 900})
+            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(250)
+            desborde = page.evaluate(
+                "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
+                " document.body.scrollWidth - document.body.clientWidth)")
+            exigir(desborde == 0, f"sync: 411 sin desborde — {desborde}px", fallas)
+            una_col = page.locator(".sync-columnas").evaluate(
+                "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
+            exigir(una_col == 1, f"sync: en móvil una columna — {una_col}", fallas)
             exigir(not [e for e in errores if e.startswith("pageerror")],
                    f"consola: sin pageerror — {errores[:2]}", fallas)
         finally:
