@@ -3170,7 +3170,6 @@
         e.preventDefault(); ejecutarBusqueda(parseInt(bs[0].getAttribute("data-res"), 10));
       }
     });
-    $("#btn-sync").addEventListener("click", function () { aviso("Guardado en este equipo. La sincronización es opcional."); });
     $("#btn-nuevo").addEventListener("click", abrirPeriodo);
     $("#btn-nuevo-evento").addEventListener("click", function () { abrirEvento(null); });
     $("#evento-cancelar").addEventListener("click", function () { $("#evento-form").hidden = true; });

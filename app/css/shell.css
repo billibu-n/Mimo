@@ -585,3 +585,10 @@ body.nav-izq .shell{margin-left:64px}
 #sync-estado.err{color:var(--bad)}
 #btn-sync.girando .icono{animation:girar 1s linear infinite}
 @keyframes girar{to{transform:rotate(360deg)}}
+.sync-campo{display:flex;flex-direction:column;gap:4px;margin:var(--sp-2) 0;font-size:var(--fs-xs);color:var(--muted)}
+.sync-campo .entrada{font-size:var(--fs-sm)}
+.sync-dos{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.sync-cifrado{border-top:1px solid var(--line2);margin-top:var(--sp-3);padding-top:var(--sp-2)}
+.sync-cifrado .entrada{flex:1 1 220px}
+#sync-webdav-clave-estado.ok{color:var(--ok)}
+@media (max-width:720px){.sync-dos{grid-template-columns:1fr}}

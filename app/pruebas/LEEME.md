@@ -6,7 +6,7 @@ verde por impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 app/pruebas/correr-gates.py     # los 12 gates, resumen al final
+python3 app/pruebas/correr-gates.py     # los 13 gates, resumen al final
 ```
 
 El viejo está en `referencia/academics-1.1.2/` y no entra en esta suite: es oráculo, no producto.
@@ -25,6 +25,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-busqueda` | Ctrl+K encuentra tareas, notas, eventos, ramos y periodos y navega | sin demo: mide `app/index.html` |
 | `gate-correcciones` | respaldo académico importado (ramos, tareas, sesiones, metas, bloques), reloj editable, sesión corregida, clic derecho, pareja de temas, 3 grupos de Ajustes y KaTeX en Notas | importación incompleta, reloj no editable, tema sin pareja o fórmula rota |
 | `gate-sync` | guarda un `mimo-sync.json`, lo carga en otro contexto, detecta conflicto local/remoto, aplica cada lado y deja respaldo | archivo sin formato, conflicto no detectado o pérdida de la copia local |
+| `gate-webdav` | WebDAV/Nextcloud local con ETag: sin clave no sube, el remoto va cifrado, `If-None-Match`/`If-Match`, segundo equipo, cola sin red que sobrevive a recargar y se reintenta al volver, conflicto y ambas salidas, clave mala y remoto corrupto | sin clave subiendo, texto claro en el remoto, cola que se pierde o conflicto que pisa una copia |
 | `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
 
 ## Fixtures
@@ -47,3 +48,9 @@ Un gate que no discrimina es un gate roto.
   M20 lo sustituye conservando estas medidas.
 - No hay capturas nuevas: la evidencia son las salidas de los gates y la maqueta ya capturada en
   T-45.
+- `gate-webdav` usa `webdav.py`, un servidor local con CORS y ETag. **No se probó contra un
+  Nextcloud real**: si el servidor no envía CORS, el navegador bloquea la petición y queda el
+  archivo manual. La app abierta como `file://` envía `Origin: null`; la lista de CORS del servidor
+  debe aceptarlo o la app debe servirse desde un origen propio (o desde Tauri).
+- El cifrado se mide con dos contextos y una contraseña compartida; no hay recuperación de clave.
+  Si se pierde, la copia local sigue intacta y la remota no se puede leer.
