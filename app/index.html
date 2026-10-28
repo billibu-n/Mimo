@@ -71,22 +71,22 @@
 
 <header class="topbar">
   <button class="marca" id="btn-mimo" type="button" title="Mimo" aria-label="Mimo"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span class="wordmark" aria-hidden="true">M<span class="wm-i">ı</span>mo</span></button>
-  <span class="badge" title="Versión">v1.2.0</span>
+  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0</span>
   <span class="crece"></span>
-  <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
-  <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
-  <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
-  <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
-  <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
-  <button class="icono-btn" id="btn-ajustes" type="button" title="Ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
+  <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
+  <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
+  <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro" data-i18n-title="top.tema"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
+  <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false" data-i18n-title="top.split"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
+  <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true" data-i18n-title="top.panel"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
+  <button class="icono-btn" id="btn-ajustes" type="button" title="Ajustes" data-i18n-title="top.ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
 </header>
 
 <div class="navbar">
   <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
-  <button class="tab-add" id="btn-add" type="button" title="Agregar un bloque" aria-label="Agregar un bloque"><svg class="icono" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  <button class="tab-add" id="btn-add" type="button" title="Agregar un bloque" aria-label="Agregar un bloque" data-i18n-title="top.add" data-i18n-aria="top.add"><svg class="icono" aria-hidden="true"><use href="#i-plus"/></svg></button>
   <div class="nav-acciones">
-    <button class="btn btn-primario btn-periodo-nuevo" id="btn-nuevo" type="button" title="Definir un periodo">+</button>
-    <button class="periodo" id="btn-periodo" type="button" title="Periodo activo">Sin periodo</button>
+    <button class="btn btn-primario btn-periodo-nuevo" id="btn-nuevo" type="button" title="Definir un periodo" data-i18n-title="top.nuevo">+</button>
+    <button class="periodo" id="btn-periodo" type="button" title="Periodo activo" data-i18n-title="top.activo">Sin periodo</button>
   </div>
 </div>
 
@@ -97,37 +97,37 @@
       <div class="sec-cab">
         <div><h1 data-i18n="nav.calendario">Calendario</h1><p class="sec-sub" data-i18n="sub.calendario">Todo lo que tiene fecha, en un solo sitio.</p></div>
         <div class="sec-acciones">
-          <div class="conmutador" id="vista-calendario" role="group" aria-label="Vista del calendario"><button type="button" class="on" data-cal-vista="mes">Mes</button><button type="button" data-cal-vista="semana">Semana</button><button type="button" data-cal-vista="agenda">Agenda</button></div>
-          <button class="btn" id="btn-hoy" type="button">Hoy</button>
+          <div class="conmutador" id="vista-calendario" role="group" aria-label="Vista del calendario" data-i18n-aria="cal.vistaAria"><button type="button" class="on" data-cal-vista="mes" data-i18n="cal.vista.mes">Mes</button><button type="button" data-cal-vista="semana" data-i18n="cal.vista.semana">Semana</button><button type="button" data-cal-vista="agenda" data-i18n="cal.vista.agenda">Agenda</button></div>
+          <button class="btn" id="btn-hoy" type="button" data-i18n="cal.hoy">Hoy</button>
         </div>
       </div>
       <form class="evento-form" id="evento-form" hidden>
-        <input class="entrada" id="evento-titulo" type="text" placeholder="Título del evento" aria-label="Título del evento" autocomplete="off">
-        <input class="entrada" id="evento-fecha" type="date" aria-label="Fecha">
-        <input class="entrada" id="evento-hora" type="time" aria-label="Hora">
-        <input class="entrada" id="evento-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto">
-        <button class="btn btn-primario" type="submit">Guardar</button>
-        <button class="btn" type="button" id="evento-cancelar">Cancelar</button>
+        <input class="entrada" id="evento-titulo" type="text" placeholder="Título del evento" aria-label="Título del evento" data-i18n-placeholder="cal.evento.titulo" data-i18n-aria="cal.evento.titulo" autocomplete="off">
+        <input class="entrada" id="evento-fecha" type="date" aria-label="Fecha" data-i18n-aria="cal.evento.fecha">
+        <input class="entrada" id="evento-hora" type="time" aria-label="Hora" data-i18n-aria="cal.evento.hora">
+        <input class="entrada" id="evento-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto" data-i18n-placeholder="cal.evento.contexto" data-i18n-aria="cal.contexto">
+        <button class="btn btn-primario" type="submit" data-i18n="acc.guardar">Guardar</button>
+        <button class="btn" type="button" id="evento-cancelar" data-i18n="acc.cancelar">Cancelar</button>
       </form>
       <div class="kpis">
-        <div class="kpi"><b id="kpi-eventos">0</b><span>eventos este mes</span></div>
-        <div class="kpi"><b id="kpi-tareas">0</b><span>tareas con fecha</span></div>
-        <div class="kpi"><b>0 h</b><span>registradas</span></div>
-        <div class="kpi"><b id="kpi-bloques">0</b><span>bloques instalados</span></div>
+        <div class="kpi"><b id="kpi-eventos">0</b><span data-i18n="cal.kpi.eventos">eventos este mes</span></div>
+        <div class="kpi"><b id="kpi-tareas">0</b><span data-i18n="cal.kpi.tareas">tareas con fecha</span></div>
+        <div class="kpi"><b>0 h</b><span data-i18n="cal.kpi.horas">registradas</span></div>
+        <div class="kpi"><b id="kpi-bloques">0</b><span data-i18n="cal.kpi.bloques">bloques instalados</span></div>
       </div>
       <div class="cal-layout">
         <aside class="rail" aria-label="Filtros">
-          <button class="btn btn-primario" id="btn-nuevo-evento" type="button" style="width:100%">+ Nuevo evento</button>
-          <hr><h3>Contextos</h3>
-          <p class="muted">Sin contextos todavía. Crea uno al primer evento o tarea.</p>
-          <hr><h3>Calendarios</h3>
-          <p class="muted">Local · este equipo</p>
+          <button class="btn btn-primario" id="btn-nuevo-evento" type="button" style="width:100%" data-i18n="cal.nuevo">+ Nuevo evento</button>
+          <hr><h3 data-i18n="cal.contextos">Contextos</h3>
+          <p class="muted" data-i18n="cal.sinContextos">Sin contextos todavía. Crea uno al primer evento o tarea.</p>
+          <hr><h3 data-i18n="cal.calendarios">Calendarios</h3>
+          <p class="muted" data-i18n="cal.local">Local · este equipo</p>
         </aside>
         <div class="card cal-tarjeta" data-ctx-zona="calendario">
-          <div class="cal-cab"><button class="icono-btn" id="cal-ant" type="button" title="Anterior" aria-label="Anterior">‹</button><h2 id="cal-mes-titulo">Mes</h2><button class="icono-btn" id="cal-sig" type="button" title="Siguiente" aria-label="Siguiente">›</button><span class="pill" id="cal-cuenta">0 eventos</span></div>
+          <div class="cal-cab"><button class="icono-btn" id="cal-ant" type="button" title="Anterior" aria-label="Anterior" data-i18n-title="cal.anterior" data-i18n-aria="cal.anterior">‹</button><h2 id="cal-mes-titulo">Mes</h2><button class="icono-btn" id="cal-sig" type="button" title="Siguiente" aria-label="Siguiente" data-i18n-title="cal.siguiente" data-i18n-aria="cal.siguiente">›</button><span class="pill" id="cal-cuenta">0 eventos</span></div>
           <div class="cal-grid" id="cal-grid"></div>
           <div id="cal-agenda" class="cal-agenda" hidden></div>
-          <p class="empty" id="cal-vacio">Sin eventos. Todo lo que tenga fecha aparecerá aquí.</p>
+          <p class="empty" id="cal-vacio" data-i18n="cal.vacio">Sin eventos. Todo lo que tenga fecha aparecerá aquí.</p>
         </div>
       </div>
     </section>
@@ -524,9 +524,9 @@
     <div id="split-escena" class="split-escena"></div>
   </main>
 
-  <aside class="panel" id="panel" aria-label="Panel de herramientas">
-    <div class="panel__cab"><span class="panel__tit">Panel</span><button class="icono-btn" id="btn-panel-cerrar" type="button" title="Cerrar panel" aria-label="Cerrar panel" style="min-width:28px;height:26px"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></div>
-    <div class="panel__tabs" role="tablist" aria-label="Herramientas del panel">
+  <aside class="panel" id="panel" aria-label="Panel de herramientas" data-i18n-aria="panel.herramientas">
+    <div class="panel__cab"><span class="panel__tit" data-i18n="panel.titulo">Panel</span><button class="icono-btn" id="btn-panel-cerrar" type="button" title="Cerrar panel" aria-label="Cerrar panel" data-i18n-title="panel.cerrar" data-i18n-aria="panel.cerrar" style="min-width:28px;height:26px"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="panel__tabs" role="tablist" aria-label="Herramientas del panel" data-i18n-aria="panel.herramientas">
       <button class="panel__tab on" type="button" role="tab" aria-selected="true" data-ptab="contexto" data-i18n="panel.contexto">Contexto</button>
       <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="detalle" data-i18n="panel.detalle">Detalle</button>
       <button class="panel__tab" type="button" role="tab" aria-selected="false" data-ptab="notas" data-i18n="panel.notas">Notas</button>
@@ -537,10 +537,10 @@
 </div>
 
 <footer class="footer" aria-label="Pie de la aplicación">
-  <button class="footer__btn" id="pie-sync" type="button"><span class="footer__punto" aria-hidden="true"></span>local · guardado</button>
+  <button class="footer__btn" id="pie-sync" type="button"><span class="footer__punto" aria-hidden="true"></span><span data-i18n="pie.guardado">local · guardado</span></button>
   <span class="footer__centro" id="pie-centro">Calendario</span>
-  <button class="footer__btn" id="pie-ayuda" type="button">Ayuda</button>
-  <button class="footer__btn" id="pie-panel" type="button">Panel</button>
+  <button class="footer__btn" id="pie-ayuda" type="button" data-i18n="pie.ayuda">Ayuda</button>
+  <button class="footer__btn" id="pie-panel" type="button" data-i18n="pie.panel">Panel</button>
 </footer>
 
 <div class="velo" id="velo"></div>

@@ -17,7 +17,8 @@ Mide sobre app/index.html:
  12. el mapa de semanas permite receso/exámenes arbitrarios y el calendario los cambia;
  13. ESC cierra la ventana de periodo;
  14. Ctrl+1..4 sigue el orden actual de las pestañas, incluso tras reordenar;
- 15. la pantalla de carga se retira al terminar el arranque.
+ 15. la pantalla de carga se retira al terminar el arranque;
+ 16. el calendario se traduce a inglés y chino (mes, días, vacío y formulario).
 """
 from __future__ import annotations
 
@@ -115,6 +116,36 @@ def main() -> int:
                    f"idioma: pestaña 日历 — {page.locator('#tabs .tab[data-ir=\"calendario\"]').get_attribute('title')}", fallas)
             exigir("🇨🇳" in page.locator("#idioma-bandera").inner_text(),
                    "idioma: bandera china", fallas)
+            page.locator('#tabs [data-ir="calendario"]').click(); page.wait_for_timeout(250)
+            mes_zh = page.locator("#cal-mes-titulo").inner_text()
+            exigir("年" in mes_zh and "月" in mes_zh,
+                   f"idioma: mes del calendario en chino — {mes_zh}", fallas)
+            exigir(page.locator("#btn-hoy").inner_text() == "今天",
+                   f"idioma: botón Hoy en chino — {page.locator('#btn-hoy').inner_text()}", fallas)
+            dias_zh = page.locator("#cal-grid .cal-dow:not(.cal-dow--sem)").evaluate_all("els => els.map(e => e.textContent.trim())")
+            exigir(dias_zh[0] == "周一",
+                   f"idioma: días de la semana en chino — {dias_zh[:7]}", fallas)
+            exigir("没有事件" in page.locator("#cal-vacio").inner_text(),
+                   f"idioma: vacío del calendario en chino — {page.locator('#cal-vacio').inner_text()}", fallas)
+            exigir(page.locator("#btn-periodo").inner_text() != "Sin periodo",
+                   f"idioma: periodo sin texto español — {page.locator('#btn-periodo').inner_text()}", fallas)
+            page.locator("#btn-nuevo-evento").click(); page.wait_for_timeout(150)
+            exigir(page.locator("#evento-titulo").get_attribute("placeholder") == "事件标题",
+                   f"idioma: placeholder del evento en chino — {page.locator('#evento-titulo').get_attribute('placeholder')}", fallas)
+            page.locator("#evento-cancelar").click(); page.wait_for_timeout(100)
+
+            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
+            page.locator("#pref-idioma").select_option("en"); page.wait_for_timeout(250)
+            page.locator('#tabs [data-ir="calendario"]').click(); page.wait_for_timeout(250)
+            mes_en = page.locator("#cal-mes-titulo").inner_text()
+            exigir("October" in mes_en or "November" in mes_en or "September" in mes_en,
+                   f"idioma: mes del calendario en inglés — {mes_en}", fallas)
+            exigir(page.locator("#btn-hoy").inner_text() == "Today",
+                   f"idioma: botón Hoy en inglés — {page.locator('#btn-hoy').inner_text()}", fallas)
+            dias_en = page.locator("#cal-grid .cal-dow:not(.cal-dow--sem)").evaluate_all("els => els.map(e => e.textContent.trim())")
+            exigir(dias_en[0] == "Mon",
+                   f"idioma: días de la semana en inglés — {dias_en[:7]}", fallas)
+            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
             page.locator("#pref-idioma").select_option("es"); page.wait_for_timeout(200)
             bandera = page.locator("#idioma-bandera img").get_attribute("src") or ""
             exigir("bandera-sudamerica.webp" in bandera,

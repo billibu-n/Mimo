@@ -43,7 +43,41 @@
       "aj.hora": "Formato de hora", "aj.barra": "Barra de secciones", "aj.arriba": "Arriba", "aj.izquierda": "Izquierda",
       "aj.ancho": "Ancho", "aj.abierto": "Abierto al iniciar", "aj.abrirPanel": "Abrir panel",
       "aj.acerca": "Acerca de",
-      "top.buscar": "Buscar", "cal.semana": "Sem"
+      "top.buscar": "Buscar", "cal.semana": "Sem",
+      "top.add": "Agregar un bloque", "top.nuevo": "Definir un periodo", "top.activo": "Periodo activo",
+      "top.version": "Versión", "top.sync": "Guardado en este equipo", "top.tema": "Cambiar entre claro y oscuro",
+      "top.split": "Vista dividida", "top.panel": "Panel de herramientas", "top.ajustes": "Ajustes",
+      "panel.titulo": "Panel", "panel.herramientas": "Herramientas del panel", "panel.cerrar": "Cerrar panel",
+      "panel.ahora": "Ahora", "panel.sinEventos": "Sin eventos este mes.",
+      "panel.sinContexto": "Sin contexto", "panel.estaSeccion": "Esta sección no declara contexto.",
+      "periodo.sin": "Sin periodo", "pie.guardado": "local · guardado", "pie.ayuda": "Ayuda", "pie.panel": "Panel",
+      "acc.guardar": "Guardar", "acc.cancelar": "Cancelar", "acc.editar": "Editar", "acc.borrar": "Borrar", "acc.cerrar": "Cerrar",
+      "cal.vista.mes": "Mes", "cal.vista.semana": "Semana", "cal.vista.agenda": "Agenda", "cal.hoy": "Hoy",
+      "cal.nuevo": "+ Nuevo evento", "cal.contextos": "Contextos",
+      "cal.sinContextos": "Sin contextos todavía. Crea uno al primer evento o tarea.",
+      "cal.calendarios": "Calendarios", "cal.local": "Local · este equipo",
+      "cal.anterior": "Anterior", "cal.siguiente": "Siguiente",
+      "cal.kpi.eventos": "eventos este mes", "cal.kpi.tareas": "tareas con fecha",
+      "cal.kpi.horas": "registradas", "cal.kpi.bloques": "bloques instalados",
+      "cal.evento.titulo": "Título del evento", "cal.evento.fecha": "Fecha", "cal.evento.hora": "Hora",
+      "cal.evento.contexto": "Contexto (opcional)", "cal.contexto": "Contexto",
+      "cal.vacio": "Sin eventos. Todo lo que tenga fecha aparecerá aquí.",
+      "cal.agenda": "Agenda", "cal.proximo": "próximo", "cal.pasado": "pasado",
+      "cal.sinEventos": "Sin eventos todavía.", "cal.semanaDel": "Semana del",
+      "cal.receso": "receso", "cal.examenes": "exámenes",
+      "cal.tituloSemana": "Semana {n} de clases del periodo", "cal.tituloReceso": "Semana de receso",
+      "cal.tituloExamenes": "Semana de exámenes", "cal.fueraPeriodo": "Fuera del periodo activo",
+      "cal.clicTipo": "Clic para cambiar el tipo", "cal.evento": "evento", "cal.eventos": "eventos",
+      "cal.vistaAria": "Vista del calendario", "cal.clicDerecho": "Clic derecho: acciones",
+      "panel.evento": "Evento", "panel.fecha": "Fecha", "panel.hora": "Hora", "panel.contexto": "Contexto",
+      "panel.notasEnlazadas": "Notas enlazadas", "panel.sinTitulo": "Sin título",
+      "panel.proximoEvento": "El próximo evento aparece en la agenda.",
+      "panel.detalleVacio": "Selecciona una tarea, una nota o un ramo. El detalle vive aquí, no en un modal que tapa la lista.",
+      "panel.tarea": "Tarea", "panel.proyecto": "Proyecto", "panel.estado": "Estado",
+      "panel.hecha": "hecha", "panel.abierta": "abierta", "panel.prioridad": "Prioridad",
+      "panel.dentroDe": "Dentro de", "panel.progreso": "Progreso", "panel.subtareas": "Subtareas",
+      "panel.sinSubtareas": "Sin subtareas.", "panel.nota": "Nota", "panel.notas": "Notas", "panel.abrir": "Abrir", "panel.reabrir": "Reabrir", "panel.marcarHecha": "Hecha",
+      "panel.progresoTareas": "{hechas} de {total} tareas dentro"
     },
     en: {
       "nav.calendario": "Calendar", "nav.tareas": "Tasks", "nav.notas": "Notes", "nav.tiempo": "Time",
@@ -74,7 +108,41 @@
       "aj.hora": "Time format", "aj.barra": "Section bar", "aj.arriba": "Top", "aj.izquierda": "Left",
       "aj.ancho": "Width", "aj.abierto": "Open on start", "aj.abrirPanel": "Open panel",
       "aj.acerca": "About",
-      "top.buscar": "Search", "cal.semana": "Wk"
+      "top.buscar": "Search", "cal.semana": "Wk",
+      "top.add": "Add a block", "top.nuevo": "Define a term", "top.activo": "Active term",
+      "top.version": "Version", "top.sync": "Saved on this device", "top.tema": "Toggle light and dark",
+      "top.split": "Split view", "top.panel": "Tools panel", "top.ajustes": "Settings",
+      "panel.titulo": "Panel", "panel.herramientas": "Panel tools", "panel.cerrar": "Close panel",
+      "panel.ahora": "Now", "panel.sinEventos": "No events this month.",
+      "panel.sinContexto": "No context", "panel.estaSeccion": "This section declares no context.",
+      "periodo.sin": "No term", "pie.guardado": "local · saved", "pie.ayuda": "Help", "pie.panel": "Panel",
+      "acc.guardar": "Save", "acc.cancelar": "Cancel", "acc.editar": "Edit", "acc.borrar": "Delete", "acc.cerrar": "Close",
+      "cal.vista.mes": "Month", "cal.vista.semana": "Week", "cal.vista.agenda": "Agenda", "cal.hoy": "Today",
+      "cal.nuevo": "+ New event", "cal.contextos": "Contexts",
+      "cal.sinContextos": "No contexts yet. Create one on your first event or task.",
+      "cal.calendarios": "Calendars", "cal.local": "Local · this device",
+      "cal.anterior": "Previous", "cal.siguiente": "Next",
+      "cal.kpi.eventos": "events this month", "cal.kpi.tareas": "tasks with a date",
+      "cal.kpi.horas": "logged", "cal.kpi.bloques": "installed blocks",
+      "cal.evento.titulo": "Event title", "cal.evento.fecha": "Date", "cal.evento.hora": "Time",
+      "cal.evento.contexto": "Context (optional)", "cal.contexto": "Context",
+      "cal.vacio": "No events. Everything with a date will appear here.",
+      "cal.agenda": "Agenda", "cal.proximo": "upcoming", "cal.pasado": "past",
+      "cal.sinEventos": "No events yet.", "cal.semanaDel": "Week of",
+      "cal.receso": "break", "cal.examenes": "exams",
+      "cal.tituloSemana": "Week {n} of classes in the term", "cal.tituloReceso": "Break week",
+      "cal.tituloExamenes": "Exam week", "cal.fueraPeriodo": "Outside the active term",
+      "cal.clicTipo": "Click to change the type", "cal.evento": "event", "cal.eventos": "events",
+      "cal.vistaAria": "Calendar view", "cal.clicDerecho": "Right-click: actions",
+      "panel.evento": "Event", "panel.fecha": "Date", "panel.hora": "Time", "panel.contexto": "Context",
+      "panel.notasEnlazadas": "Linked notes", "panel.sinTitulo": "Untitled",
+      "panel.proximoEvento": "The next event appears in the agenda.",
+      "panel.detalleVacio": "Select a task, a note or a course. Details live here, not in a modal over the list.",
+      "panel.tarea": "Task", "panel.proyecto": "Project", "panel.estado": "Status",
+      "panel.hecha": "done", "panel.abierta": "open", "panel.prioridad": "Priority",
+      "panel.dentroDe": "Inside", "panel.progreso": "Progress", "panel.subtareas": "Subtasks",
+      "panel.sinSubtareas": "No subtasks.", "panel.nota": "Note", "panel.notas": "Notes", "panel.abrir": "Open", "panel.reabrir": "Reopen", "panel.marcarHecha": "Done",
+      "panel.progresoTareas": "{hechas} of {total} tasks inside"
     },
     zh: {
       "nav.calendario": "日历", "nav.tareas": "任务", "nav.notas": "笔记", "nav.tiempo": "时间",
@@ -105,13 +173,64 @@
       "aj.hora": "时间格式", "aj.barra": "分区栏位置", "aj.arriba": "顶部", "aj.izquierda": "左侧",
       "aj.ancho": "宽度", "aj.abierto": "启动时打开", "aj.abrirPanel": "打开面板",
       "aj.acerca": "关于",
-      "top.buscar": "搜索", "cal.semana": "周"
+      "top.buscar": "搜索", "cal.semana": "周",
+      "top.add": "添加模块", "top.nuevo": "定义学期", "top.activo": "当前学期",
+      "top.version": "版本", "top.sync": "已保存到本设备", "top.tema": "切换浅色/深色",
+      "top.split": "分屏视图", "top.panel": "工具面板", "top.ajustes": "设置",
+      "panel.titulo": "面板", "panel.herramientas": "面板工具", "panel.cerrar": "关闭面板",
+      "panel.ahora": "现在", "panel.sinEventos": "本月没有事件。",
+      "panel.sinContexto": "无上下文", "panel.estaSeccion": "此分区没有上下文。",
+      "periodo.sin": "无学期", "pie.guardado": "本地 · 已保存", "pie.ayuda": "帮助", "pie.panel": "面板",
+      "acc.guardar": "保存", "acc.cancelar": "取消", "acc.editar": "编辑", "acc.borrar": "删除", "acc.cerrar": "关闭",
+      "cal.vista.mes": "月", "cal.vista.semana": "周", "cal.vista.agenda": "议程", "cal.hoy": "今天",
+      "cal.nuevo": "+ 新建事件", "cal.contextos": "情境",
+      "cal.sinContextos": "还没有情境。在第一个事件或任务中创建一个。",
+      "cal.calendarios": "日历", "cal.local": "本地 · 本设备",
+      "cal.anterior": "上一个", "cal.siguiente": "下一个",
+      "cal.kpi.eventos": "本月事件", "cal.kpi.tareas": "有日期的任务",
+      "cal.kpi.horas": "已记录", "cal.kpi.bloques": "已安装模块",
+      "cal.evento.titulo": "事件标题", "cal.evento.fecha": "日期", "cal.evento.hora": "时间",
+      "cal.evento.contexto": "情境（可选）", "cal.contexto": "情境",
+      "cal.vacio": "没有事件。所有带日期的事情都会出现在这里。",
+      "cal.agenda": "议程", "cal.proximo": "即将到来", "cal.pasado": "已过去",
+      "cal.sinEventos": "还没有事件。", "cal.semanaDel": "周：",
+      "cal.receso": "假期", "cal.examenes": "考试",
+      "cal.tituloSemana": "学期第 {n} 教学周", "cal.tituloReceso": "假期周",
+      "cal.tituloExamenes": "考试周", "cal.fueraPeriodo": "当前学期之外",
+      "cal.clicTipo": "点击更改类型", "cal.evento": "事件", "cal.eventos": "事件",
+      "cal.vistaAria": "日历视图", "cal.clicDerecho": "右键：操作",
+      "panel.evento": "事件", "panel.fecha": "日期", "panel.hora": "时间", "panel.contexto": "情境",
+      "panel.notasEnlazadas": "已链接笔记", "panel.sinTitulo": "无标题",
+      "panel.proximoEvento": "下一个事件会出现在议程中。",
+      "panel.detalleVacio": "选择任务、笔记或课程。详情显示在这里，不会用弹窗遮住列表。",
+      "panel.tarea": "任务", "panel.proyecto": "项目", "panel.estado": "状态",
+      "panel.hecha": "已完成", "panel.abierta": "未完成", "panel.prioridad": "优先级",
+      "panel.dentroDe": "所属", "panel.progreso": "进度", "panel.subtareas": "子任务",
+      "panel.sinSubtareas": "没有子任务。", "panel.nota": "笔记", "panel.notas": "笔记", "panel.abrir": "打开", "panel.reabrir": "重新打开", "panel.marcarHecha": "完成",
+      "panel.progresoTareas": "内部任务 {hechas}/{total}"
     }
   };
   function idioma() { return (estado && estado.prefs && estado.prefs.idioma) || "es"; }
   function t(k) {
     var d = I18N[idioma()] || I18N.es;
     return d[k] || I18N.es[k] || k;
+  }
+  function tf(k, vars) {
+    var s = t(k);
+    Object.keys(vars || {}).forEach(function (x) { s = s.replace("{" + x + "}", vars[x]); });
+    return s;
+  }
+  function tr(k) { return t(k); }
+  function localeActual() { return idioma() === "zh" ? "zh-CN" : idioma() === "en" ? "en-US" : "es-CL"; }
+  var DIAS_SEMANA = {
+    es: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+    en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    zh: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+  };
+  function diasSemana() {
+    var d = (DIAS_SEMANA[idioma()] || DIAS_SEMANA.es).slice();
+    if ((estado.prefs || {}).inicioSemana !== "domingo") d.push(d.shift());
+    return d;
   }
   var TEMAS = [
     ["clasico", "Clásico", "claro"], ["deepsea", "DeepSea", "oscuro"], ["medianoche", "Medianoche", "oscuro"],
@@ -746,7 +865,7 @@
     };
   }
   function chipEvento(e) {
-    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · clic derecho: acciones">' +
+    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '">' +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b> " : "") + esc(e.titulo) + "</button>";
   }
   function pintarCalendario() {
@@ -767,20 +886,20 @@
         return (a.fecha + " " + (a.hora || "")) < (b.fecha + " " + (b.hora || "")) ? -1 : 1;
       });
       visibles = orden.length;
-      $("#cal-mes-titulo").textContent = "Agenda";
+      $("#cal-mes-titulo").textContent = t("cal.agenda");
       agenda.innerHTML = orden.length ? orden.map(function (e) {
-        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="Clic derecho: acciones"><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + (e.fecha >= hoyISO() ? "próximo" : "pasado") + "</span></button>";
-      }).join("") : '<p class="empty">Sin eventos todavía.</p>';
+        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
+      }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
     } else if (vistaCalendario === "semana") {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
       var domingo = (estado.prefs || {}).inicioSemana === "domingo";
       lunes.setDate(lunes.getDate() - (domingo ? lunes.getDay() : ((lunes.getDay() + 6) % 7)));
       var domingo = (estado.prefs || {}).inicioSemana === "domingo";
-      var dias = domingo ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"] : ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+      var dias = diasSemana();
       grid.className = "cal-grid cal-grid--semana";
       var semSemana = semanaDePeriodo(isoFecha(lunes)) || semanaDePeriodo(isoFecha(new Date(lunes.getTime() + 3 * 86400000)));
-      var rotuloSemana = semSemana ? (semSemana.numero ? " · S" + semSemana.numero : semSemana.tipo === "receso" ? " · receso" : semSemana.tipo === "examenes" ? " · exámenes" : "") : "";
-      $("#cal-mes-titulo").textContent = "Semana del " + lunes.getDate() + "/" + (lunes.getMonth() + 1) + rotuloSemana;
+      var rotuloSemana = semSemana ? (semSemana.numero ? " · S" + semSemana.numero : semSemana.tipo === "receso" ? " · " + t("cal.receso") : semSemana.tipo === "examenes" ? " · " + t("cal.examenes") : "") : "";
+      $("#cal-mes-titulo").textContent = t("cal.semanaDel") + " " + lunes.getDate() + "/" + (lunes.getMonth() + 1) + rotuloSemana;
       grid.innerHTML = dias.map(function (d, i) {
         var f = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + i);
         var iso = f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, "0") + "-" + String(f.getDate()).padStart(2, "0");
@@ -793,11 +912,11 @@
       var domingo = (estado.prefs || {}).inicioSemana === "domingo";
       var offset = domingo ? primero.getDay() : (primero.getDay() + 6) % 7;
       var inicio = new Date(y, m, 1 - offset);
-      var dias2 = domingo ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"] : ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+      var dias2 = diasSemana();
       var periodoCal = periodoActivoObj();
       var conSemana = !!(periodoCal && Array.isArray(periodoCal.semanas) && periodoCal.semanas.length);
       grid.className = "cal-grid cal-grid--mes" + (conSemana ? " cal-grid--con-semana" : "");
-      $("#cal-mes-titulo").textContent = new Date(y, m, 1).toLocaleDateString("es-CL", { month: "long", year: "numeric" });
+      $("#cal-mes-titulo").textContent = new Date(y, m, 1).toLocaleDateString(localeActual(), { month: "long", year: "numeric" });
       var html = (conSemana ? '<div class="cal-dow cal-dow--sem">' + t("cal.semana") + "</div>" : "") +
         dias2.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
       for (var i = 0; i < 42; i++) {
@@ -807,11 +926,11 @@
           if (conSemana) {
             var sem = semanaDePeriodo(iso2) || semanaDePeriodo(isoFecha(new Date(f2.getTime() + 3 * 86400000)));
             var etiqueta = sem ? (sem.numero ? "S" + sem.numero : sem.tipo === "receso" ? "REC" : sem.tipo === "examenes" ? "EX" : "—") : "—";
-            var titulo = sem ? (sem.numero ? "Semana " + sem.numero + " de clases del periodo" : "Semana de " + sem.tipo) : "Fuera del periodo activo";
+            var titulo = sem ? (sem.numero ? tf("cal.tituloSemana", { n: sem.numero }) : sem.tipo === "receso" ? t("cal.tituloReceso") : t("cal.tituloExamenes")) : t("cal.fueraPeriodo");
             if (sem) {
-              html += '<button class="cal-sem-col tipo-' + sem.tipo + '" type="button" data-semana="' + sem.desde + '" title="' + titulo + '. Clic para cambiar el tipo">' + etiqueta + "</button>";
+              html += '<button class="cal-sem-col tipo-' + sem.tipo + '" type="button" data-semana="' + sem.desde + '" title="' + esc(titulo) + '. ' + esc(t("cal.clicTipo")) + '">' + etiqueta + "</button>";
             } else {
-              html += '<div class="cal-sem-col" title="' + titulo + '">' + etiqueta + "</div>";
+              html += '<div class="cal-sem-col" title="' + esc(titulo) + '">' + etiqueta + "</div>";
             }
           }
         }
@@ -827,7 +946,7 @@
         });
       });
     }
-    $("#cal-cuenta").textContent = visibles + " evento" + (visibles === 1 ? "" : "s");
+    $("#cal-cuenta").textContent = visibles + " " + t(visibles === 1 ? "cal.evento" : "cal.eventos");
     $("#cal-vacio").hidden = visibles > 0;
     $$("#cal-grid [data-evento], #cal-agenda [data-evento]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -922,7 +1041,7 @@
     var sub = t.tipo === "proyecto"
       ? '<span class="tarea-progreso" title="' + p.hechas + " de " + p.total + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
       : "";
-    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" title="Clic derecho: acciones" style="--nivel:' + nivel + '">' +
+    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
       '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + (t.hecha ? "Marcar abierta" : "Marcar hecha") + '">' + (t.hecha ? "✓" : "") + "</button>" +
       '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">proyecto</small>' : "") + "</span>" +
       '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
@@ -933,7 +1052,7 @@
   }
   function tarjetaTablero(t) {
     var p = progreso(t);
-    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="Clic derecho: acciones">' +
+    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="' + esc(tr("cal.clicDerecho")) + '">' +
       '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || "sin contexto") + "</small>" +
       (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
   }
@@ -2215,7 +2334,7 @@
       return !q || (n.titulo + " " + n.cuerpo + " " + n.contexto + " " + n.etiquetas.join(" ")).toLowerCase().indexOf(q) !== -1;
     }).sort(function (a, b) { return (b.fijada ? 1 : 0) - (a.fijada ? 1 : 0); });
     cont.innerHTML = vis.map(function (n) {
-      return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '" title="Clic derecho: acciones"><b>' +
+      return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '" title="' + esc(t("cal.clicDerecho")) + '"><b>' +
         (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") + "</b><small>" +
         esc((n.cuerpo || "").slice(0, 70) || "Vacía") + (n.contexto ? " · " + esc(n.contexto) : "") + "</small></button>";
     }).join("");
@@ -2619,8 +2738,8 @@
   function bloqueNotasEnlazadas(tipo, id) {
     var ns = notasEnlazadasA(tipo, id);
     if (!ns.length) return "";
-    return '<div class="panel__bloque"><span>Notas enlazadas</span><small>' + ns.map(function (n) {
-      return '<button class="btn btn--chico" type="button" data-abrir-enlace="nota:' + esc(n.id) + '">' + esc(n.titulo || "Sin título") + "</button>";
+    return '<div class="panel__bloque"><span>' + esc(t("panel.notasEnlazadas")) + '</span><small>' + ns.map(function (n) {
+      return '<button class="btn btn--chico" type="button" data-abrir-enlace="nota:' + esc(n.id) + '">' + esc(n.titulo || t("panel.sinTitulo")) + "</button>";
     }).join(" ") + "</small></div>";
   }
   function pintarPanelEn(id) {
@@ -2638,7 +2757,7 @@
     });
     var html = "";
     if (tab === "detalle") {
-      var t = tareaPorId(estado.tareaSel);
+      var tareaP = tareaPorId(estado.tareaSel);
       var n = notaActual();
       var ev = eventoPorId(estado.eventoSel);
       var ramo = ramoPorCodigo(estado.ramoSel);
@@ -2662,29 +2781,30 @@
           '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? "Reabrir" : "Cerrar curso") + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">Borrar</button></div>';
       } else if (pantalla === "calendario" && ev) {
-        html = "<h2>Evento</h2><h3>" + esc(ev.titulo) + "</h3>" +
-          '<div class="panel__bloque"><span>Fecha</span><small>' + esc(ev.fecha) + "</small></div>" +
-          (ev.hora ? '<div class="panel__bloque"><span>Hora</span><small>' + esc(ev.hora) + "</small></div>" : "") +
-          (ev.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
+        html = "<h2>" + esc(t("panel.evento")) + "</h2><h3>" + esc(ev.titulo) + "</h3>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(ev.fecha) + "</small></div>" +
+          (ev.hora ? '<div class="panel__bloque"><span>' + esc(t("panel.hora")) + '</span><small>' + esc(ev.hora) + "</small></div>" : "") +
+          (ev.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
           (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
           bloqueNotasEnlazadas("evento", ev.id) +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">Editar</button>' +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">Borrar</button></div>';
-      } else if (pantalla === "tareas" && t) {
-        var p = progreso(t), hijos = hijosDe(t.id), padre = t.padre_id ? tareaPorId(t.padre_id) : null;
-        html = "<h2>" + (t.tipo === "proyecto" ? "Proyecto" : "Tarea") + "</h2><h3>" + esc(t.titulo) + "</h3>" +
-          '<div class="panel__bloque"><span>Estado</span><small>' + (t.hecha ? "hecha" : "abierta") + "</small></div>" +
-          '<div class="panel__bloque"><span>Fecha</span><small>' + esc(fechaCorta(t.fecha)) + "</small></div>" +
-          '<div class="panel__bloque"><span>Prioridad</span><small>' + esc(t.prioridad) + "</small></div>" +
-          (t.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(t.contexto) + "</small></div>" : "") +
-          (padre ? '<div class="panel__bloque"><span>Dentro de</span><small>' + esc(padre.titulo) + "</small></div>" : "") +
-          (t.tipo === "proyecto" ? '<h2>Progreso</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + p.hechas + " de " + p.total + " tareas dentro</p>" +
-            '<h2>Subtareas</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + (h.hecha ? "hecha" : "abierta") + "</small></div>"; }).join("") : '<p class="panel__nota">Sin subtareas.</p>') : "") +
-          (t.nota ? '<h2>Nota</h2><p class="panel__nota">' + esc(t.nota) + "</p>" : "") +
-          bloqueNotasEnlazadas("tarea", t.id) +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + t.id + '">Editar</button>' +
-          '<button class="btn btn--chico" type="button" data-toggle-tarea="' + t.id + '">' + (t.hecha ? "Reabrir" : "Hecha") + "</button>" +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + t.id + '">Borrar</button></div>';
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">' + esc(t("acc.editar")) + '</button>' +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">' + esc(t("acc.borrar")) + "</button></div>";
+      } else if (pantalla === "tareas" && tareaP) {
+        var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
+        html = "<h2>" + esc(t(tareaP.tipo === "proyecto" ? "panel.proyecto" : "panel.tarea")) + "</h2><h3>" + esc(tareaP.titulo) + "</h3>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(t(tareaP.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.prioridad")) + '</span><small>' + esc(tareaP.prioridad) + "</small></div>" +
+          (tareaP.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(tareaP.contexto) + "</small></div>" : "") +
+          (padre ? '<div class="panel__bloque"><span>' + esc(t("panel.dentroDe")) + '</span><small>' + esc(padre.titulo) + "</small></div>" : "") +
+          (tareaP.tipo === "proyecto" ? '<h2>' + esc(t("panel.progreso")) + '</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + esc(tf("panel.progresoTareas", { hechas: p.hechas, total: p.total })) + "</p>" +
+            '<h2>' + esc(t("panel.subtareas")) + '</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + esc(t(h.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>"; }).join("") : '<p class="panel__nota">' + esc(t("panel.sinSubtareas")) + '</p>') : "") +
+          (tareaP.nota ? '<h2>' + esc(t("panel.nota")) + '</h2><p class="panel__nota">' + esc(tareaP.nota) + "</p>" : "") +
+          bloqueNotasEnlazadas("tarea", tareaP.id) +
+          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + tareaP.id + '">' + esc(t("acc.editar")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '">' + esc(t(tareaP.hecha ? "panel.reabrir" : "panel.marcarHecha")) + "</button>" +
+          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + tareaP.id + '">' + esc(t("acc.borrar")) + "</button></div>";
+
       } else if (pantalla === "notas" && n) {
         html = "<h2>Detalle de la nota</h2><h3>" + (n.fijada ? "★ " : "") + esc(n.titulo || "Sin título") +
           '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>" +
@@ -2694,7 +2814,7 @@
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">Abrir</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">Borrar</button></div>';
       } else {
-        html = '<h2>Detalle</h2><p class="panel__nota">Selecciona una tarea, una nota o un ramo. El detalle vive aquí, no en un modal que tapa la lista.</p>';
+        html = '<h2>' + esc(t("panel.detalle")) + '</h2><p class="panel__nota">' + esc(t("panel.detalleVacio")) + '</p>';
       }
     } else if (tab === "notas") {
       var nn = notaActual();
@@ -2708,7 +2828,7 @@
         '<button class="btn panel__anadir" type="button" data-abrir-modal>+ Agregar bloque o kit</button>';
     } else {
       var cuentas = {
-        calendario: [estado.eventos.length + " eventos", estado.eventos.length ? "El próximo evento aparece en la agenda." : "Sin eventos este mes."],
+        calendario: [estado.eventos.length + " " + t(estado.eventos.length === 1 ? "cal.evento" : "cal.eventos"), estado.eventos.length ? t("panel.proximoEvento") : t("panel.sinEventos")],
         tareas: [estado.tareas.length + " tareas", estado.tareas.filter(function (x) { return !x.hecha; }).length + " abiertas"],
         notas: [estado.notas.length + " notas", "Lista y editor en la misma sección."],
         malla: [(estado.cursos || []).length + " ramos", "Cursos, niveles, prerrequisitos y créditos."],
@@ -2716,9 +2836,9 @@
         estudio: [(estado.sesiones || []).length + " sesiones", "Horas por ramo y meta semanal."],
         tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
         ajustes: [TEMAS.length + " temas", "Apariencia, paneles, bloques y laboratorio."]
-      }[pantalla] || ["Sin contexto", "Esta sección no declara contexto."];
+      }[pantalla] || [t("panel.sinContexto"), t("panel.estaSeccion")];
       html = "<h2>" + esc(nombre(pantalla)) + '</h2><p class="panel__nota">' + esc(cuentas[1]) +
-        '</p><div class="panel__bloque"><span>Ahora</span><small>' + esc(cuentas[0]) + "</small></div>";
+        '</p><div class="panel__bloque"><span>' + esc(t("panel.ahora")) + '</span><small>' + esc(cuentas[0]) + "</small></div>";
     }
     $("#panel-cuerpo").innerHTML = html;
     $$("#panel-cuerpo [data-abrir-modal]").forEach(function (b) { b.addEventListener("click", abrirModal); });
@@ -2804,8 +2924,35 @@
       var v = t(el.getAttribute("data-i18n"));
       if (v) el.textContent = v;
     });
+    $$("[data-i18n-placeholder]").forEach(function (el) {
+      var v = t(el.getAttribute("data-i18n-placeholder"));
+      if (v) el.setAttribute("placeholder", v);
+    });
+    $$("[data-i18n-title]").forEach(function (el) {
+      var v = t(el.getAttribute("data-i18n-title"));
+      if (v) el.setAttribute("title", v);
+    });
+    $$("[data-i18n-aria]").forEach(function (el) {
+      var v = t(el.getAttribute("data-i18n-aria"));
+      if (v) el.setAttribute("aria-label", v);
+    });
     pintarBandera();
     pintarTabs();
+  }
+  function repintarIdioma() {
+    aplicarIdioma();
+    pintarTemaIcono();
+    pintarPeriodo();
+    pintarCalendario();
+    pintarTareas();
+    pintarNotas();
+    pintarMalla();
+    pintarCalificaciones();
+    pintarEstudio();
+    pintarTiempo();
+    pintarPanel();
+    pintarSplit();
+    pintarAjustes();
   }
   function pintarAjustes() {
     var p = estado.prefs || {};
@@ -2857,7 +3004,7 @@
   function pintarPeriodo() {
     var p = periodoActivoObj();
     var b = $("#btn-periodo");
-    if (b) b.textContent = p ? p.nombre : "Sin periodo";
+    if (b) b.textContent = p ? p.nombre : t("periodo.sin");
     pintarAjustes();
     var lista = $("#periodos-lista");
     if (lista) {
@@ -3293,7 +3440,7 @@
     $("#pref-hora").addEventListener("change", function (e) { estado.prefs.hora = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
     $("#pref-panel-ancho").addEventListener("change", function (e) { estado.prefs.panelAncho = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-nav").addEventListener("change", function (e) { estado.prefs.navPos = e.target.value; guardar(); aplicarPrefs(); });
-    $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); aplicarIdioma(); pintarAjustes(); });
+    $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); repintarIdioma(); });
     $("#pref-tema-claro").addEventListener("change", function (e) {
       estado.prefs.temaClaro = temaValido(e.target.value, "clasico");
       if (temaModo(estado.tema) === "claro") aplicarTema(estado.prefs.temaClaro, true);
