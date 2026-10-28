@@ -6,7 +6,15 @@ verde por impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 app/pruebas/correr-gates.py     # los 13 gates, resumen al final
+python3 app/pruebas/correr-gates.py     # los 13 gates web, resumen al final
+```
+
+El binario de escritorio se mide aparte, porque compila y abre ventana:
+
+```bash
+cd escritorio && ./preparar-frontend.sh
+PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
+cd .. && DISPLAY=:0 python3 app/pruebas/gate-tauri.py
 ```
 
 El viejo está en `referencia/academics-1.1.2/` y no entra en esta suite: es oráculo, no producto.
@@ -27,6 +35,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-sync` | guarda un `mimo-sync.json`, lo carga en otro contexto, detecta conflicto local/remoto, aplica cada lado y deja respaldo | archivo sin formato, conflicto no detectado o pérdida de la copia local |
 | `gate-webdav` | WebDAV/Nextcloud local con ETag: sin clave no sube, el remoto va cifrado, `If-None-Match`/`If-Match`, segundo equipo, cola sin red que sobrevive a recargar y se reintenta al volver, conflicto y ambas salidas, clave mala y remoto corrupto | sin clave subiendo, texto claro en el remoto, cola que se pierde o conflicto que pisa una copia |
 | `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
+| `gate-tauri` | binario release: app universal, navegación, nota en `localStorage`, Ajustes, sync WebDAV nativa (sin preflight CORS), remoto cifrado, persistencia entre aperturas y RPM | falta el binario, la ventana no abre o el remoto queda en claro |
 
 ## Fixtures
 

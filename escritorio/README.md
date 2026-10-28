@@ -1,13 +1,17 @@
 # Mimo de escritorio (Tauri 2) — paquete `rpm`
 
 ```bash
-cd ~/workspace/proyectos/mimo-nuevo/escritorio
-./preparar-frontend.sh                 # prototipo/ -> app/
-cargo tauri build --bundles rpm        # compila y empaqueta
+cd ~/sede/proyectos/mimo-nuevo/escritorio
+./preparar-frontend.sh                 # app/ -> escritorio/app/ (lista blanca)
+PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
 ```
 
-Deja el instalable en `src-tauri/target/release/bundle/rpm/Mimo-1.2.0-1.x86_64.rpm` (2,9 MB) y el
-binario suelto en `src-tauri/target/release/mimo`.
+`cargo tauri build` ejecuta `preparar-frontend.sh` antes de compilar (`beforeBuildCommand`), así que
+el paso manual solo hace falta para inspeccionar el frontend preparado.
+
+Deja el instalable en `src-tauri/target/release/bundle/rpm/Mimo-1.2.0-1.x86_64.rpm` (5,36 MiB) y
+el binario suelto en `src-tauri/target/release/mimo` (17,7 MB). El RPM **no está firmado**; se
+declara como hueco hasta que haya clave de firma.
 
 ## Instalar, abrir, desinstalar
 
@@ -23,17 +27,24 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
 
 ## Que hace cada pieza
 
-- `preparar-frontend.sh` copia `prototipo/` a `app/` con **lista blanca** (`index.html`, `css/`,
-  `js/`, `i18n/`, `datos/`, `bloques/`, `iconos/`). No se apunta Tauri a `prototipo/` porque asi
-  se empaquetarian `capturas/` y `evidencia/` dentro del binario. `app/` es generado, esta en
-  `.gitignore` y se rehace en cada pasada. El script **para con exit 1** si falta `index.html` o
-  alguna de las tres rutas que la app pide por `fetch`; si el catalogo se copio a medias avisa y
-  reintenta una vez a los 5 s (el prototipo lo toca otro bloque en paralelo).
-- `src-tauri/` es el caparazon: `productName` "Mimo", identificador `cl.mimo.app`, ventana
-  1280x900 y `bundle.targets` solo `["rpm"]` (AppImage y deb fuera a proposito).
-- Sin servidor web: las tres peticiones relativas las sirve el protocolo de recursos de Tauri
-  desde `app/` (`i18n/<lang>.json`, `datos/bloques.json`, `bloques/malla/manifiesto.json`).
-- `MIMO_SONDA=1 ./src-tauri/target/release/mimo` escribe `/tmp/mimo-sonda.json` con el origen, el
-  estado de esas tres peticiones y el recuento de nodos. Sin la variable no hace nada.
-- Requisitos (Fedora, ya instalados aqui): `cargo` y `cargo-tauri` 2.x, `rpmbuild`, `webkit2gtk4.1`,
-  `javascriptcoregtk4.1`, `libsoup3`, `librsvg2`, `gtk3` y `fakeroot`.
+- `preparar-frontend.sh` copia la **app universal** (`<proyecto>/app/`) a `escritorio/app/` con
+  lista blanca: `index.html`, `css/`, `js/`, `img/` y `vendor/`. Deja fuera `pruebas/` y `maqueta/`;
+  si falta `sync.js`, KaTeX, Comfortaa o el icono, para con exit 1. `app/` es generado, está en
+  `.gitignore` y se rehace en cada pasada.
+- `src-tauri/` es el caparazón: `productName` "Mimo", identificador `cl.mimo.escritorio`, ventana
+  1280x900 y `bundle.targets` solo `["rpm"]` (AppImage y deb fuera a propósito).
+- **Sin servidor web:** el protocolo de recursos de Tauri sirve `index.html`, CSS, JS, imágenes,
+  KaTeX y Comfortaa desde `app/`.
+- **Puente HTTP nativo:** `http_pedir` (Rust + reqwest) hace GET/PUT/MKCOL/OPTIONS con cabeceras y
+  ETag. Existe porque el WebView de Tauri **no exime a `fetch` de CORS**; la petición nativa sí.
+  La app lo detecta y lo usa solo dentro de Tauri; en el navegador sigue usando `fetch`. Solo
+  admite `http`/`https`.
+- **Sonda:** `MIMO_SONDA=1 ./src-tauri/target/release/mimo` escribe `MIMO_SONDA_SALIDA` (por
+  defecto `/tmp/mimo-sonda.json`) y sale. Mide navegación, nota en `localStorage`, Ajustes y una
+  sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
+  `DISPLAY` o `WAYLAND_DISPLAY`.
+- **Gate:** `python3 app/pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia y la
+  sync nativa contra `app/pruebas/webdav.py` (27 medidas). No está en `correr-gates.py` porque
+  necesita compilar y abrir ventana; se corre aparte al cerrar U6c.
+- Requisitos (Fedora, ya instalados aquí): `cargo` y `cargo-tauri` 2.12, `rpmbuild`,
+  `webkit2gtk-4.1`, `javascriptcoregtk-4.1`, `libsoup-3.0`, `librsvg2`, `gtk3` y `fakeroot`.

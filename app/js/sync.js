@@ -364,7 +364,46 @@
     var a = cabeceraAuth(); if (a) h.Authorization = a;
     return h;
   }
+  function esTauri() {
+    var t = window.__TAURI_INTERNALS__ || (window.__TAURI__ && window.__TAURI__.core);
+    return !!(t && t.invoke);
+  }
+  function invocarTauri(cmd, args) {
+    var t = window.__TAURI_INTERNALS__ || (window.__TAURI__ && window.__TAURI__.core);
+    return t.invoke(cmd, args);
+  }
+  async function pedirNativo(url, opciones) {
+    var cab = cabeceras(opciones && opciones.headers);
+    var cuerpo = opciones && opciones.body != null ? String(opciones.body) : null;
+    var metodo = (opciones && opciones.method) || "GET";
+    var r;
+    try {
+      r = await invocarTauri("http_pedir", {
+        peticion: { metodo: metodo, url: url, cabeceras: cab, cuerpo: cuerpo }
+      });
+    } catch (e) {
+      var y = new Error("No se pudo conectar con el servidor: " + (e && e.message ? e.message : e));
+      y.red = true; y.causa = e; throw y;
+    }
+    var mapa = r && r.cabeceras ? r.cabeceras : {};
+    return {
+      ok: r.estado >= 200 && r.estado < 300,
+      status: r.estado,
+      headers: {
+        get: function (nombre) {
+          var buscado = String(nombre).toLowerCase(), k;
+          for (k in mapa) {
+            if (Object.prototype.hasOwnProperty.call(mapa, k) && k.toLowerCase() === buscado) return mapa[k];
+          }
+          return null;
+        }
+      },
+      text: async function () { return r.cuerpo == null ? "" : String(r.cuerpo); },
+      json: async function () { return JSON.parse(String(r.cuerpo || "")); }
+    };
+  }
   async function pedir(url, opciones) {
+    if (esTauri()) return pedirNativo(url, opciones);
     var ctrl = new AbortController(), cortado = false;
     var t = setTimeout(function () { cortado = true; ctrl.abort(); }, 20000);
     var o = Object.assign({ cache: "no-store", signal: ctrl.signal }, opciones || {});

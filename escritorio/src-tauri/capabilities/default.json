@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permisos de la ventana principal de Mimo. Solo el nucleo: esta version no usa comandos nativos ni plugins, asi que la pagina no puede leer ni escribir el disco.",
+  "description": "Permisos de la ventana principal de Mimo. Solo el nucleo: la pagina no lee ni escribe el disco. El unico comando propio es http_pedir (HTTP/HTTPS nativo), que no expone archivos ni shell.",
   "windows": ["main"],
   "permissions": [
     "core:default"

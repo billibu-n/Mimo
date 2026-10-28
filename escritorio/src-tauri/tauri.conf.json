@@ -2,9 +2,9 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Mimo",
   "version": "1.2.0",
-  "identifier": "cl.mimo.app",
+  "identifier": "cl.mimo.escritorio",
   "build": {
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "sh preparar-frontend.sh",
     "frontendDist": "../app"
   },
   "app": {
@@ -34,8 +34,8 @@
       "icons/icon.ico"
     ],
     "category": "Utility",
-    "shortDescription": "Organizador global con bloques instalables, sin conexion.",
-    "longDescription": "Mimo es un organizador global con bloques instalables: malla, calendario, tareas, estudio y tiempo. Funciona sin conexion y guarda los datos en el equipo, no en un servidor.",
+    "shortDescription": "Organizador global con bloques, offline y sync WebDAV cifrada.",
+    "longDescription": "Mimo es un organizador global con bloques instalables: calendario, tareas, notas, malla, calificaciones, estudio y tiempo. Funciona sin conexion, guarda los datos en el equipo y puede sincronizarlos cifrados por WebDAV/Nextcloud.",
     "publisher": "Billibu",
     "license": "MIT",
     "homepage": "https://github.com/billibu-n/mimo-nuevo"
