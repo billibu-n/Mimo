@@ -1,0 +1,22 @@
+/* ============================================================================
+   tema-alto-contraste-claro.css — Alto contraste claro.
+
+   La pareja clara del alto contraste: blanco puro, tinta negra, acento azul y
+   foco azul intenso. Toma la paleta de alto contraste de Billibu Web, no una
+   inversión automática del tema oscuro.
+   ============================================================================ */
+
+[data-tema="alto-contraste-claro"]{
+  --fg:#000000; --muted:#000000; --line:#000000; --bg:#ffffff; --ac:#0033cc;
+  --ok:#006400; --warn:#7a4b00; --bad:#b00020; --q:#0033cc;
+  --sup:#ffffff; --sup2:#ffffff; --sup3:#ffffff; --line2:#000000; --pista:#000000;
+  --muted2:#000000; --ac-txt:#ffffff; --ac-txt-fuerte:#ffffff; --ac-fuerte:#002299;
+  --info-bg:#ffffff; --hoy-bg:#ffffff;
+  --pill-ok-bg:#ffffff; --pill-ok-fg:#006400;
+  --pill-warn-bg:#ffffff; --pill-warn-fg:#7a4b00;
+  --pill-bad-bg:#ffffff; --pill-bad-fg:#b00020;
+  --sombra:none;
+  --foco:0 0 0 2px #ffffff, 0 0 0 4px #0000ff;
+  --r-sm:0px; --r-md:0px; --r-lg:0px;
+  --t:.01ms; --curva:linear;
+}

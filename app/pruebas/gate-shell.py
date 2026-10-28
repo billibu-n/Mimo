@@ -9,7 +9,7 @@ No mide la maqueta: mide el armazón real.
   4. crear tarea, seleccionarla y ver Detalle en el panel
   5. crear nota y verla en la lista y en el panel Notas
   6. el panel recuerda la pestaña por sección
-  7. 9 temas y cambio de tema
+  7. 10 temas y cambio de tema
   8. 411 sin desborde
 
 Uso: python3 app/pruebas/gate-shell.py
@@ -204,7 +204,7 @@ def main() -> int:
 
             page.locator("#btn-ajustes").click()
             page.wait_for_timeout(80)
-            exigir(page.locator("#temas .tema").count() == 9, "ajustes: 9 temas", fallas)
+            exigir(page.locator("#temas .tema").count() == 10, "ajustes: 10 temas", fallas)
             page.locator('#temas .tema[data-tema="deepsea"]').click()
             page.wait_for_timeout(80)
             exigir(page.locator("body").get_attribute("data-tema") == "deepsea",
@@ -224,6 +224,12 @@ def main() -> int:
             page.wait_for_timeout(80)
             page.locator("#btn-split").click()
             page.wait_for_timeout(80)
+            exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
+                   "split: el diálogo de dos secciones se abre", fallas)
+            page.locator("#split-izq").select_option("tareas")
+            page.locator("#split-der").select_option("calendario")
+            page.locator("#split-abrir").click()
+            page.wait_for_timeout(120)
             exigir(page.locator("#contenido-b").is_visible(), "split: la ventana secundaria se abre", fallas)
             page.locator("#split-seccion").select_option("calendario")
             page.wait_for_timeout(80)

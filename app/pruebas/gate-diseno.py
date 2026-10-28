@@ -5,7 +5,7 @@
 Mide la piel, no el gusto:
   1. 5 tamaños, 8 espacios, 3 radios y 1 duración en tokens.css
   2. 0 hex en base.css (los colores viven en tokens/temas)
-  3. 9 temas, cada uno con la paleta completa y su foco
+  3. 10 temas, cada uno con la paleta completa y su foco
   4. el banco abre a 1440/1100/411 sin desborde y sin errores de consola
   5. contraste >= 4,5 en fg/bg, muted/bg, fg/sup y ac-txt/ac de cada tema
   6. "Aplicar" cambia el tema del body
@@ -31,7 +31,7 @@ BANCO = AQUI / "banco-tokens.html"
 sys.path.insert(0, str(AQUI))
 from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
 
-TEMAS = ["clasico", "deepsea", "medianoche", "negro", "vino", "bosque", "sepia", "pinky", "alto-contraste"]
+TEMAS = ["clasico", "deepsea", "medianoche", "negro", "vino", "bosque", "sepia", "pinky", "alto-contraste", "alto-contraste-claro"]
 REQUERIDOS = ("--fg", "--bg", "--ac", "--ac-txt", "--ac-txt-fuerte", "--sup", "--line", "--muted", "--foco", "--sombra")
 RE_HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 
@@ -71,7 +71,7 @@ def revisar_css() -> list[str]:
     hex_base = RE_HEX.findall(base)
     exigir(not hex_base, f"base.css: 0 hex fuera de tokens — {hex_base[:3]}", fallas)
     archivos = sorted((CSS / "temas").glob("*.css"))
-    exigir(len(archivos) == 9, f"temas: 9 ficheros — {len(archivos)}", fallas)
+    exigir(len(archivos) == 10, f"temas: 10 ficheros — {len(archivos)}", fallas)
     for tema in TEMAS:
         f = CSS / "temas" / f"tema-{tema}.css"
         if not f.exists():
@@ -94,8 +94,8 @@ def revisar_banco(fichero: Path) -> list[str]:
                 exigir(d == 0, f"{ancho}: banco sin desborde — {d}px", fallas)
                 exigir(not errores, f"{ancho}: consola limpia — {errores[:3]}", fallas)
                 if ancho == 1440:
-                    exigir(page.locator(".muestra[data-tema]").count() == 9,
-                           f"banco: 9 muestras de tema — {page.locator('.muestra[data-tema]').count()}", fallas)
+                    exigir(page.locator(".muestra[data-tema]").count() == 10,
+                           f"banco: 10 muestras de tema — {page.locator('.muestra[data-tema]').count()}", fallas)
                     for tema in TEMAS:
                         sel = f'.muestra[data-tema="{tema}"]'
                         m = page.locator(sel)

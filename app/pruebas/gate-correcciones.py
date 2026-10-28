@@ -130,8 +130,8 @@ def main() -> int:
             despues = page.locator("#mimo-ic").get_attribute("src")
             exigir(antes != despues and page.locator("#mimo-menu").count() == 0,
                    "mascota: anima sin abrir menú", fallas)
-            exigir(page.locator("#pref-tema-claro option").count() == 4,
-                   "ajustes: 4 temas claros", fallas)
+            exigir(page.locator("#pref-tema-claro option").count() == 5,
+                   "ajustes: 5 temas claros", fallas)
             exigir(page.locator("#pref-tema-oscuro option").count() == 5,
                    "ajustes: 5 temas oscuros", fallas)
             exigir("Español" in page.locator("#pref-idioma").inner_text(),

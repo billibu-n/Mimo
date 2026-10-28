@@ -283,7 +283,7 @@
       </div>
       <div class="aj-grid">
         <div class="aj aj--ancho">
-          <b>Apariencia</b><span>Tema y color. Los nueve temas de mimo-academics, sin perder ninguno.</span>
+          <b>Apariencia</b><span>Tema y color. Los diez temas, sin perder ninguno.</span>
           <div class="temas" id="temas"></div>
         </div>
         <button class="aj" type="button" data-aj="General"><b>General</b><span>Lo que vale para toda la aplicación.</span></button>
@@ -389,7 +389,7 @@
     estudio: { nombre: "Estudio", nat: "seccion", icono: "i-tiempo", version: "1.0", desc: "Horas por ramo, metas semanales y gráfico de avance.", pack: "academics" },
     evaluaciones: { nombre: "Evaluaciones", nat: "aporte", icono: "i-cal", version: "1.0", desc: "Aporta el ramo y el peso a cada evaluación del calendario.", pack: "academics" },
     academics: { nombre: "Academics", nat: "pack", icono: "i-pack", version: "1.0", desc: "Kit académico: Malla, Calificaciones, Estudio y Evaluaciones.", instala: ["malla", "calificaciones", "estudio", "evaluaciones"] },
-    temas: { nombre: "Temas", nat: "tema", icono: "i-tema", version: "1.0", desc: "Los nueve temas de mimo-academics, como datos del sistema." }
+    temas: { nombre: "Temas", nat: "tema", icono: "i-tema", version: "1.0", desc: "Los diez temas, como datos del sistema." }
   };
   var ORDEN_SEC = ["malla", "calificaciones", "estudio", "tiempo"];
 
@@ -804,7 +804,7 @@
   var TEMAS = [
     ["clasico", "Clásico"], ["negro", "Negro"], ["medianoche", "Medianoche"],
     ["deepsea", "DeepSea"], ["bosque", "Bosque"], ["sepia", "Sepia"],
-    ["vino", "Vino"], ["pinky", "Pinky"], ["alto-contraste", "Alto contraste"]
+    ["vino", "Vino"], ["pinky", "Pinky"], ["alto-contraste", "Alto contraste"], ["alto-contraste-claro", "Alto contraste claro"]
   ];
   function aplicarTema(nombre, guardarTema) {
     document.body.setAttribute("data-tema", nombre);

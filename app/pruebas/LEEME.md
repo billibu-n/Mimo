@@ -6,7 +6,7 @@ verde por impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 app/pruebas/correr-gates.py     # los 13 gates web, resumen al final
+python3 app/pruebas/correr-gates.py     # los 14 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila y abre ventana:
@@ -35,6 +35,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-sync` | guarda un `mimo-sync.json`, lo carga en otro contexto, detecta conflicto local/remoto, aplica cada lado y deja respaldo | archivo sin formato, conflicto no detectado o pérdida de la copia local |
 | `gate-webdav` | WebDAV/Nextcloud local con ETag: sin clave no sube, el remoto va cifrado, `If-None-Match`/`If-Match`, segundo equipo, cola sin red que sobrevive a recargar y se reintenta al volver, conflicto y ambas salidas, clave mala y remoto corrupto | sin clave subiendo, texto claro en el remoto, cola que se pierde o conflicto que pisa una copia |
 | `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
+| `gate-ronda14` | calendario con semana del periodo (S1/S2/REC/EX), alto contraste claro, chino simplificado, bandera de Sudamérica, split de dos secciones, arrastre de pestañas al panel, reordenación, deshacer borrado, componente→calendario y meta semanal | periodo sin columna, tema claro ausente, idioma o arrastre rotos, sin deshacer o sin meta |
 | `gate-tauri` | binario release: app universal, navegación, nota en `localStorage`, Ajustes, sync WebDAV nativa (sin preflight CORS), remoto cifrado, persistencia entre aperturas y RPM | falta el binario, la ventana no abre o el remoto queda en claro |
 
 ## Fixtures

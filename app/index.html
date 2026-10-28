@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="css/temas/tema-sepia.css">
 <link rel="stylesheet" href="css/temas/tema-pinky.css">
 <link rel="stylesheet" href="css/temas/tema-alto-contraste.css">
+<link rel="stylesheet" href="css/temas/tema-alto-contraste-claro.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/shell.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
@@ -50,7 +51,7 @@
   <button class="marca" id="btn-mimo" type="button" title="Mimo" aria-label="Mimo"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span class="wordmark" aria-hidden="true">M<span class="wm-i">ı</span>mo</span></button>
   <span class="badge" title="Versión">v1.2.0</span>
   <span class="crece"></span>
-  <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span>Buscar</span><kbd>Ctrl K</kbd></button>
+  <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
   <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
   <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
@@ -60,7 +61,7 @@
 
 <div class="navbar">
   <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
-  <button class="tab-add" id="btn-add" type="button" title="Añadir un bloque" aria-label="Añadir un bloque"><svg class="icono" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  <button class="tab-add" id="btn-add" type="button" title="Agregar un bloque" aria-label="Agregar un bloque"><svg class="icono" aria-hidden="true"><use href="#i-plus"/></svg></button>
   <div class="nav-acciones">
     <button class="btn btn-primario btn-periodo-nuevo" id="btn-nuevo" type="button" title="Definir un periodo">+</button>
     <button class="periodo" id="btn-periodo" type="button" title="Periodo activo">Sin periodo</button>
@@ -72,7 +73,7 @@
 
     <section class="seccion" data-pantalla="calendario" id="p-calendario">
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.calendario">Calendario</h1><p class="sec-sub">Todo lo que tiene fecha, en un solo sitio.</p></div>
+        <div><h1 data-i18n="nav.calendario">Calendario</h1><p class="sec-sub" data-i18n="sub.calendario">Todo lo que tiene fecha, en un solo sitio.</p></div>
         <div class="sec-acciones">
           <div class="conmutador" id="vista-calendario" role="group" aria-label="Vista del calendario"><button type="button" class="on" data-cal-vista="mes">Mes</button><button type="button" data-cal-vista="semana">Semana</button><button type="button" data-cal-vista="agenda">Agenda</button></div>
           <button class="btn" id="btn-hoy" type="button">Hoy</button>
@@ -111,7 +112,7 @@
 
     <section class="seccion" data-pantalla="tareas" id="p-tareas" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.tareas">Tareas</h1><p class="sec-sub">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
+        <div><h1 data-i18n="nav.tareas">Tareas</h1><p class="sec-sub" data-i18n="sub.tareas">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
         <div class="sec-acciones">
           <div class="conmutador" id="vista-tareas" role="group" aria-label="Vista de tareas"><button type="button" class="on" data-vista="hoy">Hoy</button><button type="button" data-vista="arbol">Árbol</button><button type="button" data-vista="tablero">Tablero</button></div>
           <button class="btn btn-primario" id="btn-nueva-tarea" type="button">+ Nueva tarea</button>
@@ -152,7 +153,7 @@
 
     <section class="seccion" data-pantalla="notas" id="p-notas" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub">El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.</p></div>
+        <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub" data-i18n="sub.notas">El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.</p></div>
         <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button">+ Nueva nota</button></div>
       </div>
       <div class="notas-layout">
@@ -180,7 +181,7 @@
     </section>
 
     <section class="seccion" data-pantalla="tiempo" id="p-tiempo" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.tiempo">Tiempo</h1><p class="sec-sub">Los modos viven arriba; se añaden y se quitan como bloques.</p></div><div class="sec-acciones"><span class="pill pill-ok">instalado</span></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.tiempo">Tiempo</h1><p class="sec-sub" data-i18n="sub.tiempo">Los modos viven arriba; se agregan y se quitan como bloques.</p></div><div class="sec-acciones"><span class="pill pill-ok">instalado</span></div></div>
       <div class="card tiempo-barra">
         <div class="estanteria" id="estanteria-tiempo" aria-label="Modos dentro de Tiempo"></div>
       </div>
@@ -211,7 +212,7 @@
 
     <section class="seccion" data-pantalla="malla" id="p-malla" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub">La carrera se dibuja sola por niveles. Elige un ramo para ver qué necesita y qué desbloquea.</p></div>
+        <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub" data-i18n="sub.malla">La carrera se dibuja sola por niveles. Elige un ramo para ver qué necesita y qué desbloquea.</p></div>
         <div class="sec-acciones">
           <span class="pill">kit Academics</span>
           <button class="btn" id="btn-importar-malla" type="button">Importar</button>
@@ -285,7 +286,7 @@
 
     <section class="seccion" data-pantalla="calificaciones" id="p-calificaciones" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub">Categorías, componentes, examen y eximición. La nota se calcula sola.</p></div>
+        <div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub" data-i18n="sub.calificaciones">Categorías, componentes, examen y eximición. La nota se calcula sola.</p></div>
         <div class="sec-acciones">
           <span class="pill">kit Academics</span>
           <button class="btn" id="btn-calif-malla" type="button">Ver Malla</button>
@@ -304,7 +305,7 @@
 
     <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
       <div class="sec-cab">
-        <div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub">Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.</p></div>
+        <div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub" data-i18n="sub.estudio">Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.</p></div>
         <div class="sec-acciones"><span class="pill">kit Academics</span><button class="btn" id="btn-estudio-malla" type="button">Ver Malla</button></div>
       </div>
       <div class="kpis">
@@ -319,6 +320,7 @@
           <p class="muted" id="est-periodo">Periodo activo</p>
           <div class="est-grafico" id="est-grafico"></div>
           <div class="est-leyenda" id="est-leyenda"></div>
+          <div class="est-metas-semana" id="est-metas-semana"></div>
         </div>
         <div class="card">
           <h2>Registrar estudio</h2>
@@ -346,50 +348,50 @@
     </section>
 
     <section class="seccion" data-pantalla="ajustes" id="p-ajustes" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.ajustes">Ajustes</h1><p class="sec-sub">Apariencia, idioma, datos y extensiones, en ese orden.</p></div></div>
+      <div class="sec-cab"><div><h1 data-i18n="nav.ajustes">Ajustes</h1><p class="sec-sub" data-i18n="sub.ajustes">Apariencia, idioma, datos y extensiones, en ese orden.</p></div></div>
 
-      <div class="ajustes-grupo"><h2>Aplicación</h2><p class="muted">Lo que vale para toda la app.</p></div>
+      <div class="ajustes-grupo"><h2 data-i18n="grupo.aplicacion">Aplicación</h2><p class="muted" data-i18n="grupo.aplicacion.sub">Lo que aplica a toda la app.</p></div>
       <div class="ajustes-grid">
         <div class="ajustes-pila">
-          <section class="card card--apariencia"><h2><svg class="icono" aria-hidden="true"><use href="#i-sol"/></svg>Apariencia</h2><p class="muted">Nueve temas. El botón sol/luna salta entre la pareja claro/oscuro.</p>
+          <section class="card card--apariencia"><h2><svg class="icono" aria-hidden="true"><use href="#i-sol"/></svg><span data-i18n="aj.apariencia">Apariencia</span></h2><p class="muted" data-i18n="aj.apariencia.sub">Diez temas. El botón sol/luna salta entre la pareja claro/oscuro.</p>
             <div class="temas" id="temas"></div>
             <div class="pareja-temas">
-              <label class="campo">Tema claro <select class="entrada" id="pref-tema-claro"></select></label>
-              <label class="campo">Tema oscuro <select class="entrada" id="pref-tema-oscuro"></select></label>
+              <label class="campo"><span data-i18n="aj.temaClaro">Tema claro</span> <select class="entrada" id="pref-tema-claro"></select></label>
+              <label class="campo"><span data-i18n="aj.temaOscuro">Tema oscuro</span> <select class="entrada" id="pref-tema-oscuro"></select></label>
             </div>
           </section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg>Idioma</h2><p class="muted">Motor i18n es/en. Navegación y títulos cambian en caliente.</p>
-            <label class="campo">Idioma <select class="entrada" id="pref-idioma"><option value="es">🇨🇱 Español</option><option value="en">🇬🇧 English</option></select></label>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg><span data-i18n="aj.idioma">Idioma</span></h2><p class="muted" data-i18n="aj.idioma.sub">Motor i18n es/en/zh. Navegación, encabezados y bandera cambian en caliente.</p>
+            <label class="campo"><span data-i18n="aj.idioma.etiqueta">Idioma</span> <span class="idioma-campo"><span id="idioma-bandera" class="idioma-bandera" aria-hidden="true"></span><select class="entrada" id="pref-idioma"><option value="es">Español (Latinoamérica)</option><option value="en">English</option><option value="zh">中文（简体）</option></select></span></label>
             <p class="muted" id="ajustes-idioma">English está en progreso: los textos internos siguen en español.</p>
           </section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-tiempo"/></svg>Notificaciones</h2><p class="muted">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> Avisos activos</label></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-tiempo"/></svg><span data-i18n="aj.notificaciones">Notificaciones</span></h2><p class="muted" data-i18n="aj.notificaciones.sub">Recordatorios y sonido del sistema.</p><label class="check"><input type="checkbox" id="pref-notif"> <span data-i18n="aj.avisos">Avisos activos</span></label></section>
         </div>
         <div class="ajustes-pila">
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>General</h2><p class="muted">Inicio de semana y formato de hora.</p>
-            <label class="campo">La semana empieza en <select class="entrada" id="pref-inicio"><option value="lunes">Lunes</option><option value="domingo">Domingo</option></select></label>
-            <label class="campo">Formato de hora <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.general">General</span></h2><p class="muted" data-i18n="aj.general.sub">Inicio de semana y formato de hora.</p>
+            <label class="campo"><span data-i18n="aj.semana">La semana empieza en</span> <select class="entrada" id="pref-inicio"><option value="lunes" data-i18n="aj.lunes">Lunes</option><option value="domingo" data-i18n="aj.domingo">Domingo</option></select></label>
+            <label class="campo"><span data-i18n="aj.hora">Formato de hora</span> <select class="entrada" id="pref-hora"><option value="24">24 h</option><option value="12">12 h</option></select></label>
             <p class="muted" id="ajustes-resumen"></p>
           </section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg>Navegación</h2><p class="muted">Dónde viven las secciones.</p>
-            <label class="campo">Barra de secciones <select class="entrada" id="pref-nav"><option value="arriba">Arriba</option><option value="izquierda">Izquierda</option></select></label>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg><span data-i18n="aj.navegacion">Navegación</span></h2><p class="muted" data-i18n="aj.navegacion.sub">Dónde viven las secciones.</p>
+            <label class="campo"><span data-i18n="aj.barra">Barra de secciones</span> <select class="entrada" id="pref-nav"><option value="arriba" data-i18n="aj.arriba">Arriba</option><option value="izquierda" data-i18n="aj.izquierda">Izquierda</option></select></label>
             <p class="muted">Arriba es la barra horizontal; izquierda es un rail vertical, como el viejo.</p>
           </section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg>Paneles</h2><p class="muted">Ancho y visibilidad del panel derecho.</p>
-            <label class="campo">Ancho <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
-            <label class="check"><input type="checkbox" id="pref-panel-abierto"> Abierto al iniciar</label>
-            <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px">Abrir panel</button>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg><span data-i18n="aj.paneles">Paneles</span></h2><p class="muted" data-i18n="aj.paneles.sub">Ancho y visibilidad del panel derecho.</p>
+            <label class="campo"><span data-i18n="aj.ancho">Ancho</span> <select class="entrada" id="pref-panel-ancho"><option value="280">Angosto · 280</option><option value="320" selected>Normal · 320</option><option value="360">Ancho · 360</option></select></label>
+            <label class="check"><input type="checkbox" id="pref-panel-abierto"> <span data-i18n="aj.abierto">Abierto al iniciar</span></label>
+            <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px" data-i18n="aj.abrirPanel">Abrir panel</button>
           </section>
         </div>
       </div>
 
-      <div class="ajustes-grupo"><h2>Datos</h2><p class="muted">Lo que entra, sale y se guarda.</p></div>
+      <div class="ajustes-grupo"><h2 data-i18n="grupo.datos">Datos</h2><p class="muted" data-i18n="grupo.datos.sub">Lo que entra, sale y se guarda.</p></div>
       <div class="ajustes-grid">
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg>Periodos</h2><p class="muted">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg><span data-i18n="aj.periodos">Periodos</span></h2><p class="muted" data-i18n="aj.periodos.sub">Arcos con clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes">+ Nuevo periodo</button></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="aj.respaldo">Respaldo</span></h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
           <p class="muted">Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2).</p>
         </section>
         <section class="card card--ancho" id="sync-card">
-          <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg>Sincronización</h2>
+          <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg><span data-i18n="aj.sync">Sincronización</span></h2>
           <p class="muted sync-estado" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
 
           <div class="sync-modo">
@@ -480,26 +482,20 @@
         </section>
       </div>
 
-      <div class="ajustes-grupo"><h2>Extensiones</h2><p class="muted">Bloques, laboratorio y versión.</p></div>
+      <div class="ajustes-grupo"><h2 data-i18n="grupo.extensiones">Extensiones</h2><p class="muted" data-i18n="grupo.extensiones.sub">Bloques, laboratorio y versión.</p></div>
       <div class="ajustes-grid">
-        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg>Kits y bloques</h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Añadir bloque o kit</button></section>
+        <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes">Agregar bloque o kit</button></section>
         <div class="ajustes-pila">
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg>Laboratorio</h2><p class="muted">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg>Acerca de</h2><p class="muted">Mimo universal · 1.2.0 · base 4 + bloques. MIT. Sin red.</p></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Laboratorio</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">La vista dividida ocupa la mitad de la ventana.</p><label class="check"><input type="checkbox" id="lab-split"> Vista dividida</label></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted">Mimo universal · 1.2.0 · base 4 + bloques. MIT. Sin red.</p></section>
         </div>
       </div>
     </section>
   </main>
 
   <main class="contenido-b" id="contenido-b" hidden aria-label="Vista secundaria">
-    <div class="sec-cab"><div><h2>Vista dividida</h2><p class="sec-sub">Elige qué sección quieres al lado.</p></div><button class="btn" type="button" id="btn-cerrar-split">Cerrar</button></div>
-    <select class="entrada" id="split-seccion" aria-label="Sección secundaria">
-      <option value="tareas">Tareas</option>
-      <option value="calendario">Calendario</option>
-      <option value="notas">Notas</option>
-      <option value="tiempo">Tiempo</option>
-      <option value="ajustes">Ajustes</option>
-    </select>
+    <div class="sec-cab"><div><h2 id="split-titulo">Vista dividida</h2><p class="sec-sub">Arrastra una sección aquí o elige en la lista.</p></div><button class="btn" type="button" id="btn-cerrar-split">Cerrar</button></div>
+    <select class="entrada" id="split-seccion" aria-label="Sección secundaria"></select>
     <div id="split-cuerpo"></div>
   </main>
 
@@ -560,6 +556,18 @@
       <label class="campo">Hora <input class="entrada" id="sesion-hora" type="time"></label>
       <div class="fila"><button class="btn btn-primario" type="submit">Guardar</button><button class="btn" type="button" id="sesion-cancelar">Cancelar</button><button class="btn btn-peligro" type="button" id="sesion-borrar">Borrar</button></div>
     </form>
+  </div>
+</div>
+
+<div class="modal" id="modal-split" role="dialog" aria-modal="true" aria-labelledby="split-modal-tit">
+  <div class="modal__caja split-caja">
+    <header class="modal__cab"><div><h2 id="split-modal-tit">Abrir dos secciones</h2><p class="muted">Elige qué va a la izquierda y qué a la derecha. También puedes arrastrar las pestañas a cada lado.</p></div><button class="icono-btn" id="split-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="split-dos">
+      <label class="campo">Izquierda <select class="entrada" id="split-izq"></select></label>
+      <label class="campo">Derecha <select class="entrada" id="split-der"></select></label>
+    </div>
+    <p class="muted" id="split-aviso">La ventana necesita al menos 1256 px de ancho.</p>
+    <div class="fila"><button class="btn btn-primario" id="split-abrir" type="button">Abrir vista dividida</button><button class="btn" id="split-cancelar" type="button">Cancelar</button></div>
   </div>
 </div>
 

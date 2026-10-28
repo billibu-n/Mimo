@@ -91,6 +91,14 @@ def main() -> int:
             exigir(page.locator("#tiempo-sesiones").inner_text().strip() == "3",
                    "tiempo: el pomodoro registra el trabajo", fallas)
 
+            page.evaluate("""() => {
+              window.__notifs = [];
+              window.Notification = class {
+                static permission = 'granted';
+                constructor(titulo, opciones) { window.__notifs.push({titulo, opciones}); }
+                static requestPermission() { return Promise.resolve('granted'); }
+              };
+            }""")
             page.locator('#estanteria-tiempo [data-hijo="alarmas"]').click()
             page.wait_for_timeout(150)
             exigir(not page.locator(".tiempo-caja .fila").is_visible(),
@@ -104,6 +112,8 @@ def main() -> int:
                    "tiempo: la alarma queda en la lista", fallas)
             exigir("Alarma: Prueba" in page.locator("#toast").inner_text(),
                    "tiempo: la alarma avisa", fallas)
+            exigir(page.evaluate("window.__notifs.length") >= 1,
+                   "tiempo: la alarma usa notificación nativa", fallas)
             exigir(not errores, f"tiempo: consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()

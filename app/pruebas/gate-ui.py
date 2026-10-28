@@ -7,7 +7,7 @@ Mide lo que el plan M02 reclama, no impresiones:
   2. panel de herramientas con 4 pestañas
   3. 1440/1100/411 sin desborde horizontal de documento
   4. 0 errores de consola y 0 excepciones
-  5. 1440: split enciende y apaga; tema cambia; Ajustes declara 9 temas
+  5. 1440: split enciende y apaga; tema cambia; Ajustes declara 10 temas
   6. 1100/411: el panel pasa a cajón y se cierra
   7. fixture roto: el mismo gate sale 1 (si no, el gate no sirve)
 
@@ -68,7 +68,7 @@ def correr(fichero: Path) -> list[str]:
                     page.locator("#btn-ajustes").click()
                     page.wait_for_timeout(80)
                     temas = page.locator("#temas .tema").count()
-                    exigir(temas == 9, f"1440: Ajustes declara 9 temas — {temas}", fallas)
+                    exigir(temas == 10, f"1440: Ajustes declara 10 temas — {temas}", fallas)
                 else:
                     page.locator("#btn-panel").click()
                     page.wait_for_timeout(80)

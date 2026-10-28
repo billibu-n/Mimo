@@ -47,6 +47,11 @@
 .cal-dia.fuera{opacity:.42}
 .cal-dia.hoy{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
 .cal-dia b{font-size:var(--fs-sm);font-weight:600}
+.cal-grid--con-semana{grid-template-columns:2.1rem repeat(7,minmax(0,1fr))}
+.cal-dow--sem,.cal-sem-col{font-size:var(--fs-xs);color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center}
+.cal-sem-col{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);font-weight:700;letter-spacing:.02em}
+.cal-sem-col[title*="receso"],.cal-sem-col[title*="examen"]{color:var(--warn)}
+@media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:54px;font-size:10px}}
 .cal-vacio{grid-column:1/-1}
 
 .tarea-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
@@ -627,3 +632,42 @@ body.nav-izq .shell{margin-left:64px}
   .sync-dos{grid-template-columns:1fr}
   .sync-fila--acciones .btn{flex:1 1 100%}
 }
+
+/* ---- idioma con bandera genérica ---- */
+.idioma-campo{display:inline-flex;align-items:center;gap:var(--sp-2);min-width:0}
+.idioma-bandera{display:inline-flex;align-items:center;justify-content:center;width:24px;height:16px;flex:none;overflow:hidden;border-radius:2px}
+.idioma-bandera img{width:100%;height:100%;object-fit:cover;display:block}
+.idioma-emoji{font-size:1rem;line-height:1}
+.idioma-campo select{max-width:240px}
+@media (max-width:520px){.idioma-campo{width:100%}.idioma-campo select{max-width:none;width:100%}}
+
+/* ---- pestañas arrastrables y vista dividida ---- */
+.tab[draggable="true"]{cursor:grab}
+.tab[draggable="true"]:active{cursor:grabbing}
+.tab.arrastrando{opacity:.35;transform:scale(.9)}
+.tab.tab-acomodo{animation:tab-acomodo .28s ease-out}
+.tab-sobre{outline:2px dashed var(--ac);outline-offset:2px;background:var(--sup2)}
+@keyframes tab-acomodo{0%{transform:scale(.82)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+#contenido,#contenido-b{position:relative}
+#contenido.pane-soltar::after,#contenido-b.pane-soltar::after{
+  content:"Suelta la sección aquí";position:absolute;inset:var(--sp-2);z-index:5;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
+  border:2px dashed var(--ac);border-radius:var(--r-md);background:color-mix(in srgb,var(--ac) 12%,transparent);
+  color:var(--fg);font-size:var(--fs-sm);font-weight:600
+}
+.split-caja{max-width:560px}
+.split-dos{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin:var(--sp-4) 0}
+.split-dos .campo{display:flex;flex-direction:column;gap:var(--sp-1);align-items:stretch}
+.split-dos select{max-width:none;width:100%}
+@media (max-width:520px){.split-dos{grid-template-columns:1fr}}
+.calif-fecha{display:flex;align-items:center;gap:var(--sp-1);min-width:0}
+.calif-fecha .entrada{min-width:0}
+.calif-fecha .btn{flex:none;padding:0 6px}
+.toast.on{pointer-events:auto}
+.toast__accion{margin-left:var(--sp-3);border:1px solid currentColor;background:transparent;color:inherit;border-radius:var(--r-sm);padding:2px 8px;font:inherit;font-weight:700;cursor:pointer}
+.toast__accion:hover{background:color-mix(in srgb,currentColor 14%,transparent)}
+.est-metas-semana{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--line2)}
+.est-meta-sem{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
+.est-meta-sem .entrada{width:58px;min-height:28px;font-size:var(--fs-xs)}
+#pref-idioma{max-width:240px}
+@media (max-width:520px){#pref-idioma{max-width:none;width:100%}}

@@ -14,8 +14,99 @@
   };
 
   var I18N = {
-    es: { "nav.calendario": "Calendario", "nav.tareas": "Tareas", "nav.notas": "Notas", "nav.tiempo": "Tiempo", "nav.malla": "Malla", "nav.calificaciones": "Calificaciones", "nav.estudio": "Estudio", "nav.ajustes": "Ajustes", "panel.contexto": "Contexto", "panel.detalle": "Detalle", "panel.notas": "Notas", "panel.bloques": "Bloques" },
-    en: { "nav.calendario": "Calendar", "nav.tareas": "Tasks", "nav.notas": "Notes", "nav.tiempo": "Time", "nav.malla": "Degree plan", "nav.calificaciones": "Grades", "nav.estudio": "Study", "nav.ajustes": "Settings", "panel.contexto": "Context", "panel.detalle": "Details", "panel.notas": "Notes", "panel.bloques": "Blocks" }
+    es: {
+      "nav.calendario": "Calendario", "nav.tareas": "Tareas", "nav.notas": "Notas", "nav.tiempo": "Tiempo",
+      "nav.malla": "Malla", "nav.calificaciones": "Calificaciones", "nav.estudio": "Estudio", "nav.ajustes": "Ajustes",
+      "panel.contexto": "Contexto", "panel.detalle": "Detalle", "panel.notas": "Notas", "panel.bloques": "Bloques",
+      "sub.calendario": "Todo lo que tiene fecha, en un solo sitio.",
+      "sub.tareas": "Proyectos y tareas sobre tareas; el progreso se calcula solo.",
+      "sub.notas": "El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.",
+      "sub.tiempo": "Los modos viven arriba; se agregan y se quitan como bloques.",
+      "sub.malla": "La carrera se dibuja sola por niveles. Elige un ramo para ver qué necesita y qué desbloquea.",
+      "sub.calificaciones": "Categorías, componentes, examen y eximición. La nota se calcula sola.",
+      "sub.estudio": "Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.",
+      "sub.ajustes": "Apariencia, idioma, datos y extensiones, en ese orden.",
+      "grupo.aplicacion": "Aplicación", "grupo.aplicacion.sub": "Lo que aplica a toda la app.",
+      "grupo.datos": "Datos", "grupo.datos.sub": "Lo que entra, sale y se guarda.",
+      "grupo.extensiones": "Extensiones", "grupo.extensiones.sub": "Bloques, laboratorio y versión.",
+      "aj.apariencia": "Apariencia", "aj.apariencia.sub": "Diez temas. El botón sol/luna salta entre la pareja claro/oscuro.",
+      "aj.idioma": "Idioma", "aj.idioma.sub": "Motor i18n es/en/zh. Navegación, encabezados y bandera cambian en caliente.",
+      "aj.notificaciones": "Notificaciones", "aj.notificaciones.sub": "Recordatorios y sonido del sistema.",
+      "aj.general": "General", "aj.general.sub": "Inicio de semana y formato de hora.",
+      "aj.navegacion": "Navegación", "aj.navegacion.sub": "Dónde viven las secciones.",
+      "aj.paneles": "Paneles", "aj.paneles.sub": "Ancho y visibilidad del panel derecho.",
+      "aj.periodos": "Periodos", "aj.periodos.sub": "Arcos con clases, receso y exámenes.",
+      "aj.respaldo": "Respaldo", "aj.sync": "Sincronización", "aj.kits": "Kits y bloques",
+      "aj.laboratorio": "Laboratorio", "aj.laboratorio.sub": "La vista dividida ocupa la mitad de la ventana.",
+      "aj.temaClaro": "Tema claro", "aj.temaOscuro": "Tema oscuro", "aj.idioma.etiqueta": "Idioma",
+      "aj.avisos": "Avisos activos", "aj.semana": "La semana empieza en", "aj.lunes": "Lunes", "aj.domingo": "Domingo",
+      "aj.hora": "Formato de hora", "aj.barra": "Barra de secciones", "aj.arriba": "Arriba", "aj.izquierda": "Izquierda",
+      "aj.ancho": "Ancho", "aj.abierto": "Abierto al iniciar", "aj.abrirPanel": "Abrir panel",
+      "aj.acerca": "Acerca de",
+      "top.buscar": "Buscar", "cal.semana": "Sem"
+    },
+    en: {
+      "nav.calendario": "Calendar", "nav.tareas": "Tasks", "nav.notas": "Notes", "nav.tiempo": "Time",
+      "nav.malla": "Degree plan", "nav.calificaciones": "Grades", "nav.estudio": "Study", "nav.ajustes": "Settings",
+      "panel.contexto": "Context", "panel.detalle": "Details", "panel.notas": "Notes", "panel.bloques": "Blocks",
+      "sub.calendario": "Everything with a date, in one place.",
+      "sub.tareas": "Projects and tasks on tasks; progress is calculated.",
+      "sub.notas": "Material that is not a task: text, links and context. Right-click a note for actions.",
+      "sub.tiempo": "Modes live above; add and remove them like blocks.",
+      "sub.malla": "Your degree is drawn by levels. Pick a course to see what it needs and unlocks.",
+      "sub.calificaciones": "Categories, components, exam and exemption. Your grade is calculated.",
+      "sub.estudio": "Hours per course, weekly goal and progress. Time sessions land here.",
+      "sub.ajustes": "Appearance, language, data and extensions, in that order.",
+      "grupo.aplicacion": "Application", "grupo.aplicacion.sub": "What applies to the whole app.",
+      "grupo.datos": "Data", "grupo.datos.sub": "What comes in, goes out and is saved.",
+      "grupo.extensiones": "Extensions", "grupo.extensiones.sub": "Blocks, lab and version.",
+      "aj.apariencia": "Appearance", "aj.apariencia.sub": "Ten themes. The sun/moon button jumps between the light/dark pair.",
+      "aj.idioma": "Language", "aj.idioma.sub": "i18n engine es/en/zh. Navigation, headings and flag change live.",
+      "aj.notificaciones": "Notifications", "aj.notificaciones.sub": "System reminders and sound.",
+      "aj.general": "General", "aj.general.sub": "Week start and time format.",
+      "aj.navegacion": "Navigation", "aj.navegacion.sub": "Where the sections live.",
+      "aj.paneles": "Panels", "aj.paneles.sub": "Width and visibility of the right panel.",
+      "aj.periodos": "Terms", "aj.periodos.sub": "Arcs with classes, breaks and exams.",
+      "aj.respaldo": "Backup", "aj.sync": "Sync", "aj.kits": "Kits and blocks",
+      "aj.laboratorio": "Lab", "aj.laboratorio.sub": "Split view takes half the window.",
+      "aj.temaClaro": "Light theme", "aj.temaOscuro": "Dark theme", "aj.idioma.etiqueta": "Language",
+      "aj.avisos": "Notifications", "aj.semana": "Week starts on", "aj.lunes": "Monday", "aj.domingo": "Sunday",
+      "aj.hora": "Time format", "aj.barra": "Section bar", "aj.arriba": "Top", "aj.izquierda": "Left",
+      "aj.ancho": "Width", "aj.abierto": "Open on start", "aj.abrirPanel": "Open panel",
+      "aj.acerca": "About",
+      "top.buscar": "Search", "cal.semana": "Wk"
+    },
+    zh: {
+      "nav.calendario": "日历", "nav.tareas": "任务", "nav.notas": "笔记", "nav.tiempo": "时间",
+      "nav.malla": "课程规划", "nav.calificaciones": "成绩", "nav.estudio": "学习", "nav.ajustes": "设置",
+      "panel.contexto": "上下文", "panel.detalle": "详情", "panel.notas": "笔记", "panel.bloques": "模块",
+      "sub.calendario": "所有带日期的事情，都集中在这里。",
+      "sub.tareas": "任务可以层层拆分，进度自动计算。",
+      "sub.notas": "不是任务的材料：文字、链接和上下文。右键点击笔记可操作。",
+      "sub.tiempo": "模式在上方；像模块一样添加或移除。",
+      "sub.malla": "课程按层级自动绘制。选择一门课，查看先修要求和可解锁内容。",
+      "sub.calificaciones": "分类、评分项、考试和免考。成绩自动计算。",
+      "sub.estudio": "按课程统计小时数、每周目标和进度。时间记录会自动进入这里。",
+      "sub.ajustes": "外观、语言、数据和扩展，按此顺序。",
+      "grupo.aplicacion": "应用", "grupo.aplicacion.sub": "适用于整个应用的设置。",
+      "grupo.datos": "数据", "grupo.datos.sub": "数据的导入、导出和保存。",
+      "grupo.extensiones": "扩展", "grupo.extensiones.sub": "模块、实验室和版本。",
+      "aj.apariencia": "外观", "aj.apariencia.sub": "十种主题。太阳/月亮按钮在浅色/深色配对间切换。",
+      "aj.idioma": "语言", "aj.idioma.sub": "支持西班牙语、英语和简体中文。导航、标题和旗帜即时切换。",
+      "aj.notificaciones": "通知", "aj.notificaciones.sub": "系统提醒和声音。",
+      "aj.general": "常规", "aj.general.sub": "一周起始和小时格式。",
+      "aj.navegacion": "导航", "aj.navegacion.sub": "各分区的位置。",
+      "aj.paneles": "面板", "aj.paneles.sub": "右侧面板的宽度和可见性。",
+      "aj.periodos": "学期", "aj.periodos.sub": "课程、假期和考试周。",
+      "aj.respaldo": "备份", "aj.sync": "同步", "aj.kits": "套件与模块",
+      "aj.laboratorio": "实验室", "aj.laboratorio.sub": "分屏占窗口的一半。",
+      "aj.temaClaro": "浅色主题", "aj.temaOscuro": "深色主题", "aj.idioma.etiqueta": "语言",
+      "aj.avisos": "启用提醒", "aj.semana": "一周开始于", "aj.lunes": "星期一", "aj.domingo": "星期日",
+      "aj.hora": "时间格式", "aj.barra": "分区栏位置", "aj.arriba": "顶部", "aj.izquierda": "左侧",
+      "aj.ancho": "宽度", "aj.abierto": "启动时打开", "aj.abrirPanel": "打开面板",
+      "aj.acerca": "关于",
+      "top.buscar": "搜索", "cal.semana": "周"
+    }
   };
   function idioma() { return (estado && estado.prefs && estado.prefs.idioma) || "es"; }
   function t(k) {
@@ -25,7 +116,9 @@
   var TEMAS = [
     ["clasico", "Clásico", "claro"], ["deepsea", "DeepSea", "oscuro"], ["medianoche", "Medianoche", "oscuro"],
     ["negro", "Negro", "oscuro"], ["vino", "Vino", "oscuro"], ["bosque", "Bosque", "claro"],
-    ["sepia", "Sepia", "claro"], ["pinky", "Pinky", "claro"], ["alto-contraste", "Alto contraste", "oscuro"]
+    ["sepia", "Sepia", "claro"], ["pinky", "Pinky", "claro"],
+    ["alto-contraste-claro", "Alto contraste claro", "claro"],
+    ["alto-contraste", "Alto contraste oscuro", "oscuro"]
   ];
   var BLOQUES = {
     tiempo: { nombre: "Tiempo", tipo: "seccion", icono: "i-tiempo", desc: "Cronómetro, temporizador, pomodoro y alarmas." },
@@ -46,7 +139,7 @@
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true,
-        temaClaro: "clasico", temaOscuro: "deepsea" },
+        temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [] },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -92,6 +185,7 @@
   var formAlarmaId = null;
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
   var splitOn = false;
+  var tabArrastrada = null;
 
   function guardar() {
     try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
@@ -99,9 +193,21 @@
       try { window.MimoSync.alCambiar(); } catch (e) {}
     }
   }
-  function aviso(texto) {
-    var t = $("#toast"); t.textContent = texto; t.classList.add("on");
-    clearTimeout(t._t); t._t = setTimeout(function () { t.classList.remove("on"); }, 2600);
+  function aviso(texto, deshacer) {
+    var t = $("#toast"); t.innerHTML = "";
+    var span = document.createElement("span"); span.textContent = texto; t.appendChild(span);
+    if (typeof deshacer === "function") {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "toast__accion"; b.textContent = "Deshacer";
+      b.addEventListener("click", function () {
+        t.classList.remove("on"); clearTimeout(t._t);
+        deshacer();
+      });
+      t.appendChild(b);
+    }
+    t.classList.add("on");
+    clearTimeout(t._t);
+    t._t = setTimeout(function () { t.classList.remove("on"); }, typeof deshacer === "function" ? 6500 : 2600);
   }
   function resumenEstado(s) {
     s = s || estado;
@@ -186,25 +292,39 @@
   function borrarNota(id) {
     var n = notaPorId(id); if (!n) return;
     if (!window.confirm("¿Borrar la nota \"" + (n.titulo || "Sin título") + "\"?")) return;
+    var copia = Object.assign({}, n), pos = estado.notas.map(function (x) { return x.id; }).indexOf(id);
     estado.notas = estado.notas.filter(function (x) { return x.id !== id; });
     if (estado.notaSel === id) estado.notaSel = estado.notas.length ? estado.notas[0].id : null;
-    guardar(); pintarNotas(); pintarPanel(); aviso("Nota borrada.");
+    guardar(); pintarNotas(); pintarPanel();
+    aviso("Nota borrada.", function () {
+      estado.notas.splice(Math.max(0, Math.min(pos, estado.notas.length)), 0, copia);
+      estado.notaSel = copia.id; guardar(); pintarNotas(); pintarPanel(); aviso("Nota restaurada.");
+    });
   }
   function borrarPeriodo(id) {
     var p = (estado.periodos || []).filter(function (x) { return x.id === id; })[0];
     if (!p) return;
     if (!window.confirm("¿Borrar el periodo \"" + p.nombre + "\" y sus semanas?")) return;
+    var copia = Object.assign({}, p), activo = estado.periodoActivo;
     estado.periodos = estado.periodos.filter(function (x) { return x.id !== id; });
     if (estado.periodoActivo === id) estado.periodoActivo = estado.periodos.length ? estado.periodos[0].id : null;
-    guardar(); pintarPeriodo(); aviso("Periodo borrado. Sus eventos no se tocan.");
+    guardar(); pintarPeriodo();
+    aviso("Periodo borrado. Sus eventos no se tocan.", function () {
+      estado.periodos.push(copia); estado.periodoActivo = activo; guardar(); pintarPeriodo(); aviso("Periodo restaurado.");
+    });
   }
   function borrarSesion(ref) {
     var lista = estado.sesiones || [];
     var idx = typeof ref === "number" ? ref : lista.map(function (s) { return s.id; }).indexOf(String(ref));
     var s = lista[idx]; if (!s) return;
     if (!window.confirm("¿Borrar la sesión de " + fmtDuracion(s.minutos) + " del " + s.fecha + "?")) return;
+    var copia = Object.assign({}, s);
     lista.splice(idx, 1);
-    guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión borrada.");
+    guardar(); pintarTiempo(); pintarEstudio();
+    aviso("Sesión borrada.", function () {
+      lista.splice(Math.max(0, Math.min(idx, lista.length)), 0, copia);
+      guardar(); pintarTiempo(); pintarEstudio(); aviso("Sesión restaurada.");
+    });
   }
   function duracionInput(min) {
     var total = Math.max(0, Math.round((Number(min) || 0) * 60));
@@ -301,7 +421,7 @@
         { accion: "tarea-abrir", texto: "Abrir detalle", run: function () { abrirTarea(t.id); } },
         { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(t); } },
         { accion: "tarea-estado", texto: t.hecha ? "Reabrir" : "Marcar hecha", run: function () { alternarTarea(t.id); } },
-        { accion: "tarea-sub", texto: "Añadir subtarea", run: function () { abrirFormulario(null, t.id); } },
+        { accion: "tarea-sub", texto: "Agregar subtarea", run: function () { abrirFormulario(null, t.id); } },
         { sep: true },
         { accion: "tarea-borrar", texto: t.tipo === "proyecto" ? "Borrar proyecto y sus tareas" : "Borrar tarea", peligro: true,
           run: function () { borrarTarea(t.id); } }
@@ -415,7 +535,35 @@
     var out = BASE.slice(0, 3);
     ORDEN.forEach(function (id) { if (instalado(id)) out.push(id); });
     out.push("ajustes");
+    var orden = (estado.prefs && Array.isArray(estado.prefs.ordenTabs)) ? estado.prefs.ordenTabs : [];
+    var base = {};
+    out.forEach(function (id, i) { base[id] = i; });
+    out.sort(function (a, b) {
+      var ia = orden.indexOf(a), ib = orden.indexOf(b);
+      if (ia < 0) ia = base[a] + 1000;
+      if (ib < 0) ib = base[b] + 1000;
+      return ia - ib;
+    });
+    var aj = out.indexOf("ajustes");
+    if (aj >= 0) { out.splice(aj, 1); out.push("ajustes"); }
     return out;
+  }
+  function moverTab(origen, destino) {
+    if (!origen || !destino || origen === destino || origen === "ajustes" || destino === "ajustes") return;
+    var orden = secciones();
+    var i = orden.indexOf(origen), j = orden.indexOf(destino);
+    if (i < 0 || j < 0) return;
+    orden.splice(i, 1);
+    var pos = orden.indexOf(destino);
+    if (i < j) pos += 1;
+    orden.splice(pos, 0, origen);
+    estado.prefs.ordenTabs = orden.filter(function (id) { return id !== "ajustes"; }).concat(["ajustes"]);
+    guardar(); pintarTabs();
+    var nuevo = $('#tabs .tab[data-ir="' + origen + '"]');
+    if (nuevo) {
+      nuevo.classList.add("tab-acomodo");
+      setTimeout(function () { nuevo.classList.remove("tab-acomodo"); }, 320);
+    }
   }
 
   function pintarTabs() {
@@ -425,7 +573,32 @@
         icono(iconoDe(id)) + "</button>";
     }).join("");
     $$("#tabs .tab").forEach(function (b) {
-      b.addEventListener("click", function () { ir(b.getAttribute("data-ir")); });
+      var id = b.getAttribute("data-ir");
+      b.setAttribute("draggable", id === "ajustes" ? "false" : "true");
+      b.addEventListener("click", function () { ir(id); });
+      b.addEventListener("dragstart", function (e) {
+        tabArrastrada = id;
+        b.classList.add("arrastrando");
+        try {
+          e.dataTransfer.setData("text/plain", id);
+          e.dataTransfer.effectAllowed = "move";
+        } catch (_) {}
+      });
+      b.addEventListener("dragend", function () {
+        b.classList.remove("arrastrando");
+        tabArrastrada = null;
+        $$(".tab-sobre").forEach(function (x) { x.classList.remove("tab-sobre"); });
+        $$(".pane-soltar").forEach(function (x) { x.classList.remove("pane-soltar"); });
+      });
+      b.addEventListener("dragover", function (e) {
+        if (!tabArrastrada || tabArrastrada === id || id === "ajustes") return;
+        e.preventDefault(); b.classList.add("tab-sobre");
+      });
+      b.addEventListener("dragleave", function () { b.classList.remove("tab-sobre"); });
+      b.addEventListener("drop", function (e) {
+        e.preventDefault(); b.classList.remove("tab-sobre");
+        moverTab(tabArrastrada, id);
+      });
     });
     var kb = $("#kpi-bloques");
     if (kb) kb.textContent = String(estado.instalados.length);
@@ -521,6 +694,25 @@
     return estado.eventos.filter(function (e) { return e.fecha === fecha; })
       .sort(function (a, b) { return (a.hora || "99:99") < (b.hora || "99:99") ? -1 : 1; });
   }
+  function isoFecha(f) {
+    return f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, "0") + "-" + String(f.getDate()).padStart(2, "0");
+  }
+  function semanaDePeriodo(iso) {
+    var p = periodoActivoObj();
+    if (!p || !Array.isArray(p.semanas) || !p.semanas.length) return null;
+    var w = p.semanas.filter(function (x) { return iso >= x.desde && iso <= x.hasta; })[0];
+    if (!w) return null;
+    var tipo = w.tipo || "clases";
+    var clases = p.semanas.filter(function (x) { return (x.tipo || "clases") === "clases"; });
+    var idx = clases.indexOf(w);
+    return {
+      numero: tipo === "clases" && idx >= 0 ? idx + 1 : 0,
+      tipo: tipo,
+      n: w.n,
+      desde: w.desde,
+      hasta: w.hasta
+    };
+  }
   function chipEvento(e) {
     return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · clic derecho: acciones">' +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b> " : "") + esc(e.titulo) + "</button>";
@@ -554,7 +746,9 @@
       var domingo = (estado.prefs || {}).inicioSemana === "domingo";
       var dias = domingo ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"] : ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
       grid.className = "cal-grid cal-grid--semana";
-      $("#cal-mes-titulo").textContent = "Semana del " + lunes.getDate() + "/" + (lunes.getMonth() + 1);
+      var semSemana = semanaDePeriodo(isoFecha(lunes)) || semanaDePeriodo(isoFecha(new Date(lunes.getTime() + 3 * 86400000)));
+      var rotuloSemana = semSemana ? (semSemana.numero ? " · S" + semSemana.numero : semSemana.tipo === "receso" ? " · receso" : semSemana.tipo === "examenes" ? " · exámenes" : "") : "";
+      $("#cal-mes-titulo").textContent = "Semana del " + lunes.getDate() + "/" + (lunes.getMonth() + 1) + rotuloSemana;
       grid.innerHTML = dias.map(function (d, i) {
         var f = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + i);
         var iso = f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, "0") + "-" + String(f.getDate()).padStart(2, "0");
@@ -568,12 +762,23 @@
       var offset = domingo ? primero.getDay() : (primero.getDay() + 6) % 7;
       var inicio = new Date(y, m, 1 - offset);
       var dias2 = domingo ? ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"] : ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-      grid.className = "cal-grid";
+      var periodoCal = periodoActivoObj();
+      var conSemana = !!(periodoCal && Array.isArray(periodoCal.semanas) && periodoCal.semanas.length);
+      grid.className = "cal-grid cal-grid--mes" + (conSemana ? " cal-grid--con-semana" : "");
       $("#cal-mes-titulo").textContent = new Date(y, m, 1).toLocaleDateString("es-CL", { month: "long", year: "numeric" });
-      var html = dias2.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
+      var html = (conSemana ? '<div class="cal-dow cal-dow--sem">' + t("cal.semana") + "</div>" : "") +
+        dias2.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
       for (var i = 0; i < 42; i++) {
         var f2 = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
-        var iso2 = f2.getFullYear() + "-" + String(f2.getMonth() + 1).padStart(2, "0") + "-" + String(f2.getDate()).padStart(2, "0");
+        var iso2 = isoFecha(f2);
+        if (i % 7 === 0) {
+          if (conSemana) {
+            var sem = semanaDePeriodo(iso2) || semanaDePeriodo(isoFecha(new Date(f2.getTime() + 3 * 86400000)));
+            var etiqueta = sem ? (sem.numero ? "S" + sem.numero : sem.tipo === "receso" ? "REC" : sem.tipo === "examenes" ? "EX" : "—") : "—";
+            var titulo = sem ? (sem.numero ? "Semana " + sem.numero + " de clases del periodo" : "Semana de " + sem.tipo) : "Fuera del periodo activo";
+            html += '<div class="cal-sem-col" title="' + titulo + '">' + etiqueta + "</div>";
+          }
+        }
         var evs2 = eventosDe(iso2); if (f2.getMonth() === m) visibles += evs2.length;
         html += '<div class="cal-dia' + (f2.getMonth() !== m ? " fuera" : "") + (iso2 === hoyISO() ? " hoy" : "") + '" data-cal-dia="' + iso2 + '"><b>' + f2.getDate() + "</b>" +
           (evs2.length ? '<div class="cal-eventos">' + evs2.slice(0, 2).map(chipEvento).join("") + (evs2.length > 2 ? '<span class="cal-mas">+' + (evs2.length - 2) + "</span>" : "") + "</div>" : "") + "</div>";
@@ -604,9 +809,13 @@
   function borrarEvento(id) {
     var ev = eventoPorId(id); if (!ev) return;
     if (!window.confirm("¿Borrar \"" + ev.titulo + "\"?")) return;
+    var copia = Object.assign({}, ev);
     estado.eventos = estado.eventos.filter(function (e) { return e.id !== id; });
     if (estado.eventoSel === id) estado.eventoSel = null;
-    guardar(); pintarCalendario(); pintarPanel(); aviso("Evento borrado.");
+    guardar(); pintarCalendario(); pintarPanel();
+    aviso("Evento borrado.", function () {
+      estado.eventos.push(copia); estado.eventoSel = copia.id; guardar(); pintarCalendario(); pintarPanel(); aviso("Evento restaurado.");
+    });
   }
 
   function hoyISO() {
@@ -675,7 +884,7 @@
       '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">proyecto</small>' : "") + "</span>" +
       '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
       '<span class="pill pill--' + esc(t.prioridad) + '">' + esc(t.prioridad) + "</span>" + sub +
-      '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="Añadir una tarea dentro">+</button></div>';
+      '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="Agregar una tarea dentro">+</button></div>';
     if (hijos.length) html += hijos.map(function (h) { return filaTarea(h, nivel + 1); }).join("");
     return html;
   }
@@ -954,7 +1163,7 @@
     if (estado.ramoSel && !ramoPorCodigo(estado.ramoSel)) estado.ramoSel = null;
     if ($("#malla-quitar-sel")) $("#malla-quitar-sel").hidden = !estado.ramoSel;
     if ($("#malla-pista")) $("#malla-pista").textContent = estado.ramoSel
-      ? "Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a pulsarlo para quitar la selección."
+      ? "Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a presionarlo para quitar la selección."
       : "Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.";
     var q = mallaBusqueda.toLowerCase();
     var visibles = cursos.filter(function (c) {
@@ -1349,7 +1558,7 @@
     n.prefs.temaClaro = temaValido(av.temaClaro, "clasico");
     n.prefs.temaOscuro = temaValido(av.temaOscuro, "deepsea");
     var idi = String(e.idioma || (e.ajustes && e.ajustes.idioma) || av.idioma || "es").toLowerCase();
-    n.prefs.idioma = idi === "en" ? "en" : "es";
+    n.prefs.idioma = (idi === "en" || idi === "zh") ? idi : "es";
     // Un respaldo académico trae datos de Malla, Calificaciones y Estudio: se instalan sus
     // bloques para que se vean al abrir, sin pedirle al usuario que adivine el catálogo.
     n.instalados = ["tiempo", "malla", "calificaciones", "estudio", "evaluaciones"];
@@ -1515,7 +1724,7 @@
           return '<option value="' + esc(cat.nombre) + '"' + (cat.nombre === comp.categoria ? " selected" : "") + ">" + esc(cat.nombre) + "</option>";
         }).join("") + "</select></td>" +
         '<td class="num">' + celdaNota + "</td>" +
-        '<td><input class="entrada calif-entrada" type="date" data-comp-fecha="' + i + '" value="' + esc(comp.fecha) + '"></td>' +
+        '<td><div class="calif-fecha"><input class="entrada calif-entrada" type="date" data-comp-fecha="' + i + '" value="' + esc(comp.fecha) + '"><button class="btn btn--chico" type="button" data-accion-calif="comp-cal" data-i="' + i + '" title="Pasar al calendario" aria-label="Pasar al calendario">Cal</button></div></td>' +
         '<td class="num"><button class="calif-x" type="button" data-accion-calif="comp-quitar" data-i="' + i + '" title="Quitar componente" aria-label="Quitar componente">×</button></td></tr>';
     }).join("");
     var opcionesComp = q.componentes.map(function (comp, i) {
@@ -1637,6 +1846,7 @@
       else if (el.hasAttribute("data-comp-cat")) q.componentes[ix].categoria = el.value;
       else if (el.hasAttribute("data-comp-nota")) q.componentes[ix].nota = notaNum(el.value);
       else q.componentes[ix].fecha = el.value;
+      sincronizarEventoComp(q, ix, false);
     } else if (el.hasAttribute("data-exam-activo")) q.examen.activo = el.checked;
     else if (el.hasAttribute("data-exam-peso")) q.examen.peso = Math.max(0, Math.min(100, Number(el.value) || 0));
     else if (el.hasAttribute("data-exam-nota")) q.examen.nota = notaNum(el.value);
@@ -1654,12 +1864,36 @@
     else if (el.hasAttribute("data-meta")) q.meta = notaNum(el.value) || 5;
     guardar(); pintarCalificaciones(); pintarPanel();
   }
+  function eventoCompId(codigo, i) { return "calif-" + codigo + "-" + i; }
+  function sincronizarEventoComp(q, i, crear) {
+    var comp = q && q.componentes ? q.componentes[i] : null;
+    if (!comp) return;
+    var id = eventoCompId(califSel, i), ev = eventoPorId(id);
+    if (!comp.fecha) {
+      if (ev) estado.eventos = estado.eventos.filter(function (e) { return e.id !== id; });
+      return;
+    }
+    if (!ev && !crear) return;
+    if (!ev) { ev = { id: id, hora: "", nota: "" }; estado.eventos.push(ev); }
+    ev.titulo = comp.nombre + " · " + califSel;
+    ev.fecha = comp.fecha;
+    ev.contexto = "Calificaciones";
+    ev.nota = comp.categoria || "";
+  }
   function accionCalif(e) {
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
     var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
     if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
+    if (accion === "comp-cal") {
+      var comp = q.componentes[i];
+      if (!comp || !comp.fecha) { aviso("Ponle una fecha al componente primero."); return; }
+      sincronizarEventoComp(q, i, true);
+      guardar(); pintarCalificaciones(); pintarCalendario();
+      aviso("Componente pasado al calendario.");
+      return;
+    }
     if (accion === "cat-add") q.categorias.push({ nombre: "Categoría " + (q.categorias.length + 1), peso: 0 });
     else if (accion === "comp-add") q.componentes.push({ nombre: "Componente " + (q.componentes.length + 1), categoria: q.categorias[0].nombre, nota: null, fecha: "", peso: 1 });
     else if (accion === "cond-add") q.eximicion.condiciones.push({ tipo: "presentacion", ref: "", op: ">=", valor: 5 });
@@ -1670,6 +1904,8 @@
       q.categorias.splice(i, 1);
       q.componentes.forEach(function (x) { if (x.categoria === nombre) x.categoria = q.categorias[0].nombre; });
     } else if (accion === "comp-quitar") {
+      var evId = eventoCompId(califSel, i);
+      estado.eventos = (estado.eventos || []).filter(function (e) { return e.id !== evId; });
       q.componentes.splice(i, 1);
       if (q.examen.reemplaza === i) q.examen.reemplaza = null;
       else if (q.examen.reemplaza > i) q.examen.reemplaza--;
@@ -1774,7 +2010,11 @@
         if (s.fecha >= w.desde && s.fecha <= w.hasta) porSemana[w.desde] += s.minutos;
       });
     });
-    var sobre = semanas.filter(function (w) { return porSemana[w.desde] > meta * 60 && meta > 0; }).length;
+    function metaDeSemana(w) {
+      var ms = estado.estudio.metasSemana || {};
+      return Object.prototype.hasOwnProperty.call(ms, w.desde) ? Math.max(0, Number(ms[w.desde]) || 0) : meta;
+    }
+    var sobre = semanas.filter(function (w) { return porSemana[w.desde] > metaDeSemana(w) * 60 && metaDeSemana(w) > 0; }).length;
     var conDatos = semanas.filter(function (w) { return porSemana[w.desde] > 0; });
     var prom = conDatos.length ? conDatos.reduce(function (a, w) { return a + porSemana[w.desde]; }, 0) / conDatos.length : 0;
     if ($("#est-k-horas")) $("#est-k-horas").textContent = fmtHoras(totalMin);
@@ -1818,6 +2058,12 @@
     });
     if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>Sin ramo ' + fmtHoras(totalRamo._) + "</span>");
     $("#est-leyenda").innerHTML = leyenda.join("");
+    if ($("#est-metas-semana")) {
+      $("#est-metas-semana").innerHTML = '<span class="muted">Meta por semana:</span>' + semanas.map(function (w) {
+        var v = metaDeSemana(w);
+        return '<label class="est-meta-sem">' + esc(w.etiqueta) + ' <input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-semana="' + esc(w.desde) + '" value="' + v + '"> h</label>';
+      }).join("");
+    }
     var filas = cursos.map(function (c) {
       var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
       var pct = m ? Math.min(100, Math.round(h / (m * 60 * Math.max(1, semanas.length)) * 100)) : 0;
@@ -2074,7 +2320,7 @@
     $("#btn-add-hijo").addEventListener("click", function () {
       var falta = HIJOS.filter(function (h) { return estado.tiempoHijos.indexOf(h[0]) === -1; })[0];
       if (!falta) { aviso("Los 4 bloques de Tiempo ya están dentro."); return; }
-      estado.tiempoHijos.push(falta[0]); guardar(); pintarTiempo(); aviso(falta[1] + " añadido a Tiempo.");
+      estado.tiempoHijos.push(falta[0]); guardar(); pintarTiempo(); aviso(falta[1] + " agregado a Tiempo.");
     });
     var cfg = $("#tiempo-config");
     if (cfg) cfg.innerHTML = "";
@@ -2300,6 +2546,15 @@
     (estado.alarmas || []).forEach(function (a) {
       if (!a.activa || a.hora !== hh || a.ultima === hoy) return;
       a.ultima = hoy; guardar(); aviso("Alarma: " + a.texto); pitido();
+      try {
+        if (estado.prefs.notificaciones !== false && typeof Notification !== "undefined") {
+          if (Notification.permission === "granted") {
+            new Notification("Mimo · alarma", { body: a.texto, tag: "mimo-" + a.id });
+          } else if (Notification.permission === "default") {
+            Notification.requestPermission();
+          }
+        }
+      } catch (e) {}
     });
   }
   function tarjetaPanel(id) {
@@ -2308,6 +2563,19 @@
       (BASE.indexOf(id) !== -1 ? "base" : "instalado") + "</small></div>";
   }
   function panelTab() { return estado.panel[pantalla] || "contexto"; }
+  function notasEnlazadasA(tipo, id) {
+    return (estado.notas || []).filter(function (n) {
+      var e = n.enlaces && n.enlaces[0];
+      return e && e.tipo === tipo && String(e.id) === String(id);
+    });
+  }
+  function bloqueNotasEnlazadas(tipo, id) {
+    var ns = notasEnlazadasA(tipo, id);
+    if (!ns.length) return "";
+    return '<div class="panel__bloque"><span>Notas enlazadas</span><small>' + ns.map(function (n) {
+      return '<button class="btn btn--chico" type="button" data-abrir-enlace="nota:' + esc(n.id) + '">' + esc(n.titulo || "Sin título") + "</button>";
+    }).join(" ") + "</small></div>";
+  }
   function pintarPanel() {
     var tab = panelTab();
     $$(".panel__tab").forEach(function (b) {
@@ -2346,6 +2614,7 @@
           (ev.hora ? '<div class="panel__bloque"><span>Hora</span><small>' + esc(ev.hora) + "</small></div>" : "") +
           (ev.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
           (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
+          bloqueNotasEnlazadas("evento", ev.id) +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">Editar</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">Borrar</button></div>';
       } else if (pantalla === "tareas" && t) {
@@ -2359,6 +2628,7 @@
           (t.tipo === "proyecto" ? '<h2>Progreso</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + p.hechas + " de " + p.total + " tareas dentro</p>" +
             '<h2>Subtareas</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + (h.hecha ? "hecha" : "abierta") + "</small></div>"; }).join("") : '<p class="panel__nota">Sin subtareas.</p>') : "") +
           (t.nota ? '<h2>Nota</h2><p class="panel__nota">' + esc(t.nota) + "</p>" : "") +
+          bloqueNotasEnlazadas("tarea", t.id) +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + t.id + '">Editar</button>' +
           '<button class="btn btn--chico" type="button" data-toggle-tarea="' + t.id + '">' + (t.hecha ? "Reabrir" : "Hecha") + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + t.id + '">Borrar</button></div>';
@@ -2367,7 +2637,7 @@
           '</h3><p class="panel__nota">' + esc((n.cuerpo || "").slice(0, 240) || "Vacía") + "</p>" +
           (n.contexto ? '<div class="panel__bloque"><span>Contexto</span><small>' + esc(n.contexto) + "</small></div>" : "") +
           (n.etiquetas.length ? '<div class="panel__bloque"><span>Etiquetas</span><small>' + esc(n.etiquetas.join(", ")) + "</small></div>" : "") +
-          (n.enlaces.length ? '<div class="panel__bloque"><span>Enlazada a</span><small>' + esc(n.enlaces[0].titulo) + "</small></div>" : "") +
+          (n.enlaces.length ? '<div class="panel__bloque"><span>Enlazada a</span><small><button class="btn btn--chico" type="button" data-abrir-enlace="' + esc(n.enlaces[0].tipo) + ':' + esc(n.enlaces[0].id) + '">' + esc(n.enlaces[0].titulo) + "</button></small></div>" : "") +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">Abrir</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">Borrar</button></div>';
       } else {
@@ -2382,7 +2652,7 @@
       html = '<h2>Base fija</h2>' + ["calendario", "tareas", "notas", "ajustes"].map(tarjetaPanel).join("") +
         '<h2>Instalados</h2>' + (estado.instalados.length ? estado.instalados.map(tarjetaPanel).join("")
           : '<p class="panel__nota">Ninguno. La app funciona solo con la base.</p>') +
-        '<button class="btn panel__anadir" type="button" data-abrir-modal>+ Añadir bloque o kit</button>';
+        '<button class="btn panel__anadir" type="button" data-abrir-modal>+ Agregar bloque o kit</button>';
     } else {
       var cuentas = {
         calendario: [estado.eventos.length + " eventos", estado.eventos.length ? "El próximo evento aparece en la agenda." : "Sin eventos este mes."],
@@ -2392,7 +2662,7 @@
         calificaciones: [(estado.cursos || []).length + " ramos", "Notas por categoría, examen y eximición."],
         estudio: [(estado.sesiones || []).length + " sesiones", "Horas por ramo y meta semanal."],
         tiempo: [estado.tiempoHijos.length + " bloques dentro", "Cronómetro, temporizador, pomodoro y alarmas."],
-        ajustes: ["9 temas", "Apariencia, paneles, bloques y laboratorio."]
+        ajustes: [TEMAS.length + " temas", "Apariencia, paneles, bloques y laboratorio."]
       }[pantalla] || ["Sin contexto", "Esta sección no declara contexto."];
       html = "<h2>" + esc(nombre(pantalla)) + '</h2><p class="panel__nota">' + esc(cuentas[1]) +
         '</p><div class="panel__bloque"><span>Ahora</span><small>' + esc(cuentas[0]) + "</small></div>";
@@ -2420,6 +2690,14 @@
     });
     $$("#panel-cuerpo [data-abrir-nota]").forEach(function (b) {
       b.addEventListener("click", function () { abrirNota(b.getAttribute("data-abrir-nota")); });
+    });
+    $$("#panel-cuerpo [data-abrir-enlace]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = String(b.getAttribute("data-abrir-enlace")).split(":");
+        if (p[0] === "nota") abrirNota(p[1]);
+        else if (p[0] === "tarea") abrirTarea(p[1]);
+        else if (p[0] === "evento") abrirEventoDetalle(p[1]);
+      });
     });
     $$("#panel-cuerpo [data-borrar-nota]").forEach(function (b) {
       b.addEventListener("click", function () { borrarNota(b.getAttribute("data-borrar-nota")); });
@@ -2454,16 +2732,26 @@
     if (fp) fp.value = p.panelAncho || "320";
     if ($("#pref-nav")) $("#pref-nav").value = p.navPos || "arriba";
     if ($("#pref-idioma")) $("#pref-idioma").value = p.idioma || "es";
+    pintarBandera();
     if ($("#pref-notif")) $("#pref-notif").checked = p.notificaciones !== false;
     if ($("#pref-panel-abierto")) $("#pref-panel-abierto").checked = p.panelAbierto !== false;
     var lab = $("#lab-split"); if (lab) lab.checked = splitOn;
   }
+  function pintarBandera() {
+    var c = $("#idioma-bandera"); if (!c) return;
+    var i = idioma();
+    if (i === "zh") c.innerHTML = '<span class="idioma-emoji" aria-hidden="true">🇨🇳</span>';
+    else if (i === "en") c.innerHTML = '<span class="idioma-emoji" aria-hidden="true">🇬🇧</span>';
+    else c.innerHTML = '<img src="img/bandera-sudamerica.webp" alt="">';
+  }
   function aplicarIdioma() {
-    document.documentElement.lang = idioma();
+    var i = idioma();
+    document.documentElement.lang = i === "zh" ? "zh-CN" : i === "es" ? "es-CL" : "en";
     $$("[data-i18n]").forEach(function (el) {
       var v = t(el.getAttribute("data-i18n"));
       if (v) el.textContent = v;
     });
+    pintarBandera();
     pintarTabs();
   }
   function pintarAjustes() {
@@ -2474,7 +2762,15 @@
     var d = $("#ajustes-datos");
     if (d) d.textContent = "Datos en este equipo: " + estado.tareas.length + " tareas, " + estado.eventos.length + " eventos, " + estado.notas.length + " notas, " + (estado.cursos || []).length + " ramos. Nada sale de aquí.";
     var pl = $("#ajustes-periodos");
-    if ($("#ajustes-idioma")) $("#ajustes-idioma").textContent = "Idioma activo: " + (p.idioma === "en" ? "English" : "Español") + ". Navegación y secciones cambian en caliente.";
+    if ($("#ajustes-idioma")) {
+      var nombres = { es: "Español (Latinoamérica)", en: "English", zh: "中文（简体）" };
+      var estadoIdioma = {
+        es: "Idioma activo: " + (nombres[p.idioma] || nombres.es) + ". Navegación y secciones cambian en caliente.",
+        en: "Active language: " + (nombres[p.idioma] || nombres.es) + ". Navigation and sections change live.",
+        zh: "当前语言：" + (nombres[p.idioma] || nombres.es) + "。导航和分区即时切换。"
+      };
+      $("#ajustes-idioma").textContent = estadoIdioma[p.idioma] || estadoIdioma.es;
+    }
     if (pl) {
       pl.innerHTML = (estado.periodos || []).length ? estado.periodos.map(function (x) {
         return '<div class="periodo-item' + (x.id === estado.periodoActivo ? " on" : "") + '" data-periodo-item="' + x.id + '"><span><b>' + esc(x.nombre) + '</b><br><small class="muted">' + x.semanas.length + ' semanas</small></span>' +
@@ -2528,6 +2824,7 @@
         x.addEventListener("click", function () { borrarPeriodo(x.getAttribute("data-borrar-periodo")); });
       });
     }
+    pintarCalendario();
   }
   function abrirPeriodo(id) {
     if (typeof id !== "string") id = null;
@@ -2673,7 +2970,7 @@
       var faltan = b.instala.filter(function (h) { return !instalado(h); });
       faltan.forEach(function (h) { estado.instalados.push(h); });
       estado.kits[id] = (estado.kits[id] || []).concat(faltan);
-      aviso(faltan.length ? b.nombre + ": " + faltan.length + " bloque(s) añadido(s)." : b.nombre + " ya estaba completo.");
+      aviso(faltan.length ? b.nombre + ": " + faltan.length + " bloque(s) agregado(s)." : b.nombre + " ya estaba completo.");
     } else if (!instalado(id)) {
       estado.instalados.push(id);
       aviso(b.nombre + " instalado. Aparece en la barra.");
@@ -2710,8 +3007,7 @@
     if (document.body.classList.contains("panel-abierto")) cerrarPanel(); else abrirPanel();
   }
   function opcionesSplit() {
-    var ids = ["calendario", "tareas", "notas", "tiempo", "ajustes"].concat(estado.instalados.filter(function (x) { return ["malla", "calificaciones", "estudio"].indexOf(x) !== -1; }));
-    return ids.filter(function (x, i) { return ids.indexOf(x) === i; });
+    return secciones();
   }
   function pintarSplit() {
     var sel = $("#split-seccion"), cuerpo = $("#split-cuerpo");
@@ -2720,6 +3016,7 @@
     if (opcionesSplit().indexOf(estado.splitSeccion) === -1) estado.splitSeccion = "tareas";
     sel.value = estado.splitSeccion;
     var sec = estado.splitSeccion, html = "";
+    if ($("#split-titulo")) $("#split-titulo").textContent = nombre(sec);
     if (sec === "calendario") {
       var evs = (estado.eventos || []).slice().sort(function (a, b) { return (a.fecha + a.hora) < (b.fecha + b.hora) ? -1 : 1; });
       html = evs.length ? evs.slice(0, 8).map(function (e) {
@@ -2779,13 +3076,54 @@
     $$("#split-cuerpo [data-split-sec]").forEach(function (b) { b.addEventListener("click", function () { ir(b.getAttribute("data-split-sec")); }); });
     $$("#split-cuerpo [data-split-tema]").forEach(function (b) { b.addEventListener("click", function () { aplicarTema(b.getAttribute("data-split-tema")); pintarSplit(); }); });
   }
-  function alternarSplit() {
+  function abrirSplit() {
     if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
-    splitOn = !splitOn;
-    document.body.classList.toggle("split", splitOn);
-    $("#contenido-b").hidden = !splitOn;
-    $("#btn-split").setAttribute("aria-pressed", splitOn ? "true" : "false");
-    if (splitOn) pintarSplit();
+    splitOn = true;
+    document.body.classList.add("split");
+    $("#contenido-b").hidden = false;
+    $("#btn-split").setAttribute("aria-pressed", "true");
+    var lab = $("#lab-split"); if (lab) lab.checked = true;
+    pintarSplit();
+  }
+  function cerrarSplit() {
+    splitOn = false;
+    document.body.classList.remove("split");
+    $("#contenido-b").hidden = true;
+    $("#btn-split").setAttribute("aria-pressed", "false");
+    var lab = $("#lab-split"); if (lab) lab.checked = false;
+  }
+  function alternarSplit() {
+    if (splitOn) cerrarSplit(); else abrirSplitModal();
+  }
+  function abrirSplitModal() {
+    if (window.innerWidth <= 1255) { aviso("La vista dividida necesita al menos 1256 px."); return; }
+    var izq = $("#split-izq"), der = $("#split-der");
+    if (!izq || !der) return;
+    var opciones = secciones().map(function (id) {
+      return '<option value="' + id + '">' + esc(nombre(id)) + "</option>";
+    }).join("");
+    izq.innerHTML = opciones; der.innerHTML = opciones;
+    izq.value = pantalla;
+    var derecha = estado.splitSeccion;
+    if (!derecha || derecha === pantalla) derecha = secciones().filter(function (id) { return id !== pantalla; })[0] || "tareas";
+    der.value = derecha;
+    $("#split-aviso").hidden = true;
+    $("#modal-split").classList.add("on");
+    izq.focus();
+  }
+  function cerrarSplitModal() {
+    $("#modal-split").classList.remove("on");
+  }
+  function aplicarSplitModal() {
+    var izq = $("#split-izq").value, der = $("#split-der").value;
+    if (izq === der) {
+      $("#split-aviso").hidden = false;
+      $("#split-aviso").textContent = "Elige dos secciones distintas para verlas al mismo tiempo.";
+      return;
+    }
+    estado.splitSeccion = der;
+    guardar(); cerrarSplitModal();
+    ir(izq); abrirSplit();
   }
 
   function init() {
@@ -2805,7 +3143,31 @@
     $("#btn-panel-cerrar").addEventListener("click", cerrarPanel);
     $("#velo").addEventListener("click", cerrarPanel);
     $("#btn-split").addEventListener("click", alternarSplit);
-    $("#btn-cerrar-split").addEventListener("click", alternarSplit);
+    $("#btn-cerrar-split").addEventListener("click", cerrarSplit);
+    $("#split-x").addEventListener("click", cerrarSplitModal);
+    $("#split-cancelar").addEventListener("click", cerrarSplitModal);
+    $("#split-abrir").addEventListener("click", aplicarSplitModal);
+    $("#modal-split").addEventListener("click", function (e) { if (e.target === $("#modal-split")) cerrarSplitModal(); });
+    [["#contenido", "izq"], ["#contenido-b", "der"]].forEach(function (par) {
+      var zona = $(par[0]); if (!zona) return;
+      zona.addEventListener("dragover", function (e) {
+        if (!tabArrastrada) return;
+        e.preventDefault();
+        zona.classList.add("pane-soltar");
+      });
+      zona.addEventListener("dragleave", function (e) {
+        if (!zona.contains(e.relatedTarget)) zona.classList.remove("pane-soltar");
+      });
+      zona.addEventListener("drop", function (e) {
+        e.preventDefault(); zona.classList.remove("pane-soltar");
+        if (!tabArrastrada) return;
+        if (par[1] === "izq") ir(tabArrastrada);
+        else {
+          estado.splitSeccion = tabArrastrada; guardar();
+          if (!splitOn) abrirSplit(); else pintarSplit();
+        }
+      });
+    });
     $("#btn-add").addEventListener("click", abrirModal);
     $("#btn-catalogo-ajustes").addEventListener("click", abrirModal);
     $("#btn-periodo-ajustes").addEventListener("click", abrirPeriodo);
@@ -2824,10 +3186,16 @@
       if (temaModo(estado.tema) === "oscuro") aplicarTema(estado.prefs.temaOscuro, true);
       else { guardar(); pintarTemaIcono(); }
     });
-    $("#pref-notif").addEventListener("change", function (e) { estado.prefs.notificaciones = e.target.checked; guardar(); });
+    $("#pref-notif").addEventListener("change", function (e) {
+      estado.prefs.notificaciones = e.target.checked; guardar();
+      if (e.target.checked && typeof Notification !== "undefined" && Notification.permission === "default") {
+        try { Notification.requestPermission(); } catch (_) {}
+      }
+    });
     $("#pref-panel-abierto").addEventListener("change", function (e) { estado.prefs.panelAbierto = e.target.checked; guardar(); if (e.target.checked) abrirPanel(); else cerrarPanel(); });
     $("#lab-split").addEventListener("change", function (e) {
-      if (e.target.checked !== splitOn) alternarSplit();
+      if (e.target.checked) abrirSplitModal();
+      else cerrarSplit();
       pintarAjustes();
     });
     $("#btn-exportar").addEventListener("click", function () {
@@ -2991,6 +3359,12 @@
       var el = e.target.closest("[data-est-meta-ramo]"); if (!el) return;
       normalizarEstudio();
       estado.estudio.metasRamo[el.getAttribute("data-est-meta-ramo")] = Math.max(0, Number(el.value) || 0);
+      guardar(); pintarEstudio();
+    });
+    $("#est-metas-semana").addEventListener("change", function (e) {
+      var el = e.target.closest("[data-est-meta-semana]"); if (!el) return;
+      normalizarEstudio();
+      estado.estudio.metasSemana[el.getAttribute("data-est-meta-semana")] = Math.max(0, Number(el.value) || 0);
       guardar(); pintarEstudio();
     });
     $("#est-sesiones").addEventListener("click", function (e) {
