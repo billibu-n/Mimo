@@ -13,7 +13,7 @@ cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
 `cargo tauri build` ejecuta `preparar-frontend.sh` antes de compilar (`beforeBuildCommand`), así que
 el paso manual solo hace falta para inspeccionar el frontend preparado.
 
-Deja el instalable en `release/Mimo-1.2.0-1.x86_64.rpm` (5,55 MiB) y el binario suelto en
+Deja el instalable en `release/Mimo-1.2.0-1.x86_64.rpm` (5,56 MiB) y el binario suelto en
 `release/mimo` (18,4 MB). `CARGO_TARGET_DIR` saca los 3 GB de compilación de `~/sede`; `release/`
 está ignorado en git y es un enlace a `~/sede/respaldos/mimo-1.2.0-release` para no gastar el
 presupuesto de la casa. El RPM **no está firmado**; se
