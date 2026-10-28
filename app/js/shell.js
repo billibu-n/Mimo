@@ -93,10 +93,40 @@
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
   var splitOn = false;
 
-  function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {} }
+  function guardar() {
+    try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
+    if (window.MimoSync && window.MimoSync.alCambiar) {
+      try { window.MimoSync.alCambiar(); } catch (e) {}
+    }
+  }
   function aviso(texto) {
     var t = $("#toast"); t.textContent = texto; t.classList.add("on");
     clearTimeout(t._t); t._t = setTimeout(function () { t.classList.remove("on"); }, 2600);
+  }
+  function resumenEstado(s) {
+    s = s || estado;
+    return {
+      tareas: (s.tareas || []).length,
+      notas: (s.notas || []).length,
+      eventos: (s.eventos || []).length,
+      ramos: (s.cursos || []).length,
+      sesiones: (s.sesiones || []).length,
+      periodos: (s.periodos || []).length
+    };
+  }
+  function estadoTieneDatos(s) {
+    var r = resumenEstado(s);
+    return !!(r.tareas || r.notas || r.eventos || r.ramos || r.sesiones || r.periodos);
+  }
+  function reemplazarEstado(nuevo) {
+    nuevo = nuevo && typeof nuevo === "object" ? nuevo : {};
+    estado = Object.assign(porDefecto(), nuevo);
+    estado.prefs = Object.assign(porDefecto().prefs, nuevo.prefs || {});
+    estado.estudio = Object.assign({ metaSemanal: 10, metasRamo: {}, metasSemana: {} }, nuevo.estudio || {});
+    normalizarEventos(); normalizarTareas(); normalizarNotas(); normalizarCursos(); normalizarCalifs(); normalizarEstudio();
+    guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs(); aplicarIdioma();
+    pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel();
+    return estado;
   }
 
   /* ---- acciones: menú de clic derecho + borrado en toda la app ---- */
@@ -2821,12 +2851,7 @@
           }
           if (!nuevo) { aviso("Ese archivo no es un respaldo de MIMO."); return; }
           if (!window.confirm("Se reemplazarán los datos actuales por los de " + origen + ". ¿Continuar?")) return;
-          estado = Object.assign(porDefecto(), nuevo);
-          estado.prefs = Object.assign(porDefecto().prefs, nuevo.prefs || {});
-          estado.estudio = Object.assign({ metaSemanal: 10, metasRamo: {}, metasSemana: {} }, nuevo.estudio || {});
-          normalizarEventos(); normalizarTareas(); normalizarNotas(); normalizarCursos(); normalizarCalifs(); normalizarEstudio();
-          guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs(); aplicarIdioma();
-          pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel();
+          reemplazarEstado(nuevo);
           aviso("Importados " + estado.cursos.length + " ramos, " + estado.tareas.length + " tareas y " + estado.sesiones.length + " sesiones.");
         } catch (err) { aviso("No se pudo importar el archivo."); }
       };
@@ -3211,6 +3236,16 @@
     });
     guardar();
   }
+
+  window.MimoHost = {
+    snapshot: function () { return JSON.parse(JSON.stringify(estado)); },
+    reemplazar: reemplazarEstado,
+    resumen: function () { return resumenEstado(estado); },
+    tieneDatos: function () { return estadoTieneDatos(estado); },
+    aviso: aviso,
+    ir: ir,
+    guardar: guardar
+  };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();

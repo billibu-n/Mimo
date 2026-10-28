@@ -573,3 +573,15 @@ body.nav-izq .shell{margin-left:64px}
 .split-open span{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-sm)}
 .split-open small{color:var(--muted);font-size:var(--fs-xs)}
 .split-temas{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-top:var(--sp-2)}
+
+/* ---- sincronización manual ---- */
+.card--ancho{grid-column:1/-1}
+.sync-tabla{width:100%;border-collapse:collapse;margin:var(--sp-3) 0;font-size:var(--fs-sm)}
+.sync-tabla th,.sync-tabla td{padding:var(--sp-2);border-bottom:1px solid var(--line2);text-align:left;vertical-align:top}
+.sync-tabla th{font-size:var(--fs-xs);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.sync-conf-caja{max-width:660px}
+#sync-card .campo select{max-width:320px}
+#sync-estado.ok{color:var(--ok)}
+#sync-estado.err{color:var(--bad)}
+#btn-sync.girando .icono{animation:girar 1s linear infinite}
+@keyframes girar{to{transform:rotate(360deg)}}

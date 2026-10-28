@@ -41,6 +41,9 @@
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-5V2"/><path d="M20 7a8 8 0 0 0-14-3"/><path d="M4 17h5v5"/><path d="M4 17a8 8 0 0 0 14 3"/></symbol>
+  <symbol id="i-nube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.6A3.5 3.5 0 0 1 18 18Z"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5M12 18h.01"/></symbol>
 </defs></svg>
 
 <header class="topbar">
@@ -385,6 +388,35 @@
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg>Respaldo</h2><p class="muted" id="ajustes-datos">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar">Exportar JSON</button><button class="btn" type="button" id="btn-importar">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
           <p class="muted">Acepta respaldos de Mimo y de Mimo Academics 1.1.2 (formato 2).</p>
         </section>
+        <section class="card card--ancho" id="sync-card">
+          <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg>Sincronización</h2>
+          <p class="muted" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
+          <label class="campo">Modo <select class="entrada" id="sync-proveedor">
+            <option value="">Elegir…</option>
+            <option value="carpeta">Carpeta local (un clic)</option>
+            <option value="archivo">Archivo manual (descargar/cargar)</option>
+            <option value="webdav" disabled>WebDAV / Nextcloud (fase 2)</option>
+          </select></label>
+          <div id="sync-carpeta" hidden>
+            <p class="muted" id="sync-carpeta-nombre">Sin carpeta elegida.</p>
+            <button class="btn" id="sync-elegir-carpeta" type="button">Elegir carpeta…</button>
+          </div>
+          <div id="sync-archivo" hidden>
+            <p class="muted">Guarda <code>mimo-sync.json</code> en tu nube y cárgalo en el otro equipo.</p>
+            <div class="fila">
+              <button class="btn" id="sync-guardar-archivo" type="button">Guardar archivo</button>
+              <button class="btn" id="sync-cargar-archivo" type="button">Cargar archivo</button>
+              <input type="file" id="sync-archivo-input" accept=".json,application/json" hidden>
+            </div>
+          </div>
+          <label class="check"><input type="checkbox" id="sync-manual" checked> Solo sincronizar a mano (sin automático)</label>
+          <div class="fila">
+            <button class="btn btn-primario" id="sync-ahora" type="button">Sincronizar ahora</button>
+            <button class="btn" id="sync-desconectar" type="button">Desconectar</button>
+          </div>
+          <p class="muted" id="sync-ultima">Nunca sincronizado.</p>
+          <p class="muted" id="sync-ayuda">Sin cifrado: el archivo o la carpeta guarda tus datos tal cual. WebDAV, Nextcloud, Dropbox y OneDrive quedan para la fase 2.</p>
+        </section>
       </div>
 
       <div class="ajustes-grupo"><h2>Extensiones</h2><p class="muted">Bloques, laboratorio y versión.</p></div>
@@ -470,6 +502,25 @@
   </div>
 </div>
 
+<div class="modal" id="modal-sync-conflict" role="dialog" aria-modal="true" aria-labelledby="sync-conf-tit">
+  <div class="modal__caja sync-conf-caja">
+    <header class="modal__cab"><div><h2 id="sync-conf-tit">Conflicto de sincronización</h2><p class="muted">Las dos copias cambiaron desde la última vez. Elige cuál conservar.</p></div><button class="icono-btn" id="sync-conf-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <p class="muted">La copia que no elijas queda guardada como respaldo local; el archivo remoto no se toca hasta que decidas.</p>
+    <table class="sync-tabla">
+      <thead><tr><th></th><th>Última modificación</th><th>Contenido</th></tr></thead>
+      <tbody>
+        <tr><td><b>Local</b></td><td id="sync-conf-local-fecha">—</td><td id="sync-conf-local-resumen">—</td></tr>
+        <tr><td><b>Remoto</b></td><td id="sync-conf-remoto-fecha">—</td><td id="sync-conf-remoto-resumen">—</td></tr>
+      </tbody>
+    </table>
+    <div class="fila">
+      <button class="btn" id="sync-conf-remoto" type="button">Usar remoto</button>
+      <button class="btn btn-primario" id="sync-conf-local" type="button">Usar local</button>
+      <button class="btn" id="sync-conf-cancelar" type="button">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal modal-buscar" id="modal-buscar" role="dialog" aria-modal="true" aria-labelledby="buscar-tit">
   <div class="modal__caja buscar-caja">
     <header class="modal__cab"><div><h2 id="buscar-tit">Buscar en Mimo</h2><p class="muted" id="buscar-sub">Tareas, notas, eventos, ramos y periodos.</p></div><button class="icono-btn" id="buscar-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
@@ -486,6 +537,7 @@
 <script src="vendor/katex/katex.min.js"></script>
 <script src="vendor/katex/auto-render.min.js"></script>
 <script src="js/shell.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/mimo-juego.js"></script>
 </body>
 </html>

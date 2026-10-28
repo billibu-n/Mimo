@@ -6,7 +6,7 @@ verde por impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 app/pruebas/correr-gates.py     # los 11 gates, resumen al final
+python3 app/pruebas/correr-gates.py     # los 12 gates, resumen al final
 ```
 
 El viejo está en `referencia/academics-1.1.2/` y no entra en esta suite: es oráculo, no producto.
@@ -24,6 +24,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
 | `gate-busqueda` | Ctrl+K encuentra tareas, notas, eventos, ramos y periodos y navega | sin demo: mide `app/index.html` |
 | `gate-correcciones` | respaldo académico importado (ramos, tareas, sesiones, metas, bloques), reloj editable, sesión corregida, clic derecho, pareja de temas, 3 grupos de Ajustes y KaTeX en Notas | importación incompleta, reloj no editable, tema sin pareja o fórmula rota |
+| `gate-sync` | guarda un `mimo-sync.json`, lo carga en otro contexto, detecta conflicto local/remoto, aplica cada lado y deja respaldo | archivo sin formato, conflicto no detectado o pérdida de la copia local |
 | `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
 
 ## Fixtures
