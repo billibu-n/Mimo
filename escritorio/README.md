@@ -3,21 +3,26 @@
 ```bash
 cd ~/sede/proyectos/mimo-nuevo/escritorio
 ./preparar-frontend.sh                 # app/ -> escritorio/app/ (lista blanca)
-PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
+CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" \
+  PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
+mkdir -p release
+cp "$HOME/.cache/mimo-tauri-target/release/mimo" release/
+cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
 ```
 
 `cargo tauri build` ejecuta `preparar-frontend.sh` antes de compilar (`beforeBuildCommand`), así que
 el paso manual solo hace falta para inspeccionar el frontend preparado.
 
-Deja el instalable en `src-tauri/target/release/bundle/rpm/Mimo-1.2.0-1.x86_64.rpm` (5,36 MiB) y
-el binario suelto en `src-tauri/target/release/mimo` (17,7 MB). El RPM **no está firmado**; se
+Deja el instalable en `release/Mimo-1.2.0-1.x86_64.rpm` (5,36 MiB) y el binario suelto en
+`release/mimo` (17,7 MB). `CARGO_TARGET_DIR` saca los 3 GB de compilación de `~/sede`; `release/`
+está ignorado en git. El RPM **no está firmado**; se
 declara como hueco hasta que haya clave de firma.
 
 ## Instalar, abrir, desinstalar
 
 ```bash
 # en un Fedora con permisos de administrador
-sudo dnf install ./src-tauri/target/release/bundle/rpm/Mimo-1.2.0-1.x86_64.rpm
+sudo dnf install ./release/Mimo-1.2.0-1.x86_64.rpm
 mimo                                   # o desde el menu, como "Mimo"
 sudo dnf remove mimo
 ```
@@ -39,7 +44,7 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
   ETag. Existe porque el WebView de Tauri **no exime a `fetch` de CORS**; la petición nativa sí.
   La app lo detecta y lo usa solo dentro de Tauri; en el navegador sigue usando `fetch`. Solo
   admite `http`/`https`.
-- **Sonda:** `MIMO_SONDA=1 ./src-tauri/target/release/mimo` escribe `MIMO_SONDA_SALIDA` (por
+- **Sonda:** `MIMO_SONDA=1 ./release/mimo` escribe `MIMO_SONDA_SALIDA` (por
   defecto `/tmp/mimo-sonda.json`) y sale. Mide navegación, nota en `localStorage`, Ajustes y una
   sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
   `DISPLAY` o `WAYLAND_DISPLAY`.

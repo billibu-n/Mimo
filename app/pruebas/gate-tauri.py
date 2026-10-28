@@ -13,7 +13,9 @@ Mide el binario real, no el HTML suelto:
 
 Requiere el binario ya compilado:
   cd escritorio && ./preparar-frontend.sh
-  PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
+  CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
+  cp "$HOME/.cache/mimo-tauri-target/release/mimo" release/
+  cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
 """
 from __future__ import annotations
 
@@ -29,8 +31,11 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent.parent
 ESCRITORIO = RAIZ / "escritorio"
-BIN = ESCRITORIO / "src-tauri" / "target" / "release" / "mimo"
-RPM = ESCRITORIO / "src-tauri" / "target" / "release" / "bundle" / "rpm"
+BIN = ESCRITORIO / "release" / "mimo"
+RPM = ESCRITORIO / "release"
+if not BIN.exists():
+    BIN = ESCRITORIO / "src-tauri" / "target" / "release" / "mimo"
+    RPM = ESCRITORIO / "src-tauri" / "target" / "release" / "bundle" / "rpm"
 
 sys.path.insert(0, str(AQUI))
 from gatelib import exigir, salir  # noqa: E402
