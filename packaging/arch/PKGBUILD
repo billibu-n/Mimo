@@ -15,7 +15,7 @@ makedepends=('rust' 'cargo' 'python' 'pkgconf')
 install=mimo.install
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.1.tar.gz")
 sha256sums=('SKIP')
-_archivo="mimo-1.2.0-beta.1"
+_archivo="Mimo-1.2.0-beta.1"
 
 build() {
   cd "$_archivo"
