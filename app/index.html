@@ -219,7 +219,21 @@
             <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas" data-l10n-ph-es="Etiquetas: demo, idea" data-l10n-ph-en="Tags: demo, idea" data-l10n-ph-zh="标签：demo, idea" data-l10n-aria-es="Etiquetas" data-l10n-aria-en="Tags" data-l10n-aria-zh="标签">
             <select class="entrada" id="nota-vinculo" aria-label="Enlazar a" data-l10n-aria-es="Enlazar a" data-l10n-aria-en="Link to" data-l10n-aria-zh="链接到"><option value="" data-l10n-es="Enlazar a…" data-l10n-en="Link to…" data-l10n-zh="链接到…">Enlazar a…</option></select>
           </div>
-          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe tu nota. Fórmulas: $...$ o $$...$$" aria-label="Cuerpo de la nota" data-l10n-ph-es="Escribe tu nota. Fórmulas: $...$ o $$...$$" data-l10n-ph-en="Write your note. Formulas: $...$ or $$...$$" data-l10n-ph-zh="写笔记。公式：$...$ 或 $$...$$" data-l10n-aria-es="Cuerpo de la nota" data-l10n-aria-en="Note body" data-l10n-aria-zh="笔记正文" disabled></textarea>
+          <div class="nota-formato" id="nota-formato" role="toolbar" aria-label="Formato de la nota" data-l10n-aria-es="Formato de la nota" data-l10n-aria-en="Note formatting" data-l10n-aria-zh="笔记格式">
+            <button class="btn btn--chico" type="button" data-formato="h1" data-l10n-title-es="Título 1" data-l10n-title-en="Heading 1" data-l10n-title-zh="一级标题" data-l10n-aria-es="Título 1" data-l10n-aria-en="Heading 1" data-l10n-aria-zh="一级标题">H1</button>
+            <button class="btn btn--chico" type="button" data-formato="h2" data-l10n-title-es="Título 2" data-l10n-title-en="Heading 2" data-l10n-title-zh="二级标题" data-l10n-aria-es="Título 2" data-l10n-aria-en="Heading 2" data-l10n-aria-zh="二级标题">H2</button>
+            <button class="btn btn--chico" type="button" data-formato="h3" data-l10n-title-es="Título 3" data-l10n-title-en="Heading 3" data-l10n-title-zh="三级标题" data-l10n-aria-es="Título 3" data-l10n-aria-en="Heading 3" data-l10n-aria-zh="三级标题">H3</button>
+            <button class="btn btn--chico" type="button" data-formato="negrita" data-l10n-title-es="Negrita (Ctrl+B)" data-l10n-title-en="Bold (Ctrl+B)" data-l10n-title-zh="粗体 (Ctrl+B)" data-l10n-aria-es="Negrita" data-l10n-aria-en="Bold" data-l10n-aria-zh="粗体"><b>B</b></button>
+            <button class="btn btn--chico" type="button" data-formato="cursiva" data-l10n-title-es="Cursiva (Ctrl+I)" data-l10n-title-en="Italic (Ctrl+I)" data-l10n-title-zh="斜体 (Ctrl+I)" data-l10n-aria-es="Cursiva" data-l10n-aria-en="Italic" data-l10n-aria-zh="斜体"><i>I</i></button>
+            <button class="btn btn--chico" type="button" data-formato="subrayado" data-l10n-title-es="Subrayado (Ctrl+U)" data-l10n-title-en="Underline (Ctrl+U)" data-l10n-title-zh="下划线 (Ctrl+U)" data-l10n-aria-es="Subrayado" data-l10n-aria-en="Underline" data-l10n-aria-zh="下划线"><u>U</u></button>
+            <button class="btn btn--chico" type="button" data-formato="tachado" data-l10n-title-es="Tachado" data-l10n-title-en="Strikethrough" data-l10n-title-zh="删除线" data-l10n-aria-es="Tachado" data-l10n-aria-en="Strikethrough" data-l10n-aria-zh="删除线"><s>S</s></button>
+            <button class="btn btn--chico" type="button" data-formato="codigo" data-l10n-title-es="Código" data-l10n-title-en="Code" data-l10n-title-zh="代码" data-l10n-aria-es="Código" data-l10n-aria-en="Code" data-l10n-aria-zh="代码">&lt;/&gt;</button>
+            <button class="btn btn--chico" type="button" data-formato="cita" data-l10n-title-es="Cita" data-l10n-title-en="Quote" data-l10n-title-zh="引用" data-l10n-aria-es="Cita" data-l10n-aria-en="Quote" data-l10n-aria-zh="引用">❝</button>
+            <button class="btn btn--chico" type="button" data-formato="lista" data-l10n-title-es="Lista" data-l10n-title-en="List" data-l10n-title-zh="列表" data-l10n-aria-es="Lista" data-l10n-aria-en="List" data-l10n-aria-zh="列表">•</button>
+            <button class="btn btn--chico" type="button" data-formato="tarea" data-l10n-title-es="Tarea" data-l10n-title-en="Task" data-l10n-title-zh="任务" data-l10n-aria-es="Tarea" data-l10n-aria-en="Task" data-l10n-aria-zh="任务">☑</button>
+            <button class="btn btn--chico" type="button" data-formato="tabla" data-l10n-title-es="Tabla" data-l10n-title-en="Table" data-l10n-title-zh="表格" data-l10n-aria-es="Tabla" data-l10n-aria-en="Table" data-l10n-aria-zh="表格">▦</button>
+          </div>
+          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe tu nota en Markdown. Fórmulas: $...$ o $$...$$" aria-label="Cuerpo de la nota" data-l10n-ph-es="Escribe tu nota en Markdown. Fórmulas: $...$ o $$...$$" data-l10n-ph-en="Write your note in Markdown. Formulas: $...$ or $$...$$" data-l10n-ph-zh="用 Markdown 写笔记。公式：$...$ 或 $$...$$" data-l10n-aria-es="Cuerpo de la nota" data-l10n-aria-en="Note body" data-l10n-aria-zh="笔记正文" disabled></textarea>
           <div id="nota-preview" class="nota-preview" hidden></div>
           <p class="muted" id="nota-meta" data-l10n-es="Sin nota abierta." data-l10n-en="No note open." data-l10n-zh="没有打开的笔记。">Sin nota abierta.</p>
         </div>
@@ -659,6 +673,8 @@
 
 <script src="vendor/katex/katex.min.js"></script>
 <script src="vendor/katex/auto-render.min.js"></script>
+<script src="vendor/marked/marked.min.js"></script>
+<script src="vendor/dompurify/purify.min.js"></script>
 <script src="js/esquema.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/sync.js"></script>

@@ -2399,7 +2399,7 @@
     } catch (e) { /* si KaTeX falla, la nota sigue en texto plano */ }
     return cont.innerHTML;
   }
-  function renderMarkdown(txt) {
+  function renderMarkdownBasico(txt) {
     var guardados = [];
     var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
       guardados.push(m);
@@ -2433,6 +2433,38 @@
     });
     return renderMathHTML(html);
   }
+  function renderMarkdown(txt) {
+    if (!window.marked || !window.DOMPurify) return renderMarkdownBasico(txt);
+    var guardados = [];
+    var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
+      guardados.push(m);
+      return "@@MATH" + (guardados.length - 1) + "@@";
+    });
+    fuente = fuente.replace(/^([ \t]*)([-*+])\s+\[([ xX])\]\s+(.+)$/gm, function (_, ind, bullet, ch, texto) {
+      return ind + bullet + ' <input type="checkbox" disabled' + (ch.toLowerCase() === "x" ? " checked" : "") + "> " + texto;
+    });
+    var renderer = new marked.Renderer();
+    renderer.link = function (href, title, text) {
+      var h = String(href || "").trim();
+      if (!/^(https?:\/\/|mailto:|#)/i.test(h)) h = "#";
+      return '<a href="' + esc(h) + '" target="_blank" rel="noopener noreferrer"' +
+        (title ? ' title="' + esc(title) + '"' : "") + ">" + text + "</a>";
+    };
+    var html;
+    try {
+      html = marked.parse(fuente, { gfm: true, breaks: false, headerIds: false, mangle: false, renderer: renderer });
+    } catch (e) {
+      return renderMarkdownBasico(txt);
+    }
+    html = DOMPurify.sanitize(html, {
+      ADD_ATTR: ["target", "rel", "checked", "disabled", "type", "class"],
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|data:image\/)|#|\/|\.{1,2}\/|[^:]*$)/i
+    });
+    html = html.replace(/@@MATH(\d+)@@/g, function (_, i) {
+      return esc(guardados[parseInt(i, 10)] || "");
+    });
+    return renderMathHTML(html);
+  }
   function pintarNotasLista(destino, conClick) {
     var cont = $(destino);
     if (!cont) return;
@@ -2459,6 +2491,66 @@
   function notaVinculoActual(n) {
     return n && n.enlaces && n.enlaces[0] ? n.enlaces[0].tipo + ":" + n.enlaces[0].id : "";
   }
+  function aplicarFormato(tipo) {
+    var ta = $("#nota-cuerpo");
+    if (!ta || ta.disabled || !notaActual()) return;
+    var ini = ta.selectionStart, fin = ta.selectionEnd, val = ta.value, sel = val.slice(ini, fin);
+    function cambiar(a, b, texto, cIni, cFin) {
+      ta.value = val.slice(0, a) + texto + val.slice(b);
+      ta.focus();
+      ta.setSelectionRange(cIni, cFin);
+      ta.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    var par = { negrita: ["**", "**"], cursiva: ["*", "*"], subrayado: ["<u>", "</u>"], tachado: ["~~", "~~"] }[tipo];
+    if (par) {
+      var pre = par[0], post = par[1];
+      if (sel.length >= pre.length + post.length && sel.indexOf(pre) === 0 && sel.slice(-post.length) === post) {
+        var dentro = sel.slice(pre.length, sel.length - post.length);
+        cambiar(ini, fin, dentro, ini, ini + dentro.length);
+      } else {
+        var texto = sel || L("texto", "text", "文本");
+        cambiar(ini, fin, pre + texto + post, ini + pre.length, ini + pre.length + texto.length);
+      }
+      return;
+    }
+    if (tipo === "codigo") {
+      if (sel.indexOf("\n") !== -1) {
+        var bloque = "```\n" + sel + "\n```";
+        cambiar(ini, fin, bloque, ini + 4, ini + 4 + sel.length);
+      } else {
+        var cod = sel || L("código", "code", "代码");
+        cambiar(ini, fin, "`" + cod + "`", ini + 1, ini + 1 + cod.length);
+      }
+      return;
+    }
+    if (tipo === "h1" || tipo === "h2" || tipo === "h3") {
+      var marca = { h1: "# ", h2: "## ", h3: "### " }[tipo];
+      var linea = val.lastIndexOf("\n", ini - 1) + 1;
+      if (val.slice(linea, linea + marca.length) === marca) {
+        cambiar(linea, linea + marca.length, "", Math.max(linea, ini - marca.length), Math.max(linea, fin - marca.length));
+      } else {
+        cambiar(linea, linea, marca, ini + marca.length, fin + marca.length);
+      }
+      return;
+    }
+    if (tipo === "cita" || tipo === "lista" || tipo === "tarea") {
+      var pref = tipo === "cita" ? "> " : tipo === "tarea" ? "- [ ] " : "- ";
+      var desde = val.lastIndexOf("\n", ini - 1) + 1;
+      var hasta = fin;
+      if (desde === hasta) { hasta = val.indexOf("\n", fin); if (hasta < 0) hasta = val.length; }
+      var lineas = val.slice(desde, hasta).split("\n").map(function (l) {
+        return l.indexOf(pref) === 0 ? l.slice(pref.length) : pref + l;
+      });
+      var nuevo = lineas.join("\n");
+      cambiar(desde, hasta, nuevo, desde, desde + nuevo.length);
+      return;
+    }
+    if (tipo === "tabla") {
+      var col = L("Columna", "Column", "列"), celda = L("Texto", "Text", "文本");
+      var tabla = "| " + col + " | " + col + " |\n| --- | --- |\n| " + celda + " | " + celda + " |\n";
+      cambiar(ini, fin, tabla, ini + tabla.length, ini + tabla.length);
+    }
+  }
   function pintarNotas() {
     normalizarNotas();
     pintarNotasLista("#notas-items", true);
@@ -2473,6 +2565,8 @@
     $("#nota-modo").disabled = !n;
     $("#nota-fijar").disabled = !n;
     $("#btn-borrar-nota").disabled = !n;
+    $("#nota-formato").hidden = !n || notaModo === "preview";
+    $$("#nota-formato [data-formato]").forEach(function (b) { b.disabled = !n; });
     $("#nota-titulo").value = n ? n.titulo : "";
     $("#nota-cuerpo").value = n ? n.cuerpo : "";
     $("#nota-contexto").value = n ? n.contexto : "";
@@ -3996,6 +4090,16 @@
       n.cuerpo = e.target.value;
       n.actualizado = selloLocal();
       guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
+    });
+    $("#nota-cuerpo").addEventListener("keydown", function (e) {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+      var atajo = { b: "negrita", i: "cursiva", u: "subrayado" }[String(e.key || "").toLowerCase()];
+      if (!atajo) return;
+      e.preventDefault();
+      aplicarFormato(atajo);
+    });
+    $$("#nota-formato [data-formato]").forEach(function (b) {
+      b.addEventListener("click", function () { aplicarFormato(b.getAttribute("data-formato")); });
     });
     $("#nota-modo").addEventListener("click", function () { notaModo = notaModo === "preview" ? "editar" : "preview"; pintarNotas(); });
     $("#nota-fijar").addEventListener("click", function () {

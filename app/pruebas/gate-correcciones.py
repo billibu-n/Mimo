@@ -10,7 +10,8 @@ Mide sobre app/index.html:
   4. el clic derecho sobre una sesión ofrece Editar y Borrar;
   5. el tema claro/oscuro salta entre la pareja configurada;
   6. Ajustes queda en tres grupos y con los selectores de pareja;
-  7. Notas renderiza $...$ y $$...$$ con KaTeX, sin errores de consola;
+  7. Notas renderiza Markdown GFM (títulos, tabla, subrayado, tareas, código),
+     sanea el HTML peligroso y conserva $...$ / $$...$$ con KaTeX;
   8. la tarjeta de sincronización tiene aire (padding, columnas y campos), ofrece
      el registro de Nextcloud y no desborda en móvil.
 
@@ -214,12 +215,41 @@ def main() -> int:
 
             page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(180)
             page.locator("#btn-nueva-nota").click()
-            page.locator("#nota-cuerpo").fill("Energía: $E=mc^2$\n\n$$\\int_0^1 x^2\\,dx = \\frac{1}{3}$$")
+            page.locator("#nota-cuerpo").fill(
+                "# Título\n\n## Subtítulo\n\nTexto **negrita**, *cursiva*, <u>subrayado</u> y `código`.\n\n"
+                "- [ ] pendiente\n- [x] hecha\n\n| A | B |\n| --- | --- |\n| 1 | 2 |\n\n"
+                "```python\nprint('hola')\n```\n\n<script>window.__mimoNota=1</script>\n\n"
+                "Energía: $E=mc^2$\n\n$$\\int_0^1 x^2\\,dx = \\frac{1}{3}$$")
             page.locator("#nota-modo").click(); page.wait_for_timeout(500)
+            exigir(page.locator("#nota-preview h1").count() == 1 and page.locator("#nota-preview h2").count() == 1,
+                   "notas: títulos H1/H2 de Markdown", fallas)
+            exigir(page.locator("#nota-preview table").count() == 1,
+                   "notas: tabla GFM", fallas)
+            exigir(page.locator("#nota-preview u").count() == 1,
+                   "notas: subrayado con <u>", fallas)
+            exigir(page.locator('#nota-preview input[type="checkbox"]').count() == 2,
+                   "notas: lista de tareas", fallas)
+            exigir(page.locator("#nota-preview pre code").count() == 1,
+                   "notas: bloque de código", fallas)
+            exigir(page.evaluate("window.__mimoNota") is None,
+                   "notas: el HTML peligroso se sanea", fallas)
             exigir(page.locator("#nota-preview .katex").count() >= 2,
                    f"notas: 2 fórmulas KaTeX — {page.locator('#nota-preview .katex').count()}", fallas)
             exigir(page.locator("#nota-preview .katex-error").count() == 0,
                    "notas: sin fórmulas rotas", fallas)
+
+            page.locator("#nota-modo").click(); page.wait_for_timeout(120)
+            page.locator("#nota-cuerpo").fill("hola mundo")
+            page.evaluate("""() => { const t = document.querySelector('#nota-cuerpo');
+              t.focus(); t.setSelectionRange(0, 4); }""")
+            page.locator('#nota-formato [data-formato="negrita"]').click(); page.wait_for_timeout(100)
+            exigir(page.locator("#nota-cuerpo").input_value() == "**hola** mundo",
+                   f"notas: botón negrita — {page.locator('#nota-cuerpo').input_value()!r}", fallas)
+            page.set_viewport_size({"width": 411, "height": 900}); page.wait_for_timeout(150)
+            desborde_notas = page.evaluate(
+                "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
+                " document.body.scrollWidth - document.body.clientWidth)")
+            exigir(desborde_notas == 0, f"notas: 411 sin desborde — {desborde_notas}px", fallas)
 
             page.set_viewport_size({"width": 411, "height": 900})
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(250)

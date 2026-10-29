@@ -4,7 +4,7 @@
 # La fuente de verdad es `app/` en la raiz del proyecto (la misma que abren los gates y el
 # navegador). No se apunta Tauri a `app/` directamente porque empaquetaria `pruebas/` y
 # `maqueta/`, que no son aplicacion. Aqui se copia con LISTA BLANCA: index.html, css/, js/,
-# img/ y vendor/ (KaTeX y Comfortaa, offline).
+# img/ y vendor/ (KaTeX, Markdown y Comfortaa, offline).
 #
 # `escritorio/app/` es GENERADO y esta en `.gitignore`; se rehace en cada pasada.
 # FALLA EN VOZ ALTA si falta algo imprescindible.
@@ -19,7 +19,7 @@ ARCHIVOS="index.html"
 CARPETAS="css js img vendor"
 
 # Si falta uno de estos, el binario saldria vacio o sin cifrado/LaTeX: se para.
-IMPRESCINDIBLES="index.html js/shell.js js/sync.js css/base.css css/shell.css vendor/katex/katex.min.js vendor/katex/katex.min.css vendor/fonts/comfortaa-semibold.woff2 img/icon-64.png"
+IMPRESCINDIBLES="index.html js/shell.js js/sync.js css/base.css css/shell.css vendor/katex/katex.min.js vendor/katex/katex.min.css vendor/marked/marked.min.js vendor/dompurify/purify.min.js vendor/fonts/comfortaa-semibold.woff2 img/icon-64.png"
 
 echo "origen : $ORIGEN"
 echo "destino: $DESTINO"

@@ -35,12 +35,12 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
 
 - `preparar-frontend.sh` copia la **app universal** (`<proyecto>/app/`) a `escritorio/app/` con
   lista blanca: `index.html`, `css/`, `js/`, `img/` y `vendor/`. Deja fuera `pruebas/` y `maqueta/`;
-  si falta `sync.js`, KaTeX, Comfortaa o el icono, para con exit 1. `app/` es generado, está en
+  si falta `sync.js`, KaTeX, Markdown, Comfortaa o el icono, para con exit 1. `app/` es generado, está en
   `.gitignore` y se rehace en cada pasada.
 - `src-tauri/` es el caparazón: `productName` "Mimo", identificador `cl.mimo.escritorio`, ventana
   1280x900 y `bundle.targets` solo `["rpm"]` (AppImage y deb fuera a propósito).
 - **Sin servidor web:** el protocolo de recursos de Tauri sirve `index.html`, CSS, JS, imágenes,
-  KaTeX y Comfortaa desde `app/`.
+  KaTeX, marked/DOMPurify y Comfortaa desde `app/`.
 - **Puente HTTP nativo:** `http_pedir` (Rust + reqwest) hace GET/PUT/MKCOL/OPTIONS con cabeceras y
   ETag. Existe porque el WebView de Tauri **no exime a `fetch` de CORS**; la petición nativa sí.
   La app lo detecta y lo usa solo dentro de Tauri; en el navegador sigue usando `fetch`. Solo
