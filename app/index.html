@@ -478,7 +478,7 @@
 
                 <div class="sync-fila">
                   <button class="btn" id="sync-webdav-probar" type="button" data-l10n-es="Probar conexión" data-l10n-en="Test connection" data-l10n-zh="测试连接">Probar conexión</button>
-                  <span class="sync-sin-cuenta"><span data-l10n-es="¿No tienes cuenta?" data-l10n-en="No account?" data-l10n-zh="没有账户？">¿No tienes cuenta?</span> <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer">data-l10n-es="Crea una en Nextcloud" data-l10n-en="Create one in Nextcloud" data-l10n-zh="在 Nextcloud 创建一个"</a></span>
+                  <span class="sync-sin-cuenta"><span data-l10n-es="¿No tienes cuenta?" data-l10n-en="No account?" data-l10n-zh="没有账户？">¿No tienes cuenta?</span> <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer" data-l10n-es="Crea una en Nextcloud" data-l10n-en="Create one in Nextcloud" data-l10n-zh="在 Nextcloud 创建一个">Crea una en Nextcloud</a></span>
                 </div>
 
                 <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual." data-l10n-en="Use an app password, not your account password. It is saved in this browser local storage; use a revocable password. The server must allow CORS from this page; if the browser blocks the connection, use Manual file." data-l10n-zh="请使用应用密码，而不是账户密码。它会保存在此浏览器的本地存储中；请使用可撤销的密码。服务器必须允许此页面跨域；如果浏览器阻止连接，请使用手动文件。">Usa una contraseña de aplicación, no la de la cuenta. Se guarda en el almacenamiento local de este navegador; usa una contraseña revocable. El servidor debe permitir CORS desde esta página; si el navegador bloquea la conexión, usa Archivo manual.</p>
@@ -574,7 +574,9 @@
   <div class="modal__caja">
     <header class="modal__cab"><div><h2 id="modal-tit" data-l10n-es="Bloques y kits" data-l10n-en="Blocks and kits" data-l10n-zh="模块与套件">Bloques y kits</h2><p class="muted" id="modal-sub"></p></div><button class="icono-btn" id="modal-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
     <p class="muted" data-l10n-es="Instalar es una promesa que se cumple: el bloque aparece en la barra, monta su pantalla y se puede quitar sin borrar tus datos." data-l10n-en="Installing is a promise kept: the block appears in the bar, mounts its screen and can be removed without deleting your data." data-l10n-zh="安装就是兑现承诺：模块会出现在栏中、加载自己的界面，并可移除而不删除你的数据。">Instalar es una promesa que se cumple: el bloque aparece en la barra, monta su pantalla y se puede quitar sin borrar tus datos.</p>
+    <div id="catalogo-filtros"></div>
     <div class="catalogo" id="catalogo"></div>
+    <div class="catalogo-vacio" id="catalogo-vacio" hidden></div>
   </div>
 </div>
 

@@ -26,10 +26,11 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent.parent
 MAQUETA = RAIZ / "app" / "maqueta" / "index.html"
+APP = RAIZ / "app" / "index.html"
 FIXTURE = AQUI / "fixtures" / "manifiestos-v1.1.json"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
 
 NATURALEZAS = {"seccion", "dentro-de-otro", "aporte", "pack", "tema"}
 
@@ -130,6 +131,89 @@ def interfaz() -> list[str]:
     return fallas
 
 
+def catalogo_app() -> list[str]:
+    """Catálogo real: filtros por origen, tags, búsqueda, persistencia y enlace."""
+    fallas: list[str] = []
+    with Navegador() as nav:
+        ctx, page, errores = nav.abrir(APP, 1440, 950, reset=False)
+        try:
+            page.locator("#btn-add").click()
+            page.wait_for_timeout(200)
+            exigir(page.locator("#catalogo-filtros .cchip").count() == 3,
+                   f"catálogo: 3 filtros de origen — {page.locator('#catalogo-filtros .cchip').count()}", fallas)
+            exigir(page.locator("#catalogo .bcard").count() == 9,
+                   f"catálogo: 9 fichas visibles — {page.locator('#catalogo .bcard').count()}", fallas)
+            exigir(page.locator('#catalogo-filtros [data-origen="todos"] b').inner_text() == "9",
+                   "catálogo: el contador de Todos es la lista completa", fallas)
+            exigir(page.locator('#catalogo-filtros [data-origen="nativo"] b').inner_text() == "8",
+                   "catálogo: 8 nativos", fallas)
+            exigir(page.locator('#catalogo-filtros [data-origen="kit"] b').inner_text() == "1",
+                   "catálogo: 1 kit", fallas)
+
+            page.locator('#catalogo-filtros [data-origen="kit"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#catalogo .bcard").count() == 1 and
+                   "Academics" in page.locator("#catalogo .bcard").inner_text(),
+                   "catálogo: Kits deja solo Academics", fallas)
+            exigir(page.locator('#catalogo-filtros [data-origen="todos"] b').inner_text() == "9",
+                   "catálogo: filtrar no cambia el contador total", fallas)
+
+            page.locator('#catalogo-filtros [data-origen="nativo"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#catalogo .bcard").count() == 8,
+                   f"catálogo: Nativos deja 8 — {page.locator('#catalogo .bcard').count()}", fallas)
+
+            page.locator('#catalogo-filtros [data-origen="todos"]').click()
+            page.wait_for_timeout(120)
+            page.locator('#catalogo .bcard[data-bloque="tiempo"] [data-tag="pomodoro"]').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#catalogo .bcard").count() == 1 and
+                   "Tiempo" in page.locator("#catalogo .bcard").inner_text(),
+                   "catálogo: tag pomodoro deja Tiempo", fallas)
+            exigir(page.locator("#catalogo-filtros .cchip--activo").count() == 1,
+                   "catálogo: el tag activo se ve en el panel", fallas)
+
+            page.locator("#catalogo-filtros [data-quitar-tag]").click()
+            page.wait_for_timeout(120)
+            page.locator("#catalogo-buscar").fill("probabilidad")
+            page.wait_for_timeout(120)
+            exigir(page.locator("#catalogo .bcard").count() == 0 and page.locator("#catalogo-vacio").is_visible(),
+                   "catálogo: búsqueda sin resultados muestra el vacío", fallas)
+            page.locator("#catalogo-limpiar").click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#catalogo .bcard").count() == 9,
+                   "catálogo: limpiar filtros vuelve a 9", fallas)
+
+            page.locator('#catalogo-filtros [data-origen="kit"]').click()
+            page.wait_for_timeout(120)
+            page.reload(wait_until="load")
+            page.wait_for_timeout(250)
+            page.locator("#btn-add").click()
+            page.wait_for_timeout(150)
+            exigir(page.locator('#catalogo-filtros [data-origen="kit"]').get_attribute("aria-pressed") == "true",
+                   "catálogo: el filtro de origen sobrevive a recargar", fallas)
+            exigir(page.locator("#catalogo .bcard").count() == 1,
+                   "catálogo: al recargar sigue filtrado a Kits", fallas)
+
+            page.set_viewport_size({"width": 411, "height": 900})
+            page.wait_for_timeout(100)
+            exigir(desborde(page) == 0, f"catálogo 411: sin desborde — {desborde(page)}px", fallas)
+
+            page.locator("#modal-x").click()
+            page.locator("#btn-ajustes").click()
+            page.wait_for_timeout(150)
+            enlace = page.locator("#sync-webdav-registro")
+            texto = enlace.inner_text().strip()
+            exigir(texto == "Crea una en Nextcloud", f"sync: el enlace no filtra atributos — {texto!r}", fallas)
+            exigir("data-l10n" not in texto, "sync: el enlace no muestra data-l10n como texto", fallas)
+            exigir(enlace.get_attribute("href") == "https://nextcloud.com/es/sign-up/",
+                   "sync: el enlace conserva su destino", fallas)
+            exigir(not errores, f"catálogo: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+    return fallas
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--demo", action="store_true")
@@ -140,6 +224,7 @@ def main() -> int:
     errores = validar_manifiestos(doc)
     exigir(not errores, f"contrato: manifiestos v1.1 válidos — {errores}", fallas)
     fallas += interfaz()
+    fallas += catalogo_app()
     codigo = salir("gate-bloques", fallas)
 
     if not args.demo:

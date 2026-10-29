@@ -1,7 +1,8 @@
 # Catálogo de bloques — contrato para la fase 2
 
-**Estado:** diseño acordado, no implementado. Este documento fija el motor para que la
-implementación no cambie el esquema de datos ni rompa los bloques existentes.
+**Estado:** filtros, tags y búsqueda implementados en R22; ficha presionable y ventana de
+detalle siguen pendientes. Este documento fija el motor para que la implementación no cambie
+el esquema de datos ni rompa los bloques existentes.
 
 ## 1. Lo que se quiere
 
@@ -53,25 +54,29 @@ Los bloques base (`calendario`, `tareas`, `notas`, `ajustes`) viven en un mapa
 
 Los `tags` son libres y se muestran como chips secundarios; no sustituyen a `naturaleza`.
 
-## 3. Barra de filtros
+## 3. Barra de filtros (implementada)
+
+El catálogo separa **origen** —quién provee el bloque— de **naturaleza** —qué área cubre—.
 
 ```html
-<div class="catalogo-filtros" id="catalogo-filtros" role="toolbar" aria-label="Filtrar bloques">
-  <button type="button" data-filtro="todos" aria-pressed="true">Todos <b>10</b></button>
-  <button type="button" data-filtro="base">Base <b>4</b></button>
-  <button type="button" data-filtro="tiempo">Tiempo <b>1</b></button>
-  <button type="button" data-filtro="academico">Académico <b>3</b></button>
-  <button type="button" data-filtro="aporte">Aportes <b>1</b></button>
-  <button type="button" data-filtro="kit">Kits <b>1</b></button>
+<div class="catalogo-filtros" id="catalogo-filtros">
+  <button type="button" data-origen="todos" aria-pressed="true">Todos <b>9</b></button>
+  <button type="button" data-origen="nativo">Nativos <b>8</b></button>
+  <button type="button" data-origen="kit">Kits <b>1</b></button>
+  <input id="catalogo-buscar" type="search" placeholder="Buscar por nombre o etiqueta…">
 </div>
 ```
 
-- Estado `catalogoFiltro` en `prefs.catalogoFiltro` (aditivo; por defecto `todos`).
-- El filtro se aplica en `pintarCatalogo()` sobre una lista única `catalogoIds()`; no se
-  reordena el estado ni se toca `instalados`.
+- Chips de **origen**: `nativo`, `kit` y cualquier `origen` futuro (`plugin`, `externo`…)
+  aparece solo, con su contador. Un bloque nuevo no necesita tocar la barra.
+- **Tags**: cada ficha muestra sus tags como botones; al presionar uno se filtra y aparece el
+  chip activo con «×» para quitarlo.
+- **Búsqueda** por nombre, descripción, naturaleza y tag; ignora acentos y mayúsculas.
+- Estado aditivo en `prefs.catalogoOrigen` y `prefs.catalogoTag`; por defecto `todos` y vacío.
 - Los contadores salen de la lista completa, no de la filtrada.
-- Un chip activo tiene `aria-pressed="true"` y foco visible.
-- Si el filtro no deja fichas: mensaje «No hay bloques de esta naturaleza» + botón «Ver todos».
+- Sin resultados: «No hay bloques con estos filtros.» + «Limpiar filtros».
+- `evaluaciones` sigue oculto porque es un aporte del kit; el catálogo visible tiene 9 fichas.
+- **Pendiente:** filtros por `naturaleza` y la ventana de detalle de la sección 4.
 
 ## 4. Ficha presionable y detalle
 
@@ -114,25 +119,31 @@ Los `tags` son libres y se muestran como chips secundarios; no sustituyen a `nat
 
 ## 7. Pruebas de la fase 2
 
-`gate-bloques` debe añadir:
+`gate-bloques` ya mide lo implementado:
 
-1. los chips existen y los contadores suman la lista completa;
-2. filtrar por `tiempo` deja solo Tiempo; por `academico`, Malla/Calificaciones/Estudio;
-3. una ficha es un botón y abre el detalle;
-4. el detalle muestra resumen, «Qué hace», datos y versión;
-5. sin imagen, aparece el icono de respaldo;
-6. instalar desde el detalle actualiza la barra y el catálogo;
-7. ESC cierra primero el detalle y después el catálogo;
-8. el foco vuelve a la ficha;
-9. 411 sin desborde;
-10. `prefs.catalogoFiltro` sobrevive a recargar.
+1. existen 3 chips de origen y sus contadores suman la lista completa;
+2. «Kits» deja solo Academics y «Nativos» deja 8;
+3. un tag de una ficha filtra y aparece el chip activo;
+4. la búsqueda sin resultados muestra el vacío y «Limpiar filtros» lo deshace;
+5. `prefs.catalogoOrigen` sobrevive a recargar;
+6. 411 sin desborde;
+7. el enlace de registro de sync no muestra sus atributos `data-l10n`.
+
+Pendiente de medir cuando se implemente el detalle:
+
+1. una ficha es un botón y abre `#modal-bloque`;
+2. el detalle muestra resumen, «Qué hace», datos y versión;
+3. sin imagen, aparece el icono de respaldo;
+4. instalar desde el detalle actualiza la barra y el catálogo;
+5. ESC cierra primero el detalle y después el catálogo;
+6. el foco vuelve a la ficha.
 
 ## 8. Orden de implementación
 
-1. Metadatos (`naturaleza`, `tags`, `detalle`) + `catalogoIds()` + filtros.
-2. Ficha como botón y `#modal-bloque` con textos, sin imágenes.
-3. Imágenes y respaldo.
-4. `gate-bloques` y capturas.
-5. Cierre y commit.
+1. Metadatos (`origen`, `naturaleza`, `tags`) + `catalogoItems()` + filtros: **hecho en R22**.
+2. Ficha como botón y `#modal-bloque` con textos, sin imágenes: **pendiente**.
+3. Imágenes y respaldo: **pendiente**.
+4. `gate-bloques` y capturas del detalle: **pendiente**.
+5. Cierre y commit del detalle.
 
-No se implementa en la ronda R21; queda como el siguiente frente de producto.
+La barra de filtros se cerró en R22; el detalle queda como el siguiente frente de producto.

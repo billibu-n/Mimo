@@ -7,7 +7,13 @@
    ============================================================================ */
 
 *{box-sizing:border-box}
-html{background:var(--bg)}
+html{background:var(--bg);color-scheme:light}
+/* Los controles nativos (select, date, checkbox) siguen el tema; sin esto,
+   WebKit y Firefox pueden pintar texto oscuro sobre fondo oscuro. */
+[data-tema="clasico"],[data-tema="bosque"],[data-tema="sepia"],[data-tema="pinky"],
+[data-tema="alto-contraste-claro"]{color-scheme:light}
+[data-tema="deepsea"],[data-tema="medianoche"],[data-tema="negro"],[data-tema="vino"],
+[data-tema="alto-contraste"]{color-scheme:dark}
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -17,8 +23,12 @@ body{
   background:var(--bg);
   transition:background var(--t) var(--curva),color var(--t) var(--curva);
 }
-button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--fg);accent-color:var(--ac)}
+select{background-color:var(--sup);color:var(--fg)}
+select option{background:var(--sup);color:var(--fg)}
+input.entrada,select.entrada,textarea.entrada{-webkit-text-fill-color:var(--fg)}
+::placeholder{color:var(--muted);opacity:1}
 :focus-visible{outline:none;box-shadow:var(--foco)}
 [hidden]{display:none!important}
 

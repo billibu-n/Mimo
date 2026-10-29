@@ -248,14 +248,41 @@
     ["alto-contraste", "Alto contraste oscuro", "oscuro"]
   ];
   var BLOQUES = {
-    tiempo: { nombre: "Tiempo", tipo: "seccion", icono: "i-tiempo", desc: "Cronómetro, temporizador, pomodoro y alarmas." },
-    malla: { nombre: "Malla", tipo: "seccion", icono: "i-malla", desc: "Cursos, niveles y prerrequisitos." },
-    calificaciones: { nombre: "Calificaciones", tipo: "seccion", icono: "i-libro", desc: "Categorías, examen y eximición." },
-    estudio: { nombre: "Estudio", tipo: "seccion", icono: "i-tiempo", desc: "Horas por ramo y metas." },
-    evaluaciones: { nombre: "Evaluaciones", tipo: "aporte", icono: "i-cal", desc: "Aporta evaluaciones al calendario." },
-    academics: { nombre: "Academics", tipo: "pack", icono: "i-libro", desc: "Kit: Malla, Calificaciones, Estudio y Evaluaciones.", instala: ["malla", "calificaciones", "estudio", "evaluaciones"] }
+    tiempo: { nombre: "Tiempo", tipo: "seccion", origen: "nativo", naturaleza: "tiempo", tags: ["cronometro", "pomodoro", "alarmas"], icono: "i-tiempo", desc: "Cronómetro, temporizador, pomodoro y alarmas." },
+    malla: { nombre: "Malla", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["cursos", "prerrequisitos"], icono: "i-malla", desc: "Cursos, niveles y prerrequisitos." },
+    calificaciones: { nombre: "Calificaciones", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["notas", "examen"], icono: "i-libro", desc: "Categorías, examen y eximición." },
+    estudio: { nombre: "Estudio", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["horas", "metas"], icono: "i-tiempo", desc: "Horas por ramo y metas." },
+    evaluaciones: { nombre: "Evaluaciones", tipo: "aporte", origen: "nativo", naturaleza: "aporte", tags: ["calendario", "evaluaciones"], icono: "i-cal", desc: "Aporta evaluaciones al calendario." },
+    academics: { nombre: "Academics", tipo: "pack", origen: "kit", naturaleza: "kit", tags: ["kit", "malla", "calificaciones", "estudio"], icono: "i-libro", desc: "Kit: Malla, Calificaciones, Estudio y Evaluaciones.", instala: ["malla", "calificaciones", "estudio", "evaluaciones"] }
   };
   var BASE = ["calendario", "tareas", "notas", "ajustes"];
+  var BASE_META = {
+    calendario: { origen: "nativo", naturaleza: "base", tags: ["eventos", "periodos"] },
+    tareas: { origen: "nativo", naturaleza: "base", tags: ["tareas", "proyectos"] },
+    notas: { origen: "nativo", naturaleza: "base", tags: ["notas", "etiquetas"] },
+    ajustes: { origen: "nativo", naturaleza: "base", tags: ["ajustes", "temas"] }
+  };
+  var TAGS = {
+    eventos: ["eventos", "events", "事件"], periodos: ["periodos", "terms", "学期"],
+    tareas: ["tareas", "tasks", "任务"], proyectos: ["proyectos", "projects", "项目"],
+    notas: ["notas", "notes", "笔记"], etiquetas: ["etiquetas", "tags", "标签"],
+    ajustes: ["ajustes", "settings", "设置"], temas: ["temas", "themes", "主题"],
+    cronometro: ["cronómetro", "stopwatch", "秒表"], pomodoro: ["pomodoro", "pomodoro", "番茄钟"],
+    alarmas: ["alarmas", "alarms", "闹钟"], cursos: ["cursos", "courses", "课程"],
+    prerrequisitos: ["prerrequisitos", "prerequisites", "先修"], examen: ["examen", "exam", "考试"],
+    horas: ["horas", "hours", "小时"], metas: ["metas", "goals", "目标"],
+    calendario: ["calendario", "calendar", "日历"], evaluaciones: ["evaluaciones", "assessments", "评估"],
+    kit: ["kit", "kit", "套件"]
+  };
+  var NATURALEZAS = {
+    base: ["Base", "Base", "基础"], tiempo: ["Tiempo", "Time", "时间"],
+    academico: ["Académico", "Academic", "学术"], aporte: ["Aportes", "Contributions", "贡献"],
+    kit: ["Kit", "Kit", "套件"]
+  };
+  var ORIGENES = {
+    nativo: ["Nativos", "Native", "原生"], kit: ["Kits", "Kits", "套件"],
+    plugin: ["Plugins", "Plugins", "插件"]
+  };
   var ORDEN = ["tiempo", "malla", "calificaciones", "estudio"];
   var HIJOS = [["crono", "Cronómetro"], ["temporizador", "Temporizador"], ["pomodoro", "Pomodoro"], ["alarmas", "Alarmas"]];
 
@@ -266,7 +293,7 @@
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true,
-        temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [] },
+        temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -315,6 +342,7 @@
   var splitOn = false;
   var tabArrastrada = null;
   var splitNavHasta = 0;
+  var catalogoBusqueda = "";
 
   function guardar() {
     try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
@@ -666,6 +694,15 @@
       academics: ["Kit: Malla, Calificaciones, Estudio y Evaluaciones.", "Kit: plan, grades, study and assessments.", "套件：规划、成绩、学习和评估。"]
     }[id];
     return m ? L(m[0], m[1], m[2]) : (BLOQUES[id] ? BLOQUES[id].desc : L("Sección base.", "Base section.", "基础分区。"));
+  }
+  function descripcionBase(id) {
+    var m = {
+      calendario: ["Eventos, periodos y agenda.", "Events, terms and agenda.", "事件、学期和日程。"],
+      tareas: ["Proyectos, subtareas y prioridades.", "Projects, subtasks and priorities.", "项目、子任务和优先级。"],
+      notas: ["Markdown, etiquetas y enlaces.", "Markdown, tags and links.", "Markdown、标签和链接。"],
+      ajustes: ["Apariencia, datos y extensiones.", "Appearance, data and extensions.", "外观、数据和扩展。"]
+    }[id];
+    return m ? L(m[0], m[1], m[2]) : L("Sección fija. No se quita.", "Fixed section. It cannot be removed.", "固定分区，不能移除。");
   }
   function iconoDe(id) {
     return { calendario: "i-cal", tareas: "i-tareas", notas: "i-notas", ajustes: "i-ajustes" }[id] ||
@@ -3044,6 +3081,7 @@
     pintarPanel();
     pintarSplit();
     pintarAjustes();
+    if ($("#modal").classList.contains("on")) pintarCatalogo();
   }
   function pintarAjustes() {
     var p = estado.prefs || {};
@@ -3293,34 +3331,174 @@
     var b = BLOQUES[id];
     return b && b.tipo === "pack" && b.instala.every(instalado);
   }
-  function pintarCatalogo() {
-    var ids = Object.keys(BLOQUES);
-    var base = ["calendario", "tareas", "notas", "ajustes"];
-    var html = base.map(function (id) {
-      return '<article class="bcard"><div class="bcard__nom">' + esc(nombre(id)) +
-        ' <span class="pill">' + esc(L("base", "base", "基础")) + '</span></div><div class="bcard__desc">' + esc(L("Sección fija. No se quita.", "Fixed section. It cannot be removed.", "固定分区，不能移除。")) + '</div>' +
-        '<div class="bcard__pie"><span>' + esc(L("base fija", "fixed base", "固定基础")) + '</span><span class="pill">' + esc(L("fija", "fixed", "固定")) + '</span></div></article>';
-    }).join("");
-    html += ids.filter(function (id) { return id !== "evaluaciones"; }).map(function (id) {
+  function origenNombre(id) {
+    var o = ORIGENES[id];
+    return o ? L(o[0], o[1], o[2]) : id;
+  }
+  function naturalezaDe(id) {
+    var n = NATURALEZAS[id];
+    return n ? L(n[0], n[1], n[2]) : id;
+  }
+  function etiquetaDe(id) {
+    var t = TAGS[id];
+    return t ? L(t[0], t[1], t[2]) : id;
+  }
+  function textoPlano(s) {
+    s = String(s || "").toLowerCase();
+    try { s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (e) {}
+    return s;
+  }
+  function catalogoItems() {
+    var out = BASE.map(function (id) {
+      var m = BASE_META[id] || { origen: "nativo", naturaleza: "base", tags: [] };
+      return {
+        id: id, fija: true, tipo: "base", origen: m.origen, naturaleza: m.naturaleza,
+        tags: m.tags || [], nombre: nombre(id), desc: descripcionBase(id)
+      };
+    });
+    Object.keys(BLOQUES).forEach(function (id) {
       var b = BLOQUES[id];
-      var esta = b.tipo === "pack" ? estaKit(id) : instalado(id);
-      var accion = b.tipo === "pack"
-        ? '<button class="btn btn--chico ' + (esta ? "btn-peligro" : "btn-primario") + '" type="button" data-' +
-          (esta ? "quitar" : "instalar") + '="' + id + '">' + (esta ? L("Quitar kit", "Remove kit", "移除套件") : L("Instalar kit", "Install kit", "安装套件")) + "</button>"
-        : '<button class="btn btn--chico ' + (esta ? "btn-peligro" : "") + '" type="button" data-' +
-          (esta ? "quitar" : "instalar") + '="' + id + '">' + (esta ? L("Quitar", "Remove", "移除") : L("Instalar", "Install", "安装")) + "</button>";
-      return '<article class="bcard"><div class="bcard__nom">' + esc(nombre(id)) +
-        ' <span class="pill">v1.0</span></div><div class="bcard__desc">' + esc(descripcionBloque(id)) +
-        '</div><div class="bcard__pie"><span>' + esc(b.tipo === "pack" ? L("kit", "kit", "套件") : b.tipo) + "</span>" + accion + "</div></article>";
+      if (id === "evaluaciones" || b.oculto) return;
+      out.push({
+        id: id, fija: false, tipo: b.tipo,
+        origen: b.origen || (b.tipo === "pack" ? "kit" : "nativo"),
+        naturaleza: b.naturaleza || "aporte", tags: b.tags || [],
+        nombre: nombre(id), desc: descripcionBloque(id)
+      });
+    });
+    return out;
+  }
+  function catalogoFiltrado(items) {
+    var p = estado.prefs || {};
+    var origen = p.catalogoOrigen || "todos";
+    var tag = p.catalogoTag || "";
+    var q = textoPlano(catalogoBusqueda);
+    return items.filter(function (it) {
+      if (origen !== "todos" && it.origen !== origen) return false;
+      if (tag && it.tags.indexOf(tag) === -1) return false;
+      if (q) {
+        var texto = [it.id, it.nombre, it.desc, naturalezaDe(it.naturaleza)]
+          .concat(it.tags.map(etiquetaDe)).join(" ");
+        if (textoPlano(texto).indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+  }
+  function tarjetaCatalogo(it) {
+    var p = estado.prefs || {};
+    var esta = it.fija ? true : (it.tipo === "pack" ? estaKit(it.id) : instalado(it.id));
+    var esKit = it.tipo === "pack";
+    var accion;
+    if (it.fija) {
+      accion = '<span class="pill">' + esc(L("fija", "fixed", "固定")) + "</span>";
+    } else {
+      var texto = esKit
+        ? (esta ? L("Quitar kit", "Remove kit", "移除套件") : L("Instalar kit", "Install kit", "安装套件"))
+        : (esta ? L("Quitar", "Remove", "移除") : L("Instalar", "Install", "安装"));
+      var clase = "btn btn--chico " + (esta ? "btn-peligro" : (esKit ? "btn-primario" : ""));
+      accion = '<button class="' + clase + '" type="button" data-' + (esta ? "quitar" : "instalar") +
+        '="' + it.id + '">' + texto + "</button>";
+    }
+    var pills = '<span class="pill">' + esc(origenNombre(it.origen)) + "</span>";
+    if (it.naturaleza && it.naturaleza !== it.origen) {
+      pills += ' <span class="pill">' + esc(naturalezaDe(it.naturaleza)) + "</span>";
+    }
+    var tags = it.tags.map(function (t) {
+      return '<button class="etiqueta" type="button" data-tag="' + esc(t) + '" aria-pressed="' +
+        (p.catalogoTag === t) + '">' + esc(etiquetaDe(t)) + "</button>";
     }).join("");
-    $("#catalogo").innerHTML = html;
-    $("#modal-sub").textContent = estado.instalados.length + " " + L("bloques instalados", "blocks installed", "个模块已安装") + " · " + (ids.length + 4) + " " + L("en el catálogo", "in the catalog", "个在目录中");
+    var pie = '<span>' + esc(it.fija ? L("base fija", "fixed base", "固定基础") : "v1.0") + "</span>" + accion;
+    return '<article class="bcard" data-bloque="' + esc(it.id) + '" data-origen="' + esc(it.origen) +
+      '" data-naturaleza="' + esc(it.naturaleza) + '">' +
+      '<div class="bcard__nom">' + esc(it.nombre) + " " + pills + "</div>" +
+      '<div class="bcard__desc">' + esc(it.desc) + "</div>" +
+      '<div class="bcard__tags">' + tags + "</div>" +
+      '<div class="bcard__pie">' + pie + "</div></article>";
+  }
+  function pintarTarjetas(items) {
+    var visibles = catalogoFiltrado(items);
+    $("#catalogo").innerHTML = visibles.map(tarjetaCatalogo).join("");
+    var vacio = $("#catalogo-vacio");
+    vacio.hidden = visibles.length !== 0;
+    if (!visibles.length) {
+      vacio.innerHTML = '<p>' + esc(L("No hay bloques con estos filtros.", "No blocks match these filters.", "没有符合这些筛选的模块。")) +
+        '</p><button class="btn" type="button" id="catalogo-limpiar">' + esc(L("Limpiar filtros", "Clear filters", "清除筛选")) + "</button>";
+      $("#catalogo-limpiar").addEventListener("click", function () {
+        estado.prefs.catalogoOrigen = "todos"; estado.prefs.catalogoTag = ""; catalogoBusqueda = "";
+        guardar(); pintarCatalogo();
+      });
+    } else {
+      vacio.innerHTML = "";
+    }
     $$("#catalogo [data-instalar]").forEach(function (x) {
       x.addEventListener("click", function () { instalar(x.getAttribute("data-instalar")); });
     });
     $$("#catalogo [data-quitar]").forEach(function (x) {
       x.addEventListener("click", function () { quitar(x.getAttribute("data-quitar")); });
     });
+    $$("#catalogo [data-tag]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var t = x.getAttribute("data-tag");
+        estado.prefs.catalogoTag = estado.prefs.catalogoTag === t ? "" : t;
+        guardar(); pintarCatalogo();
+        var foco = $("#catalogo-filtros [data-quitar-tag]") || $("#catalogo-filtros [data-origen]");
+        if (foco) foco.focus();
+      });
+    });
+  }
+  function pintarCatalogo() {
+    var items = catalogoItems();
+    var p = estado.prefs || (estado.prefs = {});
+    var origenes = ["todos"];
+    items.forEach(function (it) { if (origenes.indexOf(it.origen) === -1) origenes.push(it.origen); });
+    if (origenes.indexOf(p.catalogoOrigen || "todos") === -1) p.catalogoOrigen = "todos";
+    if (p.catalogoTag && items.every(function (it) { return it.tags.indexOf(p.catalogoTag) === -1; })) {
+      p.catalogoTag = "";
+    }
+    var activo = p.catalogoTag || "";
+    var total = items.length;
+    var chips = origenes.map(function (o) {
+      var n = o === "todos" ? total : items.filter(function (it) { return it.origen === o; }).length;
+      return '<button class="cchip" type="button" data-origen="' + esc(o) + '" aria-pressed="' +
+        ((p.catalogoOrigen || "todos") === o) + '">' +
+        esc(o === "todos" ? L("Todos", "All", "全部") : origenNombre(o)) + " <b>" + n + "</b></button>";
+    }).join("");
+    var tagChip = activo
+      ? '<button class="cchip cchip--activo" type="button" data-quitar-tag="1" title="' +
+        esc(L("Quitar filtro de etiqueta", "Clear tag filter", "清除标签筛选")) + '">' +
+        esc(L("Etiqueta: ", "Tag: ", "标签：")) + esc(etiquetaDe(activo)) + " <b>×</b></button>"
+      : "";
+    var buscar = L("Buscar por nombre o etiqueta…", "Search by name or tag…", "按名称或标签搜索…");
+    $("#catalogo-filtros").innerHTML = '<div class="catalogo-filtros">' +
+      '<div class="catalogo-filtros__chips" role="toolbar" aria-label="' +
+      esc(L("Filtrar bloques por origen", "Filter blocks by origin", "按来源筛选模块")) + '">' + chips + "</div>" +
+      tagChip +
+      '<label class="catalogo-buscar"><input class="catalogo-buscar__campo" id="catalogo-buscar" type="search" autocomplete="off" placeholder="' +
+      esc(buscar) + '" aria-label="' + esc(buscar) + '"></label></div>';
+    $("#modal-sub").textContent = estado.instalados.length + " " + L("bloques instalados", "blocks installed", "个模块已安装") +
+      " · " + total + " " + L("en el catálogo", "in the catalog", "个在目录中");
+    var campo = $("#catalogo-buscar");
+    campo.value = catalogoBusqueda;
+    campo.addEventListener("input", function () { catalogoBusqueda = campo.value; pintarTarjetas(items); });
+    $$("#catalogo-filtros [data-origen]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var o = x.getAttribute("data-origen");
+        estado.prefs.catalogoOrigen = o;
+        guardar(); pintarCatalogo();
+        var foco = $('#catalogo-filtros [data-origen="' + o + '"]');
+        if (foco) foco.focus();
+      });
+    });
+    var quitar = $("#catalogo-filtros [data-quitar-tag]");
+    if (quitar) {
+      quitar.addEventListener("click", function () {
+        estado.prefs.catalogoTag = "";
+        guardar(); pintarCatalogo();
+        var foco = $("#catalogo-filtros [data-origen]");
+        if (foco) foco.focus();
+      });
+    }
+    pintarTarjetas(items);
   }
   function instalar(id) {
     var b = BLOQUES[id];

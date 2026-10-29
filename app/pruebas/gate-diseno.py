@@ -27,6 +27,7 @@ AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent.parent
 CSS = RAIZ / "app" / "css"
 BANCO = AQUI / "banco-tokens.html"
+APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
 from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
@@ -137,12 +138,51 @@ def roto() -> list[str]:
     return fallas
 
 
+def controles() -> list[str]:
+    """Los controles nativos y del catálogo no se pierden en ningún tema."""
+    fallas: list[str] = []
+    oscuros = {"deepsea", "medianoche", "negro", "vino", "alto-contraste"}
+    with Navegador() as nav:
+        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        try:
+            page.locator("#btn-ajustes").click()
+            page.wait_for_timeout(150)
+            page.locator("#btn-add").click()
+            page.wait_for_timeout(200)
+            for tema in TEMAS:
+                page.evaluate("t => document.body.setAttribute('data-tema', t)", tema)
+                page.wait_for_timeout(40)
+                scheme = page.evaluate("getComputedStyle(document.body).colorScheme")
+                exigir(scheme == ("dark" if tema in oscuros else "light"),
+                       f"controles {tema}: color-scheme {scheme}", fallas)
+                vals = page.evaluate("""() => {
+                  const sels = ['#pref-tema-claro', '#pref-hora', '.catalogo-buscar__campo',
+                                '#catalogo .etiqueta', '#catalogo-filtros .cchip[aria-pressed="true"]'];
+                  return sels.map(sel => {
+                    const e = document.querySelector(sel);
+                    if (!e) return null;
+                    const c = getComputedStyle(e);
+                    return {sel: sel, color: c.color, bg: c.backgroundColor};
+                  });
+                }""")
+                for v in vals:
+                    if not v or "rgba(0, 0, 0, 0)" in v["bg"]:
+                        continue
+                    ratio = contraste(v["color"], v["bg"])
+                    exigir(ratio >= 4.5,
+                           f"controles {tema}{v['sel']}: contraste {ratio:.2f}", fallas)
+            exigir(not errores, f"controles: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+    return fallas
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--demo", action="store_true")
     args = ap.parse_args()
 
-    fallas = revisar_css() + revisar_banco(BANCO)
+    fallas = revisar_css() + revisar_banco(BANCO) + controles()
     codigo = salir("gate-diseno", fallas)
     if not args.demo:
         return codigo
