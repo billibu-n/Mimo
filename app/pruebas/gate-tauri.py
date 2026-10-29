@@ -161,6 +161,12 @@ def main() -> int:
     if rpm:
         tam = Path(rpm[0]).stat().st_size
         exigir(tam > 1_000_000, f"tauri: RPM de {tam} bytes", fallas)
+        lanzador = subprocess.run(
+            ["sh", "-c", f"rpm2cpio {rpm[0]} | cpio -i --to-stdout ./usr/share/applications/Mimo.desktop"],
+            capture_output=True, text=True)
+        texto = lanzador.stdout
+        exigir("Name=Mimo" in texto and "Icon=mimo" in texto and "StartupWMClass=Mimo" in texto,
+               f"tauri: lanzador nativo Mimo — {texto[:140]!r}", fallas)
     exigir(BIN.stat().st_size > 5_000_000, f"tauri: binario de {BIN.stat().st_size} bytes", fallas)
     return salir("gate-tauri", fallas)
 
