@@ -11,7 +11,7 @@ cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
 ```
 
 Para la release de GitHub, `sh preparar-publicacion.sh` deja en `publicacion/` solo el RPM,
-`mimo-inicial.json`, `SHA256SUMS` y `LEEME.md`. No copia HTML ni carpetas históricas.
+`tutorial.json`, `LICENSE`, `SHA256SUMS` y `LEEME.md`. No copia HTML ni carpetas históricas.
 
 `cargo tauri build` ejecuta `preparar-frontend.sh` antes de compilar (`beforeBuildCommand`), así que
 el paso manual solo hace falta para inspeccionar el frontend preparado.

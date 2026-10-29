@@ -3827,24 +3827,54 @@
       pintarAjustes();
     });
     function descargarJSON(obj, nombre) {
-      var blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+      var texto = JSON.stringify(obj, null, 2);
+      var t = window.__TAURI_INTERNALS__ || (window.__TAURI__ && window.__TAURI__.core);
+      if (t && t.invoke) {
+        return t.invoke("guardar_json", { nombre: nombre, contenido: texto }).catch(function (e) {
+          aviso(L("No se pudo guardar: ", "Could not save: ", "无法保存：") + (e && e.message ? e.message : e));
+          return null;
+        });
+      }
+      var blob = new Blob([texto], { type: "application/json" });
       var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      return Promise.resolve(true);
     }
     $("#btn-exportar-entorno").addEventListener("click", function () {
       if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
-      descargarJSON(MimoEsquema.exportarEntorno(estado), "mimo-entorno.json");
-      aviso(L("Entorno exportado. Llévalo junto a la malla.", "Environment exported. Carry it with the degree plan.", "环境已导出。请与课程规划一起携带。"));
+      descargarJSON(MimoEsquema.exportarEntorno(estado), "mimo-entorno.json").then(function (r) {
+        if (r) aviso(L("Entorno exportado. Llévalo junto a la malla.", "Environment exported. Carry it with the degree plan.", "环境已导出。请与课程规划一起携带。"));
+      });
     });
     $("#btn-exportar-malla-aj").addEventListener("click", function () {
       if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
-      descargarJSON(MimoEsquema.exportarMalla(estado), "mimo-malla.json");
-      aviso(L("Malla exportada.", "Degree plan exported.", "课程规划已导出。"));
+      descargarJSON(MimoEsquema.exportarMalla(estado), "mimo-malla.json").then(function (r) {
+        if (r) aviso(L("Malla exportada.", "Degree plan exported.", "课程规划已导出。"));
+      });
     });
     $("#btn-exportar-todo").addEventListener("click", function () {
       if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
-      descargarJSON(MimoEsquema.exportarBackup(estado), "mimo-backup.json");
-      aviso(L("Respaldo completo exportado: entorno y malla.", "Full backup exported: environment and degree plan.", "完整备份已导出：环境和课程规划。"));
+      descargarJSON(MimoEsquema.exportarBackup(estado), "mimo-backup.json").then(function (r) {
+        if (r) aviso(L("Respaldo completo exportado: entorno y malla.", "Full backup exported: environment and degree plan.", "完整备份已导出：环境和课程规划。"));
+      });
+    });
+    $("#btn-exportar-tutorial").addEventListener("click", function () {
+      if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
+      descargarJSON(MimoEsquema.exportarBackup(estado), "tutorial.json").then(function (r) {
+        if (r) aviso(L("Tutorial guardado. Ese es el JSON que se publica.", "Tutorial saved. That is the JSON to publish.", "教程已保存。这就是要发布的 JSON。"));
+      });
+    });
+    $("#btn-reset-fabrica").addEventListener("click", function () {
+      var texto = L("Se borrarán los datos y la configuración de este equipo: notas, tareas, malla, temas y sync. No se puede deshacer. ¿Continuar?",
+        "This device's data and settings will be erased: notes, tasks, degree plan, themes and sync. This cannot be undone. Continue?",
+        "将清除此设备的数据和设置：笔记、任务、课程规划、主题和同步。无法撤销。继续？");
+      if (!window.confirm(texto)) return;
+      try {
+        Object.keys(localStorage).forEach(function (k) {
+          if (k === "mimo.shell.v1" || k.indexOf("mimo.sync.") === 0) localStorage.removeItem(k);
+        });
+      } catch (e) {}
+      location.reload();
     });
     $("#btn-importar").addEventListener("click", function () { $("#archivo-importar").click(); });
     $("#archivo-importar").addEventListener("change", function (e) {

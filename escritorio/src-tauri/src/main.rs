@@ -3,9 +3,10 @@
 // Carga `escritorio/app/index.html`, que `preparar-frontend.sh` copia desde la app universal
 // (`<proyecto>/app/`) con lista blanca: index.html, css/, js/, img/ y vendor/.
 //
-// Dos extras nativos, y nada mas:
+// Tres extras nativos, y nada mas:
 //   - `http_pedir`: puente HTTP con reqwest; el WebView no exime a `fetch` de CORS y Rust si.
 //   - la carpeta de sincronizacion: dialogo nativo y lectura/escritura de `mimo-sync.json`.
+//   - `guardar_json`: dialogo de guardado para exportar un JSON elegido por la persona.
 // La pagina no recibe acceso libre al disco: el Rust recuerda la carpeta elegida y solo escribe
 // ese archivo dentro de ella. Tampoco hay shell.
 //
@@ -192,6 +193,37 @@ fn olvidar_carpeta(app: tauri::AppHandle, estado: State<CarpetaSync>) -> Result<
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(e) => Err(format!("no se pudo olvidar la carpeta: {e}")),
     }
+}
+
+/// Pide una ruta y guarda un JSON elegido por la persona. Devuelve la ruta o None si cancela.
+#[tauri::command]
+async fn guardar_json(
+    app: tauri::AppHandle,
+    nombre: String,
+    contenido: String,
+) -> Result<Option<String>, String> {
+    let seleccion = tauri::async_runtime::spawn_blocking({
+        let app = app.clone();
+        move || {
+            app.dialog()
+                .file()
+                .set_title("Guardar JSON")
+                .set_file_name(nombre)
+                .blocking_save_file()
+                .and_then(|f| f.into_path().ok())
+        }
+    })
+    .await
+    .map_err(|e| format!("diálogo: {e}"))?;
+    let Some(ruta) = seleccion else {
+        return Ok(None);
+    };
+    fs::write(&ruta, contenido.as_bytes()).map_err(|e| format!("guardar JSON: {e}"))?;
+    let vuelta = fs::read_to_string(&ruta).map_err(|e| format!("verificar JSON: {e}"))?;
+    if vuelta != contenido {
+        return Err("No se pudo verificar el JSON guardado.".into());
+    }
+    Ok(Some(ruta.to_string_lossy().to_string()))
 }
 
 fn ruta_sonda() -> String {
@@ -410,7 +442,8 @@ fn main() {
             carpeta_guardada,
             leer_carpeta,
             escribir_carpeta,
-            olvidar_carpeta
+            olvidar_carpeta,
+            guardar_json
         ])
         .setup(|app| {
             lanzar_sonda(app.handle());

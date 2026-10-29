@@ -12,4 +12,4 @@ escritorio/release
 # Publicación: solo se versionan la semilla editable y su LEEME; los binarios no.
 publicacion/*
 !publicacion/LEEME.md
-!publicacion/mimo-inicial.json
+!publicacion/tutorial.json

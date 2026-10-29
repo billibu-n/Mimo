@@ -8,40 +8,52 @@ fuente, prototipos, referencias ni iteraciones anteriores.
 | Archivo | Qué es |
 |---|---|
 | `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Aplicación de escritorio para Fedora/Linux x86_64 |
-| `mimo-inicial.json` | Respaldo inicial editable: notas de bienvenida, tareas y preferencias |
-| `SHA256SUMS` | Huellas del RPM y del JSON |
+| `tutorial.json` | Estado inicial: notas de bienvenida, tareas y preferencias |
+| `LICENSE` | Licencia MIT del proyecto |
+| `SHA256SUMS` | Huellas del RPM, el tutorial y la licencia |
 | `LEEME.md` | Esta guía; se puede subir como nota de la release |
 
-## Cuál es el archivo que se edita
+## Cuál es el archivo que se genera
 
-**`publicacion/mimo-inicial.json`** es el original y el que se publica. No hay otra copia.
-Si editas otro JSON, ese no se sube.
+**`publicacion/tutorial.json`** es el original y el que se publica. No hay otra copia y no
+hace falta editarlo a mano.
 
-El JSON es un respaldo `mimo.backup` normal. Se importa una vez:
+Se genera desde la propia app:
+
+1. Abre Mimo en un perfil limpio. Si ya tiene datos, usa **Ajustes → Datos → Restablecer de fábrica**.
+2. Crea las notas y tareas de bienvenida que quieras.
+3. Ve a **Ajustes → Datos → Respaldo → Guardar tutorial**.
+4. Guarda el archivo como `publicacion/tutorial.json`.
+5. Regenera checksums con `sh escritorio/preparar-publicacion.sh`.
+
+El JSON es un respaldo `mimo.backup` normal. Para usarlo en otro equipo:
 
 1. Instala el RPM.
 2. Abre **Ajustes → Datos → Respaldo → Importar**.
-3. Elige `mimo-inicial.json`.
+3. Elige `tutorial.json`.
 4. Confirma el reemplazo.
 
-Las notas y tareas de bienvenida aparecen en la app. Después puedes editar la semilla y volver
-a importarla en un equipo limpio.
-
 > Hoy el JSON es **importable**, no se carga solo al primer arranque. Si quieres que la app
-> arranque ya con esta semilla sin importar a mano, hay que agregar esa carga inicial y
+> arranque ya con este tutorial sin importar a mano, hay que agregar esa carga inicial y
 > reconstruir el RPM.
+
+## Restablecer de fábrica
+
+**Ajustes → Datos → Restablecer de fábrica** borra de este equipo las notas, tareas, malla,
+temas y la configuración de sincronización. No toca los archivos que hayas exportado. Es la
+forma de dejar la app limpia antes de generar el tutorial.
 
 ## Cómo regenerar la publicación
 
-Cada vez que edites `mimo-inicial.json` o reconstruyas el RPM:
+Cada vez que cambies el tutorial desde la app o reconstruyas el RPM:
 
 ```bash
 cd ~/sede/proyectos/mimo-nuevo
 sh escritorio/preparar-publicacion.sh
 ```
 
-El script copia el RPM medido, valida el JSON y reescribe `SHA256SUMS`. No toca el HTML ni
-copia carpetas históricas.
+El script copia el RPM medido, valida el JSON, copia `LICENSE` y reescribe `SHA256SUMS`. No toca
+el HTML ni copia carpetas históricas.
 
 ## Verificar
 

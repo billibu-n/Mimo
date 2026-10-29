@@ -34,9 +34,10 @@
       "icons/icon.ico"
     ],
     "category": "Utility",
-    "shortDescription": "Organizador global con bloques, offline y sync WebDAV cifrada.",
+    "shortDescription": "Mimo — organizador global con bloques, offline y sync WebDAV cifrada.",
     "longDescription": "Mimo es un organizador global con bloques instalables: calendario, tareas, notas, malla, calificaciones, estudio y tiempo. Funciona sin conexion, guarda los datos en el equipo y puede sincronizarlos cifrados por WebDAV/Nextcloud.",
     "publisher": "Billibu",
+    "copyright": "Copyright © 2026 billibu-n",
     "license": "MIT",
     "homepage": "https://github.com/billibu-n/mimo-nuevo"
   }
