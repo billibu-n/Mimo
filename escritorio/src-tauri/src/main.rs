@@ -486,13 +486,8 @@ fn main() {
         .on_page_load(|webview, payload| {
             // La ventana ya existe: fija la mascota como icono nativo en X11 y Wayland.
             if payload.event() == tauri::webview::PageLoadEvent::Finished {
-                eprintln!("mimo: page load finished");
-                match tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
-                    Ok(icono) => match webview.window().set_icon(icono) {
-                        Ok(_) => eprintln!("mimo: window icon set"),
-                        Err(e) => eprintln!("mimo: window icon error: {e}"),
-                    },
-                    Err(e) => eprintln!("mimo: icon decode error: {e}"),
+                if let Ok(icono) = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
+                    let _ = webview.window().set_icon(icono);
                 }
             }
         })
