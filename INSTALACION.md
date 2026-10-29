@@ -1,7 +1,7 @@
 # Instalar Mimo
 
 Mimo es una aplicación de escritorio. Descarga el archivo de tu sistema desde la
-[última release](https://github.com/billibu-n/mimo/releases/latest), instálalo y ábrelo. No hay
+[última release](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.1), instálalo y ábrelo. No hay
 cuenta ni registro.
 
 | Sistema | Archivo | Instalación |
