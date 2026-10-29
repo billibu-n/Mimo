@@ -1,6 +1,12 @@
 #!/bin/sh
-# Prepara la carpeta de publicación: solo RPM, tutorial, licencia y checksums.
+# Prepara la carpeta de publicación: paquetes construidos, tutorial, licencia y checksums.
 # No copia HTML, fuente, prototipos ni referencias.
+#
+# Deben estar en escritorio/release/ los artefactos que se quieran publicar:
+#   Mimo-*.rpm                         Fedora / RHEL
+#   Mimo_*.deb                         Debian / Ubuntu
+#   Mimo_*setup.exe                    Windows x64 (NSIS)
+#   mimo-*.pkg.tar.zst                 Arch Linux
 set -e
 
 AQUI=$(cd "$(dirname "$0")" && pwd)
@@ -17,24 +23,47 @@ python3 -m json.tool "$JSON" >/dev/null || {
   echo "ALTO: $JSON no es JSON válido"; exit 1;
 }
 
-RPM=$(ls "$REL"/Mimo-*.rpm 2>/dev/null | head -n 1 || true)
-[ -n "$RPM" ] && [ -f "$RPM" ] || {
-  echo "ALTO: no hay RPM en $REL. Construye primero con cargo tauri build --bundles rpm."
+tomar() {
+  # Imprime el primer archivo que coincida, o nada.
+  for f in "$REL"/$1; do
+    [ -f "$f" ] && { printf '%s\n' "$f"; return 0; }
+  done
+  return 0
+}
+
+RPM=$(tomar 'Mimo-*.rpm')
+DEB=$(tomar 'Mimo_*.deb')
+EXE=$(tomar 'Mimo_*setup.exe')
+ARCH=$(tomar 'mimo-*.pkg.tar.zst')
+
+[ -n "$RPM$DEB" ] || {
+  echo "ALTO: no hay RPM ni DEB en $REL."
+  echo "Construye con: cd escritorio && cargo tauri build --bundles deb,rpm"
   exit 1
 }
 
-# Solo se reemplazan RPM generados dentro de publicacion/; no se toca nada más.
-rm -f -- "$PUB"/Mimo-*.rpm
-cp -- "$RPM" "$PUB"/
+# Solo se reemplazan paquetes generados dentro de publicacion/.
+rm -f -- "$PUB"/Mimo-*.rpm "$PUB"/Mimo_*.deb "$PUB"/Mimo_*setup.exe "$PUB"/mimo-*.pkg.tar.zst
+
+FICHEROS=""
+for f in "$RPM" "$DEB" "$EXE" "$ARCH"; do
+  [ -n "$f" ] || continue
+  cp -- "$f" "$PUB"/
+  FICHEROS="$FICHEROS $(basename "$f")"
+done
 cp -- "$LICEN" "$PUB"/LICENSE
-BASE=$(basename "$RPM")
 
 (
   cd "$PUB"
-  sha256sum "$BASE" tutorial.json LICENSE > SHA256SUMS
+  # shellcheck disable=SC2086
+  sha256sum $FICHEROS tutorial.json LICENSE > SHA256SUMS
 )
 
-echo "publicacion lista:"
-ls -lh "$PUB"/"$BASE" "$JSON" "$PUB"/LICENSE "$PUB"/SHA256SUMS
+echo "publicación lista:"
+for f in $FICHEROS tutorial.json LICENSE SHA256SUMS; do
+  ls -lh "$PUB/$f"
+done
+[ -n "$EXE" ] || echo "AVISO: falta el instalador Windows; se copiará cuando exista en release/."
+[ -n "$ARCH" ] || echo "AVISO: falta el paquete Arch; se copiará cuando exista en release/."
 echo
 echo "No se copió ningún HTML ni carpeta histórica."

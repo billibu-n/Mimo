@@ -5,13 +5,60 @@ fuente, prototipos, referencias ni iteraciones anteriores.
 
 ## Qué se publica
 
-| Archivo | Qué es |
-|---|---|
-| `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Aplicación de escritorio para Fedora/Linux x86_64 |
-| `tutorial.json` | Estado inicial: notas de bienvenida, tareas y preferencias |
-| `LICENSE` | Licencia MIT del proyecto |
-| `SHA256SUMS` | Huellas del RPM, el tutorial y la licencia |
-| `LEEME.md` | Esta guía; se puede subir como nota de la release |
+| Archivo | Plataforma | Estado |
+|---|---|---|
+| `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Fedora / RHEL x86_64 | listo |
+| `Mimo_1.2.0-beta.1_amd64.deb` | Debian / Ubuntu amd64 | listo |
+| `Mimo_1.2.0-beta.1_x64-setup.exe` | Windows 10/11 x64 (NSIS) | lo genera el flujo de empaquetado |
+| `mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` | Arch Linux x86_64 | lo genera el flujo de empaquetado |
+| `tutorial.json` | Todas | listo |
+| `LICENSE` | Todas | listo |
+| `SHA256SUMS` | Todas | se regenera al publicar |
+| `LEEME.md` | Todas | esta guía |
+
+El RPM y el DEB instalan la misma aplicación: `/usr/bin/mimo`, un solo `Mimo.desktop`, los
+iconos de hicolor y el metadato AppStream `cl.mimo.escritorio.metainfo.xml`.
+
+## Instalar
+
+### Fedora / RHEL
+
+```bash
+sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm
+mimo
+```
+
+### Debian / Ubuntu
+
+```bash
+sudo apt install ./Mimo_1.2.0-beta.1_amd64.deb
+mimo
+```
+
+`apt` resuelve las dependencias. En Debian 12 o Ubuntu 24.04 en adelante; necesita
+`libwebkit2gtk-4.1-0` y `libgtk-3-0`.
+
+### Windows 10/11 x64
+
+Ejecuta `Mimo_1.2.0-beta.1_x64-setup.exe` y sigue el asistente. Es una instalación por usuario,
+sin permisos de administrador. Si Windows no tiene WebView2, el instalador incluye el
+bootstrapper y pide conexión para descargarlo.
+
+El instalador **no está firmado**. Windows SmartScreen puede mostrar "Windows protegió tu PC";
+es esperado en una beta sin certificado de código.
+
+### Arch Linux
+
+El `PKGBUILD` está en `packaging/arch/` del repositorio. Cuando el tag esté publicado y el
+checksum actualizado:
+
+```bash
+cd packaging/arch
+makepkg -si
+```
+
+Todavía **no está en AUR**. El paquete se construye desde el tarball del tag, no desde un
+binario precompilado.
 
 ## Cuál es el archivo que se genera
 
@@ -28,26 +75,29 @@ Se genera desde la propia app:
 
 El JSON es un respaldo `mimo.backup` normal. Para usarlo en otro equipo:
 
-1. Instala el RPM.
+1. Instala el paquete de tu sistema.
 2. Abre **Ajustes → Datos → Respaldo → Importar**.
 3. Elige `tutorial.json`.
 4. Confirma el reemplazo.
 
 > Hoy el JSON es **importable**, no se carga solo al primer arranque. Si quieres que la app
 > arranque ya con este tutorial sin importar a mano, hay que agregar esa carga inicial y
-> reconstruir el RPM.
+> reconstruir los paquetes.
 
 ## Icono y nombre en el sistema
 
-El RPM instala **una sola** entrada `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y
+Los paquetes Linux instalan **una sola** entrada `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y
 `StartupWMClass=mimo`, los iconos `mimo.png` en hicolor y el metadato AppStream
 `cl.mimo.escritorio.metainfo.xml`. La ventana publica `_NET_WM_ICON` con la mascota y el
 lanzador declara el mismo nombre de icono; no hay una segunda entrada oculta ni app id GTK que
 pueda desviar la asociación. El script de postinstalación refresca las cachés de iconos,
 lanzadores y AppStream.
 
-GNOME Software puede mostrar el icono genérico del **archivo RPM local** antes de instalarlo;
-la ficha AppStream se lee al instalar. Después de instalar, cierra y vuelve a abrir la aplicación.
+GNOME Software puede mostrar el icono genérico del **archivo RPM o DEB local** antes de
+instalarlo; la ficha AppStream se lee al instalar. Después de instalar, cierra y vuelve a abrir
+la aplicación.
+
+En Windows el icono sale del `.ico` incluido en el instalador y en el ejecutable.
 
 ## Restablecer de fábrica
 
@@ -57,15 +107,17 @@ forma de dejar la app limpia antes de generar el tutorial.
 
 ## Cómo regenerar la publicación
 
-Cada vez que cambies el tutorial desde la app o reconstruyas el RPM:
+Cada vez que cambies el tutorial, reconstruyas un paquete o descargues los artefactos de
+GitHub Actions:
 
 ```bash
 cd ~/sede/proyectos/mimo-nuevo
 sh escritorio/preparar-publicacion.sh
 ```
 
-El script copia el RPM medido, valida el JSON, copia `LICENSE` y reescribe `SHA256SUMS`. No toca
-el HTML ni copia carpetas históricas.
+El script copia los paquetes que encuentre en `escritorio/release/` (RPM, DEB, instalador
+Windows y paquete Arch), valida el JSON, copia `LICENSE` y reescribe `SHA256SUMS`. No toca el
+HTML ni copia carpetas históricas. Si falta Windows o Arch, avisa y sigue con lo que haya.
 
 ## Verificar
 
@@ -78,10 +130,13 @@ sha256sum -c SHA256SUMS
 
 - `app/` (HTML/CSS/JS fuente).
 - `escritorio/app/` (copia generada).
-- `escritorio/release/` (build interno; se copia solo el RPM).
-- `prototipo/`, `referencia/`, `tablero/`, `mimo-app-53cc22d` y documentos viejos.
-- `mimo` binario suelto: el RPM ya lo contiene. Si se quiere portable, se agrega a propósito.
+- `escritorio/release/` (build interno; se copian solo los paquetes).
+- `prototipo/`, `referencia/`, `tablero/` y documentos viejos.
+- `mimo` binario suelto: los paquetes ya lo contienen. Si se quiere portable, se agrega a
+  propósito.
 
 ## Firma
 
-El RPM sigue **sin firmar**. La release debe declararlo; no se promete una firma que no existe.
+El RPM, el DEB y el instalador de Windows siguen **sin firmar**. La release debe declararlo; no
+se promete una firma que no existe. La firma de código en Windows y la firma GPG de los
+paquetes Linux quedan como huecos hasta que haya claves.

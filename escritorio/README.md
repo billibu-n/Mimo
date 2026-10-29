@@ -1,26 +1,53 @@
-# Mimo de escritorio (Tauri 2) — paquete `rpm`
+# Mimo de escritorio (Tauri 2) — RPM, DEB, Arch y Windows
 
 ```bash
 cd ~/sede/proyectos/mimo-nuevo/escritorio
-./preparar-frontend.sh                 # app/ -> escritorio/app/ (lista blanca)
+python3 preparar-frontend.py            # app/ -> escritorio/app/ (lista blanca)
 CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" \
-  PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
+  PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles deb,rpm
 mkdir -p release
 cp "$HOME/.cache/mimo-tauri-target/release/mimo" release/
 cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
+cp "$HOME/.cache/mimo-tauri-target/release/bundle/deb/"*.deb release/
 ```
 
-Para la release de GitHub, `sh preparar-publicacion.sh` deja en `publicacion/` solo el RPM,
-`tutorial.json`, `LICENSE`, `SHA256SUMS` y `LEEME.md`. No copia HTML ni carpetas históricas.
+Para la release de GitHub, `sh preparar-publicacion.sh` deja en `publicacion/` los paquetes que
+encuentre en `release/` (RPM, DEB, instalador Windows y paquete Arch), `tutorial.json`, `LICENSE`,
+`SHA256SUMS` y `LEEME.md`. No copia HTML ni carpetas históricas.
 
-`cargo tauri build` ejecuta `preparar-frontend.sh` antes de compilar (`beforeBuildCommand`), así que
-el paso manual solo hace falta para inspeccionar el frontend preparado.
+`cargo tauri build` ejecuta `python3 preparar-frontend.py` antes de compilar
+(`beforeBuildCommand`), así que el paso manual solo hace falta para inspeccionar el frontend
+preparado. El mismo script funciona en Windows (`python preparar-frontend.py`).
 
-Deja el instalable en `release/Mimo-1.2.0-beta.1-1.x86_64.rpm` (5,60 MiB) y el binario suelto en
-`release/mimo` (18,5 MB). `CARGO_TARGET_DIR` saca los 3 GB de compilación de `~/sede`; `release/`
-está ignorado en git y es un enlace a `~/sede/respaldos/mimo-1.2.0-release` para no gastar el
-presupuesto de la casa. El RPM **no está firmado**; se
-declara como hueco hasta que haya clave de firma.
+El binario suelto queda en `release/mimo`. `CARGO_TARGET_DIR` saca la compilación de `~/sede`;
+`release/` está ignorado en git y es un enlace a `~/sede/respaldos/mimo-1.2.0-release` para no
+gastar el presupuesto de la casa. Los paquetes **no están firmados**; se declara como hueco hasta
+que haya claves de firma.
+
+## Windows y Arch
+
+Windows se compila **en Windows**, no se cruza desde Linux:
+
+```powershell
+cd escritorio
+python preparar-frontend.py
+tauri build --bundles nsis
+```
+
+El instalador queda en `src-tauri/target/release/bundle/nsis/`. La configuración
+`src-tauri/tauri.windows.conf.json` fija NSIS x64 por usuario e incluye el bootstrapper de
+WebView2.
+
+Arch usa `packaging/arch/PKGBUILD`; compila desde el tarball del tag y no necesita el CLI de
+Tauri:
+
+```bash
+cd packaging/arch
+makepkg -si
+```
+
+Antes de publicar el `PKGBUILD` hay que cambiar `sha256sums=('SKIP')` por el SHA-256 del tarball
+del tag y regenerar `.SRCINFO`.
 
 ## Instalar, abrir, desinstalar
 

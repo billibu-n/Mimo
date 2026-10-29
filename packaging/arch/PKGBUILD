@@ -1,0 +1,46 @@
+# Maintainer: Billibu <billibu@localhost>
+# Paquete de Arch Linux para Mimo. La fuente es el tarball del tag de GitHub.
+# Antes de enviarlo a AUR: publicar el tag y reemplazar SKIP por su sha256.
+pkgname=mimo
+pkgver=1.2.0beta.1
+pkgrel=1
+pkgdesc="Organizador personal offline: calendario, tareas, notas, malla, estudio y tiempo"
+arch=('x86_64')
+url="https://github.com/billibu-n/mimo-nuevo"
+license=('MIT')
+depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'openssl' 'cairo' 'pango'
+         'gdk-pixbuf2' 'at-spi2-atk' 'librsvg' 'hicolor-icon-theme')
+makedepends=('rust' 'cargo' 'python' 'pkgconf')
+install=mimo.install
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.1.tar.gz")
+sha256sums=('SKIP')
+_archivo="mimo-nuevo-1.2.0-beta.1"
+
+build() {
+  cd "$_archivo"
+  python3 escritorio/preparar-frontend.py
+  export CARGO_TARGET_DIR="$srcdir/target"
+  cargo build --release --locked --manifest-path escritorio/src-tauri/Cargo.toml
+}
+
+package() {
+  cd "$_archivo"
+  install -Dm755 "$srcdir/target/release/mimo" "$pkgdir/usr/bin/mimo"
+  install -Dm644 packaging/linux/Mimo.desktop "$pkgdir/usr/share/applications/Mimo.desktop"
+  install -Dm644 escritorio/src-tauri/metainfo/cl.mimo.escritorio.metainfo.xml \
+    "$pkgdir/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  install -Dm644 escritorio/src-tauri/icons/32x32.png \
+    "$pkgdir/usr/share/icons/hicolor/32x32/apps/mimo.png"
+  install -Dm644 escritorio/src-tauri/icons/48x48.png \
+    "$pkgdir/usr/share/icons/hicolor/48x48/apps/mimo.png"
+  install -Dm644 escritorio/src-tauri/icons/64x64.png \
+    "$pkgdir/usr/share/icons/hicolor/64x64/apps/mimo.png"
+  install -Dm644 escritorio/src-tauri/icons/128x128.png \
+    "$pkgdir/usr/share/icons/hicolor/128x128/apps/mimo.png"
+  install -Dm644 escritorio/src-tauri/icons/256x256.png \
+    "$pkgdir/usr/share/icons/hicolor/256x256/apps/mimo.png"
+  install -Dm644 escritorio/src-tauri/icons/icon.png \
+    "$pkgdir/usr/share/icons/hicolor/512x512/apps/mimo.png"
+}
