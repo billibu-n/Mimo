@@ -7,7 +7,7 @@ fuente, prototipos, referencias ni iteraciones anteriores.
 
 | Archivo | Plataforma | Estado |
 |---|---|---|
-| `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Fedora / RHEL x86_64 | listo |
+| `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Fedora 40+ / RHEL 10+ x86_64 | listo |
 | `Mimo_1.2.0-beta.1_amd64.deb` | Debian / Ubuntu amd64 | listo |
 | `Mimo_1.2.0-beta.1_x64-setup.exe` | Windows 10/11 x64 (NSIS) | listo |
 | `mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` | Arch Linux x86_64 | listo |
@@ -21,7 +21,7 @@ iconos de hicolor y el metadato AppStream `cl.mimo.escritorio.metainfo.xml`.
 
 ## Instalar
 
-### Fedora / RHEL
+### Fedora 40+ / RHEL 10+
 
 ```bash
 sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm

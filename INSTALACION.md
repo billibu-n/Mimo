@@ -6,12 +6,12 @@ cuenta ni registro.
 
 | Sistema | Archivo | Instalación |
 |---|---|---|
-| Fedora / RHEL x86_64 | `Mimo-1.2.0-beta.1-1.x86_64.rpm` | `sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm` |
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.1-1.x86_64.rpm` | `sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm` |
 | Debian 13 / Ubuntu 24.04+ amd64 | `Mimo_1.2.0-beta.1_amd64.deb` | `sudo apt install ./Mimo_1.2.0-beta.1_amd64.deb` |
 | Arch Linux x86_64 | `mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` | `sudo pacman -U ./mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` |
 | Windows 10/11 x64 | `Mimo_1.2.0-beta.1_x64-setup.exe` | Doble clic; instalación por usuario |
 
-## Fedora / RHEL
+## Fedora 40+ / RHEL 10+
 
 ```bash
 sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm
@@ -100,7 +100,7 @@ Compara la salida con la línea del archivo en `SHA256SUMS`. Si no coincide, no 
 ## Desinstalar
 
 ```bash
-# Fedora / RHEL
+# Fedora 40+ / RHEL 10+
 sudo dnf remove mimo
 
 # Debian / Ubuntu

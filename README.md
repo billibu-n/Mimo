@@ -18,7 +18,7 @@ No hay cuenta, no hay nube propia y no se envía nada a un servidor. Tus datos v
 
 | Tu sistema | Archivo | Cómo instalarlo |
 |---|---|---|
-| **Fedora / RHEL** | [Mimo-1.2.0-beta.1-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo-1.2.0-beta.1-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm` |
+| **Fedora 40+ / RHEL 10+** | [Mimo-1.2.0-beta.1-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo-1.2.0-beta.1-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm` |
 | **Debian / Ubuntu 24.04+** | [Mimo_1.2.0-beta.1_amd64.deb](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo_1.2.0-beta.1_amd64.deb) | `sudo apt install ./Mimo_1.2.0-beta.1_amd64.deb` |
 | **Arch Linux** | [mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` |
 | **Windows 10/11 x64** | [Mimo_1.2.0-beta.1_x64-setup.exe](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo_1.2.0-beta.1_x64-setup.exe) | Doble clic. Se instala por usuario, sin administrador. |
