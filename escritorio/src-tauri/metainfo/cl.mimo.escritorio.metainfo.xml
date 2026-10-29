@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>cl.mimo.escritorio</id>
+  <name>Mimo</name>
+  <summary>Organizador global con bloques, offline y sync WebDAV cifrada</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <developer id="cl.billibu">
+    <name>Billibu</name>
+  </developer>
+  <description>
+    <p>Mimo reúne calendario, tareas, notas, malla, calificaciones, estudio y tiempo en una sola aplicación de escritorio.</p>
+    <p>Funciona sin conexión, guarda los datos en el equipo y puede sincronizarlos cifrados por WebDAV/Nextcloud. Los bloques se instalan y se quitan sin borrar tus datos.</p>
+  </description>
+  <launchable type="desktop-id">Mimo.desktop</launchable>
+  <url type="homepage">https://github.com/billibu-n/mimo-nuevo</url>
+  <icon type="stock">mimo</icon>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <provides>
+    <binary>mimo</binary>
+  </provides>
+  <releases>
+    <release version="1.2.0-beta.1" date="2026-10-29"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

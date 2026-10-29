@@ -37,6 +37,13 @@ El JSON es un respaldo `mimo.backup` normal. Para usarlo en otro equipo:
 > arranque ya con este tutorial sin importar a mano, hay que agregar esa carga inicial y
 > reconstruir el RPM.
 
+## Icono y nombre en el sistema
+
+El RPM instala `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y `StartupWMClass=Mimo`, los iconos
+`mimo.png` en hicolor y el metadato AppStream `cl.mimo.escritorio.metainfo.xml`. GNOME Software
+y el menú de aplicaciones muestran **Mimo** con la mascota, no un icono genérico. El script de
+postinstalación refresca las cachés de iconos, lanzadores y AppStream.
+
 ## Restablecer de fábrica
 
 **Ajustes → Datos → Restablecer de fábrica** borra de este equipo las notas, tareas, malla,

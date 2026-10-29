@@ -42,7 +42,11 @@
     "homepage": "https://github.com/billibu-n/mimo-nuevo",
     "linux": {
       "rpm": {
-        "desktopTemplate": "Mimo.desktop"
+        "desktopTemplate": "Mimo.desktop",
+        "postInstallScript": "scripts/postinstall.sh",
+        "files": {
+          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
+        }
       }
     }
   }

@@ -167,6 +167,11 @@ def main() -> int:
         texto = lanzador.stdout
         exigir("Name=Mimo" in texto and "Icon=mimo" in texto and "StartupWMClass=Mimo" in texto,
                f"tauri: lanzador nativo Mimo — {texto[:140]!r}", fallas)
+        meta = subprocess.run(
+            ["sh", "-c", f"rpm2cpio {rpm[0]} | cpio -i --to-stdout ./usr/share/metainfo/cl.mimo.escritorio.metainfo.xml"],
+            capture_output=True, text=True)
+        exigir("<name>Mimo</name>" in meta.stdout and 'type="stock">mimo' in meta.stdout,
+               "tauri: AppStream con nombre Mimo e icono de la mascota", fallas)
     exigir(BIN.stat().st_size > 5_000_000, f"tauri: binario de {BIN.stat().st_size} bytes", fallas)
     return salir("gate-tauri", fallas)
 
