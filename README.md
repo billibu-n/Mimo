@@ -1,5 +1,7 @@
 # Mimo
 
+[![Empaquetar](https://github.com/billibu-n/mimo-nuevo/actions/workflows/empaquetar.yml/badge.svg)](https://github.com/billibu-n/mimo-nuevo/actions/workflows/empaquetar.yml)
+
 Mimo es un organizador personal de escritorio: calendario, tareas, notas, malla, calificaciones,
 estudio y tiempo, con bloques que se instalan o se quitan sin borrar tus datos. Funciona sin
 conexión y puede sincronizarse cifrado por WebDAV/Nextcloud.
