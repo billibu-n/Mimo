@@ -446,6 +446,12 @@ fn main() {
             guardar_json
         ])
         .setup(|app| {
+            // La ventana usa la mascota como icono nativo, no el icono genérico del toolkit.
+            if let Some(ventana) = app.get_webview_window("main") {
+                if let Ok(icono) = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
+                    let _ = ventana.set_icon(icono);
+                }
+            }
             lanzar_sonda(app.handle());
             Ok(())
         })
