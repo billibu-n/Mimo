@@ -90,6 +90,8 @@
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></symbol>
   <symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-5V2"/><path d="M20 7a8 8 0 0 0-14-3"/><path d="M4 17h5v5"/><path d="M4 17a8 8 0 0 0 14 3"/></symbol>
   <symbol id="i-nube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.6A3.5 3.5 0 0 1 18 18Z"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 7-5 5 5 5"/><path d="M4 12h9a6 6 0 0 1 6 6v1"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 7 5 5-5 5"/><path d="M20 12h-9a6 6 0 0 0-6 6v1"/></symbol>
   <symbol id="i-alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5M12 18h.01"/></symbol>
 </defs></svg>
 
@@ -99,6 +101,7 @@
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
+  <button class="icono-btn" id="btn-historial" type="button" title="Historial y atajos (Ctrl+Z)" data-i18n-title="top.historial"><svg class="icono" aria-hidden="true"><use href="#i-undo"/></svg></button>
   <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro" data-i18n-title="top.tema"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
   <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false" data-i18n-title="top.split"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
   <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true" data-i18n-title="top.panel"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
@@ -657,6 +660,19 @@
       <button class="btn btn-primario" id="sync-conf-local" type="button" data-l10n-es="Usar local" data-l10n-en="Use local" data-l10n-zh="使用本地">Usar local</button>
       <button class="btn" id="sync-conf-cancelar" type="button" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
     </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-historial" role="dialog" aria-modal="true" aria-labelledby="hist-tit">
+  <div class="modal__caja modal-historial-caja">
+    <header class="modal__cab"><div><h2 id="hist-tit" data-l10n-es="Historial y atajos" data-l10n-en="History and shortcuts" data-l10n-zh="历史与快捷键">Historial y atajos</h2><p class="muted" id="hist-cuenta" data-l10n-es="Sin pasos todavía." data-l10n-en="No steps yet." data-l10n-zh="还没有步骤。">Sin pasos todavía.</p></div><button class="icono-btn" id="hist-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <div class="historial-acciones">
+      <button class="btn" id="hist-deshacer" type="button"><span data-l10n-es="Deshacer" data-l10n-en="Undo" data-l10n-zh="撤销">Deshacer</span><kbd>Ctrl Z</kbd></button>
+      <button class="btn" id="hist-rehacer" type="button"><span data-l10n-es="Rehacer" data-l10n-en="Redo" data-l10n-zh="重做">Rehacer</span><kbd>Ctrl Y</kbd></button>
+      <button class="btn" id="hist-guardar" type="button"><span data-l10n-es="Guardar ahora" data-l10n-en="Save now" data-l10n-zh="立即保存">Guardar ahora</span><kbd>Ctrl S</kbd></button>
+      <button class="btn" id="hist-refrescar" type="button"><span data-l10n-es="Refrescar vista" data-l10n-en="Refresh view" data-l10n-zh="刷新视图">Refrescar vista</span><kbd>Ctrl R</kbd></button>
+    </div>
+    <p class="muted" data-l10n-es="El historial guarda hasta 60 pasos y se vacía al recargar la app." data-l10n-en="History keeps up to 60 steps and clears when the app reloads." data-l10n-zh="历史记录最多保存 60 步，应用重新加载时清空。">El historial guarda hasta 60 pasos y se vacía al recargar la app.</p>
   </div>
 </div>
 

@@ -18,7 +18,8 @@ Mide sobre app/index.html:
  13. ESC cierra la ventana de periodo;
  14. Ctrl+1..4 sigue el orden actual de las pestañas, incluso tras reordenar;
  15. la pantalla de carga se retira al terminar el arranque;
- 16. el calendario se traduce a inglés y chino (mes, días, vacío y formulario).
+ 16. el calendario se traduce a inglés y chino (mes, días, vacío y formulario);
+ 17. Deshacer/Rehacer, Guardar, Refrescar y la ventana de historial responden a sus atajos.
 """
 from __future__ import annotations
 
@@ -232,6 +233,30 @@ def main() -> int:
             exigir("Notas enlazadas" in page.locator("#panel-cuerpo").inner_text() and
                    page.locator("#panel-cuerpo [data-abrir-enlace]").count() >= 1,
                    "enlaces: la tarea muestra la nota enlazada", fallas)
+
+            # Historial y atajos genéricos: recarga para partir de un historial limpio.
+            page.reload(wait_until="load"); page.wait_for_timeout(300)
+            page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(150)
+            antes = page.locator("#notas-items .nota-item").count()
+            page.locator("#btn-nueva-nota").click()
+            pagina = page
+            pagina.wait_for_timeout(700)
+            page.keyboard.press("Control+z"); pagina.wait_for_timeout(400)
+            despues = page.locator("#notas-items .nota-item").count()
+            exigir(despues == antes, f"historial: Ctrl+Z deshace el alta — {antes} -> {despues}", fallas)
+            page.keyboard.press("Control+y"); pagina.wait_for_timeout(400)
+            exigir(page.locator("#notas-items .nota-item").count() == antes + 1,
+                   "historial: Ctrl+Y rehace el alta", fallas)
+            page.keyboard.press("Control+s"); pagina.wait_for_timeout(200)
+            exigir("Guardado" in page.locator("#toast").inner_text(),
+                   f"atajos: Ctrl+S guarda — {page.locator('#toast').inner_text()!r}", fallas)
+            page.keyboard.press("Control+r"); pagina.wait_for_timeout(200)
+            exigir("refrescada" in page.locator("#toast").inner_text(),
+                   f"atajos: Ctrl+R refresca — {page.locator('#toast').inner_text()!r}", fallas)
+            page.locator("#btn-historial").click(); pagina.wait_for_timeout(150)
+            exigir(page.locator("#modal-historial").is_visible(), "historial: el panel abre", fallas)
+            page.keyboard.press("Escape"); pagina.wait_for_timeout(120)
+            exigir(not page.locator("#modal-historial").is_visible(), "historial: ESC cierra el panel", fallas)
 
             exigir(not [e for e in errores if e.startswith("pageerror")],
                    f"ronda: sin pageerror — {errores[:2]}", fallas)

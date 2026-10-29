@@ -73,6 +73,7 @@ CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" \
 ```
 
 La app universal es `app/index.html`; `escritorio/app/` es una copia generada y no se edita.
+Los atajos y el historial están documentados en [`app/ATAJOS.md`](app/ATAJOS.md).
 Los gates web están en `app/pruebas/`; `gate-tauri.py` mide el binario real.
 
 ## Publicación

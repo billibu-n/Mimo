@@ -49,7 +49,7 @@
       "aj.acerca": "Acerca de",
       "top.buscar": "Buscar", "cal.semana": "Sem",
       "top.add": "Agregar un bloque", "top.nuevo": "Definir un periodo", "top.activo": "Periodo activo",
-      "top.version": "Versión", "top.sync": "Guardado en este equipo", "top.tema": "Cambiar entre claro y oscuro",
+      "top.version": "Versión", "top.sync": "Guardado en este equipo", "top.historial": "Historial y atajos", "top.tema": "Cambiar entre claro y oscuro",
       "top.split": "Vista dividida", "top.panel": "Panel de herramientas", "top.ajustes": "Ajustes",
       "panel.titulo": "Panel", "panel.herramientas": "Herramientas del panel", "panel.cerrar": "Cerrar panel",
       "panel.ahora": "Ahora", "panel.sinEventos": "Sin eventos este mes.",
@@ -114,7 +114,7 @@
       "aj.acerca": "About",
       "top.buscar": "Search", "cal.semana": "Wk",
       "top.add": "Add a block", "top.nuevo": "Define a term", "top.activo": "Active term",
-      "top.version": "Version", "top.sync": "Saved on this device", "top.tema": "Toggle light and dark",
+      "top.version": "Version", "top.sync": "Saved on this device", "top.historial": "History and shortcuts", "top.tema": "Toggle light and dark",
       "top.split": "Split view", "top.panel": "Tools panel", "top.ajustes": "Settings",
       "panel.titulo": "Panel", "panel.herramientas": "Panel tools", "panel.cerrar": "Close panel",
       "panel.ahora": "Now", "panel.sinEventos": "No events this month.",
@@ -179,7 +179,7 @@
       "aj.acerca": "关于",
       "top.buscar": "搜索", "cal.semana": "周",
       "top.add": "添加模块", "top.nuevo": "定义学期", "top.activo": "当前学期",
-      "top.version": "版本", "top.sync": "已保存到本设备", "top.tema": "切换浅色/深色",
+      "top.version": "版本", "top.sync": "已保存到本设备", "top.historial": "历史与快捷键", "top.tema": "切换浅色/深色",
       "top.split": "分屏视图", "top.panel": "工具面板", "top.ajustes": "设置",
       "panel.titulo": "面板", "panel.herramientas": "面板工具", "panel.cerrar": "关闭面板",
       "panel.ahora": "现在", "panel.sinEventos": "本月没有事件。",
@@ -343,13 +343,91 @@
   var tabArrastrada = null;
   var splitNavHasta = 0;
   var catalogoBusqueda = "";
+  var HISTORIAL_MAX = 60, historial = [], historialPos = -1, historialTimer = null, historialSilencio = false;
 
   function guardar() {
-    try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
+    var texto = JSON.stringify(estado);
+    try { localStorage.setItem(CLAVE, texto); } catch (e) {}
+    if (!historialSilencio && historial.length) programarHistorial(texto);
     if (window.MimoSync && window.MimoSync.alCambiar) {
       try { window.MimoSync.alCambiar(); } catch (e) {}
     }
   }
+  function programarHistorial(texto) {
+    clearTimeout(historialTimer);
+    historialTimer = setTimeout(function () {
+      historialTimer = null;
+      apuntarHistorial(texto);
+    }, 500);
+  }
+  function apuntarHistorial(texto) {
+    if (!texto) return;
+    if (historialPos >= 0 && historial[historialPos] === texto) return;
+    if (historialPos < historial.length - 1) historial = historial.slice(0, historialPos + 1);
+    historial.push(texto);
+    if (historial.length > HISTORIAL_MAX) historial.shift();
+    historialPos = historial.length - 1;
+    pintarHistorial();
+  }
+  function flushHistorial() {
+    if (!historialTimer) return;
+    clearTimeout(historialTimer);
+    historialTimer = null;
+    apuntarHistorial(JSON.stringify(estado));
+  }
+  function pintarHistorial() {
+    var cuenta = $("#hist-cuenta");
+    if (!cuenta) return;
+    cuenta.textContent = historial.length
+      ? L("Paso " + (historialPos + 1) + " de " + historial.length, "Step " + (historialPos + 1) + " of " + historial.length, "第 " + (historialPos + 1) + " / " + historial.length + " 步")
+      : L("Sin pasos todavía.", "No steps yet.", "还没有步骤。");
+    var d = $("#hist-deshacer"), r = $("#hist-rehacer");
+    if (d) d.disabled = historialPos <= 0;
+    if (r) r.disabled = historialPos >= historial.length - 1;
+  }
+  function restaurarHistorial(texto) {
+    var nuevo;
+    try { nuevo = JSON.parse(texto); } catch (e) { return; }
+    historialSilencio = true;
+    try { reemplazarEstado(nuevo); } finally { historialSilencio = false; }
+    pintarHistorial();
+  }
+  function deshacer() {
+    flushHistorial();
+    if (historialPos <= 0) { aviso(L("No hay nada que deshacer.", "Nothing to undo.", "没有可撤销的步骤。")); return; }
+    historialPos--;
+    restaurarHistorial(historial[historialPos]);
+    aviso(L("Deshecho.", "Undone.", "已撤销。"));
+  }
+  function rehacer() {
+    flushHistorial();
+    if (historialPos >= historial.length - 1) { aviso(L("No hay nada que rehacer.", "Nothing to redo.", "没有可重做的步骤。")); return; }
+    historialPos++;
+    restaurarHistorial(historial[historialPos]);
+    aviso(L("Rehecho.", "Redone.", "已重做。"));
+  }
+  function guardarAhora() {
+    guardar();
+    flushHistorial();
+    var sync = window.MimoSync, st = sync && sync.estado ? sync.estado() : null;
+    if (st && st.meta && st.meta.provider) {
+      try { sync.sincronizar(); } catch (e) {}
+      aviso(L("Guardado. Sincronizando…", "Saved. Syncing…", "已保存。正在同步…"));
+    } else {
+      aviso(L("Guardado en este equipo.", "Saved on this device.", "已保存到本设备。"));
+    }
+  }
+  function refrescarVista() {
+    aplicarTema(estado.tema || "clasico", true);
+    aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas();
+    pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel(); pintarAjustes();
+    aviso(L("Vista refrescada.", "View refreshed.", "视图已刷新。"));
+  }
+  function abrirHistorial() {
+    $("#modal-historial").classList.add("on");
+    pintarHistorial();
+  }
+  function cerrarHistorial() { $("#modal-historial").classList.remove("on"); }
   function aviso(texto, deshacer) {
     var t = $("#toast"); t.innerHTML = "";
     var span = document.createElement("span"); span.textContent = texto; t.appendChild(span);
@@ -388,7 +466,7 @@
     estado.estudio = Object.assign({ metaSemanal: 10, metasRamo: {}, metasSemana: {} }, nuevo.estudio || {});
     normalizarEventos(); normalizarTareas(); normalizarNotas(); normalizarCursos(); normalizarCalifs(); normalizarEstudio();
     guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs(); aplicarIdioma();
-    pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel();
+    pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel(); pintarAjustes();
     return estado;
   }
 
@@ -3410,6 +3488,7 @@
   }
   function cerrarModal() { $("#modal").classList.remove("on"); }
   function cerrarCapaSuperior() {
+    if ($("#modal-historial").classList.contains("on")) { cerrarHistorial(); return true; }
     if ($("#modal-sync-conflict").classList.contains("on")) { $("#sync-conf-cancelar").click(); return true; }
     if ($("#modal-split").classList.contains("on")) { cerrarSplitModal(); return true; }
     if ($("#modal-periodo").classList.contains("on")) { cerrarPeriodo(); return true; }
@@ -3753,6 +3832,7 @@
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio();
     pintarTemas(); pintarTiempo(); pintarPanel();
+    historial = [JSON.stringify(estado)]; historialPos = 0; pintarHistorial();
     ir(pantalla);
 
     $("#btn-tema").addEventListener("click", function () {
@@ -3760,6 +3840,15 @@
       aplicarTema(otro || (temaModo(estado.tema) === "oscuro" ? "clasico" : "deepsea"));
     });
     $("#btn-ajustes").addEventListener("click", function () { ir("ajustes"); });
+    $("#btn-historial").addEventListener("click", abrirHistorial);
+    $("#hist-x").addEventListener("click", cerrarHistorial);
+    $("#modal-historial").addEventListener("click", function (e) {
+      if (e.target === $("#modal-historial")) cerrarHistorial();
+    });
+    $("#hist-deshacer").addEventListener("click", deshacer);
+    $("#hist-rehacer").addEventListener("click", rehacer);
+    $("#hist-guardar").addEventListener("click", guardarAhora);
+    $("#hist-refrescar").addEventListener("click", refrescarVista);
     $("#btn-panel").addEventListener("click", alternarPanel);
     $("#btn-panel-cerrar").addEventListener("click", cerrarPanel);
     $("#velo").addEventListener("click", cerrarPanel);
@@ -4268,6 +4357,14 @@
       pintarCalendario();
     });
     document.addEventListener("keydown", function (e) {
+      if (e.key === "F5") { e.preventDefault(); refrescarVista(); return; }
+      if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+        var k = String(e.key || "").toLowerCase();
+        if (k === "z") { e.preventDefault(); if (e.shiftKey) rehacer(); else deshacer(); return; }
+        if (k === "y") { e.preventDefault(); rehacer(); return; }
+        if (k === "s") { e.preventDefault(); guardarAhora(); return; }
+        if (k === "r") { e.preventDefault(); refrescarVista(); return; }
+      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
         e.preventDefault(); abrirBusqueda();
       }
