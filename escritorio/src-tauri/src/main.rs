@@ -22,6 +22,8 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{Manager, State};
+#[cfg(target_os = "linux")]
+use gtk::prelude::*;
 use tauri_plugin_dialog::DialogExt;
 
 #[derive(serde::Deserialize)]
@@ -446,14 +448,53 @@ fn main() {
             guardar_json
         ])
         .setup(|app| {
-            // La ventana usa la mascota como icono nativo, no el icono genérico del toolkit.
-            if let Some(ventana) = app.get_webview_window("main") {
-                if let Ok(icono) = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
-                    let _ = ventana.set_icon(icono);
+            // GTK toma el icono del tema instalado; así la ventana y la barra de tareas
+            // usan la mascota aunque el toolkit no reciba un _NET_WM_ICON explícito.
+            #[cfg(target_os = "linux")]
+            {
+                if let Ok(pixbuf) = gdk_pixbuf::Pixbuf::from_read(
+                    std::io::Cursor::new(include_bytes!("../icons/icon.png")),
+                ) {
+                    gtk::Window::set_default_icon_list(&[pixbuf.clone()]);
+                    if let Some(ventana) = app.get_webview_window("main") {
+                        if let Ok(gw) = ventana.gtk_window() {
+                            gw.set_icon(Some(&pixbuf));
+                        }
+                    }
                 }
+                gtk::Window::set_default_icon_name("mimo");
+                let handle = app.handle().clone();
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(800));
+                    let h2 = handle.clone();
+                    let _ = handle.run_on_main_thread(move || {
+                        if let Some(ventana) = h2.get_webview_window("main") {
+                            if let Ok(gw) = ventana.gtk_window() {
+                                if let Ok(pixbuf) = gdk_pixbuf::Pixbuf::from_read(
+                                    std::io::Cursor::new(include_bytes!("../icons/icon.png")),
+                                ) {
+                                    gw.set_icon(Some(&pixbuf));
+                                }
+                            }
+                        }
+                    });
+                });
             }
             lanzar_sonda(app.handle());
             Ok(())
+        })
+        .on_page_load(|webview, payload| {
+            // La ventana ya existe: fija la mascota como icono nativo en X11 y Wayland.
+            if payload.event() == tauri::webview::PageLoadEvent::Finished {
+                eprintln!("mimo: page load finished");
+                match tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
+                    Ok(icono) => match webview.window().set_icon(icono) {
+                        Ok(_) => eprintln!("mimo: window icon set"),
+                        Err(e) => eprintln!("mimo: window icon error: {e}"),
+                    },
+                    Err(e) => eprintln!("mimo: icon decode error: {e}"),
+                }
+            }
         })
         .run(tauri::generate_context!())
         .expect("error arrancando Mimo");
