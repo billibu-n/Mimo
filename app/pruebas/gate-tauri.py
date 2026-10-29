@@ -165,13 +165,18 @@ def main() -> int:
             ["sh", "-c", f"rpm2cpio {rpm[0]} | cpio -i --to-stdout ./usr/share/applications/Mimo.desktop"],
             capture_output=True, text=True)
         texto = lanzador.stdout
-        exigir("Name=Mimo" in texto and "Icon=mimo" in texto and "StartupWMClass=Mimo" in texto,
-               f"tauri: lanzador nativo Mimo — {texto[:140]!r}", fallas)
+        oculto = subprocess.run(
+            ["sh", "-c", f"rpm2cpio {rpm[0]} | cpio -i --to-stdout ./usr/share/applications/cl.mimo.escritorio.desktop"],
+            capture_output=True, text=True).stdout
+        exigir("Name=Mimo" in texto and "Icon=mimo" in texto and "StartupWMClass=Mimo" in texto
+               and "NoDisplay=true" in oculto,
+               f"tauri: lanzadores nativos Mimo — {texto[:140]!r}", fallas)
         meta = subprocess.run(
             ["sh", "-c", f"rpm2cpio {rpm[0]} | cpio -i --to-stdout ./usr/share/metainfo/cl.mimo.escritorio.metainfo.xml"],
             capture_output=True, text=True)
-        exigir("<name>Mimo</name>" in meta.stdout and 'type="stock">mimo' in meta.stdout,
-               "tauri: AppStream con nombre Mimo e icono de la mascota", fallas)
+        exigir("<name>Mimo</name>" in meta.stdout and 'type="stock">mimo' in meta.stdout
+               and "cl.mimo.escritorio.desktop" in meta.stdout,
+               "tauri: AppStream con nombre Mimo, icono y launchable", fallas)
     exigir(BIN.stat().st_size > 5_000_000, f"tauri: binario de {BIN.stat().st_size} bytes", fallas)
     return salir("gate-tauri", fallas)
 

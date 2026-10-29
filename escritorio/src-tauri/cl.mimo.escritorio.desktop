@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=Utility;
+Comment=Mimo — organizador global con bloques, offline y sync WebDAV cifrada.
+Exec=mimo
+Icon=mimo
+Name=Mimo
+StartupWMClass=Mimo
+NoDisplay=true
+Terminal=false
+Type=Application

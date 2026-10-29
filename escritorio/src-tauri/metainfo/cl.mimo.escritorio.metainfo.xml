@@ -12,7 +12,7 @@
     <p>Mimo reúne calendario, tareas, notas, malla, calificaciones, estudio y tiempo en una sola aplicación de escritorio.</p>
     <p>Funciona sin conexión, guarda los datos en el equipo y puede sincronizarlos cifrados por WebDAV/Nextcloud. Los bloques se instalan y se quitan sin borrar tus datos.</p>
   </description>
-  <launchable type="desktop-id">Mimo.desktop</launchable>
+  <launchable type="desktop-id">cl.mimo.escritorio.desktop</launchable>
   <url type="homepage">https://github.com/billibu-n/mimo-nuevo</url>
   <icon type="stock">mimo</icon>
   <categories>
