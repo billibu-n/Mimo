@@ -22,8 +22,6 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{Manager, State};
-#[cfg(target_os = "linux")]
-use gtk::prelude::*;
 use tauri_plugin_dialog::DialogExt;
 
 #[derive(serde::Deserialize)]
@@ -448,48 +446,11 @@ fn main() {
             guardar_json
         ])
         .setup(|app| {
-            // GTK toma el icono del tema instalado; así la ventana y la barra de tareas
-            // usan la mascota aunque el toolkit no reciba un _NET_WM_ICON explícito.
-            #[cfg(target_os = "linux")]
-            {
-                if let Ok(pixbuf) = gdk_pixbuf::Pixbuf::from_read(
-                    std::io::Cursor::new(include_bytes!("../icons/icon.png")),
-                ) {
-                    gtk::Window::set_default_icon_list(&[pixbuf.clone()]);
-                    if let Some(ventana) = app.get_webview_window("main") {
-                        if let Ok(gw) = ventana.gtk_window() {
-                            gw.set_icon(Some(&pixbuf));
-                        }
-                    }
-                }
-                gtk::Window::set_default_icon_name("mimo");
-                let handle = app.handle().clone();
-                std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_millis(800));
-                    let h2 = handle.clone();
-                    let _ = handle.run_on_main_thread(move || {
-                        if let Some(ventana) = h2.get_webview_window("main") {
-                            if let Ok(gw) = ventana.gtk_window() {
-                                if let Ok(pixbuf) = gdk_pixbuf::Pixbuf::from_read(
-                                    std::io::Cursor::new(include_bytes!("../icons/icon.png")),
-                                ) {
-                                    gw.set_icon(Some(&pixbuf));
-                                }
-                            }
-                        }
-                    });
-                });
-            }
+            // Tauri pone el icono del bundle en la ventana y en `_NET_WM_ICON` al crearla.
+            // No se pisa desde GTK: al fijar `enableGTKAppId` o un icono a mano, GNOME Shell
+            // busca un .desktop con ese app id y la ventana termina con el icono genérico.
             lanzar_sonda(app.handle());
             Ok(())
-        })
-        .on_page_load(|webview, payload| {
-            // La ventana ya existe: fija la mascota como icono nativo en X11 y Wayland.
-            if payload.event() == tauri::webview::PageLoadEvent::Finished {
-                if let Ok(icono) = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
-                    let _ = webview.window().set_icon(icono);
-                }
-            }
         })
         .run(tauri::generate_context!())
         .expect("error arrancando Mimo");

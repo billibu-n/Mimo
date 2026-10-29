@@ -8,7 +8,6 @@
     "frontendDist": "../app"
   },
   "app": {
-    "enableGTKAppId": true,
     "windows": [
       {
         "label": "main",
@@ -49,8 +48,7 @@
         "desktopTemplate": "Mimo.desktop",
         "postInstallScript": "scripts/postinstall.sh",
         "files": {
-          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml",
-          "/usr/share/applications/cl.mimo.escritorio.desktop": "cl.mimo.escritorio.desktop"
+          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
         }
       }
     }

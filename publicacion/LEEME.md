@@ -39,10 +39,12 @@ El JSON es un respaldo `mimo.backup` normal. Para usarlo en otro equipo:
 
 ## Icono y nombre en el sistema
 
-El RPM instala `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y `StartupWMClass=Mimo`, los iconos
-`mimo.png` en hicolor y el metadato AppStream `cl.mimo.escritorio.metainfo.xml`. GNOME Software
-y el menú de aplicaciones muestran **Mimo** con la mascota, no un icono genérico. El script de
-postinstalación refresca las cachés de iconos, lanzadores y AppStream.
+El RPM instala **una sola** entrada `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y
+`StartupWMClass=mimo`, los iconos `mimo.png` en hicolor y el metadato AppStream
+`cl.mimo.escritorio.metainfo.xml`. La ventana publica `_NET_WM_ICON` con la mascota y el
+lanzador declara el mismo nombre de icono; no hay una segunda entrada oculta ni app id GTK que
+pueda desviar la asociación. El script de postinstalación refresca las cachés de iconos,
+lanzadores y AppStream.
 
 GNOME Software puede mostrar el icono genérico del **archivo RPM local** antes de instalarlo;
 la ficha AppStream se lee al instalar. Después de instalar, cierra y vuelve a abrir la aplicación.
