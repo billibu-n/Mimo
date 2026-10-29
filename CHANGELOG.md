@@ -20,7 +20,7 @@ Primera beta pública de Mimo para escritorio.
 
 - El icono nativo de Linux vuelve a mostrarse en el menú y la barra de tareas: un solo
   `Mimo.desktop`, `StartupWMClass=mimo`, sin `enableGTKAppId` y con `_NET_WM_ICON` presente.
-- El enlace TLS usa `rustls` con `ring`, también en Arch Linux.
+- El enlace TLS usa el backend nativo del sistema: OpenSSL en Linux y Schannel en Windows.
 
 ### Limitaciones de esta beta
 

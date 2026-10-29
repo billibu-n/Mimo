@@ -14,10 +14,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.13", default-features = false, features = ["blocking", "rustls-no-provider"] }
-# El proveedor criptografico se instala al arrancar con ring. Asi el enlace no depende
-# de aws-lc-rs, que falla con lld en Arch Linux y en algunas combinaciones de enlazador.
-rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "native-tls"] }
 # Dialogo nativo de carpetas: WebKitGTK no tiene File System Access.
 tauri-plugin-dialog = "2"
 

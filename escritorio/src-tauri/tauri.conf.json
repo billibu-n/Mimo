@@ -52,7 +52,8 @@
           "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
         },
         "depends": [
-          "glibc >= 2.39"
+          "glibc >= 2.39",
+          "openssl-libs"
         ]
       },
       "deb": {
@@ -62,7 +63,8 @@
           "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
         },
         "depends": [
-          "libc6 (>= 2.39)"
+          "libc6 (>= 2.39)",
+          "libssl3"
         ]
       }
     }

@@ -5,6 +5,7 @@ pkgbase = mimo
 	url = https://github.com/billibu-n/mimo-nuevo
 	install = mimo.install
 	arch = x86_64
+	options = !debug
 	license = MIT
 	makedepends = rust
 	makedepends = cargo

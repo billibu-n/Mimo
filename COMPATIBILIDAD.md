@@ -10,7 +10,7 @@ para Linux y Windows. Esta tabla dice qué está preparado y qué no.
 | Fedora | RPM | x86_64 | Fedora 40 (glibc 2.39) | construido y medido |
 | Debian | DEB | amd64 | Debian 13 (glibc 2.41) | construido y medido |
 | Ubuntu | DEB | amd64 | Ubuntu 24.04 (glibc 2.39) | construido; se instala con `apt` |
-| Arch Linux | `PKGBUILD` | x86_64 | rolling, glibc actual | preparado; compilación final pendiente |
+| Arch Linux | `PKGBUILD` | x86_64 | rolling, glibc actual | construido con `makepkg`; falta el artefacto del CI |
 | Windows 10/11 | NSIS `.exe` | x64 | WebView2 | preparado; lo construye GitHub Actions |
 
 El binario Linux usa símbolos hasta **GLIBC_2.39**. Por eso los paquetes declaran

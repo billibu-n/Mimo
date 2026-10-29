@@ -6,6 +6,7 @@ pkgver=1.2.0beta.1
 pkgrel=1
 pkgdesc="Organizador personal offline: calendario, tareas, notas, malla, estudio y tiempo"
 arch=('x86_64')
+options=('!debug')
 url="https://github.com/billibu-n/mimo-nuevo"
 license=('MIT')
 depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'openssl' 'cairo' 'pango'

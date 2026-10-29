@@ -432,11 +432,6 @@ const GUION_SONDA: &str = r#"
 "#;
 
 fn main() {
-    // reqwest usa rustls sin proveedor por defecto (rustls-no-provider). Se instala ring
-    // una sola vez, antes de crear cualquier cliente HTTP. Evita aws-lc-rs y su enlace
-    // fragil con lld, que rompia la compilacion en Arch Linux.
-    let _ = rustls::crypto::ring::default_provider().install_default();
-
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(CarpetaSync(Mutex::new(None)))

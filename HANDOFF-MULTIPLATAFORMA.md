@@ -28,9 +28,10 @@ Fecha: 2026-10-29. Estado: **preparado para revisar y subir; nada publicado**.
 2. **Probar Windows**: ejecutar el workflow `Empaquetar` con `workflow_dispatch` y descargar
    `windows-nsis-x64`. No se ha compilado Windows desde este Fedora; el CI es la primera
    prueba real.
-3. **Repetir Arch**: la compilación en contenedor se interrumpió. El cambio a `rustls` con
-   `ring` ya compila y pasa la puerta en Linux; falta confirmar `makepkg` en Arch. El
-   `PKGBUILD` tiene `sha256sums=('SKIP')` hasta que exista el tag.
+3. **Arch**: `ring` y `aws-lc-rs` fallaban al enlazar con `lld`. Se cambió `reqwest` a
+   **TLS nativo** (OpenSSL en Linux, Schannel en Windows). `makepkg` ya construyó el paquete
+   localmente; falta que el CI del tag lo repita y lo suba. El `PKGBUILD` tiene
+   `sha256sums=('SKIP')` hasta que exista el tag.
 4. **Publicar el tag** `v1.2.0-beta.1` solo con autorización del dueño. El workflow de Arch
    se dispara con el tag.
 5. **Reemplazar el checksum de Arch**:
