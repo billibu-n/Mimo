@@ -1,5 +1,32 @@
 # Cambios
 
+## 1.2.0-beta.2 — 2026-10-29
+
+Segunda beta pública. Mantiene todo lo de la beta anterior y añade cambios de uso diario.
+
+### Añadido
+
+- **Colaborar** en Ajustes: compartir Mimo, abrir una discusión en GitHub y apoyar el proyecto
+  con una donación.
+- **Color por ramo**, editable desde la ficha del ramo. El color se usa en Estudio y tiñe los
+  eventos del calendario que llevan ese ramo como contexto.
+- **Ficha de la carrera** en Malla: título, universidad y país. Se guarda con la malla y viaja
+  en las exportaciones e importaciones.
+- Al escribir el contexto de un evento, el calendario sugiere los ramos de la malla.
+
+### Corregido
+
+- Se retiraron explicaciones internas de Ajustes y se reescribieron los textos que hablaban de
+  formatos, siglas y detalles de implementación.
+- La sección Malla ya no muestra la etiqueta técnica del kit.
+- Los textos de sincronización explican qué se cifra y qué no, sin siglas.
+
+### Limitaciones de esta beta
+
+- Los paquetes no están firmados; solo hay `SHA256SUMS`.
+- La sincronización con una cuenta real de Tab Digital aún no está probada desde el binario.
+- macOS, iOS y Android no están preparados.
+
 ## 1.2.0-beta.1 — 2026-10-29
 
 Primera beta pública de Mimo para escritorio.

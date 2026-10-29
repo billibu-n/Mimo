@@ -26,23 +26,23 @@
       "sub.calendario": "Todo lo que tiene fecha, en un solo sitio.",
       "sub.tareas": "Proyectos y tareas sobre tareas; el progreso se calcula solo.",
       "sub.notas": "El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.",
-      "sub.tiempo": "Los modos viven arriba; se agregan y se quitan como bloques.",
-      "sub.malla": "La carrera se dibuja sola por niveles. Elige un ramo para ver qué necesita y qué desbloquea.",
+      "sub.tiempo": "Elige cómo medir el tiempo.",
+      "sub.malla": "Tu carrera, ordenada por niveles. Elige un ramo para ver qué necesitas y qué desbloqueas.",
       "sub.calificaciones": "Categorías, componentes, examen y eximición. La nota se calcula sola.",
       "sub.estudio": "Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.",
-      "sub.ajustes": "Apariencia, idioma, datos y extensiones, en ese orden.",
+      "sub.ajustes": "Apariencia, idioma, datos y colaboración.",
       "grupo.aplicacion": "Aplicación", "grupo.aplicacion.sub": "Lo que aplica a toda la app.",
-      "grupo.datos": "Datos", "grupo.datos.sub": "Lo que entra, sale y se guarda.",
-      "grupo.extensiones": "Extensiones", "grupo.extensiones.sub": "Bloques, laboratorio y versión.",
-      "aj.apariencia": "Apariencia", "aj.apariencia.sub": "Diez temas. El botón sol/luna salta entre la pareja claro/oscuro.",
-      "aj.idioma": "Idioma", "aj.idioma.sub": "Motor i18n es/en/zh. Navegación, encabezados y bandera cambian en caliente.",
-      "aj.notificaciones": "Notificaciones", "aj.notificaciones.sub": "Recordatorios y sonido del sistema.",
+      "grupo.datos": "Datos", "grupo.datos.sub": "Tus datos, copias y sincronización.",
+      "grupo.extensiones": "Extensiones", "grupo.extensiones.sub": "Bloques y versión.",
+      "aj.apariencia": "Apariencia", "aj.apariencia.sub": "Elige el aspecto de Mimo. El botón sol/luna alterna entre claro y oscuro.",
+      "aj.idioma": "Idioma", "aj.idioma.sub": "Elige el idioma de la interfaz.",
+      "aj.notificaciones": "Notificaciones", "aj.notificaciones.sub": "Avisos y sonido.",
       "aj.general": "General", "aj.general.sub": "Inicio de semana y formato de hora.",
-      "aj.navegacion": "Navegación", "aj.navegacion.sub": "Dónde viven las secciones.",
-      "aj.paneles": "Paneles", "aj.paneles.sub": "Ancho y visibilidad del panel derecho.",
-      "aj.periodos": "Periodos", "aj.periodos.sub": "Arcos con clases, receso y exámenes.",
+      "aj.navegacion": "Navegación", "aj.navegacion.sub": "Dónde se ubica la barra de secciones.",
+      "aj.paneles": "Paneles", "aj.paneles.sub": "Ancho y visibilidad del panel lateral.",
+      "aj.periodos": "Periodos", "aj.periodos.sub": "Fechas de clases, receso y exámenes.",
       "aj.respaldo": "Respaldo", "aj.sync": "Sincronización", "aj.kits": "Kits y bloques",
-      "aj.laboratorio": "Laboratorio", "aj.laboratorio.sub": "La vista dividida ocupa la mitad de la ventana.",
+      "aj.laboratorio": "Vista dividida", "aj.laboratorio.sub": "Muestra dos secciones a la vez.",
       "aj.temaClaro": "Tema claro", "aj.temaOscuro": "Tema oscuro", "aj.idioma.etiqueta": "Idioma",
       "aj.avisos": "Avisos activos", "aj.semana": "La semana empieza en", "aj.lunes": "Lunes", "aj.domingo": "Domingo",
       "aj.hora": "Formato de hora", "aj.barra": "Barra de secciones", "aj.arriba": "Arriba", "aj.izquierda": "Izquierda",
@@ -77,7 +77,7 @@
       "panel.evento": "Evento", "panel.fecha": "Fecha", "panel.hora": "Hora", "panel.contexto": "Contexto",
       "panel.notasEnlazadas": "Notas enlazadas", "panel.sinTitulo": "Sin título",
       "panel.proximoEvento": "El próximo evento aparece en la agenda.",
-      "panel.detalleVacio": "Selecciona una tarea, una nota o un ramo. El detalle vive aquí, no en un modal que tapa la lista.",
+      "panel.detalleVacio": "Selecciona una tarea, una nota o un ramo para ver su detalle.",
       "panel.tarea": "Tarea", "panel.proyecto": "Proyecto", "panel.estado": "Estado",
       "panel.hecha": "hecha", "panel.abierta": "abierta", "panel.prioridad": "Prioridad",
       "panel.dentroDe": "Dentro de", "panel.progreso": "Progreso", "panel.subtareas": "Subtareas",
@@ -91,23 +91,23 @@
       "sub.calendario": "Everything with a date, in one place.",
       "sub.tareas": "Projects and tasks on tasks; progress is calculated.",
       "sub.notas": "Material that is not a task: text, links and context. Right-click a note for actions.",
-      "sub.tiempo": "Modes live above; add and remove them like blocks.",
-      "sub.malla": "Your degree is drawn by levels. Pick a course to see what it needs and unlocks.",
+      "sub.tiempo": "Choose how to measure time.",
+      "sub.malla": "Your degree, ordered by levels. Pick a course to see what you need and what it unlocks.",
       "sub.calificaciones": "Categories, components, exam and exemption. Your grade is calculated.",
       "sub.estudio": "Hours per course, weekly goal and progress. Time sessions land here.",
-      "sub.ajustes": "Appearance, language, data and extensions, in that order.",
+      "sub.ajustes": "Appearance, language, data and collaboration.",
       "grupo.aplicacion": "Application", "grupo.aplicacion.sub": "What applies to the whole app.",
-      "grupo.datos": "Data", "grupo.datos.sub": "What comes in, goes out and is saved.",
-      "grupo.extensiones": "Extensions", "grupo.extensiones.sub": "Blocks, lab and version.",
-      "aj.apariencia": "Appearance", "aj.apariencia.sub": "Ten themes. The sun/moon button jumps between the light/dark pair.",
-      "aj.idioma": "Language", "aj.idioma.sub": "i18n engine es/en/zh. Navigation, headings and flag change live.",
-      "aj.notificaciones": "Notifications", "aj.notificaciones.sub": "System reminders and sound.",
+      "grupo.datos": "Data", "grupo.datos.sub": "Your data, backups and sync.",
+      "grupo.extensiones": "Extensions", "grupo.extensiones.sub": "Blocks and version.",
+      "aj.apariencia": "Appearance", "aj.apariencia.sub": "Pick how Mimo looks. The sun/moon button switches between light and dark.",
+      "aj.idioma": "Language", "aj.idioma.sub": "Choose the interface language.",
+      "aj.notificaciones": "Notifications", "aj.notificaciones.sub": "Alerts and sound.",
       "aj.general": "General", "aj.general.sub": "Week start and time format.",
-      "aj.navegacion": "Navigation", "aj.navegacion.sub": "Where the sections live.",
-      "aj.paneles": "Panels", "aj.paneles.sub": "Width and visibility of the right panel.",
-      "aj.periodos": "Terms", "aj.periodos.sub": "Arcs with classes, breaks and exams.",
+      "aj.navegacion": "Navigation", "aj.navegacion.sub": "Where the sections bar sits.",
+      "aj.paneles": "Panels", "aj.paneles.sub": "Width and visibility of the side panel.",
+      "aj.periodos": "Terms", "aj.periodos.sub": "Class, break and exam dates.",
       "aj.respaldo": "Backup", "aj.sync": "Sync", "aj.kits": "Kits and blocks",
-      "aj.laboratorio": "Lab", "aj.laboratorio.sub": "Split view takes half the window.",
+      "aj.laboratorio": "Split view", "aj.laboratorio.sub": "Shows two sections at once.",
       "aj.temaClaro": "Light theme", "aj.temaOscuro": "Dark theme", "aj.idioma.etiqueta": "Language",
       "aj.avisos": "Notifications", "aj.semana": "Week starts on", "aj.lunes": "Monday", "aj.domingo": "Sunday",
       "aj.hora": "Time format", "aj.barra": "Section bar", "aj.arriba": "Top", "aj.izquierda": "Left",
@@ -156,23 +156,23 @@
       "sub.calendario": "所有带日期的事情，都集中在这里。",
       "sub.tareas": "任务可以层层拆分，进度自动计算。",
       "sub.notas": "不是任务的材料：文字、链接和上下文。右键点击笔记可操作。",
-      "sub.tiempo": "模式在上方；像模块一样添加或移除。",
-      "sub.malla": "课程按层级自动绘制。选择一门课，查看先修要求和可解锁内容。",
+      "sub.tiempo": "选择计时方式。",
+      "sub.malla": "你的学位按层级排列。选择一门课程，查看需要什么、能解锁什么。",
       "sub.calificaciones": "分类、评分项、考试和免考。成绩自动计算。",
       "sub.estudio": "按课程统计小时数、每周目标和进度。时间记录会自动进入这里。",
-      "sub.ajustes": "外观、语言、数据和扩展，按此顺序。",
+      "sub.ajustes": "外观、语言、数据和参与。",
       "grupo.aplicacion": "应用", "grupo.aplicacion.sub": "适用于整个应用的设置。",
-      "grupo.datos": "数据", "grupo.datos.sub": "数据的导入、导出和保存。",
-      "grupo.extensiones": "扩展", "grupo.extensiones.sub": "模块、实验室和版本。",
-      "aj.apariencia": "外观", "aj.apariencia.sub": "十种主题。太阳/月亮按钮在浅色/深色配对间切换。",
-      "aj.idioma": "语言", "aj.idioma.sub": "支持西班牙语、英语和简体中文。导航、标题和旗帜即时切换。",
-      "aj.notificaciones": "通知", "aj.notificaciones.sub": "系统提醒和声音。",
+      "grupo.datos": "数据", "grupo.datos.sub": "你的数据、备份和同步。",
+      "grupo.extensiones": "扩展", "grupo.extensiones.sub": "模块和版本。",
+      "aj.apariencia": "外观", "aj.apariencia.sub": "选择 Mimo 的外观。太阳/月亮按钮在浅色和深色之间切换。",
+      "aj.idioma": "语言", "aj.idioma.sub": "选择界面语言。",
+      "aj.notificaciones": "通知", "aj.notificaciones.sub": "通知和声音。",
       "aj.general": "常规", "aj.general.sub": "一周起始和小时格式。",
-      "aj.navegacion": "导航", "aj.navegacion.sub": "各分区的位置。",
-      "aj.paneles": "面板", "aj.paneles.sub": "右侧面板的宽度和可见性。",
-      "aj.periodos": "学期", "aj.periodos.sub": "课程、假期和考试周。",
+      "aj.navegacion": "导航", "aj.navegacion.sub": "分区栏的位置。",
+      "aj.paneles": "面板", "aj.paneles.sub": "侧边面板的宽度和可见性。",
+      "aj.periodos": "学期", "aj.periodos.sub": "课程、假期和考试日期。",
       "aj.respaldo": "备份", "aj.sync": "同步", "aj.kits": "套件与模块",
-      "aj.laboratorio": "实验室", "aj.laboratorio.sub": "分屏占窗口的一半。",
+      "aj.laboratorio": "分屏", "aj.laboratorio.sub": "同时显示两个分区。",
       "aj.temaClaro": "浅色主题", "aj.temaOscuro": "深色主题", "aj.idioma.etiqueta": "语言",
       "aj.avisos": "启用提醒", "aj.semana": "一周开始于", "aj.lunes": "星期一", "aj.domingo": "星期日",
       "aj.hora": "时间格式", "aj.barra": "分区栏位置", "aj.arriba": "顶部", "aj.izquierda": "左侧",
@@ -207,7 +207,7 @@
       "panel.evento": "事件", "panel.fecha": "日期", "panel.hora": "时间", "panel.contexto": "情境",
       "panel.notasEnlazadas": "已链接笔记", "panel.sinTitulo": "无标题",
       "panel.proximoEvento": "下一个事件会出现在议程中。",
-      "panel.detalleVacio": "选择任务、笔记或课程。详情显示在这里，不会用弹窗遮住列表。",
+      "panel.detalleVacio": "选择任务、笔记或课程以查看详情。",
       "panel.tarea": "任务", "panel.proyecto": "项目", "panel.estado": "状态",
       "panel.hecha": "已完成", "panel.abierta": "未完成", "panel.prioridad": "优先级",
       "panel.dentroDe": "所属", "panel.progreso": "进度", "panel.subtareas": "子任务",
@@ -290,6 +290,7 @@
   function porDefecto() {
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
+      carrera: { titulo: "", universidad: "", pais: "" },
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
@@ -312,6 +313,8 @@
           if (!Array.isArray(d.notas)) d.notas = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
           if (!d.califs || typeof d.califs !== "object") d.califs = {};
+          if (!d.carrera || typeof d.carrera !== "object") d.carrera = { titulo: "", universidad: "", pais: "" };
+          ["titulo", "universidad", "pais"].forEach(function (k) { if (typeof d.carrera[k] !== "string") d.carrera[k] = ""; });
           if (!d.pomo || typeof d.pomo !== "object") d.pomo = { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 };
           if (!Array.isArray(d.alarmas)) d.alarmas = [];
           if (!d.estudio || typeof d.estudio !== "object") d.estudio = { metaSemanal: 10, metasRamo: {}, metasSemana: {} };
@@ -901,6 +904,7 @@
     pantalla = id;
     mostrarPaneles();
     pintarTabs();
+    if (id === "calendario") pintarCalendario();
     if (id === "malla") pintarMalla();
     if (id === "calificaciones") pintarCalificaciones();
     if (id === "estudio") pintarEstudio();
@@ -1014,11 +1018,19 @@
     };
   }
   function chipEvento(e) {
-    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '">' +
+    var col = colorDeContexto(e.contexto);
+    var estilo = col ? ' style="background:' + col + ';color:' + textoSobre(col) + '"' : "";
+    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b> " : "") + esc(e.titulo) + "</button>";
+  }
+  function pintarContextosCursos() {
+    var dl = $("#contextos-ramos"); if (!dl) return;
+    dl.innerHTML = (estado.cursos || []).filter(function (c) { return c.enMalla !== false; })
+      .map(function (c) { return '<option value="' + esc(c.codigo) + '">' + esc(c.nombre) + "</option>"; }).join("");
   }
   function pintarCalendario() {
     normalizarEventos();
+    pintarContextosCursos();
     var hoy = new Date(), y = calCursor.getFullYear(), m = calCursor.getMonth();
     var total = estado.eventos.length;
     $("#kpi-eventos").textContent = String(total);
@@ -1037,7 +1049,9 @@
       visibles = orden.length;
       $("#cal-mes-titulo").textContent = t("cal.agenda");
       agenda.innerHTML = orden.length ? orden.map(function (e) {
-        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
+        var col = colorDeContexto(e.contexto);
+        var estilo = col ? ' style="box-shadow:inset 4px 0 0 ' + col + '"' : "";
+        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
       }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
     } else if (vistaCalendario === "semana") {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
@@ -1421,7 +1435,7 @@
     var c = ramoPorCodigo(estado.ramoSel);
     if (!c) {
       return '<div class="malla-detalle__vacio"><span class="malla-detalle__icono">' + icono("i-malla") +
-        "</span><div><b>" + esc(L("Elige un ramo", "Pick a course", "选择一门课程")) + "</b><p>" + esc(L("Las líneas tenues muestran todos los prerrequisitos. Al elegir uno, el grafo enciende en azul lo que necesita y en naranjo lo que desbloquea.", "Faint lines show all prerequisites. Pick one and the graph lights blue what it needs and orange what it unlocks.", "浅色线显示所有先修要求。选择后，图表会用蓝色标出所需、橙色标出可解锁。")) + "</p></div></div>";
+        "</span><div><b>" + esc(L("Elige un ramo", "Pick a course", "选择一门课程")) + "</b><p>" + esc(L("Elige un ramo para ver qué necesitas y qué desbloqueas.", "Pick a course to see what it needs and what it unlocks.", "选择一门课程，查看需要什么、能解锁什么。")) + "</p></div></div>";
     }
     var e = estadoDeRamo(c), faltan = faltantesDe(c);
     var antes = [];
@@ -1446,9 +1460,19 @@
       "</div></div>" +
       (faltan.length ? '<p class="malla-falta">' + esc(L("Todavía falta: ", "Still missing: ", "还缺：")) + esc(faltan.join(", ")) + "</p>" : "");
   }
+  function pintarCarrera() {
+    var c = estado.carrera || {};
+    var t = $("#malla-carrera-titulo"), casa = $("#malla-carrera-casa");
+    if (t) t.textContent = c.titulo || L("Tu carrera", "Your degree", "你的学位");
+    if (casa) {
+      var partes = [c.universidad, c.pais].filter(Boolean);
+      casa.textContent = partes.length ? partes.join(" · ") : L("Agrega la universidad y el país.", "Add your university and country.", "添加你的大学和国家。");
+    }
+  }
   function pintarMalla() {
     var cols = $("#malla-cols"); if (!cols) return;
     normalizarCursos();
+    pintarCarrera();
     var cursos = estado.cursos.filter(function (c) { return c.enMalla !== false; });
     var total = 0, aprobCred = 0, aprobN = 0, cursoN = 0, libres = 0;
     var cuenta = { aprobado: 0, curso: 0, disponible: 0, bloqueado: 0, reprobado: 0 };
@@ -1489,7 +1513,7 @@
     if ($("#malla-quitar-sel")) $("#malla-quitar-sel").hidden = !estado.ramoSel;
     if ($("#malla-pista")) $("#malla-pista").textContent = estado.ramoSel
       ? L("Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a presionarlo para quitar la selección.", "You only see this course's lines: blue what it needs, orange what it unlocks. Press it again to clear the selection.", "只显示这门课程的线：蓝色是所需，橙色是解锁。再次按下可清除选择。")
-      : L("Las líneas tenues son prerrequisitos. Elige un ramo para encender solo las suyas: azul lo que necesita, naranjo lo que desbloquea.", "Faint lines are prerequisites. Pick a course to light only its own: blue what it needs, orange what it unlocks.", "浅色线是先修要求。选择课程只点亮它的线：蓝色是需要，橙色是解锁。");
+      : L("Las líneas muestran los requisitos. Elige un ramo para ver qué necesitas y qué desbloqueas.", "Lines show requirements. Pick a course to see what it needs and what it unlocks.", "线条显示要求。选择一门课程，查看需要什么、能解锁什么。");
     var q = mallaBusqueda.toLowerCase();
     var visibles = cursos.filter(function (c) {
       var e = estadoDeRamo(c);
@@ -1516,7 +1540,7 @@
           var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
           var titulo = c.nombre + (req ? " · " + L("requiere ", "requires ", "需要 ") + req : "") + (faltan.length ? " · " + L("faltan: ", "missing: ", "缺少：") + faltan.join(", ") : "");
           return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
-            '<span class="ramo-card__top"><b>' + esc(c.codigo) + '</b><span class="ramo-card__ico">' + icono(iconoEstado(e)) + "</span></span>" +
+            '<span class="ramo-card__top"><b>' + (hexColor(c.color) ? '<i class="ramo-card__color" style="background:' + esc(c.color) + '"></i>' : "") + esc(c.codigo) + '</b><span class="ramo-card__ico">' + icono(iconoEstado(e)) + "</span></span>" +
             '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
             '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
             '<span class="ramo-card__est">' + esc(etiquetaEstado(e)) + "</span></button>";
@@ -1622,6 +1646,7 @@
     $("#ramo-creditos").value = c ? c.creditos : 6;
     $("#ramo-nivel").value = c ? c.nivel : 1;
     $("#ramo-requisitos").value = c ? (c.requisitos || []).join(", ") : "";
+    $("#ramo-color").value = c ? colorDeRamo(c) : PALETA_ESTUDIO[estado.cursos.length % PALETA_ESTUDIO.length];
     $("#ramo-aprobado").checked = !!(c && c.cerrado && c.aprobado);
     $("#ramo-curso").checked = !!(c && !c.cerrado && c.enCurso);
     $("#ramo-form").hidden = false;
@@ -2251,9 +2276,34 @@
       };
     });
   }
-  function colorEstudio(cod) {
+  function hexColor(v) {
+    return /^#[0-9a-f]{6}$/i.test(String(v || "")) ? String(v) : "";
+  }
+  function colorAutoDe(cod) {
     var i = estado.cursos.map(function (c) { return c.codigo; }).indexOf(cod);
-    return i < 0 ? "var(--muted)" : PALETA_ESTUDIO[i % PALETA_ESTUDIO.length];
+    return i < 0 ? PALETA_ESTUDIO[0] : PALETA_ESTUDIO[i % PALETA_ESTUDIO.length];
+  }
+  function colorDeRamo(c) {
+    if (!c) return "";
+    return hexColor(c.color) || colorAutoDe(c.codigo);
+  }
+  function colorEstudio(cod) {
+    var c = ramoPorCodigo(cod);
+    return c ? colorDeRamo(c) : "var(--muted)";
+  }
+  function colorDeContexto(ctx) {
+    var q = String(ctx || "").trim();
+    if (!q) return "";
+    var c = ramoPorCodigo(q);
+    if (!c) c = (estado.cursos || []).filter(function (x) { return String(x.nombre || "").toLowerCase() === q.toLowerCase(); })[0];
+    return c ? hexColor(c.color) : "";
+  }
+  function textoSobre(hex) {
+    var h = String(hex || "").replace("#", "");
+    if (h.length === 3) h = h.split("").map(function (x) { return x + x; }).join("");
+    var r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    if (!isFinite(r) || !isFinite(g) || !isFinite(b)) return "#fff";
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 160 ? "#111" : "#fff";
   }
   function fmtHoras(min) {
     min = Number(min) || 0;
@@ -3119,7 +3169,7 @@
         calificaciones: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Notas por categoría, examen y eximición.", "Grades by category, exam and exemption.", "按分类、考试和免考计算成绩。")],
         estudio: [(estado.sesiones || []).length + " " + L("sesiones", "sessions", "会话"), L("Horas por ramo y meta semanal.", "Hours per course and weekly goal.", "按课程小时和每周目标。")],
         tiempo: [estado.tiempoHijos.length + " " + L("bloques dentro", "blocks inside", "个模块"), L("Cronómetro, temporizador, pomodoro y alarmas.", "Stopwatch, timer, pomodoro and alarms.", "秒表、计时器、番茄钟和闹钟。")],
-        ajustes: [TEMAS.length + " " + L("temas", "themes", "主题"), L("Apariencia, paneles, bloques y laboratorio.", "Appearance, panels, blocks and lab.", "外观、面板、模块和实验室。")]
+        ajustes: [TEMAS.length + " " + L("temas", "themes", "主题"), L("Apariencia, idioma, datos y colaboración.", "Appearance, language, data and collaboration.", "外观、语言、数据和参与。")]
       }[pantalla] || [t("panel.sinContexto"), t("panel.estaSeccion")];
       html = "<h2>" + esc(nombre(pantalla)) + '</h2><p class="panel__nota">' + esc(cuentas[1]) +
         '</p><div class="panel__bloque"><span>' + esc(t("panel.ahora")) + '</span><small>' + esc(cuentas[0]) + "</small></div>";
@@ -3269,8 +3319,8 @@
     if ($("#ajustes-idioma")) {
       var nombres = { es: "Español (Latinoamérica)", en: "English", zh: "中文（简体）" };
       var estadoIdioma = {
-        es: "Idioma activo: " + (nombres[p.idioma] || nombres.es) + ". Navegación y secciones cambian en caliente.",
-        en: "Active language: " + (nombres[p.idioma] || nombres.es) + ". Navigation and sections change live.",
+        es: "Idioma activo: " + (nombres[p.idioma] || nombres.es) + ". Navegación y secciones cambian al instante.",
+        en: "Active language: " + (nombres[p.idioma] || nombres.es) + ". Navigation and sections change instantly.",
         zh: "当前语言：" + (nombres[p.idioma] || nombres.es) + "。导航和分区即时切换。"
       };
       $("#ajustes-idioma").textContent = estadoIdioma[p.idioma] || estadoIdioma.es;
@@ -3970,7 +4020,7 @@
     $("#btn-exportar-tutorial").addEventListener("click", function () {
       if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
       descargarJSON(MimoEsquema.exportarBackup(estado), "tutorial.json").then(function (r) {
-        if (r) aviso(L("Tutorial guardado. Ese es el JSON que se publica.", "Tutorial saved. That is the JSON to publish.", "教程已保存。这就是要发布的 JSON。"));
+        if (r) aviso(L("Tutorial guardado.", "Tutorial saved.", "教程已保存。"));
       });
     });
     $("#btn-reset-fabrica").addEventListener("click", function () {
@@ -4004,7 +4054,7 @@
     });
     $("#btn-panel-ajustes").addEventListener("click", abrirPanel);
     $("#pie-panel").addEventListener("click", alternarPanel);
-    $("#pie-sync").addEventListener("click", function () { aviso(L("Guardado en este equipo. El respaldo es un archivo .json.", "Saved on this device. The backup is a .json file.", "已保存到本设备。备份是一个 .json 文件。")); });
+    $("#pie-sync").addEventListener("click", function () { aviso(L("Guardado en este equipo.", "Saved on this device.", "已保存到本设备。")); });
     $("#pie-ayuda").addEventListener("click", function () { aviso(L("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10.", "Right-click a note, task, event, term or session to open its actions and delete. Shift+F10 also works.", "右键点击笔记、任务、事件、学期或会话可打开操作并删除。也可按 Shift+F10。")); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });
@@ -4105,6 +4155,25 @@
     $("#btn-importar-malla").addEventListener("click", function () { $("#archivo-malla").click(); });
     $("#malla-importar-vacio").addEventListener("click", function () { $("#archivo-malla").click(); });
     $("#btn-exportar-malla").addEventListener("click", exportarMalla);
+    $("#btn-editar-carrera").addEventListener("click", function () {
+      var c = estado.carrera || {};
+      $("#carrera-titulo").value = c.titulo || "";
+      $("#carrera-universidad").value = c.universidad || "";
+      $("#carrera-pais").value = c.pais || "";
+      $("#carrera-form").hidden = false;
+      $("#carrera-titulo").focus();
+    });
+    $("#carrera-cancelar").addEventListener("click", function () { $("#carrera-form").hidden = true; });
+    $("#carrera-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      estado.carrera = {
+        titulo: $("#carrera-titulo").value.trim(),
+        universidad: $("#carrera-universidad").value.trim(),
+        pais: $("#carrera-pais").value.trim()
+      };
+      guardar(); $("#carrera-form").hidden = true; pintarMalla();
+      aviso(L("Datos de la carrera guardados.", "Degree details saved.", "学位信息已保存。"));
+    });
     $("#archivo-malla").addEventListener("change", function (e) {
       var f = e.target.files[0]; if (!f) return;
       importarMalla(f); e.target.value = "";
@@ -4193,6 +4262,7 @@
       c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
       c.requisitos = reqs;
       c.requisitos_o = c.requisitos_o || [];
+      c.color = hexColor($("#ramo-color").value) || "";
       var aprobado = $("#ramo-aprobado").checked;
       var enCurso = $("#ramo-curso").checked && !aprobado;
       var cerrado = aprobado || (!!original && original.cerrado && !original.aprobado && !enCurso);

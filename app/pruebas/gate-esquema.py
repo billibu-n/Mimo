@@ -67,6 +67,7 @@ def main() -> int:
               const backup = MimoEsquema.exportarBackup(conv.estado);
               const vuelta = MimoEsquema.importar(backup, {});
               const ent = MimoEsquema.exportarEntorno(conv.estado);
+              m.estado.carrera = {titulo: "Ingeniería", universidad: "Universidad", pais: "Chile"};
               const mal = MimoEsquema.exportarMalla(m.estado);
               const soloEnt = MimoEsquema.importar(ent, conv.estado);
               const soloMal = MimoEsquema.importar(mal, m.estado);
@@ -89,6 +90,8 @@ def main() -> int:
                 entCursos: soloEnt.estado.cursos.length,
                 malTareas: soloMal.estado.tareas.length,
                 malEventos: soloMal.estado.eventos.length,
+                carrera: mal.datos.carrera,
+                carreraVuelta: soloMal.estado.carrera,
                 futuro: {
                   bloque: rFuturo.estado.bloqueFuturo,
                   extension: rFuturo.estado.extensiones && rFuturo.estado.extensiones.foo,
@@ -114,6 +117,9 @@ def main() -> int:
             exigir(out["entCursos"] == 87, f"entorno: no borra malla — {out['entCursos']}", fallas)
             exigir(out["malTareas"] == 1 and out["malEventos"] == 1,
                    f"malla: no borra entorno — {out['malTareas']} tareas, {out['malEventos']} eventos", fallas)
+            exigir(out["carrera"] == {"titulo": "Ingeniería", "universidad": "Universidad", "pais": "Chile"}
+                   and out["carreraVuelta"].get("pais") == "Chile",
+                   f"malla: ficha de carrera ida y vuelta — {out['carrera']} / {out['carreraVuelta']}", fallas)
             f = out["futuro"]
             exigir(f["bloque"] == {"x": 1} and f["extension"] == "bar" and f["curso"] == "ok",
                    f"aditivo: campos desconocidos — {f}", fallas)

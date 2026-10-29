@@ -1,6 +1,6 @@
 # Esquema de datos de Mimo
 
-**Versión:** 1 · **App:** 1.2.0-beta.1 · **Módulo:** `app/js/esquema.js`
+**Versión:** 1 · **App:** 1.2.0-beta.2 · **Módulo:** `app/js/esquema.js`
 
 La app guarda el estado vivo en `localStorage['mimo.shell.v1']`. Para moverlo entre equipos
 hay **tres documentos JSON**, no uno gigante sin contrato:
@@ -35,7 +35,7 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
   "schema": "mimo.entorno",
   "version": 1,
   "app": "Mimo",
-  "appVersion": "1.2.0-beta.1",
+  "appVersion": "1.2.0-beta.2",
   "exportado": "2026-10-28T23:00:00.000Z",
   "datos": {
     "tema": "clasico",
@@ -63,9 +63,10 @@ Campos obligatorios del sobre: `schema`, `version`, `datos`. `app`, `appVersion`
   "schema": "mimo.malla",
   "version": 1,
   "app": "Mimo",
-  "appVersion": "1.2.0-beta.1",
+  "appVersion": "1.2.0-beta.2",
   "exportado": "2026-10-28T23:00:00.000Z",
   "datos": {
+    "carrera": {"titulo": "Ingeniería Civil", "universidad": "Universidad de Chile", "pais": "Chile"},
     "cursos": [{
       "codigo": "MA1001", "nombre": "Introducción al Cálculo", "creditos": 6, "nivel": 1,
       "requisitos": [], "requisitos_o": [], "aprobacion": 74, "tipo": "obligatorio",
@@ -86,6 +87,8 @@ Campos obligatorios del sobre: `schema`, `version`, `datos`. `app`, `appVersion`
 }
 ```
 
+- `carrera` guarda el título, la universidad y el país de la malla. Viaja con ella y no se
+  mezcla con el entorno.
 - `cursos` es el **plan** (lo que se dibuja en Malla). Un curso con `enMalla:false` existe para
   calificaciones o historial, pero no se dibuja.
 - `calificaciones` solo lleva los ramos con datos. Un ramo sin entrada se calcula al abrirlo.

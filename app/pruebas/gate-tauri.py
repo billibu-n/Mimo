@@ -5,7 +5,7 @@
 Mide el binario real, no el HTML suelto:
   1. carga la app universal desde `frontendDist` (no el prototipo);
   2. navega a Tareas y Notas, crea una nota y comprueba `localStorage`;
-  3. Ajustes conserva los 3 grupos y la tarjeta de sincronización;
+  3. Ajustes conserva los 4 grupos y la tarjeta de sincronización;
   4. WebDAV funciona por el puente HTTP nativo (sin CORS) contra un servidor local;
   5. el remoto queda cifrado y con Basic auth;
   6. el estado sobrevive a cerrar y abrir el binario;
@@ -76,7 +76,7 @@ def main() -> int:
 
     subprocess.run(["sh", str(ESCRITORIO / "preparar-frontend.sh")], check=True)
     conf = json.loads((ESCRITORIO / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
-    exigir(conf.get("version") == "1.2.0-beta.1", f"tauri: version 1.2.0-beta.1 — {conf.get('version')}", fallas)
+    exigir(conf.get("version") == "1.2.0-beta.2", f"tauri: version 1.2.0-beta.2 — {conf.get('version')}", fallas)
     exigir(conf.get("build", {}).get("frontendDist") == "../app",
            "tauri: frontendDist apunta a la app preparada", fallas)
 
@@ -117,7 +117,7 @@ def main() -> int:
                f"tauri: tutorial precargado — {r.get('tutorial_tareas')} tareas, nota={r.get('tutorial_nota')}", fallas)
         exigir(r.get("css", 0) >= 10, f"tauri: CSS cargado — {r.get('css')}", fallas)
         exigir(r.get("katex") == "object", f"tauri: KaTeX cargado — {r.get('katex')}", fallas)
-        exigir(r.get("grupos") == 3, f"tauri: Ajustes con 3 grupos — {r.get('grupos')}", fallas)
+        exigir(r.get("grupos") == 4, f"tauri: Ajustes con 4 grupos — {r.get('grupos')}", fallas)
         exigir(r.get("sync_card") is True, "tauri: tarjeta de sincronizacion", fallas)
         exigir("Sincronizado" in (r.get("sync_estado") or ""),
                f"tauri: estado sincronizado — {r.get('sync_estado')}", fallas)

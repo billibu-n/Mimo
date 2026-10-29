@@ -1,140 +1,101 @@
-# Publicación Mimo 1.2.0-beta.1
+# Mimo 1.2.0-beta.2
 
-Esta carpeta es la **única** que se sube a la release de GitHub. No contiene HTML, código
-fuente, prototipos, referencias ni iteraciones anteriores.
+Mimo es un organizador personal de escritorio que funciona sin conexión: calendario, tareas,
+notas, malla, calificaciones, estudio y tiempo. No hay cuenta ni registro, y tus datos viven en
+tu equipo.
 
-## Qué se publica
+Esta beta añade **Colaborar** en Ajustes, **color por ramo** (también en el calendario) y la
+**ficha de carrera** con título, universidad y país.
 
-| Archivo | Plataforma | Estado |
-|---|---|---|
-| `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Fedora 40+ / RHEL 10+ x86_64 | listo |
-| `Mimo_1.2.0-beta.1_amd64.deb` | Debian / Ubuntu amd64 | listo |
-| `Mimo_1.2.0-beta.1_x64-setup.exe` | Windows 10/11 x64 (NSIS) | listo |
-| `mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` | Arch Linux x86_64 | listo |
-| `tutorial.json` | Todas | listo |
-| `LICENSE` | Todas | listo |
-| `SHA256SUMS` | Todas | se regenera al publicar |
-| `LEEME.md` | Todas | esta guía |
+## Qué descargar
 
-Los paquetes Linux instalan la misma aplicación: `/usr/bin/mimo`, un solo `Mimo.desktop`, los
-iconos de hicolor y el metadato AppStream `cl.mimo.escritorio.metainfo.xml`.
+| Sistema | Archivo |
+|---|---|
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.2-1.x86_64.rpm` |
+| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.2_amd64.deb` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst` |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.2_x64-setup.exe` |
+
+También se incluyen `tutorial.json`, `LICENSE` y `SHA256SUMS`.
 
 ## Instalar
 
 ### Fedora 40+ / RHEL 10+
 
 ```bash
-sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm
+sudo dnf install ./Mimo-1.2.0-beta.2-1.x86_64.rpm
 mimo
 ```
 
 ### Debian / Ubuntu
 
 ```bash
-sudo apt install ./Mimo_1.2.0-beta.1_amd64.deb
+sudo apt install ./Mimo_1.2.0-beta.2_amd64.deb
 mimo
 ```
 
-`apt` resuelve las dependencias. En Debian 13 o Ubuntu 24.04 en adelante; necesita
-`libwebkit2gtk-4.1-0`, `libgtk-3-0` y `libssl3`.
-
-### Windows 10/11 x64
-
-Ejecuta `Mimo_1.2.0-beta.1_x64-setup.exe` y sigue el asistente. Es una instalación por usuario,
-sin permisos de administrador. Si Windows no tiene WebView2, el instalador incluye el
-bootstrapper y pide conexión para descargarlo.
-
-El instalador **no está firmado**. Windows SmartScreen puede mostrar "Windows protegió tu PC";
-es esperado en una beta sin certificado de código.
+En Debian 13 o Ubuntu 24.04 en adelante. `apt` resuelve las dependencias.
 
 ### Arch Linux
 
 ```bash
-sudo pacman -U ./mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst
+sudo pacman -U ./mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst
 mimo
 ```
 
-El `PKGBUILD` también está en `packaging/arch/` para compilar desde el tarball del tag.
-Todavía **no está en AUR**.
+### Windows 10/11 x64
 
-## Cuál es el archivo que se genera
+Ejecuta `Mimo_1.2.0-beta.2_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
+pide administrador. Si Windows no tiene WebView2, el instalador lo descarga y pide conexión una
+vez.
 
-**`publicacion/tutorial.json`** es el original y el que se publica. No hay otra copia y no
-hace falta editarlo a mano.
+El instalador no está firmado. Windows puede mostrar “Windows protegió tu PC”: elige *Más
+información* → *Ejecutar de todas formas*.
 
-Se genera desde la propia app:
+## Primer arranque
 
-1. Abre Mimo en un perfil limpio. Si ya tiene datos, usa **Ajustes → Datos → Restablecer de fábrica**.
-2. Crea las notas y tareas de bienvenida que quieras.
-3. Ve a **Ajustes → Datos → Respaldo → Guardar tutorial**.
-4. Guarda el archivo como `publicacion/tutorial.json`.
-5. Regenera checksums con `sh escritorio/preparar-publicacion.sh`.
+Mimo abre con el **tutorial ya cargado**: la nota **Bienvenido/a a Mimo** y el proyecto **Mimo**
+con tareas de ejemplo. No tienes que importar nada.
 
-El JSON es un respaldo `mimo.backup` normal. La app lo **precarga** en el primer arranque y
-después de **Restablecer de fábrica**: abre la nota de bienvenida y el proyecto **Mimo** sin
-pedir nada. El archivo de la release queda además como copia importable:
+**Ajustes → Datos → Restablecer de fábrica** deja la app como nueva y vuelve a cargar el tutorial
+en el siguiente arranque.
 
-1. Abre **Ajustes → Datos → Respaldo → Importar**.
-2. Elige `tutorial.json`.
-3. Confirma el reemplazo.
+## Verificar la descarga
 
-Para cambiar el tutorial de la app hay que reemplazar `app/tutorial.json` por el JSON aprobado,
-reconstruir y volver a publicar. `publicacion/tutorial.json` es la copia que se sube a la release;
-un gate comprueba que ambos coincidan.
-
-## Icono y nombre en el sistema
-
-Los paquetes Linux instalan **una sola** entrada `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y
-`StartupWMClass=mimo`, los iconos `mimo.png` en hicolor y el metadato AppStream
-`cl.mimo.escritorio.metainfo.xml`. La ventana publica `_NET_WM_ICON` con la mascota y el
-lanzador declara el mismo nombre de icono; no hay una segunda entrada oculta ni app id GTK que
-pueda desviar la asociación. El script de postinstalación refresca las cachés de iconos,
-lanzadores y AppStream.
-
-GNOME Software puede mostrar el icono genérico del **archivo RPM o DEB local** antes de
-instalarlo; la ficha AppStream se lee al instalar. Después de instalar, cierra y vuelve a abrir
-la aplicación.
-
-En Windows el icono sale del `.ico` incluido en el instalador y en el ejecutable.
-
-## Restablecer de fábrica
-
-**Ajustes → Datos → Restablecer de fábrica** borra de este equipo las notas, tareas, malla,
-temas y la configuración de sincronización. No toca los archivos que hayas exportado. Al
-reabrir, Mimo vuelve a cargar el tutorial incluido en la aplicación.
-
-## Cómo regenerar la publicación
-
-Cada vez que cambies el tutorial, reconstruyas un paquete o descargues los artefactos de
-GitHub Actions:
+Cada release publica `SHA256SUMS`. Descárgalo en la misma carpeta que el paquete y ejecuta:
 
 ```bash
-cd /ruta/a/mimo
-sh escritorio/preparar-publicacion.sh
-```
-
-El script copia los paquetes que encuentre en `escritorio/release/` (RPM, DEB, instalador
-Windows y paquete Arch), valida el JSON, copia `LICENSE` y reescribe `SHA256SUMS`. No toca el
-HTML ni copia carpetas históricas. Si falta Windows o Arch, avisa y sigue con lo que haya.
-
-## Verificar
-
-```bash
-cd publicacion
 sha256sum -c SHA256SUMS
 ```
 
-## Qué no se publica
+En Windows puedes usar `certutil -hashfile <archivo> SHA256` y comparar con el archivo.
 
-- `app/` (HTML/CSS/JS fuente).
-- `escritorio/app/` (copia generada).
-- `escritorio/release/` (build interno; se copian solo los paquetes).
-- `prototipo/`, `referencia/`, `tablero/` y documentos viejos.
-- `mimo` binario suelto: los paquetes ya lo contienen. Si se quiere portable, se agrega a
-  propósito.
+## Desinstalar
 
-## Firma
+```bash
+# Fedora 40+ / RHEL 10+
+sudo dnf remove mimo
 
-El RPM, el DEB y el instalador de Windows siguen **sin firmar**. La release debe declararlo; no
-se promete una firma que no existe. La firma de código en Windows y la firma GPG de los
-paquetes Linux quedan como huecos hasta que haya claves.
+# Debian / Ubuntu
+sudo apt remove mimo
+
+# Arch Linux
+sudo pacman -R mimo
+```
+
+En Windows: **Configuración → Aplicaciones → Mimo → Desinstalar**. Los respaldos que hayas
+exportado no se tocan.
+
+## Privacidad
+
+Mimo no tiene una nube propia ni envía información a un servicio del proyecto. Si no configuras
+una sincronización, tus datos no salen del equipo. La sincronización con una nube es opcional y
+guarda una copia cifrada; la contraseña de cifrado no se guarda.
+
+## Límites de esta beta
+
+- Los paquetes no están firmados; la integridad se comprueba con `SHA256SUMS`.
+- La sincronización con una cuenta real de Tab Digital todavía no se probó desde el binario.
+- macOS, iOS y Android no están preparados.
+
+El código, las pruebas y las instrucciones de compilación están en el repositorio. Licencia MIT.

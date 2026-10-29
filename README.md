@@ -1,6 +1,6 @@
 # Mimo
 
-[![Versión](https://img.shields.io/github/v/release/billibu-n/mimo?include_prereleases&label=versi%C3%B3n&color=16a34a)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.1)
+[![Versión](https://img.shields.io/github/v/release/billibu-n/mimo?include_prereleases&label=versi%C3%B3n&color=16a34a)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.2)
 [![Plataforma](https://img.shields.io/badge/plataforma-Linux%20%7C%20Windows-2563eb)](#descargar)
 [![Licencia](https://img.shields.io/badge/licencia-MIT-3da639)](LICENSE)
 
@@ -12,16 +12,16 @@ No hay cuenta, no hay nube propia y no se envía nada a un servidor. Tus datos v
 
 ## Descargar
 
-[![Descargar la última versión](https://img.shields.io/badge/Descargar_la_%C3%BAltima_versi%C3%B3n-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.1)
+[![Descargar la última versión](https://img.shields.io/badge/Descargar_la_%C3%BAltima_versi%C3%B3n-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.2)
 
 **Descarga → instala → abre.** No necesitas cuenta ni configurar nada para empezar.
 
 | Tu sistema | Archivo | Cómo instalarlo |
 |---|---|---|
-| **Fedora 40+ / RHEL 10+** | [Mimo-1.2.0-beta.1-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo-1.2.0-beta.1-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.1-1.x86_64.rpm` |
-| **Debian / Ubuntu 24.04+** | [Mimo_1.2.0-beta.1_amd64.deb](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo_1.2.0-beta.1_amd64.deb) | `sudo apt install ./Mimo_1.2.0-beta.1_amd64.deb` |
-| **Arch Linux** | [mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` |
-| **Windows 10/11 x64** | [Mimo_1.2.0-beta.1_x64-setup.exe](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.1/Mimo_1.2.0-beta.1_x64-setup.exe) | Doble clic. Se instala por usuario, sin administrador. |
+| **Fedora 40+ / RHEL 10+** | [Mimo-1.2.0-beta.2-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.2/Mimo-1.2.0-beta.2-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.2-1.x86_64.rpm` |
+| **Debian / Ubuntu 24.04+** | [Mimo_1.2.0-beta.2_amd64.deb](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.2/Mimo_1.2.0-beta.2_amd64.deb) | `sudo apt install ./Mimo_1.2.0-beta.2_amd64.deb` |
+| **Arch Linux** | [mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.2/mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst` |
+| **Windows 10/11 x64** | [Mimo_1.2.0-beta.2_x64-setup.exe](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.2/Mimo_1.2.0-beta.2_x64-setup.exe) | Doble clic. Se instala por usuario, sin administrador. |
 
 Los paquetes Linux necesitan **WebKitGTK 4.1** y **GTK 3**, y glibc **2.39** o superior. En
 Windows, el instalador incluye el bootstrapper de WebView2 y pide conexión si el sistema no lo
@@ -53,19 +53,20 @@ Si prefieres empezar en blanco, borra las tareas y la nota desde la propia app.
 - **Tareas** con proyectos, subtareas, prioridades y progreso automático.
 - **Notas** en Markdown GFM: títulos, tablas, citas, listas de tareas, código, imágenes,
   `<u>`/`<mark>` y fórmulas LaTeX.
-- **Malla** por niveles y prerrequisitos (Kit Academics).
-- **Calificaciones** con categorías, examen y cierre manual (Kit Academics).
-- **Estudio** con metas semanales y sesiones (Kit Academics).
+- **Malla** por niveles y prerrequisitos, con el título, la universidad y el país de tu carrera.
+- **Calificaciones** con categorías, examen y cierre manual.
+- **Estudio** con metas semanales, sesiones y un color por ramo.
 - **Tiempo** con cronómetro, temporizador, pomodoro y alarmas.
 - **Temas** claros y oscuros, español/inglés/chino y atajos de teclado.
+- **Colores por ramo** que también tiñen sus eventos en el calendario.
 - **Historial** de 60 pasos: `Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`; `Ctrl+S` guarda y `Ctrl+R`
   refresca.
-- **Sincronización** con carpeta local o WebDAV/Nextcloud, cifrada con AES-GCM.
+- **Sincronización** con carpeta local o una nube compatible, siempre cifrada.
 
 ## Datos y privacidad
 
-Los datos viven en el equipo. El archivo manual y la carpeta local guardan JSON en claro; WebDAV
-sube un archivo cifrado. La contraseña de cifrado no se guarda: si se pierde, la copia remota no
+Los datos viven en el equipo. El archivo manual y la carpeta local no están cifrados; la nube
+guarda una copia cifrada. La contraseña de cifrado no se guarda: si se pierde, la copia remota no
 se puede leer.
 
 Mimo no tiene una nube propia ni envía información a un servicio del proyecto. Si no configuras
@@ -110,12 +111,18 @@ El empaquetado de Linux, Windows y Arch está en
 [`.github/workflows/empaquetar.yml`](.github/workflows/empaquetar.yml). La matriz de plataformas y
 los límites están en [COMPATIBILIDAD.md](COMPATIBILIDAD.md).
 
-## Contribuir
+## Colaborar
 
-- ¿Un error? Abre un **issue** con la plantilla de error.
-- ¿Una idea? Abre un **issue** con la plantilla de propuesta.
-- ¿Código? Lee [CONTRIBUTING.md](CONTRIBUTING.md).
-- ¿Seguridad? Reporta en privado según [SECURITY.md](SECURITY.md).
+Mimo es libre y no pide cuentas. Puedes ayudar de tres formas:
+
+- [Compartir Mimo](https://github.com/billibu-n/Mimo) con quien lo necesite.
+- [Abrir una discusión](https://github.com/billibu-n/Mimo/discussions) para contar qué te falta
+  o qué mejorarías.
+- [Apoyar el proyecto con una donación](https://buymeacoffee.com/billibu).
+
+También puedes reportar un error o proponer una idea con las plantillas de GitHub, y revisar
+[CONTRIBUTING.md](CONTRIBUTING.md) si quieres aportar código. Para temas de seguridad, usa
+[SECURITY.md](SECURITY.md).
 
 ## Licencia
 

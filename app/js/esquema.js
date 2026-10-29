@@ -12,7 +12,7 @@
 (function () {
   "use strict";
 
-  var APP = "Mimo", APP_VERSION = "1.2.0-beta.1", V = 1;
+  var APP = "Mimo", APP_VERSION = "1.2.0-beta.2", V = 1;
   var ENTORNO = "mimo.entorno", MALLA = "mimo.malla", BACKUP = "mimo.backup";
 
   function dict(x) { return x && typeof x === "object" && !Array.isArray(x) ? x : {}; }
@@ -41,10 +41,14 @@
   function general(estado) {
     var datos = {};
     Object.keys(estado || {}).forEach(function (k) {
-      if (k === "cursos" || k === "califs" || k === "extensiones") return;
+      if (k === "cursos" || k === "califs" || k === "carrera" || k === "extensiones") return;
       datos[k] = clon(estado[k]);
     });
     return datos;
+  }
+  function carreraDe(estado) {
+    var c = dict(estado && estado.carrera);
+    return { titulo: String(c.titulo || ""), universidad: String(c.universidad || ""), pais: String(c.pais || "") };
   }
   function extensiones(estado) {
     var ext = clon(dict(estado && estado.extensiones));
@@ -64,7 +68,7 @@
     return sobre(ENTORNO, general(estado), extensiones(estado));
   }
   function exportarMalla(estado) {
-    return sobre(MALLA, { cursos: clon(estado.cursos || []), calificaciones: clon(estado.califs || {}) },
+    return sobre(MALLA, { cursos: clon(estado.cursos || []), calificaciones: clon(estado.califs || {}), carrera: carreraDe(estado) },
       { plan: clon(estado.plan || []), asistencia: clon(estado.asistencia || {}) });
   }
   function exportarBackup(estado) {
@@ -91,13 +95,14 @@
     var out = clon(actual || {});
     if (entorno) {
       Object.keys(entorno).forEach(function (k) {
-        if (k === "cursos" || k === "califs" || k === "extensiones") return;
+        if (k === "cursos" || k === "califs" || k === "carrera" || k === "extensiones") return;
         out[k] = clon(entorno[k]);
       });
     }
     if (malla) {
       out.cursos = clon(malla.cursos || []);
       out.califs = clon(malla.calificaciones || malla.califs || {});
+      if (malla.carrera) out.carrera = carreraDe(malla);
     }
     if (ext) out.extensiones = Object.assign({}, dict(out.extensiones), clon(ext));
     return out;
