@@ -119,8 +119,8 @@ def main() -> int:
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(180)
             exigir(page.locator(".ajustes-grupo").count() == 3,
                    f"ajustes: 3 grupos — {page.locator('.ajustes-grupo').count()}", fallas)
-            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0",
-                   f"marca: versión v1.2.0 — {page.locator('.badge').inner_text().strip()}", fallas)
+            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.1",
+                   f"marca: versión v1.2.0-beta.1 — {page.locator('.badge').inner_text().strip()}", fallas)
             fuente = page.locator(".wordmark").evaluate("e => getComputedStyle(e).fontFamily")
             exigir("Comfortaa" in fuente, f"marca: wordmark Comfortaa — {fuente}", fallas)
             columnas = page.locator(".ajustes-grid").first.evaluate(

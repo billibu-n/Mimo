@@ -1,6 +1,6 @@
 # Esquema de datos de Mimo
 
-**Versión:** 1 · **App:** 1.2.0 · **Módulo:** `app/js/esquema.js`
+**Versión:** 1 · **App:** 1.2.0-beta.1 · **Módulo:** `app/js/esquema.js`
 
 La app guarda el estado vivo en `localStorage['mimo.shell.v1']`. Para moverlo entre equipos
 hay **tres documentos JSON**, no uno gigante sin contrato:
@@ -35,7 +35,7 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
   "schema": "mimo.entorno",
   "version": 1,
   "app": "Mimo",
-  "appVersion": "1.2.0",
+  "appVersion": "1.2.0-beta.1",
   "exportado": "2026-10-28T23:00:00.000Z",
   "datos": {
     "tema": "clasico",
@@ -63,7 +63,7 @@ Campos obligatorios del sobre: `schema`, `version`, `datos`. `app`, `appVersion`
   "schema": "mimo.malla",
   "version": 1,
   "app": "Mimo",
-  "appVersion": "1.2.0",
+  "appVersion": "1.2.0-beta.1",
   "exportado": "2026-10-28T23:00:00.000Z",
   "datos": {
     "cursos": [{

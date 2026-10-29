@@ -12,7 +12,7 @@
 (function () {
   "use strict";
 
-  var APP = "Mimo", APP_VERSION = "1.2.0", V = 1;
+  var APP = "Mimo", APP_VERSION = "1.2.0-beta.1", V = 1;
   var ENTORNO = "mimo.entorno", MALLA = "mimo.malla", BACKUP = "mimo.backup";
 
   function dict(x) { return x && typeof x === "object" && !Array.isArray(x) ? x : {}; }

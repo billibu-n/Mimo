@@ -76,7 +76,7 @@ def main() -> int:
 
     subprocess.run(["sh", str(ESCRITORIO / "preparar-frontend.sh")], check=True)
     conf = json.loads((ESCRITORIO / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
-    exigir(conf.get("version") == "1.2.0", f"tauri: version 1.2.0 — {conf.get('version')}", fallas)
+    exigir(conf.get("version") == "1.2.0-beta.1", f"tauri: version 1.2.0-beta.1 — {conf.get('version')}", fallas)
     exigir(conf.get("build", {}).get("frontendDist") == "../app",
            "tauri: frontendDist apunta a la app preparada", fallas)
 

@@ -1,0 +1,139 @@
+{
+  "schema": "mimo.backup",
+  "version": 1,
+  "app": "Mimo",
+  "appVersion": "1.2.0-beta.1",
+  "exportado": "2026-10-29T19:32:16Z",
+  "entorno": {
+    "tema": "clasico",
+    "instalados": [],
+    "kits": {},
+    "panel": {},
+    "tareas": [
+      {
+        "id": "bienvenida-1",
+        "titulo": "Elegir tu tema",
+        "tipo": "tarea",
+        "padre_id": null,
+        "estado": "pendiente",
+        "hecha": false,
+        "prioridad": "media",
+        "fecha": "",
+        "contexto": "",
+        "nota": "Ajustes → Apariencia. Hay cinco temas claros y cinco oscuros.",
+        "orden": 0,
+        "creada": "2026-10-29T19:32:16Z"
+      },
+      {
+        "id": "bienvenida-2",
+        "titulo": "Crear tu primer ramo",
+        "tipo": "tarea",
+        "padre_id": null,
+        "estado": "pendiente",
+        "hecha": false,
+        "prioridad": "media",
+        "fecha": "",
+        "contexto": "",
+        "nota": "Malla → Agregar ramo. Después puedes cargar sus calificaciones.",
+        "orden": 1,
+        "creada": "2026-10-29T19:32:16Z"
+      },
+      {
+        "id": "bienvenida-3",
+        "titulo": "Probar una nota en Markdown",
+        "tipo": "tarea",
+        "padre_id": null,
+        "estado": "pendiente",
+        "hecha": false,
+        "prioridad": "media",
+        "fecha": "",
+        "contexto": "",
+        "nota": "En Notas, usa la barra H1/B/U o escribe #, **, <u> y tablas.",
+        "orden": 2,
+        "creada": "2026-10-29T19:32:16Z"
+      },
+      {
+        "id": "bienvenida-4",
+        "titulo": "Configurar la sincronización",
+        "tipo": "tarea",
+        "padre_id": null,
+        "estado": "pendiente",
+        "hecha": false,
+        "prioridad": "media",
+        "fecha": "",
+        "contexto": "",
+        "nota": "Ajustes → Datos → Sincronización. También puedes guardar un archivo manual.",
+        "orden": 3,
+        "creada": "2026-10-29T19:32:16Z"
+      }
+    ],
+    "notas": [
+      {
+        "id": "bienvenida",
+        "titulo": "Bienvenido a Mimo",
+        "cuerpo": "# Bienvenido a Mimo\n\nEsta nota es tu punto de partida. **Edítala o bórrala** cuando quieras.\n\n## Lo que puedes hacer\n\n- **Calendario**: eventos, periodos y semanas.\n- **Tareas**: proyectos, subtareas y prioridades.\n- **Notas**: Markdown con títulos, tablas, tareas y fórmulas.\n- **Ajustes**: temas, idioma, respaldo y bloques.\n\n> Consejo: abre **Ajustes → Agregar bloque o kit** para sumar Tiempo, Malla, Calificaciones o Estudio.\n\n### Un ejemplo\n\n| Herramienta | Para qué |\n| --- | --- |\n| Calendario | Organizar el periodo |\n| Tareas | Saber qué sigue |\n| Notas | Guardar el contexto |\n\n- [ ] Elegir un tema\n- [x] Abrir esta nota\n\nUna fórmula de ejemplo: $E = mc^2$.\n\nTambién puedes <u>subrayar</u> y usar `código`.\n",
+        "contexto": "",
+        "etiquetas": [
+          "bienvenida",
+          "tutorial"
+        ],
+        "enlaces": [],
+        "fijada": true,
+        "actualizado": "2026-10-29T19:32:16Z"
+      }
+    ],
+    "eventos": [],
+    "periodos": [],
+    "periodoActivo": null,
+    "sesiones": [],
+    "tiempoVinculo": "",
+    "tiempoRamo": "",
+    "tiempoModo": "crono",
+    "tempMin": 25,
+    "pomo": {
+      "trabajo": 25,
+      "corto": 5,
+      "largo": 15,
+      "cada": 4,
+      "fase": "trabajo",
+      "trabajos": 0
+    },
+    "alarmas": [],
+    "estudio": {
+      "metaSemanal": 10,
+      "metasRamo": {},
+      "metasSemana": {}
+    },
+    "splitSeccion": "tareas",
+    "prefs": {
+      "inicioSemana": "lunes",
+      "hora": "24",
+      "panelAncho": "320",
+      "navPos": "arriba",
+      "idioma": "es",
+      "notificaciones": true,
+      "panelAbierto": true,
+      "temaClaro": "clasico",
+      "temaOscuro": "deepsea",
+      "ordenTabs": [],
+      "catalogoOrigen": "todos",
+      "catalogoTag": ""
+    },
+    "notaSel": "bienvenida",
+    "tareaSel": null,
+    "eventoSel": null,
+    "ramoSel": null,
+    "califSel": null,
+    "tiempoHijos": [
+      "crono",
+      "temporizador",
+      "pomodoro",
+      "alarmas"
+    ]
+  },
+  "malla": {
+    "cursos": [],
+    "calificaciones": {}
+  },
+  "extensiones": {}
+}
