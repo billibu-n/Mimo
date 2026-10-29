@@ -44,6 +44,9 @@ El RPM instala `Mimo.desktop` con `Name=Mimo`, `Icon=mimo` y `StartupWMClass=Mim
 y el menú de aplicaciones muestran **Mimo** con la mascota, no un icono genérico. El script de
 postinstalación refresca las cachés de iconos, lanzadores y AppStream.
 
+GNOME Software puede mostrar el icono genérico del **archivo RPM local** antes de instalarlo;
+la ficha AppStream se lee al instalar. Después de instalar, cierra y vuelve a abrir la aplicación.
+
 ## Restablecer de fábrica
 
 **Ajustes → Datos → Restablecer de fábrica** borra de este equipo las notas, tareas, malla,
