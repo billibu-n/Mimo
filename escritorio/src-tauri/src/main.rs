@@ -364,6 +364,9 @@ const GUION_SONDA: &str = r#"
 
     document.querySelector('#tabs [data-ir="notas"]').click();
     await esperar(180);
+    var inicial = JSON.parse(localStorage.getItem('mimo.shell.v1') || '{}');
+    r.tutorial_tareas = (inicial.tareas || []).length;
+    r.tutorial_nota = (inicial.notas || []).some(function (n) { return n.id === 'bienvenida'; });
     document.querySelector('#btn-nueva-nota').click();
     await esperar(180);
     set('#nota-titulo', 'Nota Tauri');

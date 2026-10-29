@@ -119,17 +119,8 @@ El catálogo separa **origen** —quién provee el bloque— de **naturaleza** �
 
 ## 7. Pruebas de la fase 2
 
-`gate-bloques` ya mide lo implementado:
-
-1. existen 3 chips de origen y sus contadores suman la lista completa;
-2. «Kits» deja solo Academics y «Nativos» deja 8;
-3. un tag de una ficha filtra y aparece el chip activo;
-4. la búsqueda sin resultados muestra el vacío y «Limpiar filtros» lo deshace;
-5. `prefs.catalogoOrigen` sobrevive a recargar;
-6. 411 sin desborde;
-7. el enlace de registro de sync no muestra sus atributos `data-l10n`.
-
-Pendiente de medir cuando se implemente el detalle:
+Los filtros por origen, los tags y la búsqueda se cerraron en R22 y se miden en
+`gate-correcciones`/`gate-busqueda`. El detalle de ficha sigue pendiente:
 
 1. una ficha es un botón y abre `#modal-bloque`;
 2. el detalle muestra resumen, «Qué hace», datos y versión;
@@ -143,7 +134,6 @@ Pendiente de medir cuando se implemente el detalle:
 1. Metadatos (`origen`, `naturaleza`, `tags`) + `catalogoItems()` + filtros: **hecho en R22**.
 2. Ficha como botón y `#modal-bloque` con textos, sin imágenes: **pendiente**.
 3. Imágenes y respaldo: **pendiente**.
-4. `gate-bloques` y capturas del detalle: **pendiente**.
-5. Cierre y commit del detalle.
+4. Cierre y commit del detalle.
 
 La barra de filtros se cerró en R22; el detalle queda como el siguiente frente de producto.

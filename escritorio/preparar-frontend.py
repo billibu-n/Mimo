@@ -3,8 +3,8 @@
 """Prepara el frontend que consume Tauri copiando SOLO la app universal.
 
 La fuente de verdad es ``app/`` en la raiz del proyecto. No se apunta Tauri a esa
-carpeta directamente porque empaquetaria ``pruebas/`` y ``maqueta/``. Aqui se copia
-con LISTA BLANCA: index.html, css/, js/, img/ y vendor/.
+carpeta directamente porque empaquetaria ``pruebas/``. Aqui se copia con LISTA
+BLANCA: index.html, tutorial.json, css/, js/, img/ y vendor/.
 
 ``escritorio/app/`` es GENERADO y esta en .gitignore. Este script es el mismo en
 Linux, Windows y macOS: no usa shell ni rutas POSIX.
@@ -20,12 +20,13 @@ PROYECTO = AQUI.parent
 ORIGEN = PROYECTO / "app"
 DESTINO = AQUI / "app"
 
-ARCHIVOS = ("index.html",)
+ARCHIVOS = ("index.html", "tutorial.json")
 CARPETAS = ("css", "js", "img", "vendor")
 
 # Si falta uno de estos, el binario saldria vacio o sin cifrado/LaTeX.
 IMPRESCINDIBLES = (
     "index.html",
+    "tutorial.json",
     "js/shell.js",
     "js/sync.js",
     "css/base.css",
@@ -67,7 +68,7 @@ def main() -> int:
             alto(f"falta la carpeta {nombre} en {ORIGEN}")
         shutil.copytree(origen, DESTINO / nombre)
 
-    for prohibido in ("pruebas", "maqueta"):
+    for prohibido in ("pruebas",):
         if (DESTINO / prohibido).exists():
             alto(f"{prohibido}/ entro en el frontend empaquetado.")
 

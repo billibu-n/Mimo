@@ -17,8 +17,9 @@ El binario Linux usa símbolos hasta **GLIBC_2.39**. Por eso los paquetes declar
 `glibc >= 2.39` (RPM) y `libc6 (>= 2.39)` (DEB). En un sistema con glibc anterior el paquete
 se rechaza al instalar en vez de fallar después al abrir.
 
-Las dependencias de escritorio Linux son **WebKitGTK 4.1** y **GTK 3**. No se empaqueta una
-copia de WebKit: se usa la del sistema, que es la que recibe parches de seguridad.
+Las dependencias de escritorio Linux son **WebKitGTK 4.1**, **GTK 3** y **OpenSSL** (TLS
+nativo). No se empaqueta una copia de WebKit: se usa la del sistema, que es la que recibe
+parches de seguridad.
 
 ## Lo que no está preparado
 

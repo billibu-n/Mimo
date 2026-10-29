@@ -43,7 +43,7 @@
     "publisher": "Billibu",
     "copyright": "Copyright © 2026 billibu-n",
     "license": "MIT",
-    "homepage": "https://github.com/billibu-n/mimo-nuevo",
+    "homepage": "https://github.com/billibu-n/mimo",
     "linux": {
       "rpm": {
         "desktopTemplate": "Mimo.desktop",

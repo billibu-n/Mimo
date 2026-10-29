@@ -13,7 +13,10 @@ Primera beta pública de Mimo para escritorio.
 - Sincronización manual local y WebDAV/Nextcloud cifrada con AES-GCM.
 - Temas claros/oscuros, español/inglés/chino y atajos de teclado.
 - Historial de 60 pasos con `Ctrl+Z`/`Ctrl+Y`, guardado con `Ctrl+S` y refresco con `Ctrl+R`.
-- `tutorial.json` exportable desde la app y restablecimiento de fábrica.
+- `tutorial.json` exportable desde la app y **precargado** en el primer arranque y tras
+  restablecimiento de fábrica.
+- Repositorio e instalación con el nombre **Mimo**; guía de instalación para Fedora, Debian,
+  Ubuntu, Arch y Windows.
 - Flujo de GitHub Actions que construye Linux, Windows y Arch sin publicar una release.
 
 ### Corregido
@@ -27,4 +30,4 @@ Primera beta pública de Mimo para escritorio.
 - Los paquetes no están firmados; solo hay `SHA256SUMS`.
 - La sincronización con una cuenta real de Tab Digital aún no está probada desde el binario.
 - macOS, iOS y Android no están preparados.
-- El `tutorial.json` publicado es una semilla importable; no se carga solo al primer arranque.
+- El `tutorial.json` se precarga en la app; en la release queda además como copia importable.

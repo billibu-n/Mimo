@@ -13,7 +13,7 @@
     <p>Funciona sin conexión, guarda los datos en el equipo y puede sincronizarlos cifrados por WebDAV/Nextcloud. Los bloques se instalan y se quitan sin borrar tus datos.</p>
   </description>
   <launchable type="desktop-id">Mimo.desktop</launchable>
-  <url type="homepage">https://github.com/billibu-n/mimo-nuevo</url>
+  <url type="homepage">https://github.com/billibu-n/mimo</url>
   <icon type="stock">mimo</icon>
   <categories>
     <category>Utility</category>

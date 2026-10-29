@@ -17,7 +17,7 @@ El `sha256sums` está en `SKIP` porque el tag todavía no existe. Cuando se publ
 
 ```bash
 cd packaging/arch
-URL="https://github.com/billibu-n/mimo-nuevo/archive/refs/tags/v1.2.0-beta.1.tar.gz"
+URL="https://github.com/billibu-n/mimo/archive/refs/tags/v1.2.0-beta.1.tar.gz"
 SUMA=$(curl -L "$URL" | sha256sum | cut -d' ' -f1)
 sed -i "s/^sha256sums=.*/sha256sums=('$SUMA')/" PKGBUILD
 makepkg --printsrcinfo > .SRCINFO

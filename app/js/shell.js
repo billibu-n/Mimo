@@ -5,6 +5,7 @@
 
   var CLAVE = "mimo.shell.v1";
   var RESET = /[?&]reset=1\b/.test(location.search);
+  var arranqueLimpio = false;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   function conservar(destino, origen) {
@@ -299,7 +300,7 @@
   }
   function leer() {
     var d = porDefecto();
-    if (RESET) { try { localStorage.removeItem(CLAVE); } catch (e) {} return d; }
+    if (RESET) { try { localStorage.removeItem(CLAVE); } catch (e) {} arranqueLimpio = true; return d; }
     try {
       var bruto = localStorage.getItem(CLAVE);
       if (bruto) {
@@ -323,8 +324,10 @@
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
         }
+      } else {
+        arranqueLimpio = true;
       }
-    } catch (e) {}
+    } catch (e) { arranqueLimpio = true; }
     return d;
   }
   var estado = leer();
@@ -3826,7 +3829,24 @@
       setTimeout(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 350);
     }
   }
-  function init() {
+  async function init() {
+    // La app nativa trae tutorial.json junto al frontend. Solo se carga cuando no hay
+    // estado guardado (primer arranque o Restablecer de fábrica). En file:// se omite:
+    // los gates abren el HTML directo y no deben depender de fetch.
+    if (arranqueLimpio && location.protocol !== "file:" && window.MimoEsquema) {
+      try {
+        var respuesta = await fetch("tutorial.json", { cache: "no-store" });
+        if (respuesta.ok) {
+          var documento = await respuesta.json();
+          var importado = MimoEsquema.importar(documento, estado);
+          if (importado) {
+            estado = importado.estado;
+            pantalla = "notas";
+            try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    }
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
@@ -4411,5 +4431,11 @@
   setTimeout(function () {
     if (document.body.classList.contains("cargando")) quitarCarga();
   }, 5000);
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  function arrancar() {
+    init().catch(function (e) {
+      if (window.console && console.error) console.error(e);
+      quitarCarga();
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", arrancar); else arrancar();
 })();

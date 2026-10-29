@@ -1,12 +1,12 @@
 # Arnés de gates de MIMO v2 (M02)
 
-**Esto mide la app real (`app/index.html`), no la maqueta.** Los gates existen para no declarar
-verde por impresión: cada uno devuelve 0/1 y cita su medida.
+**Esto mide la app real (`app/index.html`).** Los gates existen para no declarar verde por
+impresión: cada uno devuelve 0/1 y cita su medida.
 
 ## Correr
 
 ```bash
-python3 app/pruebas/correr-gates.py     # los 14 gates web, resumen al final
+python3 app/pruebas/correr-gates.py     # los 15 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila y abre ventana:
@@ -17,8 +17,6 @@ PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
 cd .. && DISPLAY=:0 python3 app/pruebas/gate-tauri.py
 ```
 
-El viejo está en `referencia/academics-1.1.2/` y no entra en esta suite: es oráculo, no producto.
-
 Los gates que aceptan `--demo` exigen **dos** cosas: la app buena sale 0 y el fixture roto sale 1.
 Un gate que no discrimina es un gate roto.
 
@@ -26,7 +24,6 @@ Un gate que no discrimina es un gate roto.
 
 | Gate | Bueno | Roto |
 |---|---|---|
-| `gate-ui` | base 4 en orden, panel de 4, 1440/1100/411 sin desborde, 0 consola, split, temas, cajón | `min-width:1600px` fuerza desborde y debe salir 1 |
 | `gate-shell` | el shell universal: instalar Tiempo, quitar hijo, kit Academics, tarea, nota, panel por sección, temas | sin demo: mide `app/index.html` |
 | `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 9 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
@@ -34,9 +31,9 @@ Un gate que no discrimina es un gate roto.
 | `gate-correcciones` | respaldo académico importado (ramos, tareas, sesiones, metas, bloques), reloj editable, sesión corregida, clic derecho, pareja de temas, 3 grupos de Ajustes, KaTeX en Notas, enlace de registro y espaciado de la sync en 1440/411 | importación incompleta, reloj no editable, tema sin pareja, fórmula rota, sin enlace o tarjeta sin aire |
 | `gate-sync` | guarda un `mimo-sync.json`, lo carga en otro contexto, detecta conflicto local/remoto, aplica cada lado y deja respaldo | archivo sin formato, conflicto no detectado o pérdida de la copia local |
 | `gate-webdav` | WebDAV/Nextcloud local con ETag: sin clave no sube, el remoto va cifrado, `If-None-Match`/`If-Match`, segundo equipo, cola sin red que sobrevive a recargar y se reintenta al volver, conflicto y ambas salidas, clave mala y remoto corrupto | sin clave subiendo, texto claro en el remoto, cola que se pierde o conflicto que pisa una copia |
-| `gate-bloques` | manifiestos v1.1 sin huérfanos; Tiempo con 4 dentro; quitar un hijo no tumba al padre; kit Academics | manifiesto sin `tiempo` deja `pomodoro` huérfano y debe salir 1 |
 | `gate-ronda14` | calendario con semana del periodo (S1/S2/REC/EX) y mapa editable de receso/exámenes, alto contraste claro, chino simplificado, bandera de Sudamérica, split de dos secciones completas, arrastre/reordenación de pestañas, deshacer, componente→calendario, meta semanal, ESC y Ctrl+1..9 según el orden, pantalla de carga | periodo sin columna, tema claro ausente, idioma/arrastre rotos, sin deshacer, sin meta, ESC o atajos que no responden o carga que se queda |
-| `gate-tauri` | binario release: app universal, navegación, nota en `localStorage`, Ajustes, sync WebDAV nativa (sin preflight CORS), remoto cifrado, persistencia entre aperturas y RPM | falta el binario, la ventana no abre o el remoto queda en claro |
+| `gate-tauri` | binario release: app universal, tutorial precargado, navegación, nota en `localStorage`, Ajustes, sync WebDAV nativa (sin preflight CORS), remoto cifrado, persistencia entre aperturas y RPM | falta el binario, la ventana no abre, el tutorial no se precarga o el remoto queda en claro |
+| `gate-tutorial` | `app/tutorial.json` y `publicacion/tutorial.json` son el mismo `mimo.backup`, con el proyecto Mimo, 11 tareas y la nota con Markdown | JSON distinto, sin proyecto o sin la nota |
 
 ## Fixtures
 
@@ -49,15 +46,8 @@ Un gate que no discrimina es un gate roto.
 
 ## Límites declarados
 
-- La maqueta no persiste la estantería de Tiempo: el gate mide que el padre sigue y la cuenta baja,
-  no que el cambio sobreviva a F5.
-- El kit de la maqueta quita **todos** sus bloques, incluso los instalados aparte; el contrato real
-  (M16) solo quita los que instaló el kit. El gate comprueba que no quedan pestañas huérfanas, no
-  la propiedad fina del kit.
 - `datos_v3.py` es un **adaptador de referencia** para medir la migración, no el almacén de la app.
   M20 lo sustituye conservando estas medidas.
-- No hay capturas nuevas: la evidencia son las salidas de los gates y la maqueta ya capturada en
-  T-45.
 - `gate-webdav` usa `webdav.py`, un servidor local con CORS y ETag. **No se probó contra un
   Nextcloud real**: si el servidor no envía CORS, el navegador bloquea la petición y queda el
   archivo manual. La app abierta como `file://` envía `Origin: null`; la lista de CORS del servidor

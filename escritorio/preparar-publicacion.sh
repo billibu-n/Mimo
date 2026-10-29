@@ -14,10 +14,17 @@ PROYECTO=$(cd "$AQUI/.." && pwd)
 PUB="$PROYECTO/publicacion"
 REL="$AQUI/release"
 JSON="$PUB/tutorial.json"
+APPJSON="$PROYECTO/app/tutorial.json"
 LICEN="$PROYECTO/LICENSE"
 
 [ -d "$PUB" ] || { echo "ALTO: falta $PUB"; exit 1; }
 [ -f "$JSON" ] || { echo "ALTO: falta el tutorial $JSON"; exit 1; }
+[ -f "$APPJSON" ] || { echo "ALTO: falta el tutorial de la app $APPJSON"; exit 1; }
+cmp -s "$APPJSON" "$JSON" || {
+  echo "ALTO: app/tutorial.json y publicacion/tutorial.json no coinciden."
+  echo "Copia el JSON aprobado a los dos o vuelve a generarlo desde la app."
+  exit 1
+}
 [ -f "$LICEN" ] || { echo "ALTO: falta $LICEN"; exit 1; }
 python3 -m json.tool "$JSON" >/dev/null || {
   echo "ALTO: $JSON no es JSON válido"; exit 1;

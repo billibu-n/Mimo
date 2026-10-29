@@ -113,6 +113,8 @@ def main() -> int:
         exigir(r.get("tareas_visible") is True, "tauri: Tareas navega", fallas)
         exigir(r.get("nota_guardada") is True and r.get("notas", 0) >= 1,
                f"tauri: nota en localStorage — {r.get('notas')}", fallas)
+        exigir(r.get("tutorial_tareas", 0) >= 11 and r.get("tutorial_nota") is True,
+               f"tauri: tutorial precargado — {r.get('tutorial_tareas')} tareas, nota={r.get('tutorial_nota')}", fallas)
         exigir(r.get("css", 0) >= 10, f"tauri: CSS cargado — {r.get('css')}", fallas)
         exigir(r.get("katex") == "object", f"tauri: KaTeX cargado — {r.get('katex')}", fallas)
         exigir(r.get("grupos") == 3, f"tauri: Ajustes con 3 grupos — {r.get('grupos')}", fallas)

@@ -1,7 +1,7 @@
 # Mimo de escritorio (Tauri 2) — RPM, DEB, Arch y Windows
 
 ```bash
-cd ~/sede/proyectos/mimo-nuevo/escritorio
+cd escritorio
 python3 preparar-frontend.py            # app/ -> escritorio/app/ (lista blanca)
 CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" \
   PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles deb,rpm
@@ -63,12 +63,12 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
 
 ## Que hace cada pieza
 
-- `preparar-frontend.sh` copia la **app universal** (`<proyecto>/app/`) a `escritorio/app/` con
-  lista blanca: `index.html`, `css/`, `js/`, `img/` y `vendor/`. Deja fuera `pruebas/` y `maqueta/`;
-  si falta `sync.js`, KaTeX, Markdown, Comfortaa o el icono, para con exit 1. `app/` es generado, está en
-  `.gitignore` y se rehace en cada pasada.
+- `preparar-frontend.py` copia la **app universal** (`<proyecto>/app/`) a `escritorio/app/` con
+  lista blanca: `index.html`, `tutorial.json`, `css/`, `js/`, `img/` y `vendor/`. Deja fuera
+  `pruebas/`; si falta `sync.js`, KaTeX, Markdown, Comfortaa o el icono, para con exit 1.
+  `app/` es generado, está en `.gitignore` y se rehace en cada pasada.
 - `src-tauri/` es el caparazón: `productName` "Mimo", identificador `cl.mimo.escritorio`, ventana
-  1280x900 y `bundle.targets` solo `["rpm"]` (AppImage y deb fuera a propósito).
+  1280x900 y `bundle.targets` `["deb", "rpm"]`; Windows usa `tauri.windows.conf.json` con NSIS.
 - **Sin servidor web:** el protocolo de recursos de Tauri sirve `index.html`, CSS, JS, imágenes,
   KaTeX, marked/DOMPurify y Comfortaa desde `app/`.
 - **Puente HTTP nativo:** `http_pedir` (Rust + reqwest) hace GET/PUT/MKCOL/OPTIONS con cabeceras y
@@ -84,7 +84,7 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
   sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
   `DISPLAY` o `WAYLAND_DISPLAY`.
 - **Gate:** `python3 app/pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia, la
-  sync nativa contra `app/pruebas/webdav.py` y la ida y vuelta de la carpeta nativa (30 medidas).
+  sync nativa contra `app/pruebas/webdav.py` la ida y vuelta de la carpeta nativa y el tutorial precargado (33 medidas).
   No está en `correr-gates.py` porque necesita compilar y abrir ventana; se corre aparte al cerrar
   U6c.
 - Requisitos (Fedora, ya instalados aquí): `cargo` y `cargo-tauri` 2.12, `rpmbuild`,

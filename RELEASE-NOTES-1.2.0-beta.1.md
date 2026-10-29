@@ -47,9 +47,12 @@ WebView2 y pide conexión si el sistema no lo tiene.
 
 ## Tutorial
 
-`tutorial.json` es una **semilla importable**, no se carga sola al primer arranque. Para usarla:
-Ajustes → Datos → Respaldo → Importar, elige el archivo y confirma. El tutorial definitivo se
-genera desde la app con **Guardar tutorial**; esta beta publica la semilla.
+La app abre con el **tutorial ya cargado**: la nota **Bienvenido/a a Mimo** y el proyecto
+**Mimo** con tareas de ejemplo. No hay que importar nada. **Ajustes → Datos → Restablecer de
+fábrica** vuelve a dejar la app como nueva y recarga el tutorial en el siguiente arranque.
+
+`tutorial.json` queda también como copia importable en la release, por si quieres llevarlo a
+otro equipo o editar sus datos desde la app con **Guardar tutorial**.
 
 ## Límites de la beta
 

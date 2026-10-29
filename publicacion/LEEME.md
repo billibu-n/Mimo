@@ -9,14 +9,14 @@ fuente, prototipos, referencias ni iteraciones anteriores.
 |---|---|---|
 | `Mimo-1.2.0-beta.1-1.x86_64.rpm` | Fedora / RHEL x86_64 | listo |
 | `Mimo_1.2.0-beta.1_amd64.deb` | Debian / Ubuntu amd64 | listo |
-| `Mimo_1.2.0-beta.1_x64-setup.exe` | Windows 10/11 x64 (NSIS) | lo genera el flujo de empaquetado |
-| `mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` | Arch Linux x86_64 | lo genera el flujo de empaquetado |
+| `Mimo_1.2.0-beta.1_x64-setup.exe` | Windows 10/11 x64 (NSIS) | listo |
+| `mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst` | Arch Linux x86_64 | listo |
 | `tutorial.json` | Todas | listo |
 | `LICENSE` | Todas | listo |
 | `SHA256SUMS` | Todas | se regenera al publicar |
 | `LEEME.md` | Todas | esta guía |
 
-El RPM y el DEB instalan la misma aplicación: `/usr/bin/mimo`, un solo `Mimo.desktop`, los
+Los paquetes Linux instalan la misma aplicación: `/usr/bin/mimo`, un solo `Mimo.desktop`, los
 iconos de hicolor y el metadato AppStream `cl.mimo.escritorio.metainfo.xml`.
 
 ## Instalar
@@ -35,8 +35,8 @@ sudo apt install ./Mimo_1.2.0-beta.1_amd64.deb
 mimo
 ```
 
-`apt` resuelve las dependencias. En Debian 12 o Ubuntu 24.04 en adelante; necesita
-`libwebkit2gtk-4.1-0` y `libgtk-3-0`.
+`apt` resuelve las dependencias. En Debian 13 o Ubuntu 24.04 en adelante; necesita
+`libwebkit2gtk-4.1-0`, `libgtk-3-0` y `libssl3`.
 
 ### Windows 10/11 x64
 
@@ -49,16 +49,13 @@ es esperado en una beta sin certificado de código.
 
 ### Arch Linux
 
-El `PKGBUILD` está en `packaging/arch/` del repositorio. Cuando el tag esté publicado y el
-checksum actualizado:
-
 ```bash
-cd packaging/arch
-makepkg -si
+sudo pacman -U ./mimo-1.2.0beta.1-1-x86_64.pkg.tar.zst
+mimo
 ```
 
-Todavía **no está en AUR**. El paquete se construye desde el tarball del tag, no desde un
-binario precompilado.
+El `PKGBUILD` también está en `packaging/arch/` para compilar desde el tarball del tag.
+Todavía **no está en AUR**.
 
 ## Cuál es el archivo que se genera
 
@@ -73,16 +70,17 @@ Se genera desde la propia app:
 4. Guarda el archivo como `publicacion/tutorial.json`.
 5. Regenera checksums con `sh escritorio/preparar-publicacion.sh`.
 
-El JSON es un respaldo `mimo.backup` normal. Para usarlo en otro equipo:
+El JSON es un respaldo `mimo.backup` normal. La app lo **precarga** en el primer arranque y
+después de **Restablecer de fábrica**: abre la nota de bienvenida y el proyecto **Mimo** sin
+pedir nada. El archivo de la release queda además como copia importable:
 
-1. Instala el paquete de tu sistema.
-2. Abre **Ajustes → Datos → Respaldo → Importar**.
-3. Elige `tutorial.json`.
-4. Confirma el reemplazo.
+1. Abre **Ajustes → Datos → Respaldo → Importar**.
+2. Elige `tutorial.json`.
+3. Confirma el reemplazo.
 
-> Hoy el JSON es **importable**, no se carga solo al primer arranque. Si quieres que la app
-> arranque ya con este tutorial sin importar a mano, hay que agregar esa carga inicial y
-> reconstruir los paquetes.
+Para cambiar el tutorial de la app hay que reemplazar `app/tutorial.json` por el JSON aprobado,
+reconstruir y volver a publicar. `publicacion/tutorial.json` es la copia que se sube a la release;
+un gate comprueba que ambos coincidan.
 
 ## Icono y nombre en el sistema
 
@@ -102,8 +100,8 @@ En Windows el icono sale del `.ico` incluido en el instalador y en el ejecutable
 ## Restablecer de fábrica
 
 **Ajustes → Datos → Restablecer de fábrica** borra de este equipo las notas, tareas, malla,
-temas y la configuración de sincronización. No toca los archivos que hayas exportado. Es la
-forma de dejar la app limpia antes de generar el tutorial.
+temas y la configuración de sincronización. No toca los archivos que hayas exportado. Al
+reabrir, Mimo vuelve a cargar el tutorial incluido en la aplicación.
 
 ## Cómo regenerar la publicación
 
@@ -111,7 +109,7 @@ Cada vez que cambies el tutorial, reconstruyas un paquete o descargues los artef
 GitHub Actions:
 
 ```bash
-cd ~/sede/proyectos/mimo-nuevo
+cd /ruta/a/mimo
 sh escritorio/preparar-publicacion.sh
 ```
 
