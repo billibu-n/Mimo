@@ -40,6 +40,7 @@ def crear_ramo(page, codigo: str, nombre: str) -> None:
     page.locator("#btn-nuevo-ramo").click()
     page.locator("#ramo-codigo").fill(codigo)
     page.locator("#ramo-nombre").fill(nombre)
+    page.locator("#ramo-curso").check()
     page.locator('#ramo-form button[type="submit"]').click()
     page.wait_for_timeout(100)
 
@@ -130,6 +131,28 @@ def main() -> int:
             page.wait_for_timeout(250)
             exigir(page.locator("#est-k-sesiones").inner_text().strip() == "2",
                    "estudio: la sesión de Tiempo entra en Estudio", fallas)
+
+            # Un ramo cerrado deja de ofrecerse en los selectores y en las tablas.
+            page.locator('#tabs .tab[data-ir="malla"]').click()
+            page.wait_for_timeout(120)
+            page.locator('.ramo-card[data-ramo="FI1001"]').click(button="right")
+            page.wait_for_timeout(100)
+            page.locator('#menu-ctx [data-accion="ramo-estado"]').click()
+            page.wait_for_timeout(250)
+            page.locator('#tabs .tab[data-ir="estudio"]').click()
+            page.wait_for_timeout(200)
+            exigir("FI1001" not in page.locator("#est-ramo").inner_text(),
+                   "estudio: el ramo cerrado no se ofrece", fallas)
+            exigir("FI1001" not in page.locator("#est-tabla").inner_text(),
+                   "estudio: el ramo cerrado no aparece en la tabla", fallas)
+            page.locator('#tabs .tab[data-ir="tiempo"]').click()
+            page.wait_for_timeout(120)
+            exigir("FI1001" not in page.locator("#tiempo-ramo").inner_text(),
+                   "tiempo: el ramo cerrado no se ofrece", fallas)
+            page.locator('#tabs .tab[data-ir="calendario"]').click()
+            page.wait_for_timeout(120)
+            exigir("FI1001" not in page.locator("#contextos-ramos").inner_text(),
+                   "calendario: el ramo cerrado no se sugiere", fallas)
             exigir(not errores, f"estudio: consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()

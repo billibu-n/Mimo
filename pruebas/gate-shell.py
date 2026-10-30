@@ -60,6 +60,10 @@ def main() -> int:
             page.locator('[data-cal-vista="semana"]').click()
             page.wait_for_timeout(80)
             exigir(page.locator(".cal-semana-dia").count() == 7, "calendario: la semana tiene 7 días", fallas)
+            columnas_cal = page.evaluate(
+                "getComputedStyle(document.querySelector('.cal-layout')).gridTemplateColumns.split(' ').length")
+            exigir(columnas_cal >= 2,
+                   f"calendario: rail y calendario en dos columnas — {columnas_cal}", fallas)
             page.locator('[data-cal-vista="agenda"]').click()
             page.wait_for_timeout(80)
             exigir(page.locator(".cal-agenda__item").count() == 1, "calendario: la agenda lista el evento", fallas)

@@ -22,6 +22,12 @@ el núcleo.
 
 - **Evaluaciones se elimina y desvincula.** Ya no está en el catálogo, en el kit
   Academics, en el esquema ni en los estados guardados.
+- **Calendario en dos columnas.** El rail de eventos y contextos vuelve a estar al
+  lado del calendario en escritorio; en móvil se apila.
+- **Solo cursos en curso.** Tiempo, Estudio y las sugerencias del calendario dejan de ofrecer cursos
+  cerrados. Los datos históricos se conservan y Calificaciones los mantiene.
+- **Colaborar, sin dinero.** La tarjeta de Ajustes usa «Colaborar» y un texto más
+  neutro.
 
 ## Pruebas
 

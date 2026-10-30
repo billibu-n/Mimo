@@ -21,6 +21,15 @@
   del esquema, de las exportaciones y de los estados guardados. No hay una vista
   pendiente con ese nombre.
 
+### Corregido
+
+- El calendario vuelve a mostrar el rail de «Nuevo evento / Contextos / Calendarios»
+  en una columna paralela al calendario en escritorio; en móvil sigue en una columna.
+- Tiempo, Estudio y las sugerencias del calendario solo ofrecen cursos en estado
+  «en curso». Los cursos cerrados dejan de aparecer en esos selectores y tablas;
+  sus datos históricos no se borran y Calificaciones los conserva.
+- En Ajustes, la tarjeta de colaboración ya no habla de dinero: dice «Colaborar».
+
 ### Pruebas
 
 - `gate-bloques` mide el montaje dinámico, el desmontaje, la reinstalación, los
