@@ -9,7 +9,7 @@ Mide con el respaldo sintético y un caso mínimo:
   4. mimo.entorno no borra la malla;
   5. mimo.malla no borra tareas ni eventos;
   6. los campos desconocidos del entorno, del curso y de la raíz se conservan;
-  7. una versión mayor desconocida no se rechaza en bloque.
+  7. los campos desconocidos se conservan, pero una versión mayor se rechaza.
 """
 from __future__ import annotations
 
@@ -72,12 +72,14 @@ def main() -> int:
               const soloEnt = MimoEsquema.importar(ent, conv.estado);
               const soloMal = MimoEsquema.importar(mal, m.estado);
               const futuro = JSON.parse(JSON.stringify(backup));
-              futuro.version = 99;
               futuro.entorno.bloqueFuturo = {x: 1};
               futuro.entorno.cursos = conv.estado.cursos;
               futuro.extensiones.foo = "bar";
               futuro.malla.cursos[0].campoFuturo = "ok";
               const rFuturo = MimoEsquema.importar(futuro, {});
+              const futuroVersion = JSON.parse(JSON.stringify(backup));
+              futuroVersion.version = 99;
+              const rVersion99 = MimoEsquema.importar(futuroVersion, {});
               return {
                 conv: conv.resumen,
                 aprobados: conv.estado.cursos.filter(c => c.aprobado).length,
@@ -98,6 +100,8 @@ def main() -> int:
                   curso: (rFuturo.estado.cursos[0] || {}).campoFuturo,
                   cursos: (rFuturo.estado.cursos || []).length
                 },
+                version99: rVersion99,
+                error99: MimoEsquema.error(),
                 detect: [MimoEsquema.detectar(backup), MimoEsquema.detectar(ent), MimoEsquema.detectar(mal), MimoEsquema.detectar(fixture)]
               };
             }""", [fixture, MINI])
@@ -123,6 +127,8 @@ def main() -> int:
             f = out["futuro"]
             exigir(f["bloque"] == {"x": 1} and f["extension"] == "bar" and f["curso"] == "ok",
                    f"aditivo: campos desconocidos — {f}", fallas)
+            exigir(out["version99"] is None and "más nueva" in (out["error99"] or ""),
+                   f"versión 99: se rechaza — {out['version99']} / {out['error99']}", fallas)
             exigir(out["detect"] == ["backup", "entorno", "malla", "legacy"],
                    f"detectar: tipos — {out['detect']}", fallas)
             exigir(not [e for e in errores if e.startswith("pageerror")],

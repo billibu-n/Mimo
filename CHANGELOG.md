@@ -1,6 +1,44 @@
 # Cambios
 
-## 1.2.0-beta.3 — sin publicar
+## 1.2.0-beta.4 — en preparación
+
+### Actualización
+
+- Actualizador in-app con `tauri-plugin-updater`, manifiesto estático en la rama `updates`,
+  firma minisign y `requireSignedVersion`.
+- Canales `beta` y `stable`; comprobación al arrancar, al volver a la ventana y cada 6 h,
+  además del botón manual.
+- En Windows NSIS, Linux DEB y Linux RPM la instalación se ofrece desde la app; Arch recibe
+  aviso y enlace porque el plugin no instala `.pkg.tar.zst`.
+- Respaldo nativo obligatorio antes de instalar; si el respaldo falla, no se instala.
+
+### Datos
+
+- Espejo nativo atómico del estado; si `localStorage` falla por cuota, aparece un aviso
+  persistente y se puede exportar o restaurar la copia nativa.
+- Respaldo antes de importar, con retención y SHA-256.
+- Un respaldo con versión de esquema futura se rechaza en vez de aplicarse.
+- La contraseña de aplicación WebDAV ya no se guarda en `localStorage`; queda en la sesión.
+
+### Corregido
+
+- El enlace Linux ya no depende de símbolos privados de WebKitGTK: se buscan en runtime y, si
+  no existen, Mimo conserva el límite de 60 fps sin romper la compilación en Ubuntu.
+- `version.js` es la fuente única de la versión visible.
+
+### Pruebas
+
+- 19 gates web: se suman `gate-respaldo` y `gate-actualizacion`.
+- `gate-release` valida paquetes, firmas y manifiesto.
+- `gate-tauri` mide el espejo nativo, el respaldo, el canal de actualización y la tarjeta.
+
+### Limitaciones
+
+- El paquete Arch no se actualiza in-app.
+- Windows sin Authenticode puede mostrar SmartScreen.
+- La cuenta real de Nextcloud sigue pendiente de una prueba con credenciales del dueño.
+
+## 1.2.0-beta.3 — 2026-10-30
 
 ### Arquitectura
 

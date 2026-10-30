@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="css/temas/tema-alto-contraste-claro.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/shell.css">
+<link rel="stylesheet" href="css/actualizaciones.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
 </head>
 <body class="cargando">
@@ -98,7 +99,7 @@
 
 <header class="topbar">
   <button class="marca" id="btn-mimo" type="button" title="Mimo" aria-label="Mimo"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span class="wordmark" aria-hidden="true">M<span class="wm-i">ı</span>mo</span></button>
-  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0-beta.3</span>
+  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0-beta.4</span>
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
@@ -222,7 +223,7 @@
                   <span class="sync-sin-cuenta"><span data-l10n-es="¿No tienes cuenta?" data-l10n-en="No account?" data-l10n-zh="没有账户？">¿No tienes cuenta?</span> <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer" data-l10n-es="Crea una en Nextcloud" data-l10n-en="Create one in Nextcloud" data-l10n-zh="在 Nextcloud 创建一个">Crea una en Nextcloud</a></span>
                 </div>
 
-                <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de tu cuenta. Se guarda solo en este equipo. Si la conexión falla, prueba con Archivo manual." data-l10n-en="Use an app password, not your account password. It is saved only on this device. If the connection fails, try Manual file." data-l10n-zh="请使用应用密码，而不是账户密码。它只保存在此设备上。如果连接失败，请尝试手动文件。">Usa una contraseña de aplicación, no la de tu cuenta. Se guarda solo en este equipo. Si la conexión falla, prueba con Archivo manual.</p>
+                <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de tu cuenta. Se pide al sincronizar y no se guarda en el equipo. Si la conexión falla, prueba con Archivo manual." data-l10n-en="Use an app password, not your account password. It is requested when syncing and is not saved on the device. If the connection fails, try Manual file." data-l10n-zh="请使用应用密码，而不是账户密码。同步时会请求它，不会保存在设备上。如果连接失败，请尝试手动文件。">Usa una contraseña de aplicación, no la de tu cuenta. Se pide al sincronizar y no se guarda en el equipo. Si la conexión falla, prueba con Archivo manual.</p>
               </section>
 
               <section class="sync-bloque sync-bloque--cifrado" aria-labelledby="sync-cifrado-tit">
@@ -275,7 +276,11 @@
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques" data-l10n-es="0 bloques instalados." data-l10n-en="0 blocks installed." data-l10n-zh="0 个模块已安装。">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes" data-l10n-es="Agregar bloque o kit" data-l10n-en="Add block or kit" data-l10n-zh="添加模块或套件">Agregar bloque o kit</button></section>
         <div class="ajustes-pila">
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Vista dividida</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">Muestra dos secciones a la vez.</p><label class="check"><input type="checkbox" id="lab-split"> <span data-l10n-es="Vista dividida" data-l10n-en="Split view" data-l10n-zh="分屏视图">Vista dividida</span></label></section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.3 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.3 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.3 · 离线可用。">Mimo · 1.2.0-beta.3 · Funciona sin conexión.</p></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.4 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.4 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.4 · 离线可用。">Mimo · 1.2.0-beta.4 · Funciona sin conexión.</p></section>
+          <section class="card" id="actualizaciones-card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-l10n-es="Actualizaciones" data-l10n-en="Updates" data-l10n-zh="更新">Actualizaciones</span></h2><p class="muted" id="act-estado" data-l10n-es="Listo para comprobar." data-l10n-en="Ready to check." data-l10n-zh="可以检查。">Listo para comprobar.</p>
+            <div class="act-controles"><button class="btn" type="button" id="act-buscar" data-l10n-es="Buscar actualizaciones" data-l10n-en="Check for updates" data-l10n-zh="检查更新">Buscar actualizaciones</button><label class="campo"><span data-l10n-es="Canal" data-l10n-en="Channel" data-l10n-zh="频道">Canal</span><select class="entrada" id="act-canal"><option value="beta">Beta</option><option value="stable" data-l10n-es="Estable" data-l10n-en="Stable" data-l10n-zh="稳定">Estable</option></select></label><label class="check"><input type="checkbox" id="act-auto" checked> <span data-l10n-es="Avisarme automáticamente" data-l10n-en="Notify me automatically" data-l10n-zh="自动通知我">Avisarme automáticamente</span></label></div>
+            <div id="act-oferta" hidden><p><b id="act-version"></b> <span class="muted" id="act-fecha"></span></p><p class="muted" id="act-notas"></p><div class="fila"><button class="btn btn-primario" type="button" id="act-instalar" data-l10n-es="Instalar y reiniciar" data-l10n-en="Install and restart" data-l10n-zh="安装并重启">Instalar y reiniciar</button><button class="btn" type="button" id="act-posponer" data-l10n-es="Mañana" data-l10n-en="Tomorrow" data-l10n-zh="明天">Mañana</button><button class="btn" type="button" id="act-omitir" data-l10n-es="Omitir esta versión" data-l10n-en="Skip this version" data-l10n-zh="跳过此版本">Omitir esta versión</button><button class="btn" type="button" id="act-release" data-l10n-es="Ver release" data-l10n-en="View release" data-l10n-zh="查看发布">Ver release</button></div></div>
+          </section>
         </div>
       </div>
 
@@ -431,12 +436,15 @@
 
 <div class="menu-ctx" id="menu-ctx" role="menu" aria-label="Acciones del elemento" data-l10n-aria-es="Acciones del elemento" data-l10n-aria-en="Item actions" data-l10n-aria-zh="项目操作" hidden></div>
 
+<div class="banner-almacen" id="banner-almacen" role="alert" hidden><span id="banner-almacen-texto"></span><button class="btn btn--chico" type="button" id="banner-almacen-accion" data-l10n-es="Exportar respaldo" data-l10n-en="Export backup" data-l10n-zh="导出备份">Exportar respaldo</button><button class="btn btn--chico" type="button" id="banner-almacen-restaurar" hidden data-l10n-es="Restaurar copia nativa" data-l10n-en="Restore native copy" data-l10n-zh="恢复本机副本">Restaurar copia nativa</button><button class="btn btn--chico" type="button" id="banner-almacen-x" data-l10n-es="Cerrar" data-l10n-en="Close" data-l10n-zh="关闭">Cerrar</button></div>
+<div class="banner-actualizacion" id="banner-actualizacion" role="status" hidden><span id="banner-act-texto"></span><button class="btn btn--chico btn-primario" type="button" id="banner-act-instalar" data-l10n-es="Actualizar" data-l10n-en="Update" data-l10n-zh="更新">Actualizar</button><button class="btn btn--chico" type="button" id="banner-act-x" data-l10n-es="Más tarde" data-l10n-en="Later" data-l10n-zh="稍后">Más tarde</button></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="vendor/katex/katex.min.js"></script>
 <script src="vendor/katex/auto-render.min.js"></script>
 <script src="vendor/marked/marked.min.js"></script>
 <script src="vendor/dompurify/purify.min.js"></script>
+<script src="js/version.js"></script>
 <script src="js/esquema.js"></script>
 <script src="js/nucleo/eventos.js"></script>
 <script src="js/nucleo/i18n.js"></script>
@@ -456,8 +464,10 @@
 <script src="js/bloques/calificaciones/bloque.js"></script>
 <script src="js/bloques/estudio/vista.js"></script>
 <script src="js/bloques/estudio/bloque.js"></script>
+<script src="js/almacen.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/sync.js"></script>
+<script src="js/actualizaciones.js"></script>
 <script src="js/mimo-juego.js"></script>
 </body>
 </html>

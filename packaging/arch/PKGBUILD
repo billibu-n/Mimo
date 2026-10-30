@@ -2,7 +2,7 @@
 # Paquete de Arch Linux para Mimo. La fuente es el tarball del tag de GitHub.
 # Antes de enviarlo a AUR: publicar el tag y reemplazar SKIP por su sha256.
 pkgname=mimo
-pkgver=1.2.0beta.3
+pkgver=1.2.0beta.4
 pkgrel=1
 pkgdesc="Organizador personal offline: calendario, tareas, notas, malla, estudio y tiempo"
 arch=('x86_64')
@@ -13,9 +13,9 @@ depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'openssl' 'cairo' 'pango'
          'gdk-pixbuf2' 'at-spi2-atk' 'librsvg' 'hicolor-icon-theme')
 makedepends=('rust' 'cargo' 'python' 'pkgconf')
 install=mimo.install
-source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.3.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.4.tar.gz")
 sha256sums=('SKIP')
-_archivo="Mimo-1.2.0-beta.3"
+_archivo="Mimo-1.2.0-beta.4"
 
 build() {
   cd "$_archivo"

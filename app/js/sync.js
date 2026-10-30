@@ -25,6 +25,8 @@
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   function L(es, en, zh) { return window.MimoI18n ? window.MimoI18n.L(es, en, zh) : es; }
+  var claveAcceso = ""; /* solo memoria/sesión: la contraseña WebDAV no va a localStorage */
+  try { claveAcceso = sessionStorage.getItem("mimo.sync.clave.sesion") || ""; } catch (e) {}
   var meta = cargarMeta();
   var cola = cargarCola();
   var sincronizando = false, aplicando = false, conflicto = null;
@@ -58,7 +60,16 @@
           if (k === "webdav" || k === "cifrado") return;
           if (x[k] !== undefined) d[k] = x[k];
         });
-        if (x.webdav && typeof x.webdav === "object") d.webdav = Object.assign(d.webdav, x.webdav);
+        if (x.webdav && typeof x.webdav === "object") {
+      d.webdav = Object.assign(d.webdav, x.webdav);
+      // Migración: estados viejos guardaban la contraseña en claro. Se pasa a memoria
+      // para esta sesión y se borra del almacenamiento en el siguiente guardado.
+      if (d.webdav.clave) {
+        claveAcceso = String(d.webdav.clave);
+        d.webdav.clave = "";
+        try { sessionStorage.setItem("mimo.sync.clave.sesion", claveAcceso); } catch (e) {}
+      }
+    }
         if (x.cifrado && typeof x.cifrado === "object") d.cifrado = Object.assign(d.cifrado, x.cifrado);
       }
     } catch (e) {}
@@ -392,7 +403,7 @@
   function cabeceraAuth() {
     if (!meta.webdav.usuario) return "";
     try {
-      return "Basic " + btoa(unescape(encodeURIComponent(meta.webdav.usuario + ":" + (meta.webdav.clave || ""))));
+      return "Basic " + btoa(unescape(encodeURIComponent(meta.webdav.usuario + ":" + (claveAcceso || meta.webdav.clave || ""))));
     } catch (e) { return ""; }
   }
   function cabeceras(extra) {
@@ -851,6 +862,8 @@
     meta.provider = ""; meta.folderName = ""; meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
     meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
     meta.webdav.clave = "";
+    claveAcceso = "";
+    try { sessionStorage.removeItem("mimo.sync.clave.sesion"); } catch (e) {}
     carpetaHandle = null; handleLeido = true; borrarHandle();
     carpetaTauri = null;
     if (esTauri()) { try { invocarTauri("olvidar_carpeta", {}).catch(function () {}); } catch (e) {} }
@@ -940,7 +953,7 @@
   function cargarCamposWebDAV() {
     var u = $("#sync-webdav-url"); if (u) u.value = meta.webdav.url || "";
     var us = $("#sync-webdav-usuario"); if (us) us.value = meta.webdav.usuario || "";
-    var c = $("#sync-webdav-clave-acceso"); if (c) c.value = meta.webdav.clave || "";
+    var c = $("#sync-webdav-clave-acceso"); if (c) c.value = "";
     var ca = $("#sync-webdav-carpeta"); if (ca) ca.value = meta.webdav.carpeta || "Mimo";
   }
   function enlazarCamposWebDAV() {
@@ -953,7 +966,11 @@
     }
     unir("#sync-webdav-url", "url");
     unir("#sync-webdav-usuario", "usuario");
-    unir("#sync-webdav-clave-acceso", "clave");
+    var acceso = $("#sync-webdav-clave-acceso");
+    if (acceso) acceso.addEventListener("input", function () {
+      claveAcceso = acceso.value;
+      try { sessionStorage.setItem("mimo.sync.clave.sesion", claveAcceso); } catch (e) {}
+    });
     unir("#sync-webdav-carpeta", "carpeta");
   }
 

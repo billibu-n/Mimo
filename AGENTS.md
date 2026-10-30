@@ -12,9 +12,8 @@ Estas reglas son para cualquier agente que retome el proyecto. La app se llama
    git status --short --branch
    git log --oneline -5
    ```
-3. La rama de beta.3 es `t/mimo-beta3-bloques`; nace de `main` en `c71ebe3` (R47).
-   El último commit de código de este corte es `7a68ba0` (R57); el informe se
-   actualizó en `ae7e75d` (R58).
+3. La rama de beta.4 es `t/mimo-beta4`; nace de `main` en `f0c2e7e` (R62).
+   El corte de beta.3 quedó en `main` con tag `v1.2.0-beta.3`.
 4. No toques `main` ni publiques releases/tags sin autorización del dueño.
 
 ## Reglas de arquitectura
@@ -42,10 +41,10 @@ Estas reglas son para cualquier agente que retome el proyecto. La app se llama
   comando/puerto. No encadenes eventos.
 - **Calendario:** acepta fuentes (`registrarFuenteCalendario`). Calificaciones deriva
   sus componentes con fecha; no copia eventos en `estado.eventos`.
-- **`evaluaciones` está pendiente:** el dueño indicó que tendrá su propio sistema de
-  notas y clasificación. No la elimines, no la fusiones y no le inventes UI.
+- **`evaluaciones` está eliminada y desvinculada:** no vuelve al catálogo, al kit, al
+  esquema ni a los estados guardados.
 
-## Restricciones de beta.3
+## Restricciones de beta.4
 
 - Sin React/Vue/Svelte, sin bundler y sin módulos ES. Se usan scripts clásicos y el
   registro; los gates abren `app/index.html` como `file://`.
@@ -66,7 +65,7 @@ Antes de commitear:
 python3 pruebas/correr-gates.py
 ```
 
-Son **17 gates web**: 16 de navegador y `gate-arquitectura` estático. Todos deben
+Son **19 gates web**: 18 de navegador y `gate-arquitectura` estático. Todos deben
 quedar en verde. `gate-tauri` se corre aparte, después de compilar el binario.
 
 Si un gate falla, no lo “arregles” cambiando el selector sin entender el cambio de
@@ -102,9 +101,9 @@ Hecho en este corte:
   y desmontaje al quitar.
 - `evaluaciones` eliminada y desvinculada del catálogo, del kit, del esquema y del
   estado guardado.
-- `gate-bloques` y `gate-arquitectura`; 17 gates verdes.
+- `gate-bloques`, `gate-arquitectura`, `gate-respaldo` y `gate-actualizacion`; 19 gates verdes.
 
-Pendiente para el cierre de beta.3:
+Pendiente para el cierre de beta.4:
 
 - `gate-tauri` (33 medidas) después de compilar.
 - `CHANGELOG.md`, notas de release y versión de publicación.
