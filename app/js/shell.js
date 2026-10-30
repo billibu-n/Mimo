@@ -1687,9 +1687,8 @@
       return (x.requisitos || []).indexOf(cod) !== -1 ||
         (x.requisitos_o || []).some(function (g) { return g.indexOf(cod) !== -1; });
     }).length;
-    if (!window.confirm(L("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"? Se borran también sus calificaciones." + (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""), "Delete \"" + c.codigo + " — " + c.nombre + "\"? Its grades will also be deleted." + (dependientes ? " It will be removed from the prerequisites of " + dependientes + " course(s)." : ""), "删除“" + c.codigo + " — " + c.nombre + "”？其成绩也会被删除。" + (dependientes ? " 它将从 " + dependientes + " 门课程的先修要求中移除。" : "")))) return;
+    if (!window.confirm(L("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"? Sus calificaciones se conservan como historial." + (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""), "Delete \"" + c.codigo + " — " + c.nombre + "\"? Its grades are kept as history." + (dependientes ? " It will be removed from the prerequisites of " + dependientes + " course(s)." : ""), "删除“" + c.codigo + " — " + c.nombre + "”？其成绩将作为历史保留。" + (dependientes ? " 它将从 " + dependientes + " 门课程的先修要求中移除。" : "")))) return;
     estado.cursos = estado.cursos.filter(function (x) { return x.codigo !== cod; });
-    if (estado.califs) delete estado.califs[cod];
     estado.cursos.forEach(function (x) {
       x.requisitos = (x.requisitos || []).filter(function (r) { return r !== cod; });
       x.requisitos_o = (x.requisitos_o || []).map(function (g) {
@@ -1938,7 +1937,6 @@
   function normalizarCalifs() {
     normalizarCursos();
     if (!estado.califs || typeof estado.califs !== "object") estado.califs = {};
-    var vigentes = {};
     estado.cursos.forEach(function (cur) {
       var q = estado.califs[cur.codigo];
       if (!q || typeof q !== "object") return;
@@ -1984,9 +1982,8 @@
       });
       q.notaMin = notaNum(q.notaMin) || 4;
       q.meta = notaNum(q.meta) || 5;
-      estado.califs[cur.codigo] = q; vigentes[cur.codigo] = 1;
+      estado.califs[cur.codigo] = q;
     });
-    Object.keys(estado.califs).forEach(function (cod) { if (!vigentes[cod]) delete estado.califs[cod]; });
   }
   function califDe(cod) {
     if (!estado.califs || typeof estado.califs !== "object") estado.califs = {};
@@ -2176,6 +2173,12 @@
     var cursos = estado.cursos.filter(function (c) { return estado.califs[c.codigo] || c.enCurso; });
     if (!cursos.length && estado.cursos.length) cursos = [estado.cursos[0]];
     var vacio = $("#calif-vacio"), layout = $("#calif-layout");
+    var sinMalla = !instalado("malla");
+    if ($("#btn-calif-malla")) $("#btn-calif-malla").hidden = sinMalla;
+    if ($("#calif-crear-ramo")) $("#calif-crear-ramo").hidden = sinMalla;
+    if ($("#calif-curso-form")) $("#calif-curso-form").hidden = !sinMalla;
+    if ($("#calif-vacio-texto-malla")) $("#calif-vacio-texto-malla").hidden = sinMalla;
+    if ($("#calif-vacio-texto-sola")) $("#calif-vacio-texto-sola").hidden = !sinMalla;
     if (!cursos.length) {
       if (vacio) vacio.hidden = false;
       if (layout) layout.hidden = true;
@@ -4235,6 +4238,24 @@
       borrarSesion(b.getAttribute("data-borrar-estudio"));
     });
     $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
+    $("#calif-curso-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var cod = String($("#calif-curso-codigo").value || "").trim().toUpperCase();
+      var nombre = String($("#calif-curso-nombre").value || "").trim();
+      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
+      normalizarCursos();
+      if (ramoPorCodigo(cod)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
+      var nuevo = window.MimoDominioCursos ? MimoDominioCursos.crear({ codigo: cod, nombre: nombre }) : { codigo: cod, nombre: nombre, creditos: 0, nivel: 1 };
+      if (!nuevo) { aviso(L("No se pudo crear el curso.", "Could not create the course.", "无法创建课程。")); return; }
+      nuevo.enCurso = true;
+      estado.cursos.push(nuevo);
+      califSel = nuevo.codigo; estado.califSel = califSel; estado.ramoSel = califSel;
+      estado.panel.calificaciones = "detalle";
+      califDe(califSel);
+      guardar(); pintarCalificaciones(); pintarPanel();
+      $("#calif-curso-codigo").value = ""; $("#calif-curso-nombre").value = "";
+      aviso(L("Curso creado. Ya puedes cargar sus notas.", "Course created. You can now enter its grades.", "课程已创建。现在可以录入成绩。"));
+    });
     $("#calif-lista").addEventListener("click", function (e) {
       var b = e.target.closest("[data-calif]"); if (!b) return;
       califSel = b.getAttribute("data-calif"); estado.califSel = califSel;

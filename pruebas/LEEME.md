@@ -6,7 +6,7 @@ impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 pruebas/correr-gates.py     # los 15 gates web, resumen al final
+python3 pruebas/correr-gates.py     # los 16 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila. El gate lo arranca en modo headless
@@ -26,6 +26,7 @@ Un gate que no discrimina es un gate roto.
 | Gate | Bueno | Roto |
 |---|---|---|
 | `gate-shell` | el shell universal: instalar Tiempo, quitar hijo, kit Academics, tarea, nota, panel por sección, temas | sin demo: mide `app/index.html` |
+| `gate-bloques` | registro válido, base fija, Calificaciones sin Malla, curso creado desde Calificaciones, Malla lo ve y al quitarla los datos siguen | registro duplicado, base removible o curso perdido |
 | `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 9 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
 | `gate-busqueda` | Ctrl+K encuentra tareas, notas, eventos, ramos y periodos y navega | sin demo: mide `app/index.html` |

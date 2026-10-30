@@ -93,7 +93,7 @@ Interpretación de trabajo:
 | `app/css/base.css` + `tokens.css` | 229 líneas | Base y tokens compartidos |
 | `app/tutorial.json` | 242 líneas | Tutorial precargado; menciona bloques y kit |
 | Textos i18n | 447 claves | Un solo diccionario para toda la app |
-| Gates web | 15 | Todos abren `app/index.html` como `file://` |
+| Gates web | 16 | Todos abren `app/index.html` como `file://` |
 | Medidas Tauri | 33 | Binario release, tutorial, sync nativa, persistencia |
 
 Las secciones del HTML son:
@@ -371,7 +371,7 @@ Shadow DOM o iframe aislado.
 ### 4.9 Módulos ES: buenos, pero rompen los gates actuales
 
 Los módulos ES (`import`/`export`) son la forma nativa de dividir código, pero el
-navegador los carga con CORS y no funcionan desde `file://`. Los 15 gates abren
+navegador los carga con CORS y no funcionan desde `file://`. Los 16 gates abren
 `app/index.html` con `page.goto(file://…)`. Lo verifiqué en esta sesión: un
 `<script type="module">` desde `file://` falla con “blocked by CORS policy”.
 
@@ -874,9 +874,9 @@ Carga diferida:
 
 ### 5.10 Pruebas y “architecture fitness”
 
-Además de los 15 gates actuales:
+Además de los 16 gates actuales:
 
-`gate-bloques.py` (nuevo):
+`gate-bloques.py` (implementado en esta rama):
 
 1. Cada manifiesto valida: ID único, `api`, dependencias, ciclos.
 2. Instalar cada bloque solo, desde estado limpio; sin errores de consola; su sección
@@ -994,7 +994,7 @@ Objetivo: que la lista de bloques deje de estar hard-codeada, sin cambiar la UI.
 **No hacer todavía:** mover HTML, CSS ni i18n. Los bloques siguen usando el DOM
 estático y las funciones globales; el registro es una fachada.
 
-**Gates:** los 15 actuales, sin cambios. Si `gate-shell`/`gate-ronda14` fallan, el
+**Gates:** los 16 actuales, sin cambios. Si `gate-shell`/`gate-ronda14` fallan, el
 registro no respeta el orden o los IDs.
 
 **Riesgo:** medio. Es el cambio de flujo de control; se hace con la app funcionando.
@@ -1089,7 +1089,7 @@ ida y vuelta y backup antes/después.
   tampoco prometer una vista que no existe. Cuando se diseñe su sistema de notas y
   clasificación, se decide si es bloque, fuente o pack.
 
-**Gates:** `gate-bloques` nuevo, `gate-shell`, `gate-busqueda`, `gate-diseno`.
+**Gates:** `gate-bloques`, `gate-shell`, `gate-busqueda`, `gate-diseno`.
 
 ### Fase 7 — Cierre beta.3
 
@@ -1099,7 +1099,7 @@ ida y vuelta y backup antes/después.
 - `CHANGELOG.md`: beta.3.
 - `fixtures/manifiestos-v1.1.json` -> versión con `api`, `requiere`, `provee`,
   `estado`, `assets`.
-- Correr 15 gates + `gate-bloques` + `gate-arquitectura`.
+- Correr 16 gates + `gate-arquitectura`.
 - Compilar Tauri; `gate-tauri` 33/33; `MIMO_HEADLESS=1`; FPS >= baseline.
 - Revisar que `app/` no tenga material de taller; el informe se queda en `docs/`
   solo si se decide que es documentación de arquitectura, no handoff.
@@ -1151,7 +1151,7 @@ Calificaciones.
 6. **Montaje:** cada bloque se monta y desmonta sin errores de consola; `signal` corta
    listeners/intervalos; el foco vuelve a un lugar razonable.
 7. **Split:** mover un bloque no duplica IDs ni pierde estado.
-8. **Gates:** 15/15 actuales + `gate-bloques` + `gate-arquitectura` en verde;
+8. **Gates:** 16/16 actuales + `gate-arquitectura` en verde;
    `gate-tauri` 33/33.
 9. **Rendimiento:** boot y FPS no empeoran; baseline conocido 145 fps en 144 Hz
    (R47, no re-medido en esta sesión).
@@ -1278,7 +1278,7 @@ infirieron por funciones y límites de responsabilidad.
   `#p-malla`, `#p-calificaciones`, `#p-estudio`, `#p-ajustes`.
 - Orden de tabs y `Ctrl+1..9`.
 - Instalar/quitar Tiempo y kit Academics como hoy.
-- 15 gates web y 33 medidas Tauri.
+- 16 gates web y 33 medidas Tauri.
 - Español/inglés/chino; temas claro/oscuro; contraste AA.
 - Offline; sin red; sin cuenta.
 - FPS: baseline 145 en 144 Hz (R47).

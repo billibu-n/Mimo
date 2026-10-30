@@ -490,6 +490,8 @@ body.nav-izq .shell{margin-left:64px}
 
 /* ---- U4b: Calificaciones ---- */
 .calif-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.calif-curso-form{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2);margin-top:var(--sp-3)}
+.calif-curso-form .entrada{max-width:220px}
 .calif-lista{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-2);max-height:calc(100vh - 220px);overflow:auto}
 .calif-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--sp-2);width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);font:inherit;padding:var(--sp-2);margin-bottom:2px;cursor:pointer}
 .calif-item:hover{background:var(--sup2)}
