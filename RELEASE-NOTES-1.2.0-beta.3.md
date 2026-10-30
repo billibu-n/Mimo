@@ -4,6 +4,31 @@ Tercera beta de Mimo. El foco de esta entrega es la arquitectura de bloques: cad
 bloque tiene su carpeta, su vista y su ciclo de vida; el armazón de la app queda en
 el núcleo.
 
+## Descargas
+
+| Plataforma | Archivo |
+|---|---|
+| Fedora / RHEL x86_64 | `Mimo-1.2.0-beta.3-1.x86_64.rpm` |
+| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.3_amd64.deb` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.3-1-x86_64.pkg.tar.zst` |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.3_x64-setup.exe` |
+| Todas | `tutorial.json`, `LICENSE`, `LEEME.md`, `SHA256SUMS` |
+
+## Instalar
+
+```bash
+# Fedora / RHEL
+sudo dnf install ./Mimo-1.2.0-beta.3-1.x86_64.rpm
+
+# Debian / Ubuntu 24.04+
+sudo apt install ./Mimo_1.2.0-beta.3_amd64.deb
+
+# Arch Linux
+sudo pacman -U ./mimo-1.2.0beta.3-1-x86_64.pkg.tar.zst
+```
+
+En Windows, ejecuta el `.exe`. Es una instalación por usuario y no pide administrador.
+
 ## Arquitectura
 
 - **Bloques con carpeta propia.** `app/js/bloques/<id>/` reúne vista, ciclo de vida
