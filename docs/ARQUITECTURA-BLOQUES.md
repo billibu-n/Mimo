@@ -7,6 +7,9 @@
 **Fecha:** 2026-10-30.
 **Para quién:** el próximo agente que retome este trabajo, y el dueño del proyecto.
 
+> **Reglas de sesión:** antes de tocar código, lee `AGENTS.md` en la raíz del repo.
+> Este informe es la memoria larga; `AGENTS.md` es el contrato corto de trabajo.
+
 > **Si perdiste el contexto, lee en este orden:** §1 (diagnóstico), §5 (arquitectura
 > propuesta), §7 (fases) y §10 (próximo paso). Las referencias de línea son sobre
 > `c71ebe3`; después de mover código, usa los nombres de función, no los números.
