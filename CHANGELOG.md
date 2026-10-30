@@ -1,6 +1,6 @@
 # Cambios
 
-## 1.2.0-beta.4 — en preparación
+## 1.2.0-beta.4 — 2026-10-30
 
 ### Actualización
 

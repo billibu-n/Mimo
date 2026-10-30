@@ -21,7 +21,7 @@ Hay dos firmas distintas:
 1. **minisign de Tauri** para el updater. La clave privada se genera con
    `cargo tauri signer generate -w ~/.config/mimo/updater.key` y **no** se versiona.
    La pública va en `plugins.updater.pubkey`.
-2. **GPG** para los assets y `SHA256SUMS`. Es independiente de la anterior.
+2. **GPG opcional** para los assets y `SHA256SUMS`. Es independiente de la anterior; beta.4 no lo usa.
 
 Si se pierde la clave minisign, no se pueden publicar actualizaciones para las versiones
 instaladas. Hay que guardar una copia offline y la contraseña en un gestor.
@@ -54,7 +54,7 @@ Secretos necesarios:
 
 - `TAURI_SIGNING_PRIVATE_KEY` (ruta o contenido de la clave minisign)
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
-- `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE` (para los assets)
+- `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE` (opcional, para los assets)
 
 `tauri build` firma los `.deb`, `.rpm` y `.exe` cuando `createUpdaterArtifacts` está activo.
 El workflow sube también los `.sig`.
@@ -69,7 +69,7 @@ python3 pruebas/gate-release.py
 # La comprobación criptográfica real se hace en gate-tauri con un manifiesto local
 # y en la prueba manual de una versión anterior.
 
-# Firma GPG de los assets
+# Firma GPG opcional de los assets (si existe SHA256SUMS.asc)
 gpg --verify SHA256SUMS.asc SHA256SUMS
 sha256sum -c SHA256SUMS
 ```
