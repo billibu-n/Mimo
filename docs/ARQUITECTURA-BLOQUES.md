@@ -110,7 +110,9 @@ Las secciones del HTML son:
 | Ajustes | 430 | No: es base fija |
 
 Además existe `evaluaciones` en `BLOQUES` como “aporte”, pero **no tiene sección, ni
-código, ni vista**. Es metadato muerto: el kit lo instala y no aparece en ninguna parte.
+código, ni vista**. El dueño indicó que tendrá su propio sistema de notas y
+clasificación; por ahora es una pieza **pendiente de diseño**, no un bloque eliminable.
+No se toca hasta definir ese sistema.
 
 ### 3.2 Qué es un “bloque” hoy
 
@@ -512,8 +514,7 @@ Lectura:
 - **Bloques** contienen la vista, los bindings, los textos, los estilos y las
   contribuciones (panel, búsqueda, ajustes, fuentes de calendario).
 - Las flechas punteadas son **opcionales**: Calendario puede mostrar tareas o
-  evaluaciones aportadas por Calificaciones si esos bloques están; si no, sigue
-  funcionando.
+  componentes con fecha si esos bloques están; si no, sigue funcionando.
 
 ### 5.3 Estructura de carpetas
 
@@ -924,8 +925,9 @@ commit. No se declara verde por “se ve bien”.
 | **Ajustes** | `prefs`, `panel`, `instalados`, `kits` | — | ajustes de bloques | shell | `prefs.*` |
 | **Academics** | — | hijos | — | pack | — |
 
-`Evaluaciones` no aparece en la tabla porque **no es una pieza**: hoy es metadato
-muerto; su función debe ser una fuente de Calificaciones al Calendario, no un bloque.
+`Evaluaciones` no aparece en la tabla porque **no es una pieza implementada**: hoy es
+metadato sin UI, y queda **pendiente** de diseño. No se elimina del catálogo ni del kit
+hasta que el dueño defina su sistema de notas y clasificación.
 
 Decisiones por bloque:
 
@@ -950,9 +952,10 @@ Decisiones por bloque:
 - **Estudio** no debe depender de Tiempo para registrar manualmente; ya tiene su
   formulario (HTML 397–410). Usa `dominio/sesiones` para persistir. Si Tiempo no está,
   el gráfico y la tabla siguen.
-- **Evaluaciones** no es un bloque: es una fuente de Calificaciones al Calendario.
-  Recomiendo eliminarlo del catálogo y del kit; el kit instala Malla, Calificaciones
-  y Estudio. Si se quiere una vista de evaluaciones, es otro producto.
+- **Evaluaciones** está **pendiente**: el dueño indica que tendrá su propio sistema de
+  notas y clasificación. Hoy no tiene sección, código ni vista; no se elimina ni se
+  fusiona con Calificaciones hasta diseñar ese sistema. El kit Academics lo sigue
+  instalando como metadato, pero no debe prometer una UI que no existe.
 - **Ajustes** no es bloque; es shell. Los periodos son ajustes de Calendario, no de
   Ajustes global.
 - **Academics** es un pack: instala/desinstala hijos de forma transaccional y registra
@@ -1077,11 +1080,14 @@ ida y vuelta y backup antes/después.
   - Si es opcional, solo desmontar.
 - Packs transaccionales; `kits` sigue registrando lo instalado por pack.
 - Estados vacíos:
-  - Sin bloques: “Mimo está vacío; agrega un bloque”.
+  - Sin bloques opcionales: la base sigue (Calendario, Tareas, Notas, Ajustes) y se
+    ofrece “Agregar bloque” para Tiempo o el kit Academics.
   - Calificaciones sin cursos: “Crea un curso” (dominio) o “Instala Malla”.
   - Estudio sin cursos: sesiones “Sin ramo” y tabla vacía.
   - Tiempo sin tareas/cursos: selectores vacíos, timer funciona.
-- Eliminar `evaluaciones` del catálogo/kit o convertirlo en fuente real.
+- `evaluaciones` queda **pendiente**: no eliminarlo del catálogo ni del kit, pero
+  tampoco prometer una vista que no existe. Cuando se diseñe su sistema de notas y
+  clasificación, se decide si es bloque, fuente o pack.
 
 **Gates:** `gate-bloques` nuevo, `gate-shell`, `gate-busqueda`, `gate-diseno`.
 
@@ -1100,34 +1106,42 @@ ida y vuelta y backup antes/después.
 
 ---
 
-## 8. Decisiones pendientes (y recomendación)
+## 8. Decisiones del dueño (2026-10-30)
 
-| # | Decisión | Opciones | Recomendación |
-|---|---|---|---|
-| D1 | ¿Calendario, Tareas y Notas son base fija o bloques removibles? | fija / removible | **Removibles por defecto**; Ajustes queda en el shell. Si se quitan todos, estado vacío con “Agregar bloque”. |
-| D2 | ¿Calificaciones puede existir sin Malla? | no / sí | **Sí**, con `dominio/cursos` y un formulario mínimo de curso; Malla es la vista de planificación, no la dueña del dato. |
-| D3 | ¿Quién es dueño de `sesiones`? | Tiempo / Estudio / dominio | **Dominio** (`dominio/sesiones`); Tiempo produce, Estudio analiza, ambos leen el mismo registro. |
-| D4 | ¿`evaluaciones` es bloque? | sí / no | **No**; es fuente de Calificaciones al Calendario. Eliminar del catálogo/kit. |
-| D5 | ¿Módulos ES en beta.3? | sí / no | **No**; scripts clásicos + registro. Revisar cuando los gates usen HTTP. |
-| D6 | ¿Bundler/framework? | sí / no | **No**; no resuelve el problema y agrega riesgo. |
-| D7 | ¿Plugins de terceros? | sí / no | **No** en beta.3; primero bloques internos. |
-| D8 | ¿Se conservan las claves de estado actuales? | sí / no | **Sí**; migrar a `_bloques` solo como metadata. |
-| D9 | ¿Se conservan los IDs del DOM? | sí / no | **Sí** durante la migración; los gates dependen de ellos. |
-| D10 | ¿Carga diferida de código? | sí / no | **Montaje diferido sí**; carga de código de first-party al inicio. |
-| D11 | ¿Ficha/detalle de bloque (docs/BLOQUES fase 2)? | sí / no | **Separado**; no es requisito de modularidad. |
-| D12 | ¿El informe queda en el repo? | sí / no | **Sí, en `docs/`** como documento de arquitectura; no es un handoff ni material de taller. |
+Estas decisiones mandan sobre las recomendaciones anteriores.
 
-Si el dueño no responde, el agente debe seguir la recomendación y dejar la decisión
-anotada en el commit. No bloquear la migración por D11/D12.
+| # | Decisión | Estado |
+|---|---|---|
+| D1 | Calendario, Tareas y Notas son **base fija**; no se quitan. Ajustes queda en el shell. | **Decidido** |
+| D2 | Calificaciones **puede existir sin Malla**, usando `dominio/cursos`; Malla es la vista de planificación, no la dueña del dato. | **Decidido: sí** |
+| D3 | `sesiones` es **dominio** (`dominio/sesiones`); Tiempo produce, Estudio analiza, ambos leen el mismo registro. | **Decidido: sí** |
+| D4 | `evaluaciones` tiene su **propio sistema de notas y clasificación**. No se elimina ni se fusiona todavía. | **Pendiente de diseño** |
+| D5 | Módulos ES en beta.3. | **Decidido: no**; scripts clásicos + registro. |
+| D6 | Bundler/framework. | **Decidido: no**; no resuelve el problema y agrega riesgo. |
+| D7 | Plugins de terceros. | **Decidido: no** en beta.3; primero bloques internos. |
+| D8 | Se conservan las claves de estado actuales; `_bloques` solo como metadata. | **Decidido: sí** |
+| D9 | Se conservan los IDs del DOM durante la migración; los gates dependen de ellos. | **Decidido: sí** |
+| D10 | Montaje diferido sí; carga de código first-party al inicio. | **Decidido: sí** |
+| D11 | Ficha/detalle de bloque (`docs/BLOQUES` fase 2). | **Separado**; no es requisito de modularidad. |
+| D12 | El informe queda en `docs/` como documento de arquitectura. | **Decidido: sí** |
+
+La base fija cambia el criterio de aceptación: la app **no** se queda sin bloques.
+Como mínimo quedan Calendario, Tareas, Notas y Ajustes. La independencia se prueba
+quitando los bloques opcionales (Tiempo, Malla, Calificaciones, Estudio) y sus
+dependencias, no la base.
+
+`evaluaciones` no se toca hasta que el dueño defina su sistema. Si se implementa,
+puede ser un bloque propio con su propio modelo de notas, no una fuente de
+Calificaciones.
 
 ---
 
 ## 9. Criterios de aceptación de la beta.3
 
-1. **Agregar un bloque** requiere: carpeta + manifiesto + una línea en
+1. **Agregar un bloque opcional** requiere: carpeta + manifiesto + una línea en
    `js/bloques/registro.js`; no se toca `nucleo/`, ni otro bloque, ni `index.html`.
-2. **Quitar un bloque** requiere: borrar su línea y su carpeta; no quedan tabs,
-   paneles, búsquedas ni ajustes huérfanos.
+2. **Quitar un bloque opcional** requiere: borrar su línea y su carpeta; no quedan
+   tabs, paneles, búsquedas ni ajustes huérfanos. La base no se quita.
 3. **Datos:** quitar y reinstalar un bloque conserva sus datos; exportar/importar con
    el bloque ausente los conserva; no hay borrados en cascada entre bloques.
 4. **Dependencias:** una dura faltante se explica y no rompe; una opcional faltante
@@ -1144,8 +1158,8 @@ anotada en el commit. No bloquear la migración por D11/D12.
 10. **Offline:** sigue funcionando desde `file://` y desde Tauri, sin red.
 11. **Documentación:** `docs/BLOQUES.md`, `docs/ESQUEMA.md`, `CONTRIBUTING.md`,
     `pruebas/LEEME.md` y `CHANGELOG.md` actualizados.
-12. **Producto:** el tutorial sigue funcionando; si se quitan bloques base, el
-    tutorial no promete secciones ausentes.
+12. **Producto:** el tutorial sigue funcionando; no promete bloques opcionales que no
+    estén instalados. La base Calendario/Tareas/Notas/Ajustes siempre está.
 
 ---
 
