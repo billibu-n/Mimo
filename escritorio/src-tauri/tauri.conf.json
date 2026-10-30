@@ -4,8 +4,7 @@
   "version": "1.2.0-beta.2",
   "identifier": "cl.mimo.escritorio",
   "build": {
-    "beforeBuildCommand": "python3 preparar-frontend.py",
-    "frontendDist": "../app"
+    "frontendDist": "../../app"
   },
   "app": {
     "windows": [

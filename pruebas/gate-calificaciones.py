@@ -11,7 +11,7 @@ Mide el motor y la interfaz sobre app/index.html:
   6. el panel Detalle muestra el resumen del ramo;
   7. 411 sin desborde y consola limpia.
 
-Uso: python3 app/pruebas/gate-calificaciones.py
+Uso: python3 pruebas/gate-calificaciones.py
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))

@@ -12,20 +12,18 @@ pull requests pequeños y enfocados.
 ## Construir y probar
 
 ```bash
-python3 app/pruebas/correr-gates.py
+python3 pruebas/correr-gates.py
 
 cd escritorio
-python3 preparar-frontend.py
 CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" \
   PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles deb,rpm
-python3 ../app/pruebas/gate-tauri.py
+python3 ../pruebas/gate-tauri.py
 ```
 
 En Windows:
 
 ```powershell
 cd escritorio
-python preparar-frontend.py
 tauri build --bundles nsis
 ```
 

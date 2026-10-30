@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "tutorial.json"
 PUB = RAIZ / "publicacion" / "tutorial.json"
 

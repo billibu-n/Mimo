@@ -12,10 +12,10 @@ Mide el adaptador de referencia contra el respaldo real de formato 2:
   7. un respaldo roto (catálogo no objeto) sale 1, no se cuela
 
 Uso:
-  python3 app/pruebas/gate-datos.py
-  python3 app/pruebas/gate-datos.py --demo
-  python3 app/pruebas/gate-datos.py --fichero app/pruebas/fixtures/respaldo-sintetico.json
-  python3 app/pruebas/gate-datos.py --fichero /ruta/al/respaldo-real.json
+  python3 pruebas/gate-datos.py
+  python3 pruebas/gate-datos.py --demo
+  python3 pruebas/gate-datos.py --fichero pruebas/fixtures/respaldo-sintetico.json
+  python3 pruebas/gate-datos.py --fichero /ruta/al/respaldo-real.json
 """
 from __future__ import annotations
 
@@ -25,8 +25,8 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
-FIXTURE = RAIZ / "app" / "pruebas" / "fixtures" / "respaldo-sintetico.json"
+RAIZ = AQUI.parent
+FIXTURE = AQUI / "fixtures" / "respaldo-sintetico.json"
 
 sys.path.insert(0, str(AQUI))
 from datos_v3 import DatosInvalidos, exportar3, importar2, importar3  # noqa: E402

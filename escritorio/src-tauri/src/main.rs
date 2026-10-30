@@ -1,7 +1,7 @@
 // Mimo para escritorio (Tauri 2).
 //
-// Carga `escritorio/app/index.html`, que `preparar-frontend.sh` copia desde la app universal
-// (`<proyecto>/app/`) con lista blanca: index.html, css/, js/, img/ y vendor/.
+// Carga `app/index.html` directamente: Tauri usa `../../app` como frontendDist.
+// La app universal es la única fuente; no hay copia intermedia ni paso de preparación.
 //
 // Tres extras nativos, y nada mas:
 //   - `http_pedir`: puente HTTP con reqwest; el WebView no exime a `fetch` de CORS y Rust si.

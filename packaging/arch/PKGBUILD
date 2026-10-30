@@ -19,7 +19,6 @@ _archivo="Mimo-1.2.0-beta.2"
 
 build() {
   cd "$_archivo"
-  python3 escritorio/preparar-frontend.py
   export CARGO_TARGET_DIR="$srcdir/target"
   cargo build --release --locked --manifest-path escritorio/src-tauri/Cargo.toml
 }

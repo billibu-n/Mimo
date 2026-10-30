@@ -2,7 +2,6 @@
 
 ```bash
 cd escritorio
-python3 preparar-frontend.py            # app/ -> escritorio/app/ (lista blanca)
 CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" \
   PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles deb,rpm
 mkdir -p release
@@ -15,9 +14,8 @@ Para la release de GitHub, `sh preparar-publicacion.sh` deja en `publicacion/` l
 encuentre en `release/` (RPM, DEB, instalador Windows y paquete Arch), `tutorial.json`, `LICENSE`,
 `SHA256SUMS` y `LEEME.md`. No copia HTML ni carpetas históricas.
 
-`cargo tauri build` ejecuta `python3 preparar-frontend.py` antes de compilar
-(`beforeBuildCommand`), así que el paso manual solo hace falta para inspeccionar el frontend
-preparado. El mismo script funciona en Windows (`python preparar-frontend.py`).
+`cargo tauri build` usa directamente `<proyecto>/app/` como `frontendDist` (`../../app`). No hay
+copia intermedia ni paso de preparación: la app universal es la única fuente.
 
 El binario suelto queda en `release/mimo`. `CARGO_TARGET_DIR` saca la compilación de `~/sede`;
 `release/` está ignorado en git y es un enlace a `~/sede/respaldos/mimo-1.2.0-release` para no
@@ -30,7 +28,6 @@ Windows se compila **en Windows**, no se cruza desde Linux:
 
 ```powershell
 cd escritorio
-python preparar-frontend.py
 tauri build --bundles nsis
 ```
 
@@ -63,10 +60,10 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
 
 ## Que hace cada pieza
 
-- `preparar-frontend.py` copia la **app universal** (`<proyecto>/app/`) a `escritorio/app/` con
-  lista blanca: `index.html`, `tutorial.json`, `css/`, `js/`, `img/` y `vendor/`. Deja fuera
-  `pruebas/`; si falta `sync.js`, KaTeX, Markdown, Comfortaa o el icono, para con exit 1.
-  `app/` es generado, está en `.gitignore` y se rehace en cada pasada.
+- `app/` es la **app universal** y la única fuente: `index.html`, `tutorial.json`, `css/`, `js/`,
+  `img/` y `vendor/`. Tauri la empaqueta directamente; las pruebas viven en `pruebas/` y la
+  documentación técnica en `docs/`, fuera del frontend. Si falta `sync.js`, KaTeX, Markdown,
+  Comfortaa o el icono, el build falla.
 - `src-tauri/` es el caparazón: `productName` "Mimo", identificador `cl.mimo.escritorio`, ventana
   1280x900 y `bundle.targets` `["deb", "rpm"]`; Windows usa `tauri.windows.conf.json` con NSIS.
 - **Sin servidor web:** el protocolo de recursos de Tauri sirve `index.html`, CSS, JS, imágenes,
@@ -83,8 +80,8 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
   defecto `/tmp/mimo-sonda.json`) y sale. Mide navegación, nota en `localStorage`, Ajustes y una
   sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
   `DISPLAY` o `WAYLAND_DISPLAY`.
-- **Gate:** `python3 app/pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia, la
-  sync nativa contra `app/pruebas/webdav.py` la ida y vuelta de la carpeta nativa y el tutorial precargado (33 medidas).
+- **Gate:** `python3 pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia, la
+  sync nativa contra `pruebas/webdav.py` la ida y vuelta de la carpeta nativa y el tutorial precargado (33 medidas).
   No está en `correr-gates.py` porque necesita compilar y abrir ventana; se corre aparte al cerrar
   U6c.
 - Requisitos (Fedora, ya instalados aquí): `cargo` y `cargo-tauri` 2.12, `rpmbuild`,

@@ -28,7 +28,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))

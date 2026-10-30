@@ -144,6 +144,6 @@ Los IDs viejos se prefijan (`ev`, `ti`, `tp`, `si`) para no chocar con los nuevo
 
 ## 7. Prueba
 
-`app/pruebas/gate-esquema.py` mide: migración del respaldo sintético, catálogo completo,
+`pruebas/gate-esquema.py` mide: migración del respaldo sintético, catálogo completo,
 aprobados con créditos, eventos/tareas, ida y vuelta de los tres documentos y conservación de
 campos desconocidos.

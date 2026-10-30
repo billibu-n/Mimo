@@ -10,7 +10,7 @@ Mide sobre app/index.html:
   5. Escape cierra;
   6. a 411 no desborda y la consola queda limpia.
 
-Uso: python3 app/pruebas/gate-busqueda.py
+Uso: python3 pruebas/gate-busqueda.py
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))

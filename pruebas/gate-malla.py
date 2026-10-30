@@ -12,7 +12,7 @@ Mide lo que el encargo pide, no lo que se ve:
   7. el buscador y el filtro reducen la malla;
   8. a 411 px no hay desborde.
 
-Uso: python3 app/pruebas/gate-malla.py
+Uso: python3 pruebas/gate-malla.py
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 FIXTURE = AQUI / "fixtures" / "respaldo-sintetico.json"
 

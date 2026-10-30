@@ -12,8 +12,8 @@ Mide la piel, no el gusto:
   7. fixture roto: un tema con fg = bg debe salir 1
 
 Uso:
-  python3 app/pruebas/gate-diseno.py
-  python3 app/pruebas/gate-diseno.py --demo
+  python3 pruebas/gate-diseno.py
+  python3 pruebas/gate-diseno.py --demo
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ import tempfile
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 CSS = RAIZ / "app" / "css"
 BANCO = AQUI / "banco-tokens.html"
 APP = RAIZ / "app" / "index.html"

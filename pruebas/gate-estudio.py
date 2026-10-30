@@ -10,7 +10,7 @@ Mide sobre app/index.html:
   5. borrar una sesión descuenta;
   6. 411 sin desborde y consola limpia.
 
-Uso: python3 app/pruebas/gate-estudio.py
+Uso: python3 pruebas/gate-estudio.py
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))

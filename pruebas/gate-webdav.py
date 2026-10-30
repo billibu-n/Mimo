@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 RUTA = "/Mimo/mimo-sync.json.enc"
 CLAVE = "clave-de-prueba-2026"

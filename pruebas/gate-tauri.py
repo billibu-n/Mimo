@@ -13,7 +13,7 @@ Mide el binario real, no el HTML suelto:
   8. el RPM y el binario existen y pesan lo esperado.
 
 Requiere el binario ya compilado:
-  cd escritorio && ./preparar-frontend.sh
+  cd escritorio
   CARGO_TARGET_DIR="$HOME/.cache/mimo-tauri-target" PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
   cp "$HOME/.cache/mimo-tauri-target/release/mimo" release/
   cp "$HOME/.cache/mimo-tauri-target/release/bundle/rpm/"*.rpm release/
@@ -30,7 +30,7 @@ import time
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 ESCRITORIO = RAIZ / "escritorio"
 BIN = ESCRITORIO / "release" / "mimo"
 RPM = ESCRITORIO / "release"
@@ -67,18 +67,17 @@ def main() -> int:
     fallas: list[str] = []
     if not BIN.exists():
         print(f"[ROJO] falta el binario: {BIN}")
-        print("Compila con: cd escritorio && ./preparar-frontend.sh && "
+        print("Compila con: cd escritorio && "
               "PATH=\"$HOME/.cargo/bin:$PATH\" cargo tauri build --bundles rpm")
         return 1
     if not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
         print("[ROJO] no hay DISPLAY ni WAYLAND_DISPLAY: el binario no puede abrir ventana.")
         return 1
 
-    subprocess.run(["sh", str(ESCRITORIO / "preparar-frontend.sh")], check=True)
     conf = json.loads((ESCRITORIO / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
     exigir(conf.get("version") == "1.2.0-beta.2", f"tauri: version 1.2.0-beta.2 — {conf.get('version')}", fallas)
-    exigir(conf.get("build", {}).get("frontendDist") == "../app",
-           "tauri: frontendDist apunta a la app preparada", fallas)
+    exigir(conf.get("build", {}).get("frontendDist") == "../../app",
+           "tauri: frontendDist apunta a la app fuente", fallas)
 
     with tempfile.TemporaryDirectory() as td, ServidorWebDAV(exigir_auth=True) as srv:
         td = Path(td)

@@ -73,7 +73,7 @@ en AUR.
 
 ## Qué mide la puerta
 
-`python3 app/pruebas/gate-tauri.py` mide el binario Linux real: carga la app, navega, crea
+`python3 pruebas/gate-tauri.py` mide el binario Linux real: carga la app, navega, crea
 datos, sincroniza por WebDAV y comprueba el RPM. La compilación de Windows y Arch la valida el
 flujo de GitHub Actions; no se afirma que se hayan probado en hardware Windows o Arch desde
 este equipo Fedora.

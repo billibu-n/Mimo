@@ -12,7 +12,7 @@ No mide la maqueta: mide el armazón real.
   7. 10 temas y cambio de tema
   8. 411 sin desborde
 
-Uso: python3 app/pruebas/gate-shell.py
+Uso: python3 pruebas/gate-shell.py
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))

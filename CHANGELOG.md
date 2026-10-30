@@ -1,5 +1,10 @@
 # Cambios
 
+## Sin publicar
+
+- La app se empaqueta directamente desde `app/`. Se eliminó la copia `escritorio/app` y el paso
+  `preparar-frontend`; las pruebas viven en `pruebas/` y la documentación técnica en `docs/`.
+
 ## 1.2.0-beta.2 — 2026-10-29
 
 Segunda beta pública. Mantiene todo lo de la beta anterior y añade cambios de uso diario.

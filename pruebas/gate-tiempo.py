@@ -10,7 +10,7 @@ Mide sobre app/index.html:
   5. los controles de reloj se ocultan en Alarmas;
   6. 411 sin desborde y consola limpia.
 
-Uso: python3 app/pruebas/gate-tiempo.py
+Uso: python3 pruebas/gate-tiempo.py
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))

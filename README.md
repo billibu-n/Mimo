@@ -91,11 +91,10 @@ La app universal está en `app/`; el caparazón Tauri, en `escritorio/`.
 python3 -m http.server 8000 --directory app
 
 # pruebas
-python3 app/pruebas/correr-gates.py
+python3 pruebas/correr-gates.py
 
 # escritorio Linux (RPM y DEB)
 cd escritorio
-python3 preparar-frontend.py
 cargo tauri build --bundles deb,rpm
 ```
 
@@ -103,7 +102,6 @@ En Windows:
 
 ```powershell
 cd escritorio
-python preparar-frontend.py
 tauri build --bundles nsis
 ```
 

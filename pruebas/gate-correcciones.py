@@ -16,7 +16,7 @@ Mide sobre app/index.html:
      el registro de Nextcloud y no desborda en móvil;
   9. Guardar tutorial descarga `tutorial.json` y Restablecer de fábrica deja la app vacía.
 
-Uso: python3 app/pruebas/gate-correcciones.py
+Uso: python3 pruebas/gate-correcciones.py
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ import tempfile
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent
+RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
