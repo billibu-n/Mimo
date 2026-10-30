@@ -33,3 +33,27 @@ tauri build --bundles nsis
 - Un cambio verificable por commit.
 - No se toca `main` directamente ni se publican releases desde un pull request.
 - No se agregan dependencias nuevas sin justificar tamaño, licencia y modo offline.
+
+## Agregar un bloque
+
+Un bloque vive en `app/js/bloques/<id>/` y no necesita tocar otra carpeta:
+
+1. `vista.js` exporta el HTML del bloque en `window.MimoBloque<Nombre>Vista`.
+2. `bloque.js` exporta `montar(api)` y `desmontar(api)`. Usa `api.root` y
+   `api.ctx`; no llames funciones internas de otro bloque.
+3. `app/css/bloques/<id>.css` contiene solo sus estilos. El host lo carga al montar.
+4. El manifiesto se registra con `MimoRegistro.registrar` e incluye `id`, `nombre`,
+   `tipo`, `vista`, `css`, `montar`, `desmontar`, `pintar`, `requiere` y `provee`.
+5. Añade el `<script>` de `vista.js` y `bloque.js` antes de `shell.js`, y el
+   manifiesto en `registrarManifiestos()`.
+
+Antes de cerrar:
+
+```bash
+python3 pruebas/gate-bloques.py
+python3 pruebas/gate-arquitectura.py
+python3 pruebas/correr-gates.py
+```
+
+La base Calendario/Tareas/Notas/Ajustes no se quita. Un bloque opcional debe poder
+faltar sin romper la app y sin borrar sus datos al quitarlo.

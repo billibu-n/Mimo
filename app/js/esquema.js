@@ -12,7 +12,7 @@
 (function () {
   "use strict";
 
-  var APP = "Mimo", APP_VERSION = "1.2.0-beta.2", V = 1;
+  var APP = "Mimo", APP_VERSION = "1.2.0-beta.3", V = 1;
   var ENTORNO = "mimo.entorno", MALLA = "mimo.malla", BACKUP = "mimo.backup";
 
   function dict(x) { return x && typeof x === "object" && !Array.isArray(x) ? x : {}; }
@@ -300,8 +300,8 @@
       tareas: tareas, eventos: eventos, sesiones: sesiones,
       estudio: { metaSemanal: Math.max(0, num(dict(sem.metas).semanal, 0)), metasRamo: {}, metasSemana: metasSemana,
         minutosSemana: clon(dict(sem.minutos)), semanasEstudio: clon(lista(dict(extras[0]).semanas_estudio)) },
-      instalados: ["tiempo", "malla", "calificaciones", "estudio", "evaluaciones"],
-      kits: { academics: ["malla", "calificaciones", "estudio", "evaluaciones"] }
+      instalados: ["tiempo", "malla", "calificaciones", "estudio"],
+      kits: { academics: ["malla", "calificaciones", "estudio"] }
     };
     Object.keys(metasRamo).forEach(function (cod) {
       var v = dict(metasRamo[cod]);

@@ -9,13 +9,12 @@
     { "id": "malla", "nombre": "Malla", "version": "1.0.0", "naturaleza": "seccion" },
     { "id": "calificaciones", "nombre": "Calificaciones", "version": "1.0.0", "naturaleza": "seccion" },
     { "id": "estudio", "nombre": "Estudio", "version": "1.0.0", "naturaleza": "seccion" },
-    { "id": "evaluaciones", "nombre": "Evaluaciones", "version": "1.0.0", "naturaleza": "aporte" },
     {
       "id": "academics",
       "nombre": "Academics",
       "version": "1.0.0",
       "naturaleza": "pack",
-      "instala": ["malla", "calificaciones", "estudio", "evaluaciones"]
+      "instala": ["malla", "calificaciones", "estudio"]
     }
   ]
 }

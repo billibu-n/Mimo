@@ -1,0 +1,42 @@
+/* calendario.css — estilos del bloque Calendario. */
+.cal-layout{display:grid;grid-template-columns:var(--ancho-rail) minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.cal-tarjeta{min-width:0}
+.cal-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.cal-cab h2{margin:0;font-size:var(--fs-lg);text-transform:capitalize}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--sp-1)}
+.cal-dow{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:center;padding:var(--sp-1) 0}
+.cal-dia{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);padding:var(--sp-1);font-size:var(--fs-xs);background:var(--sup)}
+.cal-dia.fuera{opacity:.42}
+.cal-dia.hoy{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
+.cal-dia b{font-size:var(--fs-sm);font-weight:600}
+.cal-grid--con-semana{grid-template-columns:2.1rem repeat(7,minmax(0,1fr))}
+.cal-dow--sem,.cal-sem-col{font-size:var(--fs-xs);color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center}
+.cal-sem-col{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);font-weight:700;letter-spacing:.02em}
+.cal-sem-col[title*="receso"],.cal-sem-col[title*="examen"]{color:var(--warn)}
+@media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:54px;font-size:10px}}
+.cal-vacio{grid-column:1/-1}
+  .cal-layout{grid-template-columns:1fr}
+  .cal-dia{min-height:54px}
+.evento-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+.evento-form .entrada{flex:1 1 150px;min-width:120px}
+.evento-chip{display:block;width:100%;text-align:left;border:0;border-radius:4px;background:var(--ac);color:var(--ac-txt);font:inherit;font-size:var(--fs-xs);line-height:1.25;padding:2px 4px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.evento-chip b{font-weight:700}
+.cal-eventos{margin-top:2px}
+.cal-mas{font-size:var(--fs-xs);color:var(--muted)}
+.cal-grid--semana{grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal-semana-dia{min-height:260px;border:1px solid var(--line2);border-radius:var(--r-sm);padding:var(--sp-1);background:var(--sup);font-size:var(--fs-xs)}
+.cal-semana-dia>b{display:block;font-size:var(--fs-sm);margin-bottom:4px}
+.cal-semana-dia.hoy{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
+.cal-vacio-dia{color:var(--muted)}
+.cal-agenda{display:flex;flex-direction:column;gap:var(--sp-1)}
+.cal-agenda__item{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;text-align:left;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);font:inherit;color:var(--fg);cursor:pointer}
+.cal-agenda__item:hover{border-color:var(--ac)}
+.cal-agenda__item b{display:block;font-size:var(--fs-sm)}
+.cal-agenda__item small{color:var(--muted);font-size:var(--fs-xs)}
+@media (max-width:520px){.cal-grid--semana{grid-template-columns:1fr}.cal-semana-dia{min-height:0}}
+body.split .cal-layout{grid-template-columns:1fr}
+body.split .cal-layout .rail{display:none}
+@media (max-width:900px){.split-escena .cal-layout{grid-template-columns:1fr}.split-escena .cal-layout .rail{display:none}}
+.cal-sem-col{font:inherit;cursor:pointer;padding:0}
+.cal-sem-col.tipo-receso{color:var(--warn);border-color:var(--warn)}
+.cal-sem-col.tipo-examenes{color:var(--bad);border-color:var(--bad)}

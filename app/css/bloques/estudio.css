@@ -1,0 +1,41 @@
+/* estudio.css — estilos del bloque Estudio. */
+
+.estudio-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.75fr);gap:var(--sp-4);align-items:start;margin-bottom:var(--sp-4)}
+.est-grafico-card{min-width:0}
+.est-grafico{overflow-x:auto;overflow-y:hidden;padding:6px 2px 0}
+.est-plot{position:relative;height:230px;min-width:max-content;padding:8px 4px 0}
+.est-cols{display:flex;align-items:flex-end;gap:10px;height:190px;min-width:max-content}
+.est-col{width:38px;height:100%;flex:none;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;position:relative}
+.est-pila{width:26px;display:flex;flex-direction:column-reverse;border-radius:4px 4px 0 0;overflow:hidden;min-height:1px;transition:height .25s var(--curva)}
+.est-pila i{display:block;width:100%;min-height:1px}
+.est-total{font-size:9px;color:var(--muted);margin-bottom:3px;white-space:nowrap}
+.est-etq{font-size:9px;color:var(--muted2);margin-top:4px;white-space:nowrap}
+.est-meta-line{position:absolute;left:4px;right:4px;border-top:2px dashed var(--ok);z-index:2;pointer-events:none}
+.est-meta-line span{position:absolute;right:0;top:-14px;font-size:9px;color:var(--ok);background:var(--sup);padding:0 3px}
+.est-leyenda{display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-3);margin-top:var(--sp-2);font-size:var(--fs-xs);color:var(--muted)}
+.est-leyenda span{display:inline-flex;align-items:center;gap:4px}
+.est-leyenda i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.est-form{display:flex;flex-direction:column;gap:var(--sp-2);margin:var(--sp-2) 0}
+.est-form .entrada{width:100%}
+.est-form .btn{width:100%}
+.est-sep{border:0;border-top:1px solid var(--line2);margin:var(--sp-3) 0}
+.est-num{width:78px}
+.est-tabla-wrap{overflow-x:auto}
+.est-tabla{width:100%;border-collapse:collapse;min-width:560px}
+.est-tabla th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:2px var(--sp-1);border-bottom:1px solid var(--line2)}
+.est-tabla td{padding:5px var(--sp-1);border-bottom:1px solid var(--line2);vertical-align:middle;font-size:var(--fs-sm)}
+.est-tabla .num{text-align:right}
+.est-tabla .entrada{display:inline-block;width:70px;min-height:var(--sp-6);font-size:var(--fs-xs)}
+.est-punto{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.est-barra{height:7px;border-radius:99px;background:var(--pista);overflow:hidden;min-width:80px}
+.est-barra i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.est-tabla small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.est-sesiones{display:flex;flex-direction:column;gap:2px}
+.est-sesion{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-1) var(--sp-2)}
+.est-sesion>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-xs)}
+.est-sesion small{color:var(--muted);font-size:var(--fs-xs);white-space:nowrap}
+@media (max-width:900px){.estudio-layout{grid-template-columns:1fr}}
+@media (max-width:520px){.est-col{width:32px}.est-pila{width:22px}}
+.est-metas-semana{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--line2)}
+.est-meta-sem{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
+.est-meta-sem .entrada{width:58px;min-height:28px;font-size:var(--fs-xs)}

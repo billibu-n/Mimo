@@ -206,8 +206,12 @@ def main() -> int:
             page.locator('[data-calif="T1"]').click(); page.wait_for_timeout(150)
             page.locator('[data-accion-calif="comp-cal"]').click(); page.wait_for_timeout(250)
             evs = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).eventos")
-            exigir(any(e.get("id") == "calif-T1-0" and e.get("fecha") == viernes for e in evs),
-                   f"calificaciones: componente al calendario — {[(e.get('id'), e.get('fecha')) for e in evs]}", fallas)
+            exigir(not any(e.get("id") == "calif-T1-0" for e in evs),
+                   f"calificaciones: el evento es derivado, no copia en eventos — {evs}", fallas)
+            page.locator('#tabs [data-ir="calendario"]').click(); page.wait_for_timeout(150)
+            page.locator('#vista-calendario button[data-cal-vista="agenda"]').click(); page.wait_for_timeout(150)
+            exigir("Control" in page.locator("#cal-agenda").inner_text(),
+                   "calificaciones: el componente aparece en la agenda del calendario", fallas)
 
             # Meta por semana.
             page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(250)

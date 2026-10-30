@@ -1,6 +1,35 @@
 # Cambios
 
-## Sin publicar
+## 1.2.0-beta.3 — sin publicar
+
+### Arquitectura
+
+- Los bloques ya tienen carpeta propia: `app/js/bloques/<id>/` con vista, ciclo de
+  vida y estilos. `index.html` conserva solo el armazón; Calendario, Tareas, Notas,
+  Tiempo, Malla, Calificaciones y Estudio se inyectan desde su bloque.
+- `MimoRegistro` expone `montar`/`desmontar`, resuelve dependencias `requiere` y
+  permite construir el catálogo desde los manifiestos.
+- El dominio de cursos y sesiones emite eventos; las mutaciones de la interfaz pasan
+  por esas funciones.
+- El catálogo tiene ficha presionable y detalle en `#modal-bloque`.
+- Notas es el bloque piloto completo: estado, Markdown, vista y `AbortSignal` viven
+  en su carpeta.
+
+### Producto
+
+- **Evaluaciones se elimina y desvincula**: fuera del catálogo, del kit Academics,
+  del esquema, de las exportaciones y de los estados guardados. No hay una vista
+  pendiente con ese nombre.
+
+### Pruebas
+
+- `gate-bloques` mide el montaje dinámico, el desmontaje, la reinstalación, los
+  eventos de dominio y las dependencias.
+- `gate-arquitectura` comprueba que las secciones no vuelvan a `index.html`, que
+  cada bloque tenga vista y que `evaluaciones` no reaparezca.
+- 17 gates web en verde.
+
+## Sin publicar (beta.2)
 
 - La app se empaqueta directamente desde `app/`. Se eliminó la copia `escritorio/app` y el paso
   `preparar-frontend`; las pruebas viven en `pruebas/` y la documentación técnica en `docs/`.
