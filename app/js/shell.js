@@ -1379,47 +1379,14 @@
   var formRamoId = null, mallaBusqueda = "", mallaFiltro = "todos", mallaRapido = false;
 
   function normalizarCursos() {
-    var vistos = {}, out = [];
-    (estado.cursos || []).forEach(function (c) {
-      if (!c || typeof c !== "object") return;
-      var cod = String(c.codigo || "").trim().toUpperCase();
-      if (!cod || vistos[cod]) return;
-      vistos[cod] = 1;
-      var reqs = Array.isArray(c.requisitos) ? c.requisitos : [];
-      reqs = reqs.map(function (r) { return String(r || "").trim().toUpperCase(); })
-        .filter(function (r) { return r && r !== cod; });
-      reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
-      var grupos = Array.isArray(c.requisitos_o) ? c.requisitos_o : [];
-      grupos = grupos.map(function (g) {
-        var lista = Array.isArray(g) ? g : [g];
-        return lista.map(function (r) { return String(r || "").trim().toUpperCase(); })
-          .filter(function (r) { return r && r !== cod; });
-      }).filter(function (g) { return g.length; });
-      var nivel = parseInt(c.nivel, 10);
-      if (!nivel || nivel < 1) nivel = String(c.tipo || "") === "cupo" ? 99 : 1;
-      if (nivel > 99) nivel = 99;
-      var cerrado = c.cerrado !== undefined ? !!c.cerrado : !!c.aprobado;
-      var aprobado = !!c.aprobado && cerrado;
-      var resultado = cerrado ? String(c.resultado || (aprobado ? "aprobado" : "reprobado")) : "";
-      out.push(conservar({
-        codigo: cod, nombre: String(c.nombre || cod).trim() || cod,
-        creditos: Math.max(0, parseInt(c.creditos, 10) || 0), nivel: nivel,
-        requisitos: reqs, requisitos_o: grupos, aprobacion: Number(c.aprobacion) || null,
-        tipo: String(c.tipo || ""), enMalla: c.enMalla !== false && c.en_malla !== false,
-        cerrado: cerrado, aprobado: aprobado, resultado: resultado,
-        notaCierre: c.notaCierre === null || c.notaCierre === undefined ? null : Number(c.notaCierre),
-        cerradoEn: String(c.cerradoEn || ""),
-        enCurso: !!c.enCurso && !cerrado,
-        alias: String(c.alias || ""), color: String(c.color || ""),
-        semestre: String(c.semestre || ""), semestreNum: Number(c.semestreNum || 0) || 0,
-        desbloquea: Array.isArray(c.desbloquea) ? c.desbloquea.map(String) : [],
-        ficha: c.ficha && typeof c.ficha === "object" ? { descripcion: String(c.ficha.descripcion || ""), temario: String(c.ficha.temario || "") } : null,
-        extra: c.extra && typeof c.extra === "object" ? c.extra : {}
-      }, c));
-    });
-    estado.cursos = out;
+    if (window.MimoDominioCursos) {
+      estado.cursos = MimoDominioCursos.normalizar(estado.cursos);
+      return;
+    }
+    estado.cursos = estado.cursos || [];
   }
   function ramoPorCodigo(cod) {
+    if (window.MimoDominioCursos) return MimoDominioCursos.obtener(estado.cursos, cod);
     var c = String(cod || "").trim().toUpperCase();
     return (estado.cursos || []).filter(function (x) { return x.codigo === c; })[0] || null;
   }
@@ -2320,17 +2287,9 @@
     estado.estudio.metaSemanal = Math.max(0, Number(estado.estudio.metaSemanal) || 0);
     if (!estado.estudio.metasRamo || typeof estado.estudio.metasRamo !== "object") estado.estudio.metasRamo = {};
     if (!estado.estudio.metasSemana || typeof estado.estudio.metasSemana !== "object") estado.estudio.metasSemana = {};
-    var vistos = {};
-    estado.sesiones = (estado.sesiones || []).map(function (s, i) {
-      var id = String(s.id || ("s" + i));
-      while (vistos[id]) id += "-" + i;
-      vistos[id] = 1;
-      return {
-        id: id, fecha: String(s.fecha || hoyISO()), minutos: Math.max(0, Number(s.minutos) || 0),
-        ramo: String(s.ramo || "").trim().toUpperCase(), vinculo: String(s.vinculo || ""),
-        hora: String(s.hora || ""), tipo: String(s.tipo || "")
-      };
-    });
+    estado.sesiones = window.MimoDominioSesiones
+      ? MimoDominioSesiones.normalizar(estado.sesiones)
+      : (estado.sesiones || []);
   }
   function hexColor(v) {
     return /^#[0-9a-f]{6}$/i.test(String(v || "")) ? String(v) : "";
@@ -3012,11 +2971,11 @@
     if (!minutos) return;
     estado.sesiones = estado.sesiones || [];
     var d = new Date();
-    estado.sesiones.push({
-      id: "s" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+    var datos = {
       fecha: hoyISO(), hora: String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"),
       minutos: minutos, vinculo: estado.tiempoVinculo || "", ramo: estado.tiempoRamo || "", tipo: tipo || "crono"
-    });
+    };
+    estado.sesiones.push(window.MimoDominioSesiones ? MimoDominioSesiones.crear(datos) : datos);
     guardar(); pintarTiempo(); pintarEstudio();
   }
   function pitido() {
