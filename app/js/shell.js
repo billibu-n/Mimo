@@ -3972,11 +3972,12 @@
       } catch (e) {}
     }
     aplicarTema(estado.tema || "clasico");
-    aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarCalendario(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
+    aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
-    pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio();
-    pintarTemas(); pintarTiempo(); pintarPanel();
+    pintarTemas();
     historial = [JSON.stringify(estado)]; historialPos = 0; pintarHistorial();
+    // Montaje perezoso: solo se pinta la sección activa. Las demás se pintan al
+    // entrar con `ir()`, no en el arranque.
     ir(pantalla);
 
     $("#btn-tema").addEventListener("click", function () {
