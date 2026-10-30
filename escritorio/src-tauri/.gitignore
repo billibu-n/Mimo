@@ -1,4 +1,0 @@
-# Compilacion de Cargo: varios GB y se regenera entera.
-/target/
-# Esquemas que genera el CLI al compilar; capabilities/default.json los cita como $schema.
-/gen/schemas
