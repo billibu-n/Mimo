@@ -1,9 +1,7 @@
 # Mimo 1.2.0-beta.4
 
-Cuarta beta de Mimo. El foco es la actualización desde la propia app y un respaldo que no
-falla en silencio.
-
-> **Estado:** en preparación. Los paquetes se publican después de la etiqueta y la firma.
+Cuarta beta pública de Mimo. El foco es la actualización desde la propia app y un respaldo que
+no falla en silencio.
 
 ## Novedades
 
