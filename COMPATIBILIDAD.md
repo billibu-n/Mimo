@@ -1,4 +1,4 @@
-# Compatibilidad de Mimo 1.2.0-beta.3
+# Compatibilidad de Mimo 1.2.0-beta.4
 
 Mimo es una aplicación de escritorio Tauri 2. El mismo código y el mismo frontend se empaquetan
 para Linux y Windows. Esta tabla dice qué está preparado y qué no.
@@ -30,8 +30,8 @@ parches de seguridad.
 - **Windows ARM64**: solo se prepara x64.
 - **AppImage, Flatpak y Snap**: no se incluyen. El RPM y el DEB son los formatos Linux
   soportados; Arch usa su propio `PKGBUILD`.
-- **Firma**: los paquetes Linux y el instalador Windows van sin firmar. Hay `SHA256SUMS`, no
-  una firma de código.
+- **Firma**: los paquetes llevan firma minisign para el actualizador y `SHA256SUMS`. El
+  instalador Windows no tiene Authenticode, así que SmartScreen puede avisar.
 
 ## Cómo se construye cada uno
 

@@ -1,37 +1,38 @@
-# Mimo 1.2.0-beta.3
+# Mimo 1.2.0-beta.4
 
 Mimo es un organizador personal de escritorio que funciona sin conexión: calendario, tareas,
 notas, malla, calificaciones, estudio y tiempo. No hay cuenta ni registro, y tus datos viven en
 tu equipo.
 
-Esta beta consolida los **bloques con carpeta y ciclo de vida propios**, el catálogo con ficha
-de detalle, el calendario en dos columnas y los selectores de cursos en curso. **Evaluaciones
-se eliminó**: ya no aparece en el catálogo ni en el kit Academics.
+Esta beta incorpora el **actualizador dentro de la app** y un **respaldo nativo verificable**.
+También avisa si el almacenamiento local se llena, rechaza respaldos de versiones futuras y
+deja de guardar la contraseña WebDAV en el navegador.
 
 ## Qué descargar
 
 | Sistema | Archivo |
 |---|---|
-| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.3-1.x86_64.rpm` |
-| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.3_amd64.deb` |
-| Arch Linux x86_64 | `mimo-1.2.0beta.3-1-x86_64.pkg.tar.zst` |
-| Windows 10/11 x64 | `Mimo_1.2.0-beta.3_x64-setup.exe` |
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.4-1.x86_64.rpm` |
+| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.4_amd64.deb` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.4_x64-setup.exe` |
 
-También se incluyen `tutorial.json`, `LICENSE` y `SHA256SUMS`.
+También se incluyen `tutorial.json`, `LICENSE`, `SHA256SUMS`, las firmas `.sig` de los paquetes
+que usa el actualizador y `beta.json` como referencia del manifiesto.
 
 ## Instalar
 
 ### Fedora 40+ / RHEL 10+
 
 ```bash
-sudo dnf install ./Mimo-1.2.0-beta.3-1.x86_64.rpm
+sudo dnf install ./Mimo-1.2.0-beta.4-1.x86_64.rpm
 mimo
 ```
 
 ### Debian / Ubuntu
 
 ```bash
-sudo apt install ./Mimo_1.2.0-beta.3_amd64.deb
+sudo apt install ./Mimo_1.2.0-beta.4_amd64.deb
 mimo
 ```
 
@@ -40,18 +41,30 @@ En Debian 13 o Ubuntu 24.04 en adelante. `apt` resuelve las dependencias.
 ### Arch Linux
 
 ```bash
-sudo pacman -U ./mimo-1.2.0beta.3-1-x86_64.pkg.tar.zst
+sudo pacman -U ./mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst
 mimo
 ```
 
 ### Windows 10/11 x64
 
-Ejecuta `Mimo_1.2.0-beta.3_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
+Ejecuta `Mimo_1.2.0-beta.4_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
 pide administrador. Si Windows no tiene WebView2, el instalador lo descarga y pide conexión una
 vez.
 
-El instalador no está firmado. Windows puede mostrar “Windows protegió tu PC”: elige *Más
-información* → *Ejecutar de todas formas*.
+El instalador no tiene Authenticode. Windows puede mostrar “Windows protegió tu PC”: elige
+*Más información* → *Ejecutar de todas formas*.
+
+## Actualizaciones
+
+Abre **Ajustes → Actualizaciones** y pulsa **Buscar actualizaciones**. Mimo consulta un manifiesto
+firmado, avisa de la versión nueva, crea un respaldo y la instala en Windows, Fedora/RHEL y
+Debian/Ubuntu. La comprobación también ocurre al arrancar y cada 6 horas.
+
+En **Arch Linux** Mimo avisa y abre la página de la release; el plugin de Tauri no puede instalar
+un `.pkg.tar.zst` desde la app. Actualiza con `pacman -U` como siempre.
+
+La firma del actualizador es minisign y la valida Mimo. No es la misma que una firma GPG de los
+assets.
 
 ## Primer arranque
 
@@ -63,7 +76,8 @@ en el siguiente arranque.
 
 ## Verificar la descarga
 
-Cada release publica `SHA256SUMS`. Descárgalo en la misma carpeta que el paquete y ejecuta:
+Cada release publica `SHA256SUMS` y las firmas `.sig`. Descarga `SHA256SUMS` en la misma carpeta
+que el paquete y ejecuta:
 
 ```bash
 sha256sum -c SHA256SUMS
@@ -89,15 +103,16 @@ exportado no se tocan.
 
 ## Privacidad
 
-Mimo no tiene una nube propia ni envía información a un servicio del proyecto. Si no configuras
-una sincronización, tus datos no salen del equipo. La sincronización con una nube es opcional y
-guarda una copia cifrada; la contraseña de cifrado no se guarda.
+Mimo no tiene una nube propia ni envía información a un servicio del proyecto. La comprobación de
+actualizaciones hace una petición HTTPS al manifiesto público de GitHub y se puede desactivar en
+Ajustes. Si no configuras una sincronización, tus datos no salen del equipo. La sincronización con
+una nube es opcional y guarda una copia cifrada.
 
 ## Límites de esta beta
 
-- Los paquetes no están firmados; la integridad se comprueba con `SHA256SUMS`.
+- Arch no se actualiza in-app.
+- El instalador de Windows no tiene Authenticode; SmartScreen puede avisar.
 - La sincronización con una cuenta real de Tab Digital todavía no se probó desde el binario.
 - macOS, iOS y Android no están preparados.
-- Los paquetes no están firmados; la integridad se comprueba con `SHA256SUMS`.
 
 El código, las pruebas y las instrucciones de compilación están en el repositorio. Licencia MIT.

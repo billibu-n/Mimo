@@ -2,7 +2,7 @@
 
 ## Versiones con soporte
 
-Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.3` es una pre-release.
+Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.4` es una pre-release.
 
 ## Cómo reportar
 
@@ -17,5 +17,5 @@ dependencia, indica el paquete y la versión.
 
 - La app guarda los datos en `localStorage`; el archivo manual y la carpeta local quedan en
   claro. WebDAV sube un archivo cifrado y la contraseña no se guarda.
-- Los paquetes de esta beta no están firmados. Verifica `SHA256SUMS` antes de instalar.
+- Los paquetes llevan firma minisign para el actualizador y `SHA256SUMS`. El instalador de Windows no tiene Authenticode; SmartScreen puede avisar. Verifica `SHA256SUMS` antes de instalar.
 - El puente HTTP nativo solo acepta `http` y `https`; no hay acceso libre al disco ni shell.

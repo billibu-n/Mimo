@@ -51,8 +51,7 @@ siempre. El plugin de Tauri no puede instalar `.pkg.tar.zst` desde la app.
 
 ```bash
 sha256sum -c SHA256SUMS
-gpg --verify SHA256SUMS.asc SHA256SUMS
 ```
 
-La firma del actualizador es minisign y la valida Mimo; no es la misma que la firma GPG de los
-assets.
+La firma del actualizador es minisign y la valida Mimo. Los assets no llevan GPG en esta beta;
+`SHA256SUMS` es la referencia de integridad manual.
