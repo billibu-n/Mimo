@@ -1,8 +1,9 @@
 # Mimo — arquitectura de bloques y plan para la beta.3
 
-**Estado:** documento de planificación. No se modificó código de la app.
+**Estado:** plan vivo. La rama ya tiene la primera implementación (registro, dominio de cursos/sesiones, independencia de Calificaciones y de Estudio).
 **Base:** `main` en `c71ebe3` (R47).
 **Rama:** `t/mimo-beta3-bloques`.
+**Último commit de código:** `d24cbd8` (R54).
 **Fecha:** 2026-10-30.
 **Para quién:** el próximo agente que retome este trabajo, y el dueño del proyecto.
 
@@ -973,29 +974,33 @@ actuales en verde. No se hace una reescritura.
 - [x] Rama `t/mimo-beta3-bloques` desde `c71ebe3`.
 - [x] Inventario y diagnóstico.
 - [x] Este documento.
-- [ ] Aprobación del dueño sobre las decisiones de §8.
+- [x] Aprobación del dueño sobre las decisiones de §8.
 
-**Criterio de cierre:** rama creada; solo cambia `docs/`; no se tocó `app/`,
-`pruebas/`, `escritorio/`.
+**Criterio de cierre:** rama creada; el primer commit (`R48`) solo cambió `docs/`.
+Después se abrió la implementación en commits separados (`R49` a `R54`).
 
 ### Fase 1 — Registro y manifiestos, sin mover nada
 
 Objetivo: que la lista de bloques deje de estar hard-codeada, sin cambiar la UI.
 
-- Crear `js/nucleo/registro.js` con `Mimo.registrarBloque`, `Mimo.bloques`,
-  `Mimo.instalar`, `Mimo.quitar`, `Mimo.montar`, `Mimo.desmontar`.
-- Crear un manifiesto por bloque actual que apunte a las funciones existentes
-  (`pintarCalendario`, `pintarTareas`, …) y a la sección estática existente.
-- Reemplazar `BLOQUES`, `BASE`, `ORDEN`, `secciones()`, `instalar()`, `quitar()`,
-  `nombre()`, `iconoDe()`, `descripcionBloque()` por lecturas del registro.
-- `init()` deja de llamar a todos los pintores; monta el bloque activo.
-- `ir()` deja de tener el `if` por sección; llama `Mimo.montar(id)`.
+- [x] Crear `js/nucleo/registro.js` con `MimoRegistro.registrar`, `todos`, `obtener`,
+  `secciones`, `pintar`, `validar`, `puedeInstalar` y `puedeQuitar`.
+- [x] Crear manifiestos para la base, los opcionales, `evaluaciones`, `academics` y
+  los hijos de Tiempo; apuntan a las funciones existentes (`pintarCalendario`, …).
+- [x] `secciones()` e `ir()` usan el registro; `pintarSeccion()` despacha por
+  manifiesto y deja el `if` solo como respaldo.
+- [ ] Reemplazar del todo `BLOQUES`, `BASE`, `ORDEN`, `instalar()`, `quitar()`,
+  `nombre()`, `iconoDe()` y `descripcionBloque()` por lecturas del registro.
+- [ ] `init()` deja de llamar a todos los pintores; monta el bloque activo.
+- [ ] `montar`/`desmontar` reales: hoy `pintar` es el ciclo de vida mínimo.
+- [x] `gate-bloques` cubre registro, base fija, Calificaciones sin Malla, Malla sin
+  Calificaciones, Tiempo sin Estudio y Estudio sin Tiempo.
 
 **No hacer todavía:** mover HTML, CSS ni i18n. Los bloques siguen usando el DOM
 estático y las funciones globales; el registro es una fachada.
 
-**Gates:** los 16 actuales, sin cambios. Si `gate-shell`/`gate-ronda14` fallan, el
-registro no respeta el orden o los IDs.
+**Gates:** los 16 actuales + `gate-bloques`. Si `gate-shell`/`gate-ronda14` fallan,
+el registro no respeta el orden o los IDs.
 
 **Riesgo:** medio. Es el cambio de flujo de control; se hace con la app funcionando.
 
@@ -1054,16 +1059,17 @@ Objetivo: dos bloques base, con datos propios y contribuciones.
 
 Objetivo: quitar las dependencias más duras.
 
-- Crear `dominio/cursos.js`: CRUD, color, validación, eventos. Malla lo usa para
-  editar; Calificaciones/Estudio/Tiempo lo usan para leer.
-- Crear `dominio/sesiones.js`: CRUD, duración, validación, eventos. Tiempo y Estudio
-  lo usan; ninguno es dueño exclusivo.
-- Malla: `cursos` desde dominio; cierre por nota vía `calificaciones.resumen`
-  opcional; si no está, cierre manual.
-- Calificaciones: `califs` propio; cursos desde dominio; fuente de calendario en vez
-  de escribir `estado.eventos`; no borra cursos.
-- Estudio: `estudio` propio; sesiones desde dominio; cursos/periodos opcionales.
-- `normalizarCalifs` deja de borrar; `borrarRamo` deja de borrar calificaciones.
+- [x] Crear `dominio/cursos.js`: normalización, búsqueda y creación de cursos. Malla
+  lo usa para editar; Calificaciones/Estudio/Tiempo lo usan para leer.
+- [x] Crear `dominio/sesiones.js`: normalización, creación, actualización y borrado.
+  Tiempo y Estudio lo usan; ninguno es dueño exclusivo.
+- [x] Malla: cierre por nota si Calificaciones está; si no, cierre manual sin crear
+  `califs`.
+- [x] Calificaciones: `califs` propio; cursos desde dominio; no borra cursos.
+- [x] Estudio: `estudio` propio; sesiones desde dominio; cursos/periodos opcionales.
+- [x] `normalizarCalifs` deja de borrar; `borrarRamo` deja de borrar calificaciones.
+- [ ] Calificaciones sigue escribiendo `estado.eventos`; falta la fuente de calendario.
+- [ ] `dominio/cursos` y `dominio/sesiones` todavía no emiten eventos de dominio.
 
 **Gates:** `gate-malla`, `gate-calificaciones`, `gate-estudio`, `gate-datos`,
 `gate-esquema`.
@@ -1103,6 +1109,48 @@ ida y vuelta y backup antes/después.
 - Compilar Tauri; `gate-tauri` 33/33; `MIMO_HEADLESS=1`; FPS >= baseline.
 - Revisar que `app/` no tenga material de taller; el informe se queda en `docs/`
   solo si se decide que es documentación de arquitectura, no handoff.
+
+---
+
+## 7bis. Estado de implementación al 2026-10-30 (R54)
+
+Hecho en la rama:
+
+- `app/js/nucleo/registro.js`: registro de manifiestos, base fija, validación,
+  secciones, `pintar` y permisos de instalar/quitar.
+- `app/js/dominio/cursos.js`: normalización, búsqueda y creación de cursos.
+- `app/js/dominio/sesiones.js`: normalización, creación, actualización y borrado.
+- `shell.js`: `secciones()` e `ir()` usan el registro; `pintarSeccion()` despacha
+  por manifiesto. `BLOQUES` sigue como fuente de metadatos y el HTML sigue estático.
+- Calificaciones se instala sola, crea un curso mínimo sin Malla y conserva los
+  cursos al quitar Malla.
+- Malla puede cerrar un curso sin Calificaciones y no inventa `califs`; el botón
+  “Calificaciones” del panel se oculta si el bloque no está.
+- Tiempo registra sesiones sin Estudio; Estudio registra sesiones manuales sin
+  Tiempo. Las dos usan `dominio/sesiones`.
+- `califs` ya no borra cursos ausentes; `borrarRamo` ya no borra calificaciones.
+- `gate-bloques` (nuevo) y los 16 gates web en verde.
+
+Pendiente inmediato:
+
+- Reemplazar `BLOQUES`/`BASE`/`ORDEN` por el registro y quitar la duplicación.
+- `montar`/`desmontar` reales y `init()` perezoso; hoy `pintar` es el ciclo mínimo.
+- Mover HTML, CSS e i18n de cada bloque.
+- Fuentes de calendario para que Calificaciones no escriba `estado.eventos`.
+- `gate-arquitectura` estático.
+- Correr `gate-tauri` (33 medidas) después de compilar.
+
+Commits de esta sesión:
+
+| Commit | Qué |
+|---|---|
+| `e8dee10` | R48: informe inicial |
+| `ee3cfdc` | R49: decisiones del dueño |
+| `7cf3484` | R50: registro y despacho de secciones |
+| `8296d02` | R51: dominio de cursos y sesiones |
+| `6e8bec7` | R52: Calificaciones sin Malla y `gate-bloques` |
+| `47699a0` | R53: base fija y sesiones sin Estudio |
+| `d24cbd8` | R54: Malla y Calificaciones opcionales entre sí |
 
 ---
 
