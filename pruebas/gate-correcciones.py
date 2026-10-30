@@ -120,6 +120,9 @@ def main() -> int:
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(180)
             exigir(page.locator(".ajustes-grupo").count() == 4,
                    f"ajustes: 4 grupos — {page.locator('.ajustes-grupo').count()}", fallas)
+            texto_aj = page.locator("#p-ajustes").inner_text().lower()
+            exigir("colaborar" in texto_aj and "dinero" not in texto_aj and "donación" not in texto_aj,
+                   "ajustes: colaborar sin hablar de dinero", fallas)
             exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.3",
                    f"marca: versión v1.2.0-beta.3 — {page.locator('.badge').inner_text().strip()}", fallas)
             fuente = page.locator(".wordmark").evaluate("e => getComputedStyle(e).fontFamily")

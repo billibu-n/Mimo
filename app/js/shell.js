@@ -478,7 +478,12 @@
     $("#sesion-duracion").value = duracionInput(s.minutos);
     $("#sesion-hora").value = s.hora || "";
     var ops = ['<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>'];
-    (estado.cursos || []).forEach(function (c) { ops.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
+    var actuales = cursosEnCurso();
+    actuales.forEach(function (c) { ops.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
+    if (s.ramo && !actuales.some(function (c) { return c.codigo === s.ramo; })) {
+      var viejo = ramoPorCodigo(s.ramo);
+      if (viejo) ops.push('<option value="' + esc(viejo.codigo) + '">' + esc(viejo.codigo) + " — " + esc(viejo.nombre) + " (" + esc(L("cerrado", "closed", "已关闭")) + ")</option>");
+    }
     $("#sesion-ramo").innerHTML = ops.join("");
     $("#sesion-ramo").value = s.ramo || "";
     $("#modal-sesion").classList.add("on");
@@ -1021,7 +1026,7 @@
   }
   function pintarContextosCursos() {
     var dl = $("#contextos-ramos"); if (!dl) return;
-    dl.innerHTML = (estado.cursos || []).filter(function (c) { return c.enMalla !== false; })
+    dl.innerHTML = cursosEnCurso()
       .map(function (c) { return '<option value="' + esc(c.codigo) + '">' + esc(c.nombre) + "</option>"; }).join("");
   }
   function pintarCalendario() {
@@ -1332,6 +1337,16 @@
   }
   function notificarCurso(c) {
     if (c && window.MimoDominioCursos) MimoDominioCursos.actualizar(c, {});
+  }
+  function cursosEnCurso() {
+    return (estado.cursos || []).filter(function (c) { return !!c.enCurso && !c.cerrado; });
+  }
+  function sesionesActuales(lista) {
+    var ok = {};
+    cursosEnCurso().forEach(function (c) { ok[c.codigo] = 1; });
+    return (Array.isArray(lista) ? lista : []).filter(function (s) {
+      return !s.ramo || !!ok[s.ramo];
+    });
   }
   function creditosDe(c) { return Number(c.creditos) || 0; }
   function etiquetaNivel(n) { return Number(n) === 99 ? L("Electivos", "Electives", "选修") : L("Nivel ", "Level ", "层级 ") + n; }
@@ -2124,7 +2139,6 @@
     if (!lista || !det) return;
     normalizarCursos(); normalizarCalifs();
     var cursos = estado.cursos.filter(function (c) { return estado.califs[c.codigo] || c.enCurso; });
-    if (!cursos.length && estado.cursos.length) cursos = [estado.cursos[0]];
     var vacio = $("#calif-vacio"), layout = $("#calif-layout");
     var sinMalla = !instalado("malla");
     if ($("#btn-calif-malla")) $("#btn-calif-malla").hidden = sinMalla;
@@ -2325,13 +2339,10 @@
   function pintarEstudio() {
     if (!$("#est-grafico")) return;
     normalizarCursos(); normalizarEstudio();
-    var usados = {};
-    (estado.sesiones || []).forEach(function (s) { if (s.ramo) usados[s.ramo] = 1; });
-    Object.keys((estado.estudio && estado.estudio.metasRamo) || {}).forEach(function (cod) { usados[cod] = 1; });
+    var cursos = cursosEnCurso();
+    var actuales = {};
+    cursos.forEach(function (c) { actuales[c.codigo] = 1; });
     var hist = (estado.estudio && estado.estudio.minutosSemana) || {};
-    Object.keys(hist).forEach(function (w) { Object.keys(hist[w] || {}).forEach(function (cod) { if (cod && cod !== "OTROS") usados[cod] = 1; }); });
-    var cursos = estado.cursos.filter(function (c) { return c.enCurso || usados[c.codigo]; });
-    if (!cursos.length && estado.cursos.length) cursos = [estado.cursos[0]];
     var semanas = semanasEstudio();
     var meta = Number(estado.estudio.metaSemanal) || 0;
     if ($("#est-meta")) $("#est-meta").value = meta;
@@ -2339,12 +2350,12 @@
     var sel = $("#est-ramo");
     if (sel) {
       var val = sel.value;
-      sel.innerHTML = '<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>' + estado.cursos.map(function (c) {
+      sel.innerHTML = '<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>' + cursos.map(function (c) {
         return '<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>";
       }).join("");
-      if (val && (val === "" || ramoPorCodigo(val))) sel.value = val;
+      if (val && (val === "" || actuales[val])) sel.value = val;
     }
-    var ses = estado.sesiones || [], totalMin = 0, totalRamo = {}, porSemana = {};
+    var ses = sesionesActuales(estado.sesiones), totalMin = 0, totalRamo = {}, porSemana = {};
     ses.forEach(function (s) {
       totalMin += s.minutos;
       if (s.ramo) totalRamo[s.ramo] = (totalRamo[s.ramo] || 0) + s.minutos;
@@ -2369,6 +2380,7 @@
       if (porSemana[w] === undefined) return;
       Object.keys(hist[w] || {}).forEach(function (cod) {
         var k = !cod || cod === "OTROS" ? "_" : cod;
+        if (k !== "_" && !actuales[k]) return;
         var m = Math.max(0, (Number(hist[w][cod]) || 0) - (sesSemCurso[w + "|" + k] || 0));
         if (!m) return;
         histMin += m; totalMin += m; porSemana[w] += m;
@@ -2407,6 +2419,7 @@
       });
       Object.keys(hist[w.desde] || {}).forEach(function (cod) {
         var k = !cod || cod === "OTROS" ? "_" : cod;
+        if (k !== "_" && !actuales[k]) return;
         var m = Math.max(0, (Number(hist[w.desde][cod]) || 0) - (sesSemCurso[w.desde + "|" + k] || 0));
         if (!m) return;
         porCurso[k] = (porCurso[k] || 0) + m;
@@ -2665,12 +2678,14 @@
     }
     var r = $("#tiempo-ramo");
     if (r) {
+      var actuales = cursosEnCurso();
+      if (estado.tiempoRamo && !actuales.some(function (c) { return c.codigo === estado.tiempoRamo; })) estado.tiempoRamo = "";
       var opsR = ['<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>'];
-      (estado.cursos || []).forEach(function (c) { opsR.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
+      actuales.forEach(function (c) { opsR.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
       r.innerHTML = opsR.join(""); r.value = estado.tiempoRamo || "";
       r.onchange = function () { estado.tiempoRamo = r.value; guardar(); };
     }
-    var ses = estado.sesiones || [], min = 0;
+    var ses = sesionesActuales(estado.sesiones), min = 0;
     ses.forEach(function (x) { min += Number(x.minutos || 0); });
     if ($("#tiempo-sesiones")) $("#tiempo-sesiones").textContent = String(ses.length);
     if ($("#tiempo-horas")) $("#tiempo-horas").textContent = fmtHoras(min);
@@ -2919,7 +2934,7 @@
         notas: [estado.notas.length + " " + L("notas", "notes", "笔记"), L("Lista y editor en la misma sección.", "List and editor in the same section.", "列表和编辑器在同一分区。")],
         malla: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Cursos, niveles, prerrequisitos y créditos.", "Courses, levels, prerequisites and credits.", "课程、层级、先修要求和学分。")],
         calificaciones: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Notas por categoría, examen y eximición.", "Grades by category, exam and exemption.", "按分类、考试和免考计算成绩。")],
-        estudio: [(estado.sesiones || []).length + " " + L("sesiones", "sessions", "会话"), L("Horas por ramo y meta semanal.", "Hours per course and weekly goal.", "按课程小时和每周目标。")],
+        estudio: [sesionesActuales(estado.sesiones).length + " " + L("sesiones", "sessions", "会话"), L("Horas por ramo y meta semanal.", "Hours per course and weekly goal.", "按课程小时和每周目标。")],
         tiempo: [estado.tiempoHijos.length + " " + L("bloques dentro", "blocks inside", "个模块"), L("Cronómetro, temporizador, pomodoro y alarmas.", "Stopwatch, timer, pomodoro and alarms.", "秒表、计时器、番茄钟和闹钟。")],
         ajustes: [TEMAS.length + " " + L("temas", "themes", "主题"), L("Apariencia, idioma, datos y colaboración.", "Appearance, language, data and collaboration.", "外观、语言、数据和参与。")]
       }[pantalla] || [t("panel.sinContexto"), t("panel.estaSeccion")];

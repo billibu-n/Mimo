@@ -15,8 +15,8 @@
 .cal-sem-col[title*="receso"],.cal-sem-col[title*="examen"]{color:var(--warn)}
 @media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:54px;font-size:10px}}
 .cal-vacio{grid-column:1/-1}
-  .cal-layout{grid-template-columns:1fr}
-  .cal-dia{min-height:54px}
+@media (max-width:900px){.cal-layout{grid-template-columns:1fr}}
+@media (max-width:520px){.cal-dia{min-height:54px}}
 .evento-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
 .evento-form .entrada{flex:1 1 150px;min-width:120px}
 .evento-chip{display:block;width:100%;text-align:left;border:0;border-radius:4px;background:var(--ac);color:var(--ac-txt);font:inherit;font-size:var(--fs-xs);line-height:1.25;padding:2px 4px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}

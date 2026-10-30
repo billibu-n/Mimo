@@ -43,6 +43,7 @@ def crear_ramo(page) -> None:
     page.locator("#btn-nuevo-ramo").click()
     page.locator("#ramo-codigo").fill("MA1001")
     page.locator("#ramo-nombre").fill("Cálculo I")
+    page.locator("#ramo-curso").check()
     page.locator('#ramo-form button[type="submit"]').click()
     page.wait_for_timeout(120)
 

@@ -40,6 +40,7 @@ def crear_ramo(page, codigo="MA1001", nombre="Cálculo I", creditos="6") -> None
     page.locator("#ramo-codigo").fill(codigo)
     page.locator("#ramo-nombre").fill(nombre)
     page.locator("#ramo-creditos").fill(creditos)
+    page.locator("#ramo-curso").check()
     page.locator('#ramo-form button[type="submit"]').click()
     page.wait_for_timeout(150)
 
@@ -67,6 +68,7 @@ def main() -> int:
             page.locator("#ramo-codigo").fill("MA1001")
             page.locator("#ramo-nombre").fill("Cálculo I")
             page.locator("#ramo-creditos").fill("6")
+            page.locator("#ramo-curso").check()
             page.locator('#ramo-form button[type="submit"]').click()
             page.wait_for_timeout(150)
 
