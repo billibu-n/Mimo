@@ -6,7 +6,7 @@ impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 pruebas/correr-gates.py     # los 17 gates web, resumen al final
+python3 pruebas/correr-gates.py     # los 19 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila. El gate lo arranca en modo headless
@@ -36,6 +36,8 @@ Un gate que no discrimina es un gate roto.
 | `gate-webdav` | WebDAV/Nextcloud local con ETag: sin clave no sube, el remoto va cifrado, `If-None-Match`/`If-Match`, segundo equipo, cola sin red que sobrevive a recargar y se reintenta al volver, conflicto y ambas salidas, clave mala y remoto corrupto | sin clave subiendo, texto claro en el remoto, cola que se pierde o conflicto que pisa una copia |
 | `gate-ronda14` | calendario con semana del periodo (S1/S2/REC/EX) y mapa editable de receso/exámenes, alto contraste claro, chino simplificado, bandera de Sudamérica, split de dos secciones completas, arrastre/reordenación de pestañas, deshacer, componente→calendario, meta semanal, ESC y Ctrl+1..9 según el orden, pantalla de carga | periodo sin columna, tema claro ausente, idioma/arrastre rotos, sin deshacer, sin meta, ESC o atajos que no responden o carga que se queda |
 | `gate-tauri` | binario release: app universal, tutorial precargado, navegación, nota en `localStorage`, Ajustes, sync WebDAV nativa (sin preflight CORS), remoto cifrado, persistencia entre aperturas y RPM | falta el binario, la ventana no abre, el tutorial no se precarga o el remoto queda en claro |
+| `gate-respaldo` | exportar/importar conserva los datos, crea copia previa, rechaza versión futura y el banner de cuota aparece si localStorage falla | importación sin copia previa, versión 99 aplicada o fallo de cuota silencioso |
+| `gate-actualizacion` | configuración Tauri del updater, tarjeta de Ajustes, versión única y manifiesto por tipo de paquete (sin genérico ni Arch) | falta pubkey, endpoint `latest`, manifiesto con clave genérica o firma ausente |
 | `gate-tutorial` | `app/tutorial.json` y `publicacion/tutorial.json` son el mismo `mimo.backup`, con el proyecto Mimo, 11 tareas y la nota con Markdown | JSON distinto, sin proyecto o sin la nota |
 
 ## Fixtures

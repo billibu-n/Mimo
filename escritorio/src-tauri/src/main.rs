@@ -24,16 +24,20 @@ use std::time::Duration;
 use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
+mod actualizaciones;
+mod almacen;
+
 #[cfg(target_os = "linux")]
 use std::ffi::{c_char, c_void};
 
 #[cfg(target_os = "linux")]
-extern "C" {
-    fn webkit_settings_get_all_features() -> *mut c_void;
-    fn webkit_feature_list_find(lista: *mut c_void, id: *const c_char) -> *mut c_void;
-    fn webkit_settings_set_feature_enabled(settings: *mut c_void, feature: *mut c_void, enabled: i32);
-    fn webkit_feature_list_unref(lista: *mut c_void);
-}
+type WebkitGetFeatures = unsafe extern "C" fn() -> *mut c_void;
+#[cfg(target_os = "linux")]
+type WebkitFindFeature = unsafe extern "C" fn(*mut c_void, *const c_char) -> *mut c_void;
+#[cfg(target_os = "linux")]
+type WebkitSetFeature = unsafe extern "C" fn(*mut c_void, *mut c_void, i32);
+#[cfg(target_os = "linux")]
+type WebkitUnrefFeatures = unsafe extern "C" fn(*mut c_void);
 
 /// WebKitGTK acerca las actualizaciones de pagina a 60 fps por defecto. Esta funcion apaga esa
 /// preferencia para que la pagina siga la tasa real de la pantalla (60, 120, 144...). Si el
@@ -50,17 +54,34 @@ fn seguir_tasa_pantalla(app: &tauri::AppHandle) {
             return;
         };
         unsafe {
-            let lista = webkit_settings_get_all_features();
+            // Carga dinamica: Fedora exporta estos simbolos privados y Ubuntu no. Si no
+            // existen, Mimo conserva el limite de 60 fps de WebKit y no rompe el enlace.
+            let Ok(lib) = libloading::Library::new("libwebkit2gtk-4.1.so.0") else {
+                return;
+            };
+            let Ok(get) = lib.get::<WebkitGetFeatures>(b"webkit_settings_get_all_features\0") else {
+                return;
+            };
+            let Ok(find) = lib.get::<WebkitFindFeature>(b"webkit_feature_list_find\0") else {
+                return;
+            };
+            let Ok(set) = lib.get::<WebkitSetFeature>(b"webkit_settings_set_feature_enabled\0") else {
+                return;
+            };
+            let Ok(unref) = lib.get::<WebkitUnrefFeatures>(b"webkit_feature_list_unref\0") else {
+                return;
+            };
+            let lista = get();
             if lista.is_null() {
                 return;
             }
             let id = b"PreferPageRenderingUpdatesNear60FPSEnabled\0";
-            let feature = webkit_feature_list_find(lista, id.as_ptr() as *const c_char);
+            let feature = find(lista, id.as_ptr() as *const c_char);
             if !feature.is_null() {
                 let crudo: *mut webkit2gtk::ffi::WebKitSettings = settings.to_glib_none().0;
-                webkit_settings_set_feature_enabled(crudo as *mut c_void, feature, 0);
+                set(crudo as *mut c_void, feature, 0);
             }
-            webkit_feature_list_unref(lista);
+            unref(lista);
         }
     });
 }
@@ -433,6 +454,21 @@ const GUION_SONDA: &str = r#"
     await esperar(200);
     r.grupos = document.querySelectorAll('.ajustes-grupo').length;
     r.sync_card = !!document.querySelector('#sync-card');
+    r.actualizaciones = {
+      card: !!document.querySelector('#actualizaciones-card'),
+      version: window.MIMO_VERSION || '',
+      estado: (document.querySelector('#act-estado') || {}).textContent || '',
+      channel: !!(window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.Channel)
+    };
+    try {
+      var invUpd = (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) || null;
+      if (invUpd) {
+        await invUpd('actualizacion_comprobar', { canal: 'otro' });
+        r.actualizaciones.canal_invalido = false;
+      }
+    } catch (e) {
+      r.actualizaciones.canal_invalido = String(e).indexOf('Canal') >= 0;
+    }
 
     if (cfg.url) {
       var sel = document.querySelector('#sync-proveedor');
@@ -484,6 +520,23 @@ const GUION_SONDA: &str = r#"
   } catch (e) {
     r.carpeta_error = String(e);
   }
+  try {
+    var g = await inv('estado_guardar', { texto: JSON.stringify({ prueba: 'almacen', n: 1 }) });
+    var l = await inv('estado_leer');
+    var b = await inv('respaldo_crear', {
+      motivo: 'prueba-sonda',
+      texto: JSON.stringify({ schema: 'mimo.backup', version: 1, entorno: {}, malla: {} })
+    });
+    var lista = await inv('respaldo_listar');
+    r.almacen = {
+      guardado: !!(g && g.sha256 && g.bytes > 0),
+      leido: !!(l && l.texto && l.texto.indexOf('almacen') >= 0),
+      respaldo: !!(b && b.sha256 && b.bytes > 0),
+      respaldos: (lista || []).length
+    };
+  } catch (e) {
+    r.almacen_error = String(e);
+  }
   inv('sonda_informe', { payload: JSON.stringify(r) });
 })();
 "#;
@@ -499,7 +552,9 @@ fn main() {
     }
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(CarpetaSync(Mutex::new(None)))
+        .manage(actualizaciones::ActualizacionPendiente(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
             sonda_informe,
             http_pedir,
@@ -508,7 +563,14 @@ fn main() {
             leer_carpeta,
             escribir_carpeta,
             olvidar_carpeta,
-            guardar_json
+            guardar_json,
+            almacen::estado_guardar,
+            almacen::estado_leer,
+            almacen::respaldo_crear,
+            almacen::respaldo_listar,
+            actualizaciones::actualizacion_comprobar,
+            actualizaciones::actualizacion_instalar,
+            actualizaciones::actualizacion_abrir_release
         ])
         .setup(|app| {
             // La ventana nace oculta (`visible: false`) para que los verificadores puedan

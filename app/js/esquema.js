@@ -12,7 +12,8 @@
 (function () {
   "use strict";
 
-  var APP = "Mimo", APP_VERSION = "1.2.0-beta.3", V = 1;
+  var APP = "Mimo", APP_VERSION = (typeof window !== "undefined" && window.MIMO_VERSION) || "1.2.0-beta.4", V = 1;
+  var ultimoError = "";
   var ENTORNO = "mimo.entorno", MALLA = "mimo.malla", BACKUP = "mimo.backup";
 
   function dict(x) { return x && typeof x === "object" && !Array.isArray(x) ? x : {}; }
@@ -81,10 +82,27 @@
   }
 
   function detectar(doc) {
+    ultimoError = "";
     if (!doc || typeof doc !== "object" || Array.isArray(doc)) return null;
-    if (doc.schema === BACKUP) return "backup";
-    if (doc.schema === ENTORNO) return "entorno";
-    if (doc.schema === MALLA) return "malla";
+    if (doc.schema === BACKUP || doc.schema === ENTORNO || doc.schema === MALLA) {
+      if (Number(doc.version) > V) {
+        ultimoError = "El respaldo es de una versión más nueva de Mimo. Actualiza la app antes de importarlo.";
+        return null;
+      }
+      if (doc.schema === BACKUP) {
+        if (!doc.entorno || typeof doc.entorno !== "object" || Array.isArray(doc.entorno) ||
+            !doc.malla || typeof doc.malla !== "object" || Array.isArray(doc.malla)) {
+          ultimoError = "El respaldo está incompleto: faltan entorno o malla.";
+          return null;
+        }
+        return "backup";
+      }
+      if (!doc.datos || typeof doc.datos !== "object" || Array.isArray(doc.datos)) {
+        ultimoError = "El documento está incompleto.";
+        return null;
+      }
+      return doc.schema === ENTORNO ? "entorno" : "malla";
+    }
     if (doc.formato === 2 && doc.estado && typeof doc.estado === "object") return "legacy";
     if (doc.tipo === "mimo-malla" && Array.isArray(doc.cursos)) return "malla-vieja";
     if (doc.cursos || doc.califs || doc.tareas || doc.notas || doc.prefs) return "estado";
@@ -357,6 +375,6 @@
     ENTORNO: ENTORNO, MALLA: MALLA, BACKUP: BACKUP, VERSION: V,
     detectar: detectar, exportarEntorno: exportarEntorno, exportarMalla: exportarMalla,
     exportarBackup: exportarBackup, convertirAcademics: convertirAcademics,
-    importar: importar, resumen: resumen
+    importar: importar, resumen: resumen, error: function () { return ultimoError; }
   };
 })();

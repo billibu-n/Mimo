@@ -100,6 +100,8 @@ def main() -> int:
             try:
                 nota(a, "Nota A", "secreto A")
                 configurar(a, srv, clave=None, guardar_clave=False)
+                exigir(a.evaluate("(JSON.parse(localStorage.getItem('mimo.sync.v1') || '{}').webdav || {}).clave") == "",
+                       "webdav: la contraseña de acceso no va a localStorage", fallas)
                 sincronizar(a)
                 a.wait_for_timeout(1500)
                 exigir("contraseña" in a.locator("#sync-estado").inner_text().lower(),

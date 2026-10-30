@@ -123,8 +123,8 @@ def main() -> int:
             texto_aj = page.locator("#p-ajustes").inner_text().lower()
             exigir("colaborar" in texto_aj and "dinero" not in texto_aj and "donación" not in texto_aj,
                    "ajustes: colaborar sin hablar de dinero", fallas)
-            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.3",
-                   f"marca: versión v1.2.0-beta.3 — {page.locator('.badge').inner_text().strip()}", fallas)
+            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.4",
+                   f"marca: versión v1.2.0-beta.4 — {page.locator('.badge').inner_text().strip()}", fallas)
             fuente = page.locator(".wordmark").evaluate("e => getComputedStyle(e).fontFamily")
             exigir("Comfortaa" in fuente, f"marca: wordmark Comfortaa — {fuente}", fallas)
             columnas = page.locator(".ajustes-grid").first.evaluate(

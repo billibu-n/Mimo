@@ -75,7 +75,7 @@ def main() -> int:
         return 1
 
     conf = json.loads((ESCRITORIO / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
-    exigir(conf.get("version") == "1.2.0-beta.3", f"tauri: version 1.2.0-beta.3 — {conf.get('version')}", fallas)
+    exigir(conf.get("version") == "1.2.0-beta.4", f"tauri: version 1.2.0-beta.4 — {conf.get('version')}", fallas)
     exigir(conf.get("build", {}).get("frontendDist") == "../../app",
            "tauri: frontendDist apunta a la app fuente", fallas)
 
@@ -121,6 +121,17 @@ def main() -> int:
         exigir(r.get("katex") == "object", f"tauri: KaTeX cargado — {r.get('katex')}", fallas)
         exigir(r.get("grupos") == 4, f"tauri: Ajustes con 4 grupos — {r.get('grupos')}", fallas)
         exigir(r.get("sync_card") is True, "tauri: tarjeta de sincronizacion", fallas)
+        act = r.get("actualizaciones") or {}
+        exigir(act.get("card") is True and act.get("version") == "1.2.0-beta.4",
+               f"tauri: tarjeta de actualizaciones y versión — {act}", fallas)
+        exigir(act.get("channel") is True, f"tauri: Channel disponible — {act}", fallas)
+        exigir(act.get("canal_invalido") is True, f"tauri: canal inválido se rechaza — {act}", fallas)
+        alma = r.get("almacen") or {}
+        exigir(alma.get("guardado") is True and alma.get("leido") is True,
+               f"tauri: espejo nativo guarda y lee — {alma}", fallas)
+        exigir(alma.get("respaldo") is True and alma.get("respaldos", 0) >= 1,
+               f"tauri: respaldo nativo — {alma}", fallas)
+        exigir(not r.get("almacen_error"), f"tauri: almacén sin error — {r.get('almacen_error')}", fallas)
         exigir("Sincronizado" in (r.get("sync_estado") or ""),
                f"tauri: estado sincronizado — {r.get('sync_estado')}", fallas)
         sync = r.get("sync") or {}

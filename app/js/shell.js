@@ -264,10 +264,33 @@
   var splitNavHasta = 0;
   var catalogoBusqueda = "";
   var HISTORIAL_MAX = 60, historial = [], historialPos = -1, historialTimer = null, historialSilencio = false;
+  var falloGuardado = false, copiaNativa = null;
 
+  function mostrarBannerAlmacen(texto, restaurar) {
+    var b = $("#banner-almacen"), t = $("#banner-almacen-texto"), r = $("#banner-almacen-restaurar");
+    if (!b || !t) return;
+    t.textContent = texto;
+    b.hidden = false;
+    if (r) r.hidden = !restaurar;
+  }
+  function cerrarBannerAlmacen() {
+    var b = $("#banner-almacen"); if (b) b.hidden = true;
+  }
   function guardar() {
     var texto = JSON.stringify(estado);
-    try { localStorage.setItem(CLAVE, texto); } catch (e) {}
+    var ok = true;
+    try { localStorage.setItem(CLAVE, texto); } catch (e) {
+      ok = false;
+      falloGuardado = true;
+      mostrarBannerAlmacen(L("No se pudo guardar en este equipo: el almacenamiento está lleno. Exporta un respaldo ahora.", "Could not save on this device: storage is full. Export a backup now.", "无法保存到此设备：存储已满。请立即导出备份。"), !!copiaNativa);
+    }
+    if (ok && falloGuardado) {
+      falloGuardado = false;
+      cerrarBannerAlmacen();
+    }
+    if (window.MimoAlmacen) {
+      try { MimoAlmacen.guardar(texto); } catch (e) {}
+    }
     if (!historialSilencio && historial.length) programarHistorial(texto);
     if (window.MimoSync && window.MimoSync.alCambiar) {
       try { window.MimoSync.alCambiar(); } catch (e) {}
@@ -329,6 +352,10 @@
   function guardarAhora() {
     guardar();
     flushHistorial();
+    if (falloGuardado) {
+      aviso(L("No se pudo guardar en este equipo. Exporta un respaldo.", "Could not save on this device. Export a backup.", "无法保存到此设备。请导出备份。"));
+      return;
+    }
     var sync = window.MimoSync, st = sync && sync.estado ? sync.estado() : null;
     if (st && st.meta && st.meta.provider) {
       try { sync.sincronizar(); } catch (e) {}
@@ -1704,14 +1731,36 @@
       };
     }).filter(Boolean);
   }
+  function respaldarAntesDeImportar() {
+    if (window.MimoAlmacen && MimoAlmacen.esTauri()) {
+      return MimoAlmacen.respaldar("antes-de-importar", JSON.stringify(estado)).then(function (info) {
+        if (!info) { aviso(L("No se pudo crear el respaldo previo.", "Could not create the previous backup.", "无法创建之前的备份。")); return false; }
+        aviso(L("Respaldo previo guardado: ", "Previous backup saved: ", "之前的备份已保存：") + info.nombre);
+        return true;
+      }).catch(function () {
+        aviso(L("No se pudo crear el respaldo previo. No se importó nada.", "Could not create the previous backup. Nothing was imported.", "无法创建之前的备份。未导入任何内容。"));
+        return false;
+      });
+    }
+    try {
+      var doc = window.MimoEsquema ? MimoEsquema.exportarBackup(estado) : estado;
+      var blob = new Blob([JSON.stringify(doc, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "mimo-backup-antes-de-importar.json"; a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      return Promise.resolve(true);
+    } catch (e) { return Promise.resolve(false); }
+  }
+
   function importarMalla(file) {
     var lector = new FileReader();
-    lector.onload = function () {
+    lector.onload = async function () {
       try {
         var x = JSON.parse(lector.result);
         var r = window.MimoEsquema ? MimoEsquema.importar(x, estado) : null;
         if (!r || !r.estado.cursos) { aviso(L("El archivo no trae cursos de malla.", "The file has no degree-plan courses.", "文件中没有课程规划。")); return; }
         if (estado.cursos.length && !window.confirm(L("¿Reemplazar la malla actual (" + estado.cursos.length + " ramos) por " + r.estado.cursos.length + "?", "Replace the current plan (" + estado.cursos.length + " courses) with " + r.estado.cursos.length + "?", "用 " + r.estado.cursos.length + " 门课程替换当前规划（" + estado.cursos.length + " 门）？"))) return;
+        if (!(await respaldarAntesDeImportar())) return;
         var nuevo = Object.assign({}, estado, { cursos: r.estado.cursos, califs: r.estado.califs || {} });
         reemplazarEstado(nuevo);
         aviso(L("Malla importada: ", "Degree plan imported: ", "课程规划已导入：") + estado.cursos.length + L(" ramos y ", " courses and ", " 门课程和 ") + Object.keys(estado.califs || {}).length + L(" calificaciones.", " grade records.", " 条成绩记录。"));
@@ -3902,6 +3951,20 @@
 
   async function init() {
     registrarFuenteCalendario("calificaciones", fuenteCalificaciones);
+    // Si localStorage desapareció o está corrupto, el espejo nativo es la recuperación.
+    if (arranqueLimpio && !RESET && window.MimoAlmacen && MimoAlmacen.esTauri()) {
+      try {
+        var espejo = await MimoAlmacen.leer();
+        if (espejo && espejo.texto) {
+          var recuperado = JSON.parse(espejo.texto);
+          if (recuperado && typeof recuperado === "object") {
+            estado = recuperado;
+            arranqueLimpio = false;
+            setTimeout(function () { aviso(L("Datos recuperados de la copia nativa.", "Data recovered from the native copy.", "已从本机副本恢复数据。")); }, 600);
+          }
+        }
+      } catch (e) {}
+    }
     // La app nativa trae tutorial.json junto al frontend. Solo se carga cuando no hay
     // estado guardado (primer arranque o Restablecer de fábrica). En file:// se omite:
     // los gates abren el HTML directo y no deben depender de fetch.
@@ -4065,12 +4128,13 @@
     $("#archivo-importar").addEventListener("change", function (e) {
       var f = e.target.files[0]; if (!f) return;
       var lector = new FileReader();
-      lector.onload = function () {
+      lector.onload = async function () {
         try {
           var x = JSON.parse(lector.result);
           var r = window.MimoEsquema ? MimoEsquema.importar(x, estado) : null;
-          if (!r) { aviso(L("Ese archivo no es un respaldo de MIMO.", "That file is not a MIMO backup.", "该文件不是 MIMO 备份。")); return; }
+          if (!r) { aviso((window.MimoEsquema && MimoEsquema.error && MimoEsquema.error()) || L("Ese archivo no es un respaldo de MIMO.", "That file is not a MIMO backup.", "该文件不是 MIMO 备份。")); return; }
           if (!window.confirm(L("Se reemplazarán los datos actuales por los de " + r.tipo + ". ¿Continuar?", "Current data will be replaced by " + r.tipo + ". Continue?", "当前数据将被 " + r.tipo + " 替换。继续？"))) return;
+          if (!(await respaldarAntesDeImportar())) return;
           reemplazarEstado(r.estado);
           var q = r.resumen || {};
           aviso(L("Importados ", "Imported ", "已导入 ") + (q.cursos || 0) + L(" ramos, ", " courses, ", " 门课程、") + (q.tareas || 0) + L(" tareas, ", " tasks, ", " 个任务、") + (q.eventos || 0) + L(" eventos y ", " events and ", " 个事件和 ") + (q.sesiones || 0) + L(" sesiones.", " sessions.", " 个会话。"));
@@ -4323,6 +4387,35 @@
       }
       if (pantalla === "malla") setTimeout(dibujarLineasMalla, 60);
     });
+    var bacc = $("#banner-almacen-accion");
+    if (bacc) bacc.addEventListener("click", function () { var b = $("#btn-exportar-todo"); if (b) b.click(); });
+    var bx = $("#banner-almacen-x");
+    if (bx) bx.addEventListener("click", cerrarBannerAlmacen);
+    var br = $("#banner-almacen-restaurar");
+    if (br) br.addEventListener("click", function () {
+      if (!copiaNativa || !window.confirm(L("Se reemplazarán los datos actuales por la copia nativa. ¿Continuar?", "Current data will be replaced by the native copy. Continue?", "当前数据将被本机副本替换。继续？"))) return;
+      try {
+        var nuevo = JSON.parse(copiaNativa.texto);
+        reemplazarEstado(nuevo);
+        copiaNativa = null;
+        cerrarBannerAlmacen();
+        aviso(L("Copia nativa restaurada.", "Native copy restored.", "本机副本已恢复。"));
+      } catch (e) { aviso(L("La copia nativa no se pudo leer.", "The native copy could not be read.", "无法读取本机副本。")); }
+    });
+    document.addEventListener("mimo:almacen-error", function (ev) {
+      mostrarBannerAlmacen(L("No se pudo guardar la copia nativa: ", "Could not save the native copy: ", "无法保存本机副本：") + ((ev.detail && ev.detail.mensaje) || "") + L(". Exporta un respaldo.", ". Export a backup.", "。请导出备份。"), !!copiaNativa);
+    });
+    if (window.MimoAlmacen && MimoAlmacen.esTauri() && !RESET) {
+      MimoAlmacen.leer().then(function (info) {
+        if (!info) return;
+        var local = null;
+        try { local = localStorage.getItem(CLAVE); } catch (e) {}
+        if (!local || arranqueLimpio) {
+          copiaNativa = info;
+          mostrarBannerAlmacen(L("Hay una copia nativa de tus datos. Puedes restaurarla.", "There is a native copy of your data. You can restore it.", "有你的数据的本机副本。你可以恢复它。"), true);
+        }
+      }).catch(function () {});
+    }
     guardar();
     setTimeout(quitarCarga, 30);
   }
