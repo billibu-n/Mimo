@@ -4,6 +4,10 @@
 
 - La app se empaqueta directamente desde `app/`. Se eliminó la copia `escritorio/app` y el paso
   `preparar-frontend`; las pruebas viven en `pruebas/` y la documentación técnica en `docs/`.
+- Los verificadores pueden correr con `MIMO_HEADLESS=1`: la ventana queda fuera de la pantalla y
+  de la barra de tareas.
+- En Linux, la app deja de acercarse a 60 fps y sigue la tasa del monitor (medido a 145 fps en
+  una pantalla de 144 Hz).
 
 ## 1.2.0-beta.2 — 2026-10-29
 

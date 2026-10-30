@@ -9,12 +9,13 @@ impresión: cada uno devuelve 0/1 y cita su medida.
 python3 pruebas/correr-gates.py     # los 15 gates web, resumen al final
 ```
 
-El binario de escritorio se mide aparte, porque compila y abre ventana:
+El binario de escritorio se mide aparte, porque compila. El gate lo arranca en modo headless
+(`MIMO_HEADLESS=1`): la ventana existe, pero no aparece ni ocupa la barra de tareas.
 
 ```bash
 cd escritorio
 PATH="$HOME/.cargo/bin:$PATH" cargo tauri build --bundles rpm
-cd .. && DISPLAY=:0 python3 pruebas/gate-tauri.py
+cd .. && python3 pruebas/gate-tauri.py
 ```
 
 Los gates que aceptan `--demo` exigen **dos** cosas: la app buena sale 0 y el fixture roto sale 1.

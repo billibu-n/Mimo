@@ -77,9 +77,14 @@ visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.deskto
   (temporal + `rename` + verificación). La ruta elegida se recuerda en la configuración de la app;
   la página no elige rutas ni escribe otros archivos. Si se desconoce, la app pide «Elegir carpeta».
 - **Sonda:** `MIMO_SONDA=1 ./release/mimo` escribe `MIMO_SONDA_SALIDA` (por
-  defecto `/tmp/mimo-sonda.json`) y sale. Mide navegación, nota en `localStorage`, Ajustes y una
-  sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
+  defecto `/tmp/mimo-sonda.json`) y sale. Mide navegación, fps, nota en `localStorage`, Ajustes y
+  una sincronización WebDAV real contra un servidor local. No imprime credenciales. Requiere
   `DISPLAY` o `WAYLAND_DISPLAY`.
+- **Headless:** `MIMO_HEADLESS=1 ./release/mimo` coloca la ventana fuera de la pantalla y de la
+  barra de tareas. Lo usa `gate-tauri` para no abrir la app encima de la persona.
+- **Tasa de pantalla:** en Linux se apaga la preferencia interna de WebKitGTK que acerca la
+  página a 60 fps; la app sigue la tasa del monitor (60, 120, 144...). En Windows y macOS la
+  tasa ya la marca el sistema.
 - **Gate:** `python3 pruebas/gate-tauri.py` comprueba el binario, el RPM, la persistencia, la
   sync nativa contra `pruebas/webdav.py` la ida y vuelta de la carpeta nativa y el tutorial precargado (33 medidas).
   No está en `correr-gates.py` porque necesita compilar y abrir ventana; se corre aparte al cerrar

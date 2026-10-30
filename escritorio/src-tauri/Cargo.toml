@@ -18,6 +18,10 @@ reqwest = { version = "0.13", default-features = false, features = ["blocking", 
 # Dialogo nativo de carpetas: WebKitGTK no tiene File System Access.
 tauri-plugin-dialog = "2"
 
+[target.'cfg(target_os = "linux")'.dependencies]
+# Solo Linux: permite desactivar el limite interno de WebKitGTK que acerca la pagina a 60 fps.
+webkit2gtk = "2.0"
+
 [profile.release]
 # Sin esto, el caparazon se quedaria sin optimizar: funciona, pero arranca y responde mas lento
 # sin ninguna ganancia. Se compila mas lento; el binario, menos. (Medido en el molde del viejo.)

@@ -11,9 +11,11 @@
       {
         "label": "main",
         "title": "Mimo",
+        "visible": false,
         "width": 1280,
         "height": 900,
-        "resizable": true
+        "resizable": true,
+        "focus": false
       }
     ],
     "security": {

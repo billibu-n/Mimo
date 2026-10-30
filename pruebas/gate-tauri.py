@@ -87,6 +87,7 @@ def main() -> int:
         carpeta.mkdir()
         env = os.environ.copy()
         env.update({
+            "MIMO_HEADLESS": "1",
             "MIMO_CARPETA_PRUEBA": str(carpeta),
             "MIMO_WEBDAV_URL": srv.url,
             "MIMO_WEBDAV_USER": "mimo",
@@ -104,6 +105,7 @@ def main() -> int:
             print(f"[ROJO] la primera sonda no respondio (codigo {codigo})\n{err[-1500:]}")
             return 1
         r = primera
+        print(f"[INFO] fps de la ventana: {r.get('fps')}")
         exigir(r.get("origen", "").startswith("tauri://"), f"tauri: origen tauri — {r.get('origen')}", fallas)
         exigir(r.get("titulo") == "Mimo · universal", f"tauri: titulo — {r.get('titulo')}", fallas)
         exigir(r.get("tabs") == ["calendario", "tareas", "notas", "ajustes"],

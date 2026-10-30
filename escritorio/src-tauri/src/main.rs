@@ -24,6 +24,50 @@ use std::time::Duration;
 use tauri::{Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
+#[cfg(target_os = "linux")]
+use std::ffi::{c_char, c_void};
+
+#[cfg(target_os = "linux")]
+extern "C" {
+    fn webkit_settings_get_all_features() -> *mut c_void;
+    fn webkit_feature_list_find(lista: *mut c_void, id: *const c_char) -> *mut c_void;
+    fn webkit_settings_set_feature_enabled(settings: *mut c_void, feature: *mut c_void, enabled: i32);
+    fn webkit_feature_list_unref(lista: *mut c_void);
+}
+
+/// WebKitGTK acerca las actualizaciones de pagina a 60 fps por defecto. Esta funcion apaga esa
+/// preferencia para que la pagina siga la tasa real de la pantalla (60, 120, 144...). Si el
+/// monitor es de 60 Hz no cambia nada. Solo Linux.
+#[cfg(target_os = "linux")]
+fn seguir_tasa_pantalla(app: &tauri::AppHandle) {
+    use webkit2gtk::glib::translate::ToGlibPtr;
+    use webkit2gtk::WebViewExt;
+    let Some(ventana) = app.get_webview_window("main") else {
+        return;
+    };
+    let _ = ventana.with_webview(|webview| {
+        let Some(settings) = webview.inner().settings() else {
+            return;
+        };
+        unsafe {
+            let lista = webkit_settings_get_all_features();
+            if lista.is_null() {
+                return;
+            }
+            let id = b"PreferPageRenderingUpdatesNear60FPSEnabled\0";
+            let feature = webkit_feature_list_find(lista, id.as_ptr() as *const c_char);
+            if !feature.is_null() {
+                let crudo: *mut webkit2gtk::ffi::WebKitSettings = settings.to_glib_none().0;
+                webkit_settings_set_feature_enabled(crudo as *mut c_void, feature, 0);
+            }
+            webkit_feature_list_unref(lista);
+        }
+    });
+}
+
+#[cfg(not(target_os = "linux"))]
+fn seguir_tasa_pantalla(_app: &tauri::AppHandle) {}
+
 #[derive(serde::Deserialize)]
 struct PeticionHttp {
     metodo: String,
@@ -358,6 +402,16 @@ const GUION_SONDA: &str = r#"
     });
     r.secciones = Array.prototype.map.call(document.querySelectorAll('.seccion'), function (s) { return s.id; });
 
+    r.fps = await new Promise(function (ok) {
+      var n = 0, t0 = performance.now();
+      function paso(t) {
+        n++;
+        if (t - t0 >= 1000) ok(Math.round(n * 1000 / (t - t0)));
+        else requestAnimationFrame(paso);
+      }
+      requestAnimationFrame(paso);
+    });
+
     document.querySelector('#tabs [data-ir="tareas"]').click();
     await esperar(180);
     r.tareas_visible = visible('#p-tareas');
@@ -435,6 +489,14 @@ const GUION_SONDA: &str = r#"
 "#;
 
 fn main() {
+    // En Linux, el modo headless corre sobre XWayland para poder colocar la ventana fuera de
+    // la pantalla. Sin esto, Wayland ignora la posicion y la ventana aparece encima.
+    #[cfg(target_os = "linux")]
+    if std::env::var("MIMO_HEADLESS").as_deref() == Ok("1")
+        && std::env::var_os("DISPLAY").is_some()
+    {
+        std::env::set_var("GDK_BACKEND", "x11");
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .manage(CarpetaSync(Mutex::new(None)))
@@ -449,9 +511,23 @@ fn main() {
             guardar_json
         ])
         .setup(|app| {
+            // La ventana nace oculta (`visible: false`) para que los verificadores puedan
+            // correr sin que la app aparezca encima. En uso normal se muestra aqui.
+            let headless = std::env::var("MIMO_HEADLESS").as_deref() == Ok("1");
+            if let Some(ventana) = app.get_webview_window("main") {
+                if headless {
+                    let _ = ventana.set_skip_taskbar(true);
+                    let _ = ventana.set_position(tauri::PhysicalPosition::new(-10000, -10000));
+                    let _ = ventana.show();
+                } else {
+                    let _ = ventana.show();
+                    let _ = ventana.set_focus();
+                }
+            }
             // Tauri pone el icono del bundle en la ventana y en `_NET_WM_ICON` al crearla.
             // No se pisa desde GTK: al fijar `enableGTKAppId` o un icono a mano, GNOME Shell
             // busca un .desktop con ese app id y la ventana termina con el icono genérico.
+            seguir_tasa_pantalla(app.handle());
             lanzar_sonda(app.handle());
             Ok(())
         })
