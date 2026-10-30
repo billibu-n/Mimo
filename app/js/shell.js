@@ -287,6 +287,55 @@
   var ORDEN = ["tiempo", "malla", "calificaciones", "estudio"];
   var HIJOS = [["crono", "Cronómetro"], ["temporizador", "Temporizador"], ["pomodoro", "Pomodoro"], ["alarmas", "Alarmas"]];
 
+  /* Fase 1: los bloques se declaran en el registro. Por ahora los manifiestos
+     envuelven las funciones existentes; el HTML y el estado siguen igual. */
+  function registrarManifiestos() {
+    if (!window.MimoRegistro) return;
+    [
+      { id: "calendario", nombre: "Calendario", tipo: "seccion", fija: true, orden: 10,
+        origen: "nativo", naturaleza: "base", icono: "i-cal", tags: ["eventos", "periodos"],
+        pintar: pintarCalendario },
+      { id: "tareas", nombre: "Tareas", tipo: "seccion", fija: true, orden: 20,
+        origen: "nativo", naturaleza: "base", icono: "i-tareas", tags: ["tareas", "proyectos"],
+        pintar: pintarTareas },
+      { id: "notas", nombre: "Notas", tipo: "seccion", fija: true, orden: 30,
+        origen: "nativo", naturaleza: "base", icono: "i-notas", tags: ["notas", "etiquetas"],
+        pintar: pintarNotas },
+      { id: "ajustes", nombre: "Ajustes", tipo: "seccion", fija: true, orden: 999,
+        origen: "nativo", naturaleza: "base", icono: "i-ajustes", tags: ["ajustes", "temas"],
+        pintar: pintarAjustes }
+    ].forEach(function (m) {
+      try { MimoRegistro.registrar(m); } catch (e) { if (window.console) console.error(e); }
+    });
+    var pintores = {
+      tiempo: pintarTiempo, malla: pintarMalla,
+      calificaciones: pintarCalificaciones, estudio: pintarEstudio
+    };
+    Object.keys(BLOQUES).forEach(function (id, i) {
+      var b = BLOQUES[id];
+      try {
+        MimoRegistro.registrar({
+          id: id, nombre: b.nombre, tipo: b.tipo, origen: b.origen,
+          naturaleza: b.naturaleza, tags: b.tags, icono: b.icono, desc: b.desc,
+          fija: false, oculto: id === "evaluaciones", orden: 40 + i * 10,
+          instala: b.instala || [], pintar: pintores[id] || null
+        });
+      } catch (e) { if (window.console) console.error(e); }
+    });
+    HIJOS.forEach(function (h, i) {
+      try {
+        MimoRegistro.registrar({
+          id: h[0], nombre: h[1], tipo: "hijo", padre: "tiempo", fija: false,
+          oculto: true, orden: 41 + i, origen: "nativo", naturaleza: "tiempo",
+          icono: "i-tiempo", tags: []
+        });
+      } catch (e) { if (window.console) console.error(e); }
+    });
+    var fallas = MimoRegistro.validar();
+    if (fallas.length && window.console) console.warn("MimoRegistro:", fallas);
+  }
+  registrarManifiestos();
+
   function porDefecto() {
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
@@ -794,9 +843,15 @@
   }
   function instalado(id) { return estado.instalados.indexOf(id) !== -1; }
   function secciones() {
-    var out = BASE.slice(0, 3);
-    ORDEN.forEach(function (id) { if (instalado(id)) out.push(id); });
-    out.push("ajustes");
+    var out;
+    if (window.MimoRegistro && MimoRegistro.secciones) {
+      out = MimoRegistro.secciones(estado.instalados);
+    } else {
+      out = BASE.slice(0, 3);
+      ORDEN.forEach(function (id) { if (instalado(id)) out.push(id); });
+      out.push("ajustes");
+    }
+    if (out.indexOf("ajustes") === -1) out.push("ajustes");
     var orden = (estado.prefs && Array.isArray(estado.prefs.ordenTabs)) ? estado.prefs.ordenTabs : [];
     var base = {};
     out.forEach(function (id, i) { base[id] = i; });
@@ -879,17 +934,22 @@
   function pintarPanelDe(ctx) {
     if (ctx === pantalla) pintarPanel(); else pintarPanelEn(ctx);
   }
+  function pintarSeccion(id) {
+    if (window.MimoRegistro && MimoRegistro.pintar(id)) return;
+    if (id === "calendario") pintarCalendario();
+    else if (id === "tareas") pintarTareas();
+    else if (id === "notas") pintarNotas();
+    else if (id === "malla") pintarMalla();
+    else if (id === "calificaciones") pintarCalificaciones();
+    else if (id === "estudio") pintarEstudio();
+    else if (id === "tiempo") pintarTiempo();
+    else if (id === "ajustes") pintarAjustes();
+  }
   function ir(id) {
     if (secciones().indexOf(id) === -1) return;
     if (splitOn && Date.now() < splitNavHasta) {
       if (id === estado.splitSeccion) {
-        if (id === "tareas") pintarTareas();
-        else if (id === "notas") pintarNotas();
-        else if (id === "calendario") pintarCalendario();
-        else if (id === "malla") pintarMalla();
-        else if (id === "calificaciones") pintarCalificaciones();
-        else if (id === "estudio") pintarEstudio();
-        else if (id === "tiempo") pintarTiempo();
+        pintarSeccion(id);
         pintarPanelEn(id);
         return;
       }
@@ -904,11 +964,7 @@
     pantalla = id;
     mostrarPaneles();
     pintarTabs();
-    if (id === "calendario") pintarCalendario();
-    if (id === "malla") pintarMalla();
-    if (id === "calificaciones") pintarCalificaciones();
-    if (id === "estudio") pintarEstudio();
-    if (id === "tiempo") pintarTiempo();
+    pintarSeccion(id);
     pintarPanel();
     if (window.innerWidth <= 1255) cerrarPanel();
   }
