@@ -98,7 +98,7 @@
 
 <header class="topbar">
   <button class="marca" id="btn-mimo" type="button" title="Mimo" aria-label="Mimo"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span class="wordmark" aria-hidden="true">M<span class="wm-i">ı</span>mo</span></button>
-  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0-beta.2</span>
+  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0-beta.3</span>
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
@@ -121,317 +121,18 @@
 <div class="shell" id="shell">
   <main class="contenido" id="contenido">
 
-    <section class="seccion" data-pantalla="calendario" id="p-calendario">
-      <div class="sec-cab">
-        <div><h1 data-i18n="nav.calendario">Calendario</h1><p class="sec-sub" data-i18n="sub.calendario">Todo lo que tiene fecha, en un solo sitio.</p></div>
-        <div class="sec-acciones">
-          <div class="conmutador" id="vista-calendario" role="group" aria-label="Vista del calendario" data-i18n-aria="cal.vistaAria"><button type="button" class="on" data-cal-vista="mes" data-i18n="cal.vista.mes">Mes</button><button type="button" data-cal-vista="semana" data-i18n="cal.vista.semana">Semana</button><button type="button" data-cal-vista="agenda" data-i18n="cal.vista.agenda">Agenda</button></div>
-          <button class="btn" id="btn-hoy" type="button" data-i18n="cal.hoy">Hoy</button>
-        </div>
-      </div>
-      <form class="evento-form" id="evento-form" hidden>
-        <input class="entrada" id="evento-titulo" type="text" placeholder="Título del evento" aria-label="Título del evento" data-i18n-placeholder="cal.evento.titulo" data-i18n-aria="cal.evento.titulo" autocomplete="off">
-        <input class="entrada" id="evento-fecha" type="date" aria-label="Fecha" data-i18n-aria="cal.evento.fecha">
-        <input class="entrada" id="evento-hora" type="time" aria-label="Hora" data-i18n-aria="cal.evento.hora">
-        <input class="entrada" id="evento-contexto" type="text" list="contextos-ramos" placeholder="Contexto (opcional)" aria-label="Contexto" data-i18n-placeholder="cal.evento.contexto" data-i18n-aria="cal.contexto">
-        <button class="btn btn-primario" type="submit" data-i18n="acc.guardar">Guardar</button>
-        <button class="btn" type="button" id="evento-cancelar" data-i18n="acc.cancelar">Cancelar</button>
-      </form>
-      <datalist id="contextos-ramos"></datalist>
-      <div class="kpis">
-        <div class="kpi"><b id="kpi-eventos">0</b><span data-i18n="cal.kpi.eventos">eventos este mes</span></div>
-        <div class="kpi"><b id="kpi-tareas">0</b><span data-i18n="cal.kpi.tareas">tareas con fecha</span></div>
-        <div class="kpi"><b>0 h</b><span data-i18n="cal.kpi.horas">registradas</span></div>
-        <div class="kpi"><b id="kpi-bloques">0</b><span data-i18n="cal.kpi.bloques">bloques instalados</span></div>
-      </div>
-      <div class="cal-layout">
-        <aside class="rail" aria-label="Filtros">
-          <button class="btn btn-primario" id="btn-nuevo-evento" type="button" style="width:100%" data-i18n="cal.nuevo">+ Nuevo evento</button>
-          <hr><h3 data-i18n="cal.contextos">Contextos</h3>
-          <p class="muted" data-i18n="cal.sinContextos">Sin contextos todavía. Crea uno al primer evento o tarea.</p>
-          <hr><h3 data-i18n="cal.calendarios">Calendarios</h3>
-          <p class="muted" data-i18n="cal.local">Local · este equipo</p>
-        </aside>
-        <div class="card cal-tarjeta" data-ctx-zona="calendario">
-          <div class="cal-cab"><button class="icono-btn" id="cal-ant" type="button" title="Anterior" aria-label="Anterior" data-i18n-title="cal.anterior" data-i18n-aria="cal.anterior">‹</button><h2 id="cal-mes-titulo">Mes</h2><button class="icono-btn" id="cal-sig" type="button" title="Siguiente" aria-label="Siguiente" data-i18n-title="cal.siguiente" data-i18n-aria="cal.siguiente">›</button><span class="pill" id="cal-cuenta">0 eventos</span></div>
-          <div class="cal-grid" id="cal-grid"></div>
-          <div id="cal-agenda" class="cal-agenda" hidden></div>
-          <p class="empty" id="cal-vacio" data-i18n="cal.vacio">Sin eventos. Todo lo que tenga fecha aparecerá aquí.</p>
-        </div>
-      </div>
-    </section>
 
-    <section class="seccion" data-pantalla="tareas" id="p-tareas" hidden>
-      <div class="sec-cab">
-        <div><h1 data-i18n="nav.tareas">Tareas</h1><p class="sec-sub" data-i18n="sub.tareas">Proyectos y tareas sobre tareas; el progreso se calcula solo.</p></div>
-        <div class="sec-acciones">
-          <div class="conmutador" id="vista-tareas" role="group" aria-label="Vista de tareas" data-l10n-aria-es="Vista de tareas" data-l10n-aria-en="Task view" data-l10n-aria-zh="任务视图"><button type="button" class="on" data-vista="hoy" data-l10n-es="Hoy" data-l10n-en="Today" data-l10n-zh="今天">Hoy</button><button type="button" data-vista="arbol" data-l10n-es="Árbol" data-l10n-en="Tree" data-l10n-zh="树状">Árbol</button><button type="button" data-vista="tablero" data-l10n-es="Tablero" data-l10n-en="Board" data-l10n-zh="看板">Tablero</button></div>
-          <button class="btn btn-primario" id="btn-nueva-tarea" type="button" data-l10n-es="+ Nueva tarea" data-l10n-en="+ New task" data-l10n-zh="+ 新建任务">+ Nueva tarea</button>
-        </div>
-      </div>
-      <div class="kpis">
-        <div class="kpi"><b id="kpi-hoy">0</b><span data-l10n-es="para hoy" data-l10n-en="due today" data-l10n-zh="今日到期">para hoy</span></div>
-        <div class="kpi"><b id="kpi-abiertas">0</b><span data-l10n-es="abiertas" data-l10n-en="open" data-l10n-zh="未完成">abiertas</span></div>
-        <div class="kpi"><b id="kpi-hechas">0</b><span data-l10n-es="hechas" data-l10n-en="done" data-l10n-zh="已完成">hechas</span></div>
-        <div class="kpi"><b id="kpi-progreso">0 %</b><span data-l10n-es="del total" data-l10n-en="of total" data-l10n-zh="总计">del total</span></div>
-      </div>
-      <div class="card" data-ctx-zona="tareas">
-        <form class="tarea-form" id="tarea-form" hidden>
-          <input class="entrada" id="tarea-titulo" type="text" placeholder="¿Qué hay que hacer?" aria-label="Título de la tarea" data-l10n-ph-es="¿Qué hay que hacer?" data-l10n-ph-en="What needs doing?" data-l10n-ph-zh="要做什么？" data-l10n-aria-es="Título de la tarea" data-l10n-aria-en="Task title" data-l10n-aria-zh="任务标题" autocomplete="off">
-          <select class="entrada" id="tarea-tipo" aria-label="Tipo" data-l10n-aria-es="Tipo" data-l10n-aria-en="Type" data-l10n-aria-zh="类型">
-            <option value="tarea" data-l10n-es="Tarea" data-l10n-en="Task" data-l10n-zh="任务">Tarea</option>
-            <option value="proyecto" data-l10n-es="Proyecto" data-l10n-en="Project" data-l10n-zh="项目">Proyecto</option>
-          </select>
-          <select class="entrada" id="tarea-padre" aria-label="Dentro de" data-l10n-aria-es="Dentro de" data-l10n-aria-en="Inside" data-l10n-aria-zh="所属"></select>
-          <input class="entrada" id="tarea-fecha" type="date" aria-label="Fecha" data-l10n-aria-es="Fecha" data-l10n-aria-en="Date" data-l10n-aria-zh="日期">
-          <select class="entrada" id="tarea-prioridad" aria-label="Prioridad" data-l10n-aria-es="Prioridad" data-l10n-aria-en="Priority" data-l10n-aria-zh="优先级">
-            <option value="alta" data-l10n-es="Alta" data-l10n-en="High" data-l10n-zh="高">Alta</option>
-            <option value="media" selected data-l10n-es="Media" data-l10n-en="Medium" data-l10n-zh="中">Media</option>
-            <option value="baja" data-l10n-es="Baja" data-l10n-en="Low" data-l10n-zh="低">Baja</option>
-          </select>
-          <input class="entrada" id="tarea-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto" data-l10n-ph-es="Contexto (opcional)" data-l10n-ph-en="Context (optional)" data-l10n-ph-zh="情境（可选）" data-l10n-aria-es="Contexto" data-l10n-aria-en="Context" data-l10n-aria-zh="情境">
-          <button class="btn btn-primario" type="submit" data-l10n-es="Crear" data-l10n-en="Create" data-l10n-zh="创建">Crear</button>
-          <button class="btn" type="button" id="tarea-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
-        </form>
-        <div id="tareas-lista" class="tareas-lista" data-ctx-zona="tareas"></div>
-        <div class="empty" id="tareas-vacio">
-          <h2 data-l10n-es="Sin tareas todavía" data-l10n-en="No tasks yet" data-l10n-zh="还没有任务">Sin tareas todavía</h2>
-          <p data-l10n-es="Una tarea puede ser un proyecto: las tareas dentro suben su progreso." data-l10n-en="A task can be a project: the tasks inside raise its progress." data-l10n-zh="任务可以是项目：里面的任务会提升进度。">Una tarea puede ser un proyecto: las tareas dentro suben su progreso.</p>
-          <button class="btn btn-primario" type="button" id="tareas-crear" data-l10n-es="Crear la primera tarea" data-l10n-en="Create the first task" data-l10n-zh="创建第一个任务">Crear la primera tarea</button>
-        </div>
-      </div>
-    </section>
 
-    <section class="seccion" data-pantalla="notas" id="p-notas" hidden>
-      <div class="sec-cab">
-        <div><h1 data-i18n="nav.notas">Notas</h1><p class="sec-sub" data-i18n="sub.notas">El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.</p></div>
-        <div class="sec-acciones"><button class="btn btn-primario" id="btn-nueva-nota" type="button" data-l10n-es="+ Nueva nota" data-l10n-en="+ New note" data-l10n-zh="+ 新建笔记">+ Nueva nota</button></div>
-      </div>
-      <div class="notas-layout">
-        <aside class="notas-lista" aria-label="Lista de notas" data-ctx-zona="notas" data-l10n-aria-es="Lista de notas" data-l10n-aria-en="Notes list" data-l10n-aria-zh="笔记列表">
-          <input class="entrada" id="buscar-nota" type="search" placeholder="Buscar nota…" aria-label="Buscar nota" data-l10n-ph-es="Buscar nota…" data-l10n-ph-en="Search notes…" data-l10n-ph-zh="搜索笔记…" data-l10n-aria-es="Buscar nota" data-l10n-aria-en="Search note" data-l10n-aria-zh="搜索笔记">
-          <p class="nota-pista" data-l10n-es="Clic derecho: fijar o borrar." data-l10n-en="Right-click: pin or delete." data-l10n-zh="右键：置顶或删除。">Clic derecho: fijar o borrar.</p>
-          <div id="notas-items"></div>
-          <p class="muted" id="notas-vacio" data-l10n-es="Sin notas todavía." data-l10n-en="No notes yet." data-l10n-zh="还没有笔记。">Sin notas todavía.</p>
-        </aside>
-        <div class="nota-editor card">
-          <input class="nota-titulo" id="nota-titulo" type="text" placeholder="Título de la nota" aria-label="Título de la nota" data-l10n-ph-es="Título de la nota" data-l10n-ph-en="Note title" data-l10n-ph-zh="笔记标题" data-l10n-aria-es="Título de la nota" data-l10n-aria-en="Note title" data-l10n-aria-zh="笔记标题" disabled>
-          <div class="nota-toolbar">
-            <button class="btn btn--chico" id="nota-modo" type="button" data-l10n-es="Vista previa" data-l10n-en="Preview" data-l10n-zh="预览">Vista previa</button>
-            <button class="btn btn--chico" id="nota-fijar" type="button" data-l10n-es="Fijar" data-l10n-en="Pin" data-l10n-zh="置顶">Fijar</button>
-            <button class="btn btn--chico btn-peligro" id="btn-borrar-nota" type="button" data-l10n-es="Borrar" data-l10n-en="Delete" data-l10n-zh="删除" disabled>Borrar</button>
-            <input class="entrada" id="nota-contexto" type="text" placeholder="Contexto (opcional)" aria-label="Contexto" data-l10n-ph-es="Contexto (opcional)" data-l10n-ph-en="Context (optional)" data-l10n-ph-zh="情境（可选）" data-l10n-aria-es="Contexto" data-l10n-aria-en="Context" data-l10n-aria-zh="情境">
-            <input class="entrada" id="nota-etiquetas" type="text" placeholder="Etiquetas: demo, idea" aria-label="Etiquetas" data-l10n-ph-es="Etiquetas: demo, idea" data-l10n-ph-en="Tags: demo, idea" data-l10n-ph-zh="标签：demo, idea" data-l10n-aria-es="Etiquetas" data-l10n-aria-en="Tags" data-l10n-aria-zh="标签">
-            <select class="entrada" id="nota-vinculo" aria-label="Enlazar a" data-l10n-aria-es="Enlazar a" data-l10n-aria-en="Link to" data-l10n-aria-zh="链接到"><option value="" data-l10n-es="Enlazar a…" data-l10n-en="Link to…" data-l10n-zh="链接到…">Enlazar a…</option></select>
-          </div>
-          <div class="nota-formato" id="nota-formato" role="toolbar" aria-label="Formato de la nota" data-l10n-aria-es="Formato de la nota" data-l10n-aria-en="Note formatting" data-l10n-aria-zh="笔记格式">
-            <button class="btn btn--chico" type="button" data-formato="h1" data-l10n-title-es="Título 1" data-l10n-title-en="Heading 1" data-l10n-title-zh="一级标题" data-l10n-aria-es="Título 1" data-l10n-aria-en="Heading 1" data-l10n-aria-zh="一级标题">H1</button>
-            <button class="btn btn--chico" type="button" data-formato="h2" data-l10n-title-es="Título 2" data-l10n-title-en="Heading 2" data-l10n-title-zh="二级标题" data-l10n-aria-es="Título 2" data-l10n-aria-en="Heading 2" data-l10n-aria-zh="二级标题">H2</button>
-            <button class="btn btn--chico" type="button" data-formato="h3" data-l10n-title-es="Título 3" data-l10n-title-en="Heading 3" data-l10n-title-zh="三级标题" data-l10n-aria-es="Título 3" data-l10n-aria-en="Heading 3" data-l10n-aria-zh="三级标题">H3</button>
-            <button class="btn btn--chico" type="button" data-formato="negrita" data-l10n-title-es="Negrita (Ctrl+B)" data-l10n-title-en="Bold (Ctrl+B)" data-l10n-title-zh="粗体 (Ctrl+B)" data-l10n-aria-es="Negrita" data-l10n-aria-en="Bold" data-l10n-aria-zh="粗体"><b>B</b></button>
-            <button class="btn btn--chico" type="button" data-formato="cursiva" data-l10n-title-es="Cursiva (Ctrl+I)" data-l10n-title-en="Italic (Ctrl+I)" data-l10n-title-zh="斜体 (Ctrl+I)" data-l10n-aria-es="Cursiva" data-l10n-aria-en="Italic" data-l10n-aria-zh="斜体"><i>I</i></button>
-            <button class="btn btn--chico" type="button" data-formato="subrayado" data-l10n-title-es="Subrayado (Ctrl+U)" data-l10n-title-en="Underline (Ctrl+U)" data-l10n-title-zh="下划线 (Ctrl+U)" data-l10n-aria-es="Subrayado" data-l10n-aria-en="Underline" data-l10n-aria-zh="下划线"><u>U</u></button>
-            <button class="btn btn--chico" type="button" data-formato="tachado" data-l10n-title-es="Tachado" data-l10n-title-en="Strikethrough" data-l10n-title-zh="删除线" data-l10n-aria-es="Tachado" data-l10n-aria-en="Strikethrough" data-l10n-aria-zh="删除线"><s>S</s></button>
-            <button class="btn btn--chico" type="button" data-formato="codigo" data-l10n-title-es="Código" data-l10n-title-en="Code" data-l10n-title-zh="代码" data-l10n-aria-es="Código" data-l10n-aria-en="Code" data-l10n-aria-zh="代码">&lt;/&gt;</button>
-            <button class="btn btn--chico" type="button" data-formato="cita" data-l10n-title-es="Cita" data-l10n-title-en="Quote" data-l10n-title-zh="引用" data-l10n-aria-es="Cita" data-l10n-aria-en="Quote" data-l10n-aria-zh="引用">❝</button>
-            <button class="btn btn--chico" type="button" data-formato="lista" data-l10n-title-es="Lista" data-l10n-title-en="List" data-l10n-title-zh="列表" data-l10n-aria-es="Lista" data-l10n-aria-en="List" data-l10n-aria-zh="列表">•</button>
-            <button class="btn btn--chico" type="button" data-formato="tarea" data-l10n-title-es="Tarea" data-l10n-title-en="Task" data-l10n-title-zh="任务" data-l10n-aria-es="Tarea" data-l10n-aria-en="Task" data-l10n-aria-zh="任务">☑</button>
-            <button class="btn btn--chico" type="button" data-formato="tabla" data-l10n-title-es="Tabla" data-l10n-title-en="Table" data-l10n-title-zh="表格" data-l10n-aria-es="Tabla" data-l10n-aria-en="Table" data-l10n-aria-zh="表格">▦</button>
-          </div>
-          <textarea class="nota-cuerpo" id="nota-cuerpo" placeholder="Escribe tu nota en Markdown. Fórmulas: $...$ o $$...$$" aria-label="Cuerpo de la nota" data-l10n-ph-es="Escribe tu nota en Markdown. Fórmulas: $...$ o $$...$$" data-l10n-ph-en="Write your note in Markdown. Formulas: $...$ or $$...$$" data-l10n-ph-zh="用 Markdown 写笔记。公式：$...$ 或 $$...$$" data-l10n-aria-es="Cuerpo de la nota" data-l10n-aria-en="Note body" data-l10n-aria-zh="笔记正文" disabled></textarea>
-          <div id="nota-preview" class="nota-preview" hidden></div>
-          <p class="muted" id="nota-meta" data-l10n-es="Sin nota abierta." data-l10n-en="No note open." data-l10n-zh="没有打开的笔记。">Sin nota abierta.</p>
-        </div>
-      </div>
-    </section>
 
-    <section class="seccion" data-pantalla="tiempo" id="p-tiempo" hidden>
-      <div class="sec-cab"><div><h1 data-i18n="nav.tiempo">Tiempo</h1><p class="sec-sub" data-i18n="sub.tiempo">Elige cómo medir el tiempo.</p></div><div class="sec-acciones"><span class="pill pill-ok" data-l10n-es="instalado" data-l10n-en="installed" data-l10n-zh="已安装">instalado</span></div></div>
-      <div class="card tiempo-barra">
-        <div class="estanteria" id="estanteria-tiempo" aria-label="Modos dentro de Tiempo" data-l10n-aria-es="Modos dentro de Tiempo" data-l10n-aria-en="Modes inside Time" data-l10n-aria-zh="时间内的模式"></div>
-      </div>
-      <div class="tiempo-layout">
-        <div class="card tiempo-caja">
-          <div class="tiempo-reloj" id="reloj">00:00:00</div>
-          <p class="muted" id="tiempo-estado">Cronómetro · parado</p>
-          <div class="fila">
-            <button class="btn btn-primario" id="btn-empezar" type="button" data-l10n-es="Empezar" data-l10n-en="Start" data-l10n-zh="开始">Empezar</button>
-            <button class="btn" id="btn-pausar" type="button" data-l10n-es="Pausar" data-l10n-en="Pause" data-l10n-zh="暂停" disabled>Pausar</button>
-            <button class="btn" id="btn-parar" type="button" data-l10n-es="Parar" data-l10n-en="Stop" data-l10n-zh="停止" disabled>Parar</button>
-            <button class="btn" id="btn-reiniciar" type="button" data-l10n-es="Reiniciar" data-l10n-en="Reset" data-l10n-zh="重置">Reiniciar</button>
-          </div>
-          <div class="tiempo-config" id="tiempo-config"></div>
-        </div>
-        <div class="card">
-          <h2 data-l10n-es="Vínculo con Estudio" data-l10n-en="Link to Study" data-l10n-zh="关联学习">Vínculo con Estudio</h2>
-          <p class="muted" data-l10n-es="El tiempo que registres se guarda con este vínculo y Estudio lo suma por ramo." data-l10n-en="Logged time is saved with this link and Study adds it per course." data-l10n-zh="记录的时间会保存在此关联下，学习会按课程汇总。">El tiempo que registres se guarda con este vínculo y Estudio lo suma por ramo.</p>
-          <label class="campo"><span data-l10n-es="Tarea" data-l10n-en="Task" data-l10n-zh="任务">Tarea</span> <select class="entrada" id="tiempo-vinculo" aria-label="Vínculo de la sesión" data-l10n-aria-es="Vínculo de la sesión" data-l10n-aria-en="Session link" data-l10n-aria-zh="会话关联"></select></label>
-          <label class="campo"><span data-l10n-es="Ramo" data-l10n-en="Course" data-l10n-zh="课程">Ramo</span> <select class="entrada" id="tiempo-ramo" aria-label="Ramo de la sesión" data-l10n-aria-es="Ramo de la sesión" data-l10n-aria-en="Session course" data-l10n-aria-zh="会话课程"></select></label>
-          <div class="mp-kpi"><div><b id="tiempo-sesiones">0</b><span data-l10n-es="sesiones" data-l10n-en="sessions" data-l10n-zh="会话">sesiones</span></div><div><b id="tiempo-horas">0 h</b><span data-l10n-es="registradas" data-l10n-en="logged" data-l10n-zh="已记录">registradas</span></div></div>
-          <h3 class="sesiones-tit" data-l10n-es="Sesiones" data-l10n-en="Sessions" data-l10n-zh="会话">Sesiones</h3>
-          <div id="tiempo-lista-sesiones" class="sesiones-lista"><p class="muted" data-l10n-es="Sin sesiones todavía." data-l10n-en="No sessions yet." data-l10n-zh="还没有会话。">Sin sesiones todavía.</p></div>
-          <p class="muted" style="margin-top:8px" data-l10n-es="Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos. Clic derecho en una sesión para borrarla." data-l10n-en="Removing a mode from the shelf does not uninstall Time or delete its data. Right-click a session to delete it." data-l10n-zh="从架子上移除模式不会卸载时间，也不会删除数据。右键点击会话可删除。">Quitar un modo de la estantería no desinstala Tiempo ni borra sus datos. Clic derecho en una sesión para borrarla.</p>
-        </div>
-      </div>
-    </section>
 
-    <section class="seccion" data-pantalla="malla" id="p-malla" hidden>
-      <div class="sec-cab">
-        <div><h1 data-i18n="nav.malla">Malla</h1><p class="sec-sub" data-i18n="sub.malla">Tu carrera, ordenada por niveles. Elige un ramo para ver qué necesitas y qué desbloqueas.</p></div>
-        <div class="sec-acciones">
-          <span class="pill" data-l10n-es="Académico" data-l10n-en="Academic" data-l10n-zh="学术">Académico</span>
-          <button class="btn" id="btn-importar-malla" type="button" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button>
-          <button class="btn" id="btn-exportar-malla" type="button" data-l10n-es="Exportar" data-l10n-en="Export" data-l10n-zh="导出">Exportar</button>
-          <button class="btn btn-primario" id="btn-nuevo-ramo" type="button" data-l10n-es="+ Nuevo ramo" data-l10n-en="+ New course" data-l10n-zh="+ 新建课程">+ Nuevo ramo</button>
-          <input type="file" id="archivo-malla" accept=".json,application/json" hidden>
-        </div>
-      </div>
-      <div class="malla-ficha" id="malla-ficha">
-        <div class="malla-ficha__texto">
-          <b id="malla-carrera-titulo" data-l10n-es="Tu carrera" data-l10n-en="Your degree" data-l10n-zh="你的学位">Tu carrera</b>
-          <span id="malla-carrera-casa" data-l10n-es="Agrega la universidad y el país." data-l10n-en="Add your university and country." data-l10n-zh="添加你的大学和国家。">Agrega la universidad y el país.</span>
-        </div>
-        <button class="btn btn--chico" id="btn-editar-carrera" type="button" data-l10n-es="Editar datos" data-l10n-en="Edit details" data-l10n-zh="编辑信息">Editar datos</button>
-      </div>
-      <form class="carrera-form" id="carrera-form" hidden>
-        <input class="entrada" id="carrera-titulo" type="text" placeholder="Nombre de la carrera" aria-label="Nombre de la carrera" data-l10n-ph-es="Nombre de la carrera" data-l10n-ph-en="Degree name" data-l10n-ph-zh="学位名称" autocomplete="off">
-        <input class="entrada" id="carrera-universidad" type="text" placeholder="Universidad" aria-label="Universidad" data-l10n-ph-es="Universidad" data-l10n-ph-en="University" data-l10n-ph-zh="大学" autocomplete="off">
-        <input class="entrada" id="carrera-pais" type="text" placeholder="País" aria-label="País" data-l10n-ph-es="País" data-l10n-ph-en="Country" data-l10n-ph-zh="国家" autocomplete="off">
-        <button class="btn btn-primario" type="submit" data-l10n-es="Guardar" data-l10n-en="Save" data-l10n-zh="保存">Guardar</button>
-        <button class="btn" type="button" id="carrera-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
-      </form>
-      <div class="kpis malla-kpis">
-        <div class="kpi kpi--ok"><b id="malla-k-creditos">0 / 0</b><span data-l10n-es="créditos aprobados" data-l10n-en="approved credits" data-l10n-zh="已通过学分">créditos aprobados</span></div>
-        <div class="kpi kpi--ac"><b id="malla-k-pct">0 %</b><span data-l10n-es="de la carrera" data-l10n-en="of the degree" data-l10n-zh="占学位">de la carrera</span></div>
-        <div class="kpi kpi--warn"><b id="malla-k-ramos">0</b><span data-l10n-es="aprobados · en curso" data-l10n-en="approved · in progress" data-l10n-zh="已通过 · 进行中">aprobados · en curso</span></div>
-        <div class="kpi kpi--q"><b id="malla-k-libres">0</b><span data-l10n-es="ramos disponibles" data-l10n-en="available courses" data-l10n-zh="可选课程">ramos disponibles</span></div>
-      </div>
-      <div class="malla-progreso" role="progressbar" aria-label="Avance de la carrera" data-l10n-aria-es="Avance de la carrera" data-l10n-aria-en="Degree progress" data-l10n-aria-zh="学位进度" aria-valuemin="0" aria-valuemax="100">
-        <div><i id="malla-progreso-barra"></i></div><span id="malla-progreso-txt">0 %</span>
-      </div>
-      <div class="card malla-card" data-ctx-zona="malla">
-        <div class="malla-intro">
-          <div><h2 data-l10n-es="La carrera, de un vistazo" data-l10n-en="Your degree at a glance" data-l10n-zh="学位一览">La carrera, de un vistazo</h2><p data-l10n-es="Cada columna es un nivel. Las líneas muestran qué necesitas para avanzar." data-l10n-en="Each column is a level. Lines show what you need to move forward." data-l10n-zh="每列是一个层级。线条显示前进所需的条件。">Cada columna es un nivel. Las líneas muestran qué necesitas para avanzar.</p></div>
-          <span class="pill" id="malla-niveles-cuenta" data-l10n-es="0 niveles" data-l10n-en="0 levels" data-l10n-zh="0 个层级">0 niveles</span>
-        </div>
-        <form class="ramo-form" id="ramo-form" hidden>
-          <input class="entrada" id="ramo-codigo" type="text" placeholder="Código (MA1001)" aria-label="Código del ramo" data-l10n-ph-es="Código (MA1001)" data-l10n-ph-en="Code (MA1001)" data-l10n-ph-zh="代码（MA1001）" data-l10n-aria-es="Código del ramo" data-l10n-aria-en="Course code" data-l10n-aria-zh="课程代码" autocomplete="off">
-          <input class="entrada" id="ramo-nombre" type="text" placeholder="Nombre del ramo" aria-label="Nombre del ramo" data-l10n-ph-es="Nombre del ramo" data-l10n-ph-en="Course name" data-l10n-ph-zh="课程名称" data-l10n-aria-es="Nombre del ramo" data-l10n-aria-en="Course name" data-l10n-aria-zh="课程名称" autocomplete="off">
-          <input class="entrada" id="ramo-creditos" type="number" min="0" max="40" value="6" aria-label="Créditos" data-l10n-aria-es="Créditos" data-l10n-aria-en="Credits" data-l10n-aria-zh="学分">
-          <input class="entrada" id="ramo-nivel" type="number" min="1" max="99" value="1" aria-label="Nivel" data-l10n-aria-es="Nivel" data-l10n-aria-en="Level" data-l10n-aria-zh="层级">
-          <label class="ramo-color"><span data-l10n-es="Color" data-l10n-en="Color" data-l10n-zh="颜色">Color</span><input id="ramo-color" type="color" value="#2563eb" aria-label="Color del ramo" data-l10n-aria-es="Color del ramo" data-l10n-aria-en="Course color" data-l10n-aria-zh="课程颜色"></label>
-          <input class="entrada" id="ramo-requisitos" type="text" placeholder="Requisitos: MA1001, FI2001" aria-label="Requisitos" data-l10n-ph-es="Requisitos: MA1001, FI2001" data-l10n-ph-en="Prerequisites: MA1001, FI2001" data-l10n-ph-zh="先修：MA1001, FI2001" data-l10n-aria-es="Requisitos" data-l10n-aria-en="Prerequisites" data-l10n-aria-zh="先修要求">
-          <label class="check"><input type="checkbox" id="ramo-aprobado"> <span data-l10n-es="Aprobado (cierra)" data-l10n-en="Passed (closes)" data-l10n-zh="已通过（关闭）">Aprobado (cierra)</span></label>
-          <label class="check"><input type="checkbox" id="ramo-curso"> <span data-l10n-es="En curso" data-l10n-en="In progress" data-l10n-zh="进行中">En curso</span></label>
-          <button class="btn btn-primario" type="submit" data-l10n-es="Crear" data-l10n-en="Create" data-l10n-zh="创建">Crear</button>
-          <button class="btn" type="button" id="ramo-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
-        </form>
-        <div class="malla-barra">
-          <input class="entrada" id="malla-buscar" type="search" placeholder="Buscar por código o nombre…" aria-label="Buscar ramo" data-l10n-ph-es="Buscar por código o nombre…" data-l10n-ph-en="Search by code or name…" data-l10n-ph-zh="按代码或名称搜索…" data-l10n-aria-es="Buscar ramo" data-l10n-aria-en="Search course" data-l10n-aria-zh="搜索课程">
-          <select class="entrada" id="malla-filtro" aria-label="Filtrar ramos" data-l10n-aria-es="Filtrar ramos" data-l10n-aria-en="Filter courses" data-l10n-aria-zh="筛选课程">
-            <option value="todos" data-l10n-es="Todos" data-l10n-en="All" data-l10n-zh="全部">Todos</option>
-            <option value="aprobados" data-l10n-es="Aprobados" data-l10n-en="Passed" data-l10n-zh="已通过">Aprobados</option>
-            <option value="curso" data-l10n-es="En curso" data-l10n-en="In progress" data-l10n-zh="进行中">En curso</option>
-            <option value="disponibles" data-l10n-es="Disponibles" data-l10n-en="Available" data-l10n-zh="可选">Disponibles</option>
-            <option value="bloqueados" data-l10n-es="Bloqueados" data-l10n-en="Locked" data-l10n-zh="已锁定">Bloqueados</option>
-          </select>
-          <label class="check"><input type="checkbox" id="malla-rapido"> <span data-l10n-es="Modo rápido: marcar aprobado con un clic" data-l10n-en="Quick mode: mark passed with one click" data-l10n-zh="快速模式：一键标为已通过">Modo rápido: marcar aprobado con un clic</span></label>
-          <button class="btn btn--chico" id="malla-quitar-sel" type="button" data-l10n-es="Quitar selección" data-l10n-en="Clear selection" data-l10n-zh="清除选择" hidden>Quitar selección</button>
-        </div>
-        <div class="malla-leyenda" id="malla-leyenda">
-          <span><i class="aprobado"></i><span data-l10n-es="aprobado" data-l10n-en="passed" data-l10n-zh="已通过">aprobado</span> <b id="malla-lg-aprobado">0</b></span>
-          <span><i class="curso"></i><span data-l10n-es="en curso" data-l10n-en="in progress" data-l10n-zh="进行中">en curso</span> <b id="malla-lg-curso">0</b></span>
-          <span><i class="disponible"></i><span data-l10n-es="disponible" data-l10n-en="available" data-l10n-zh="可选">disponible</span> <b id="malla-lg-disponible">0</b></span>
-          <span><i class="bloqueado"></i><span data-l10n-es="bloqueado" data-l10n-en="locked" data-l10n-zh="已锁定">bloqueado</span> <b id="malla-lg-bloqueado">0</b></span>
-          <span><i class="reprobado"></i><span data-l10n-es="reprobado" data-l10n-en="failed" data-l10n-zh="未通过">reprobado</span> <b id="malla-lg-reprobado">0</b></span>
-        </div>
-        <p class="malla-pista" id="malla-pista" data-l10n-es="Las líneas muestran los requisitos. Elige un ramo para ver qué necesitas y qué desbloqueas." data-l10n-en="Lines show requirements. Pick a course to see what it needs and what it unlocks." data-l10n-zh="线条显示要求。选择一门课程，查看需要什么、能解锁什么。">Las líneas muestran los requisitos. Elige un ramo para ver qué necesitas y qué desbloqueas.</p>
-        <div class="empty" id="malla-vacio" hidden>
-          <h2 data-l10n-es="Tu malla está vacía" data-l10n-en="Your degree plan is empty" data-l10n-zh="你的课程规划为空">Tu malla está vacía</h2>
-          <p data-l10n-es="Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles." data-l10n-en="A course is a subject: code, name, credits and which other courses it depends on. As you create them, the plan builds itself by level." data-l10n-zh="课程是一门学科：代码、名称、学分以及依赖哪些课程。创建后，规划会按层级自动排列。">Un ramo es una asignatura: código, nombre, créditos y de qué otros ramos depende. Al crearlos, la malla se arma sola por niveles.</p>
-          <div class="fila" style="justify-content:center">
-            <button class="btn btn-primario" type="button" id="malla-crear" data-l10n-es="Crear el primer ramo" data-l10n-en="Create the first course" data-l10n-zh="创建第一门课程">Crear el primer ramo</button>
-            <button class="btn" type="button" id="malla-importar-vacio" data-l10n-es="Traer una malla desde un archivo" data-l10n-en="Import a degree plan from a file" data-l10n-zh="从文件导入课程规划">Traer una malla desde un archivo</button>
-          </div>
-        </div>
-        <div class="malla-scroll" id="malla-scroll">
-          <div class="malla" id="malla-tablero">
-            <svg class="malla-lineas" id="malla-lineas" aria-hidden="true"></svg>
-            <div class="malla-cols" id="malla-cols"></div>
-          </div>
-        </div>
-        <div class="malla-detalle" id="malla-detalle"></div>
-      </div>
-    </section>
 
-    <section class="seccion" data-pantalla="calificaciones" id="p-calificaciones" hidden>
-      <div class="sec-cab">
-        <div><h1 data-i18n="nav.calificaciones">Calificaciones</h1><p class="sec-sub" data-i18n="sub.calificaciones">Categorías, componentes, examen y eximición. La nota se calcula sola.</p></div>
-        <div class="sec-acciones">
-          <span class="pill" data-l10n-es="Académico" data-l10n-en="Academic" data-l10n-zh="学术">Académico</span>
-          <button class="btn" id="btn-calif-malla" type="button" data-l10n-es="Ver Malla" data-l10n-en="View plan" data-l10n-zh="查看规划">Ver Malla</button>
-        </div>
-      </div>
-      <div class="empty" id="calif-vacio" hidden>
-        <h2 data-l10n-es="Sin ramos para calificar" data-l10n-en="No courses to grade" data-l10n-zh="没有可评分的课程">Sin ramos para calificar</h2>
-        <p id="calif-vacio-texto-malla" data-l10n-es="Calificaciones usa los ramos de Malla. Crea el primero y vuelve aquí para cargar sus notas." data-l10n-en="Grades uses the courses from your degree plan. Create the first one and come back to enter its grades." data-l10n-zh="成绩使用课程规划中的课程。创建第一门课程后回来录入成绩。">Calificaciones usa los ramos de Malla. Crea el primero y vuelve aquí para cargar sus notas.</p>
-        <p id="calif-vacio-texto-sola" data-l10n-es="Malla no está instalada. Puedes crear un curso aquí; después podrás calificarlo y, si instalas Malla, verlo en tu plan." data-l10n-en="The plan is not installed. You can create a course here; later you can grade it and, if you install the plan, see it there." data-l10n-zh="课程规划未安装。你可以在这里创建课程；之后可以评分，安装规划后也会显示在其中。" hidden>Malla no está instalada. Puedes crear un curso aquí; después podrás calificarlo y, si instalas Malla, verlo en tu plan.</p>
-        <button class="btn btn-primario" type="button" id="calif-crear-ramo" data-l10n-es="Crear un ramo en Malla" data-l10n-en="Create a course in the plan" data-l10n-zh="在规划中创建课程">Crear un ramo en Malla</button>
-        <form class="calif-curso-form" id="calif-curso-form" hidden>
-          <input class="entrada" id="calif-curso-codigo" type="text" placeholder="Código (MA1001)" data-l10n-ph-es="Código (MA1001)" data-l10n-ph-en="Code (MA1001)" data-l10n-ph-zh="代码（MA1001）" aria-label="Código del curso" data-l10n-aria-es="Código del curso" data-l10n-aria-en="Course code" data-l10n-aria-zh="课程代码" autocomplete="off">
-          <input class="entrada" id="calif-curso-nombre" type="text" placeholder="Nombre del curso" data-l10n-ph-es="Nombre del curso" data-l10n-ph-en="Course name" data-l10n-ph-zh="课程名称" aria-label="Nombre del curso" data-l10n-aria-es="Nombre del curso" data-l10n-aria-en="Course name" data-l10n-aria-zh="课程名称" autocomplete="off">
-          <button class="btn btn-primario" type="submit" data-l10n-es="Crear curso" data-l10n-en="Create course" data-l10n-zh="创建课程">Crear curso</button>
-        </form>
-      </div>
-      <div class="calif-layout" id="calif-layout">
-        <aside class="calif-lista" id="calif-lista" aria-label="Ramos con notas" data-l10n-aria-es="Ramos con notas" data-l10n-aria-en="Courses with grades" data-l10n-aria-zh="有成绩的课程"></aside>
-        <div id="calif-detalle"></div>
-      </div>
-    </section>
 
-    <section class="seccion" data-pantalla="estudio" id="p-estudio" hidden>
-      <div class="sec-cab">
-        <div><h1 data-i18n="nav.estudio">Estudio</h1><p class="sec-sub" data-i18n="sub.estudio">Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.</p></div>
-        <div class="sec-acciones"><span class="pill" data-l10n-es="Académico" data-l10n-en="Academic" data-l10n-zh="学术">Académico</span><button class="btn" id="btn-estudio-malla" type="button" data-l10n-es="Ver Malla" data-l10n-en="View plan" data-l10n-zh="查看规划">Ver Malla</button></div>
-      </div>
-      <div class="kpis">
-        <div class="kpi kpi--ac"><b id="est-k-horas">0 h</b><span data-l10n-es="horas registradas" data-l10n-en="logged hours" data-l10n-zh="已记录小时">horas registradas</span></div>
-        <div class="kpi kpi--ok"><b id="est-k-sesiones">0</b><span data-l10n-es="sesiones" data-l10n-en="sessions" data-l10n-zh="会话">sesiones</span></div>
-        <div class="kpi kpi--warn"><b id="est-k-semanas">0</b><span data-l10n-es="semanas sobre la meta" data-l10n-en="weeks above goal" data-l10n-zh="超过目标的周数">semanas sobre la meta</span></div>
-        <div class="kpi kpi--q"><b id="est-k-promedio">0 h</b><span data-l10n-es="promedio por semana" data-l10n-en="average per week" data-l10n-zh="每周平均">promedio por semana</span></div>
-      </div>
-      <div class="estudio-layout">
-        <div class="card est-grafico-card">
-          <h2 data-l10n-es="Horas por semana" data-l10n-en="Hours per week" data-l10n-zh="每周小时">Horas por semana</h2>
-          <p class="muted" id="est-periodo" data-l10n-es="Periodo activo" data-l10n-en="Active term" data-l10n-zh="当前学期">Periodo activo</p>
-          <div class="est-grafico" id="est-grafico"></div>
-          <div class="est-leyenda" id="est-leyenda"></div>
-          <div class="est-metas-semana" id="est-metas-semana"></div>
-        </div>
-        <div class="card">
-          <h2 data-l10n-es="Registrar estudio" data-l10n-en="Log study" data-l10n-zh="记录学习">Registrar estudio</h2>
-          <p class="muted" data-l10n-es="Una sesión suelta para lo que no pasó por el cronómetro." data-l10n-en="A one-off session for what did not go through the stopwatch." data-l10n-zh="用于记录未经过秒表的学习时段。">Una sesión suelta para lo que no pasó por el cronómetro.</p>
-          <form class="est-form" id="est-form">
-            <select class="entrada" id="est-ramo" aria-label="Ramo" data-l10n-aria-es="Ramo" data-l10n-aria-en="Course" data-l10n-aria-zh="课程"></select>
-            <input class="entrada" id="est-fecha" type="date" aria-label="Fecha" data-l10n-aria-es="Fecha" data-l10n-aria-en="Date" data-l10n-aria-zh="日期">
-            <input class="entrada" id="est-minutos" type="text" inputmode="decimal" value="1:00:00" placeholder="2:30:21" aria-label="Duración: horas:minutos:segundos o minutos" data-l10n-aria-es="Duración: horas:minutos:segundos o minutos" data-l10n-aria-en="Duration: hours:minutes:seconds or minutes" data-l10n-aria-zh="时长：小时:分钟:秒 或 分钟">
-            <button class="btn btn-primario" type="submit" data-l10n-es="Registrar" data-l10n-en="Log" data-l10n-zh="记录">Registrar</button>
-          </form>
-          <p class="muted" data-l10n-es="Acepta 90 (minutos), 1:30 (h:m) o 2:30:21 (h:m:s)." data-l10n-en="Accepts 90 (minutes), 1:30 (h:m) or 2:30:21 (h:m:s)." data-l10n-zh="接受 90（分钟）、1:30（时:分）或 2:30:21（时:分:秒）。">Acepta <b>90</b> (minutos), <b>1:30</b> (h:m) o <b>2:30:21</b> (h:m:s).</p>
-          <hr class="est-sep">
-          <label class="campo"><span data-l10n-es="Meta semanal" data-l10n-en="Weekly goal" data-l10n-zh="每周目标">Meta semanal</span> <input class="entrada est-num" id="est-meta" type="number" min="0" max="100" step="0.5" value="10"> h</label>
-          <p class="muted" id="est-resumen" data-l10n-es="Sin sesiones todavía." data-l10n-en="No sessions yet." data-l10n-zh="还没有会话。">Sin sesiones todavía.</p>
-        </div>
-      </div>
-      <div class="card">
-        <h2 data-l10n-es="Horas por ramo" data-l10n-en="Hours per course" data-l10n-zh="按课程小时">Horas por ramo</h2>
-        <div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th data-l10n-es="Ramo" data-l10n-en="Course" data-l10n-zh="课程">Ramo</th><th class="num" data-l10n-es="Horas" data-l10n-en="Hours" data-l10n-zh="小时">Horas</th><th class="num" data-l10n-es="Meta semanal" data-l10n-en="Weekly goal" data-l10n-zh="每周目标">Meta semanal</th><th data-l10n-es="Avance" data-l10n-en="Progress" data-l10n-zh="进度">Avance</th></tr></thead><tbody id="est-tabla"></tbody></table></div>
-      </div>
-      <div class="card">
-        <h2 data-l10n-es="Sesiones recientes" data-l10n-en="Recent sessions" data-l10n-zh="最近会话">Sesiones recientes</h2>
-        <div id="est-sesiones" class="est-sesiones"></div>
-      </div>
-    </section>
+
+
+
+
+
+
 
     <section class="seccion" data-pantalla="ajustes" id="p-ajustes" hidden>
       <div class="sec-cab"><div><h1 data-i18n="nav.ajustes">Ajustes</h1><p class="sec-sub" data-i18n="sub.ajustes">Apariencia, idioma, datos y colaboración.</p></div></div>
@@ -574,7 +275,7 @@
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques" data-l10n-es="0 bloques instalados." data-l10n-en="0 blocks installed." data-l10n-zh="0 个模块已安装。">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes" data-l10n-es="Agregar bloque o kit" data-l10n-en="Add block or kit" data-l10n-zh="添加模块或套件">Agregar bloque o kit</button></section>
         <div class="ajustes-pila">
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Vista dividida</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">Muestra dos secciones a la vez.</p><label class="check"><input type="checkbox" id="lab-split"> <span data-l10n-es="Vista dividida" data-l10n-en="Split view" data-l10n-zh="分屏视图">Vista dividida</span></label></section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.2 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.2 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.2 · 离线可用。">Mimo · 1.2.0-beta.2 · Funciona sin conexión.</p></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.3 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.3 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.3 · 离线可用。">Mimo · 1.2.0-beta.3 · Funciona sin conexión.</p></section>
         </div>
       </div>
 
@@ -633,6 +334,15 @@
   </div>
 </div>
 
+
+<div class="modal" id="modal-bloque" role="dialog" aria-modal="true" aria-labelledby="modal-bloque-tit">
+  <div class="modal__caja modal-bloque-caja">
+    <header class="modal__cab"><div><h2 id="modal-bloque-tit">Bloque</h2><p class="muted" id="modal-bloque-sub"></p></div><button class="icono-btn" id="modal-bloque-x" type="button" title="Cerrar" aria-label="Cerrar" data-l10n-title="acc.cerrar" data-l10n-aria="acc.cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <p id="modal-bloque-resumen" class="modal-bloque-resumen"></p>
+    <div id="modal-bloque-cuerpo"></div>
+    <div class="fila modal-bloque-acciones" id="modal-bloque-acciones"></div>
+  </div>
+</div>
 
 <div class="modal" id="modal-periodo" role="dialog" aria-modal="true" aria-labelledby="periodo-tit">
   <div class="modal__caja">
@@ -728,9 +438,24 @@
 <script src="vendor/marked/marked.min.js"></script>
 <script src="vendor/dompurify/purify.min.js"></script>
 <script src="js/esquema.js"></script>
+<script src="js/nucleo/eventos.js"></script>
+<script src="js/nucleo/i18n.js"></script>
 <script src="js/nucleo/registro.js"></script>
 <script src="js/dominio/cursos.js"></script>
 <script src="js/dominio/sesiones.js"></script>
+<script src="js/bloques/calendario/vista.js"></script>
+<script src="js/bloques/tareas/vista.js"></script>
+<script src="js/bloques/notas/vista.js"></script>
+<script src="js/bloques/notas/bloque.js"></script>
+<script src="js/bloques/tiempo/hijos.js"></script>
+<script src="js/bloques/tiempo/vista.js"></script>
+<script src="js/bloques/tiempo/bloque.js"></script>
+<script src="js/bloques/malla/vista.js"></script>
+<script src="js/bloques/malla/bloque.js"></script>
+<script src="js/bloques/calificaciones/vista.js"></script>
+<script src="js/bloques/calificaciones/bloque.js"></script>
+<script src="js/bloques/estudio/vista.js"></script>
+<script src="js/bloques/estudio/bloque.js"></script>
 <script src="js/shell.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/mimo-juego.js"></script>

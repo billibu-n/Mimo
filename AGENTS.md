@@ -89,20 +89,28 @@ DOM. Primero revisa si rompiste un invariante.
 Hecho en este corte:
 
 - Registro y manifiestos; base fija; `BLOQUES`/`BASE`/`ORDEN` derivados.
-- Dominio de cursos y sesiones.
+- Host dinámico: el HTML de Calendario, Tareas, Notas, Tiempo, Malla,
+  Calificaciones y Estudio vive en `app/js/bloques/<id>/vista.js`; `index.html`
+  ya no tiene esas secciones.
+- Ciclo de vida `montar`/`desmontar` en el registro, con raíz y `AbortSignal` para
+  el bloque piloto Notas.
+- Dominio de cursos y sesiones, con eventos `cursos.*` y `sesiones.*`.
 - Calificaciones sin Malla; Malla sin Calificaciones; Tiempo sin Estudio; Estudio
   sin Tiempo.
 - Calendario por fuentes; sin copia de eventos de Calificaciones.
-- `gate-bloques` y `gate-arquitectura`; 17/17 gates verdes.
-- Montaje perezoso de la sección activa.
+- Catálogo armado desde el registro, instalación con dependencias, ficha de detalle
+  y desmontaje al quitar.
+- `evaluaciones` eliminada y desvinculada del catálogo, del kit, del esquema y del
+  estado guardado.
+- `gate-bloques` y `gate-arquitectura`; 17 gates verdes.
 
-Pendiente:
+Pendiente para el cierre de beta.3:
 
-- Mover HTML, CSS e i18n de un bloque piloto (Notas) a su carpeta.
-- `montar`/`desmontar` reales con raíz propia; hoy `pintar` es el ciclo mínimo.
-- Eventos de dominio en `cursos` y `sesiones`.
 - `gate-tauri` (33 medidas) después de compilar.
-- `evaluaciones`, cuando el dueño defina su sistema.
+- `CHANGELOG.md`, notas de release y versión de publicación.
+- Medir FPS y confirmar offline/headless sobre el binario.
+- Extraer la lógica interna de Malla, Calificaciones y Estudio de `shell.js` a sus
+  carpetas. La vista, el CSS y el ciclo de vida ya están separados.
 
 ## Archivos clave
 

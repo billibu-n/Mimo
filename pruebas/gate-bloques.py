@@ -41,17 +41,65 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             datos = page.evaluate(
-                """() => ({
-                    fallas: MimoRegistro.validar(),
-                    base: MimoRegistro.base().map(b => b.id),
-                    secciones: MimoRegistro.secciones([])
-                })"""
+                """() => {
+                    const eventos = [];
+                    ["cursos.creado", "cursos.actualizado", "cursos.borrado",
+                     "sesiones.creada", "sesiones.actualizada", "sesiones.borrada"].forEach(n =>
+                        MimoEventos.on(n, () => eventos.push(n)));
+                    const c = MimoDominioCursos.crear({ codigo: "EV1001", nombre: "Evento" });
+                    MimoDominioCursos.actualizar(c, { nombre: "Evento 2" });
+                    MimoDominioCursos.borrar([c], "EV1001");
+                    const s = MimoDominioSesiones.crear({ minutos: 5 });
+                    MimoDominioSesiones.actualizar(s, { minutos: 6 });
+                    MimoDominioSesiones.borrar([s], s.id);
+                    MimoRegistro.registrar({ id: "prueba-padre", nombre: "Padre", tipo: "seccion", oculto: true });
+                    MimoRegistro.registrar({ id: "prueba-hijo", nombre: "Hijo", tipo: "seccion",
+                        oculto: true, requiere: ["prueba-padre"] });
+                    const sin = MimoRegistro.puedeInstalar("prueba-hijo", []);
+                    const con = MimoRegistro.puedeInstalar("prueba-hijo", ["prueba-padre"]);
+                    const quitar = MimoRegistro.puedeQuitar("prueba-padre", ["prueba-padre", "prueba-hijo"]);
+                    const notas = document.querySelector("#p-notas");
+                    return {
+                        fallas: MimoRegistro.validar(),
+                        base: MimoRegistro.base().map(b => b.id),
+                        secciones: MimoRegistro.secciones([]),
+                        notas_dinamica: !!(notas && notas.getAttribute("data-dinamica")),
+                        notas_montada: MimoRegistro.montado("notas"),
+                        eventos,
+                        dependencia_sin: sin.ok,
+                        dependencia_con: con.ok,
+                        dependientes: quitar.dependientes || [],
+                        evaluaciones: !!MimoRegistro.obtener("evaluaciones")
+                    };
+                }"""
             )
             exigir(datos["fallas"] == [], f"registro: sin fallas — {datos['fallas']}", fallas)
             exigir(datos["base"] == ["calendario", "tareas", "notas", "ajustes"],
                    f"registro: base fija — {datos['base']}", fallas)
             exigir(datos["secciones"] == ["calendario", "tareas", "notas", "ajustes"],
                    f"registro: sin opcionales solo queda la base — {datos['secciones']}", fallas)
+            exigir(datos["notas_dinamica"] and datos["notas_montada"],
+                   "host: Notas se inyecta desde su bloque y queda montada", fallas)
+            exigir(datos["eventos"] == ["cursos.creado", "cursos.actualizado", "cursos.borrado",
+                                        "sesiones.creada", "sesiones.actualizada", "sesiones.borrada"],
+                   f"dominio: emite los seis eventos — {datos['eventos']}", fallas)
+            exigir(datos["dependencia_sin"] is False and datos["dependencia_con"] is True,
+                   "registro: requiere se respeta al instalar", fallas)
+            exigir(datos["dependientes"] == ["prueba-hijo"],
+                   f"registro: quitar avisa dependientes — {datos['dependientes']}", fallas)
+            exigir(datos["evaluaciones"] is False,
+                   "catálogo: evaluaciones no existe ni está en el kit", fallas)
+
+            abrir_catalogo(page)
+            page.locator('.bcard[data-bloque="tiempo"] .bcard__desc').click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#modal-bloque").evaluate("e => e.classList.contains('on')") and
+                   "Cronómetro" in page.locator("#modal-bloque-resumen").inner_text(),
+                   "catálogo: la ficha abre el detalle del bloque", fallas)
+            page.keyboard.press("Escape")
+            page.wait_for_timeout(80)
+            page.locator("#modal-x").click()
+            page.wait_for_timeout(80)
 
             instalar(page, "calificaciones")
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
@@ -82,12 +130,23 @@ def main() -> int:
             page.wait_for_timeout(180)
             page.locator("#modal-x").click()
             page.wait_for_timeout(100)
+            exigir(page.locator("#p-malla").count() == 0 and
+                   page.evaluate("MimoRegistro.montado('malla')") is False,
+                   "quitar Malla: el host se desmonta y desaparece", fallas)
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
             page.wait_for_timeout(150)
             exigir(page.locator(".calif-item").count() == 1,
                    "quitar Malla: Calificaciones conserva el curso", fallas)
             exigir(not page.locator("#calif-curso-form").is_visible(),
                    "quitar Malla: con cursos no muestra el formulario vacío", fallas)
+            instalar(page, "malla")
+            page.locator('#tabs .tab[data-ir="malla"]').click()
+            page.wait_for_timeout(180)
+            exigir(page.locator("#p-malla").count() == 1 and
+                   page.evaluate("MimoRegistro.montado('malla')") is True,
+                   "reinstalar Malla: vuelve el host y el ciclo de vida", fallas)
+            exigir("MA1001" in page.locator("#malla-cols").inner_text(),
+                   "reinstalar Malla: el curso sigue ahí", fallas)
 
             # Tiempo solo: cronómetro y sesión sin Estudio.
             instalar(page, "tiempo")

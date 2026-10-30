@@ -42,7 +42,13 @@
       provee: Array.isArray(m.provee) ? m.provee.slice() : [],
       montar: typeof m.montar === "function" ? m.montar : null,
       desmontar: typeof m.desmontar === "function" ? m.desmontar : null,
-      pintar: typeof m.pintar === "function" ? m.pintar : null
+      pintar: typeof m.pintar === "function" ? m.pintar : null,
+      panel: typeof m.panel === "function" ? m.panel : null,
+      buscar: typeof m.buscar === "function" ? m.buscar : null,
+      vista: typeof m.vista === "function" ? m.vista : (typeof m.vista === "string" ? m.vista : ""),
+      css: texto(m.css),
+      detalle: m.detalle && typeof m.detalle === "object" ? m.detalle : null,
+      i18n: m.i18n && typeof m.i18n === "object" ? m.i18n : null
     };
     if (n.tipo === "hijo" && !n.padre) throw new Error(id + ": un hijo necesita padre");
     if (n.tipo === "pack" && !n.instala.length) throw new Error(id + ": un pack necesita instala");
@@ -85,11 +91,51 @@
     return todos().filter(function (b) { return b.tipo === "hijo" && b.padre === padre; });
   }
 
+  var instancias = {};
+
+  function montar(id, root, ctx) {
+    var b = porId[id];
+    if (!b || !b.montar) return false;
+    desmontar(id);
+    var controlador = typeof AbortController === "function" ? new AbortController() : null;
+    var api = {
+      id: id,
+      bloque: b,
+      root: root || null,
+      signal: controlador ? controlador.signal : null,
+      ctx: ctx || {}
+    };
+    instancias[id] = { bloque: b, root: root || null, controlador: controlador, api: api };
+    try {
+      b.montar(api);
+      return true;
+    } catch (e) {
+      delete instancias[id];
+      throw e;
+    }
+  }
+
+  function desmontar(id) {
+    var inst = instancias[id];
+    if (!inst) return false;
+    try {
+      if (inst.bloque.desmontar) inst.bloque.desmontar(inst.api);
+    } finally {
+      if (inst.controlador) inst.controlador.abort();
+      delete instancias[id];
+    }
+    return true;
+  }
+
+  function montado(id) { return !!instancias[id]; }
+
   function pintar(id) {
     var b = porId[id];
-    if (!b || !b.pintar) return false;
-    b.pintar();
-    return true;
+    if (!b) return false;
+    var inst = instancias[id];
+    if (inst && inst.api.pintar) { inst.api.pintar(); return true; }
+    if (b.pintar) { b.pintar(); return true; }
+    return false;
   }
 
   function secciones(instalados) {
@@ -115,6 +161,19 @@
 
   function validar() {
     var fallas = errores.slice();
+    var visitando = {}, hecho = {};
+    function visitar(b, ruta) {
+      if (hecho[b.id]) return;
+      if (visitando[b.id]) { fallas.push(b.id + ": ciclo de dependencias " + ruta.concat(b.id).join(" -> ")); return; }
+      visitando[b.id] = 1;
+      b.requiere.forEach(function (id) {
+        var dep = porId[id];
+        if (!dep) fallas.push(b.id + ": requiere un bloque inexistente: " + id);
+        else visitar(dep, ruta.concat(b.id));
+      });
+      delete visitando[b.id];
+      hecho[b.id] = 1;
+    }
     todos().forEach(function (b) {
       if (b.tipo === "pack") {
         b.instala.forEach(function (id) {
@@ -127,6 +186,7 @@
       if (b.fija && b.tipo !== "seccion") {
         fallas.push(b.id + ": fija no es sección");
       }
+      visitar(b, []);
     });
     return fallas;
   }
@@ -136,18 +196,28 @@
     if (!b) return { ok: false, motivo: "bloque inexistente: " + id };
     if (b.tipo === "pack") {
       var faltan = b.instala.filter(function (x) { return (instalados || []).indexOf(x) === -1; });
-      return { ok: faltan.length > 0, motivo: faltan.length ? "" : "ya estaba completo", faltan: faltan };
+      return { ok: faltan.length > 0, motivo: faltan.length ? "" : "ya estaba completo", faltan: faltan, requiere: [] };
     }
-    if ((instalados || []).indexOf(id) !== -1) return { ok: false, motivo: "ya estaba instalado" };
-    return { ok: true, motivo: "", faltan: [] };
+    if ((instalados || []).indexOf(id) !== -1) return { ok: false, motivo: "ya estaba instalado", faltan: [], requiere: [] };
+    var req = b.requiere.filter(function (x) { return (instalados || []).indexOf(x) === -1; });
+    return { ok: req.length === 0, motivo: req.length ? "faltan dependencias" : "", faltan: [], requiere: req };
   }
 
   function puedeQuitar(id, instalados) {
     var b = porId[id];
     if (!b) return { ok: false, motivo: "bloque inexistente: " + id };
     if (b.fija) return { ok: false, motivo: "es base fija" };
-    if (b.tipo === "pack") return { ok: true, motivo: "", fuera: b.instala.slice() };
-    return { ok: true, motivo: "", fuera: [id] };
+    var fuera = b.tipo === "pack" ? b.instala.slice() : [id];
+    var dependientes = todos().filter(function (x) {
+      return fuera.indexOf(x.id) === -1 && (instalados || []).indexOf(x.id) !== -1 &&
+        x.requiere.some(function (r) { return fuera.indexOf(r) !== -1; });
+    }).map(function (x) { return x.id; });
+    return { ok: dependientes.length === 0, motivo: dependientes.length ? "hay bloques que lo requieren" : "", fuera: fuera, dependientes: dependientes };
+  }
+
+  function contribucion(metodo, id) {
+    var b = porId[id];
+    return b && typeof b[metodo] === "function" ? b[metodo] : null;
   }
 
   window.MimoRegistro = {
@@ -160,7 +230,11 @@
     opcionales: opcionales,
     hijosDe: hijosDe,
     secciones: secciones,
+    montar: montar,
+    desmontar: desmontar,
+    montado: montado,
     pintar: pintar,
+    contribucion: contribucion,
     validar: validar,
     puedeInstalar: puedeInstalar,
     puedeQuitar: puedeQuitar,

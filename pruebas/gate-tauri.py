@@ -75,7 +75,7 @@ def main() -> int:
         return 1
 
     conf = json.loads((ESCRITORIO / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
-    exigir(conf.get("version") == "1.2.0-beta.2", f"tauri: version 1.2.0-beta.2 — {conf.get('version')}", fallas)
+    exigir(conf.get("version") == "1.2.0-beta.3", f"tauri: version 1.2.0-beta.3 — {conf.get('version')}", fallas)
     exigir(conf.get("build", {}).get("frontendDist") == "../../app",
            "tauri: frontendDist apunta a la app fuente", fallas)
 
@@ -110,7 +110,8 @@ def main() -> int:
         exigir(r.get("titulo") == "Mimo · universal", f"tauri: titulo — {r.get('titulo')}", fallas)
         exigir(r.get("tabs") == ["calendario", "tareas", "notas", "ajustes"],
                f"tauri: 4 pestanas base — {r.get('tabs')}", fallas)
-        exigir(len(r.get("secciones", [])) == 8, f"tauri: 8 secciones — {len(r.get('secciones', []))}", fallas)
+        exigir(len(r.get("secciones", [])) == 4,
+               f"tauri: 4 secciones base (las opcionales se montan al instalar) — {len(r.get('secciones', []))}", fallas)
         exigir(r.get("tareas_visible") is True, "tauri: Tareas navega", fallas)
         exigir(r.get("nota_guardada") is True and r.get("notas", 0) >= 1,
                f"tauri: nota en localStorage — {r.get('notas')}", fallas)
@@ -159,7 +160,7 @@ def main() -> int:
             exigir("Sincronizado" in (segunda.get("sync_estado") or ""),
                    f"tauri: segunda sincronizacion — {segunda.get('sync_estado')}", fallas)
 
-    rpm = sorted(glob.glob(str(RPM / "*.rpm")))
+    rpm = sorted(glob.glob(str(RPM / f"Mimo-{conf.get('version')}-*.rpm")))
     exigir(bool(rpm), f"tauri: RPM construido en {RPM}", fallas)
     if rpm:
         tam = Path(rpm[0]).stat().st_size

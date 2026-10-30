@@ -4,6 +4,10 @@
 (function () {
   "use strict";
 
+  function emitir(nombre, dato) {
+    if (window.MimoEventos && MimoEventos.emitir) MimoEventos.emitir(nombre, dato);
+  }
+
   function hoy() {
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -36,7 +40,7 @@
   function crear(datos) {
     var d = datos || {};
     var ahora = new Date();
-    return {
+    var sesion = {
       id: String(d.id || ("s" + ahora.getTime() + "-" + Math.floor(Math.random() * 1000))),
       fecha: String(d.fecha || hoy()),
       minutos: Math.max(0, Number(d.minutos) || 0),
@@ -45,6 +49,8 @@
       hora: String(d.hora || ""),
       tipo: String(d.tipo || "crono")
     };
+    emitir("sesiones.creada", sesion);
+    return sesion;
   }
 
   function actualizar(sesion, datos) {
@@ -56,11 +62,15 @@
     if (d.vinculo !== undefined) sesion.vinculo = String(d.vinculo || "");
     if (d.hora !== undefined) sesion.hora = String(d.hora || "");
     if (d.tipo !== undefined) sesion.tipo = String(d.tipo || "");
+    emitir("sesiones.actualizada", sesion);
     return sesion;
   }
 
   function borrar(lista, id) {
-    return (Array.isArray(lista) ? lista : []).filter(function (s) { return s.id !== id; });
+    var fuera = (Array.isArray(lista) ? lista : []).filter(function (s) { return s.id === id; })[0] || null;
+    var out = (Array.isArray(lista) ? lista : []).filter(function (s) { return s.id !== id; });
+    if (fuera) emitir("sesiones.borrada", fuera);
+    return out;
   }
 
   window.MimoDominioSesiones = {

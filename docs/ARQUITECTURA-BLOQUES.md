@@ -113,10 +113,9 @@ Las secciones del HTML son:
 | Estudio | 386 | Sí: kit Academics |
 | Ajustes | 430 | No: es base fija |
 
-Además existe `evaluaciones` en `BLOQUES` como “aporte”, pero **no tiene sección, ni
-código, ni vista**. El dueño indicó que tendrá su propio sistema de notas y
-clasificación; por ahora es una pieza **pendiente de diseño**, no un bloque eliminable.
-No se toca hasta definir ese sistema.
+`evaluaciones` existió como “aporte” sin sección, código ni vista. En R60 el dueño
+pidió **eliminarla y desvincularla**: ya no está en el catálogo, en el kit Academics,
+en el estado guardado ni en las exportaciones. No queda una pieza pendiente de diseño.
 
 ### 3.2 Qué es un “bloque” hoy
 
@@ -988,8 +987,8 @@ Objetivo: que la lista de bloques deje de estar hard-codeada, sin cambiar la UI.
 
 - [x] Crear `js/nucleo/registro.js` con `MimoRegistro.registrar`, `todos`, `obtener`,
   `secciones`, `pintar`, `validar`, `puedeInstalar` y `puedeQuitar`.
-- [x] Crear manifiestos para la base, los opcionales, `evaluaciones`, `academics` y
-  los hijos de Tiempo; apuntan a las funciones existentes (`pintarCalendario`, …).
+- [x] Crear manifiestos para la base, los opcionales, `academics` y los hijos de
+  Tiempo; apuntan a las funciones existentes (`pintarCalendario`, …).
 - [x] `secciones()` e `ir()` usan el registro; `pintarSeccion()` despacha por
   manifiesto y deja el `if` solo como respaldo.
 - [x] `BLOQUES`, `BASE` y `ORDEN` se derivan del registro; `instalar()`/`quitar()`
@@ -1096,9 +1095,8 @@ ida y vuelta y backup antes/después.
   - Calificaciones sin cursos: “Crea un curso” (dominio) o “Instala Malla”.
   - Estudio sin cursos: sesiones “Sin ramo” y tabla vacía.
   - Tiempo sin tareas/cursos: selectores vacíos, timer funciona.
-- `evaluaciones` queda **pendiente**: no eliminarlo del catálogo ni del kit, pero
-  tampoco prometer una vista que no existe. Cuando se diseñe su sistema de notas y
-  clasificación, se decide si es bloque, fuente o pack.
+- `evaluaciones` **ya no existe**: se eliminó del catálogo, del kit y del estado en
+  R60. No se debe reintroducir sin una decisión nueva del dueño.
 
 **Gates:** `gate-bloques`, `gate-shell`, `gate-busqueda`, `gate-diseno`.
 
@@ -1166,6 +1164,34 @@ Commits de esta sesión:
 
 ---
 
+## 7ter. Estado de implementación al 2026-10-30 (R60)
+
+- Se eliminó y desvinculó `evaluaciones` del catálogo, del kit, del esquema, de las
+  exportaciones y de los estados guardados.
+- El registro expone `montar`/`desmontar` y el shell tiene un host que inyecta la
+  vista de cada bloque desde su carpeta. `index.html` ya no contiene las secciones
+  de Calendario, Tareas, Notas, Tiempo, Malla, Calificaciones ni Estudio.
+- Cada bloque tiene carpeta con `vista.js`, `bloque.js` y CSS propio; Notas es el
+  piloto completo, con estado y ciclo de vida propios.
+- El catálogo se arma desde los manifiestos del registro; instalar y quitar resuelven
+  dependencias y montan/desmontan el host.
+- `dominio/cursos` y `dominio/sesiones` emiten eventos de dominio; las mutaciones de
+  la UI pasan por esas funciones.
+- 17 gates web en verde.
+
+Cierre medido:
+
+- `CHANGELOG.md` y `RELEASE-NOTES-1.2.0-beta.3.md` actualizados.
+- Tauri compilado como `1.2.0-beta.3`; `gate-tauri` en verde con **FPS 185** en la
+  ventana de prueba y RPM de 4,3 MB.
+- `MIMO_HEADLESS=1` y el modo offline se midieron en `gate-tauri` y en los gates web.
+
+La lógica de Malla, Calificaciones y Estudio sigue en `shell.js`; la vista, el CSS y
+el ciclo de vida ya están separados. Esa extracción interna es deuda posterior a
+beta.3, no un requisito de esta entrega.
+
+---
+
 ## 8. Decisiones del dueño (2026-10-30)
 
 Estas decisiones mandan sobre las recomendaciones anteriores.
@@ -1175,7 +1201,7 @@ Estas decisiones mandan sobre las recomendaciones anteriores.
 | D1 | Calendario, Tareas y Notas son **base fija**; no se quitan. Ajustes queda en el shell. | **Decidido** |
 | D2 | Calificaciones **puede existir sin Malla**, usando `dominio/cursos`; Malla es la vista de planificación, no la dueña del dato. | **Decidido: sí** |
 | D3 | `sesiones` es **dominio** (`dominio/sesiones`); Tiempo produce, Estudio analiza, ambos leen el mismo registro. | **Decidido: sí** |
-| D4 | `evaluaciones` tiene su **propio sistema de notas y clasificación**. No se elimina ni se fusiona todavía. | **Pendiente de diseño** |
+| D4 | `evaluaciones` se **elimina y desvincula**: fuera del catálogo, del kit, del estado, de las exportaciones y de la UI. | **Hecho en R60** |
 | D5 | Módulos ES en beta.3. | **Decidido: no**; scripts clásicos + registro. |
 | D6 | Bundler/framework. | **Decidido: no**; no resuelve el problema y agrega riesgo. |
 | D7 | Plugins de terceros. | **Decidido: no** en beta.3; primero bloques internos. |
@@ -1190,9 +1216,8 @@ Como mínimo quedan Calendario, Tareas, Notas y Ajustes. La independencia se pru
 quitando los bloques opcionales (Tiempo, Malla, Calificaciones, Estudio) y sus
 dependencias, no la base.
 
-`evaluaciones` no se toca hasta que el dueño defina su sistema. Si se implementa,
-puede ser un bloque propio con su propio modelo de notas, no una fuente de
-Calificaciones.
+`evaluaciones` se retiró por decisión del dueño. El estado viejo se limpia al cargar:
+se quita de `instalados`, de `kits.academics` y de cualquier otro kit.
 
 ---
 

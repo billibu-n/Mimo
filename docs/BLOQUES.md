@@ -1,14 +1,14 @@
 # Catálogo de bloques — contrato para la fase 2
 
-> **Estado beta.3 (R57):** la estructura real de bloques vive en
+> **Estado beta.3 (R60):** la estructura real de bloques vive en
 > `app/js/nucleo/registro.js` (`MimoRegistro`). `BLOQUES` es una vista compatible
 > derivada del registro; la base Calendario/Tareas/Notas/Ajustes es fija y los
-> opcionales se montan al entrar. Este documento sigue siendo el contrato de la
-> ficha/detalle del catálogo, que aún no se implementó.
+> opcionales se montan al entrar. La ficha/detalle del catálogo ya está
+> implementada en `#modal-bloque`.
 
-**Estado:** filtros, tags y búsqueda implementados en R22; ficha presionable y ventana de
-detalle siguen pendientes. Este documento fija el motor para que la implementación no cambie
-el esquema de datos ni rompa los bloques existentes.
+**Estado:** filtros, tags, búsqueda y ficha presionable con `#modal-bloque`
+implementados. Este documento fija el motor para que los cambios no alteren el
+esquema de datos ni rompan los bloques existentes.
 
 ## 1. Lo que se quiere
 
@@ -55,7 +55,7 @@ Los bloques base (`calendario`, `tareas`, `notas`, `ajustes`) viven en un mapa
 | `base` | Calendario, Tareas, Notas, Ajustes |
 | `tiempo` | Tiempo y sus modos |
 | `academico` | Malla, Calificaciones, Estudio |
-| `aporte` | Evaluaciones y otros aportes al calendario |
+| `aporte` | Aportes al calendario, si se diseñan en el futuro |
 | `kit` | Academics u otros paquetes |
 
 Los `tags` son libres y se muestran como chips secundarios; no sustituyen a `naturaleza`.
@@ -81,8 +81,9 @@ El catálogo separa **origen** —quién provee el bloque— de **naturaleza** �
 - Estado aditivo en `prefs.catalogoOrigen` y `prefs.catalogoTag`; por defecto `todos` y vacío.
 - Los contadores salen de la lista completa, no de la filtrada.
 - Sin resultados: «No hay bloques con estos filtros.» + «Limpiar filtros».
-- `evaluaciones` sigue oculto porque es un aporte del kit; el catálogo visible tiene 9 fichas.
-- **Pendiente:** filtros por `naturaleza` y la ventana de detalle de la sección 4.
+- El catálogo visible tiene 9 fichas: 4 base, 4 opcionales y el kit Academics.
+- `evaluaciones` fue eliminada y desvinculada en R60; no es una ficha oculta.
+- El detalle se abre desde la ficha y se cierra con `ESC`; el foco vuelve a la ficha.
 
 ## 4. Ficha presionable y detalle
 
@@ -125,12 +126,12 @@ El catálogo separa **origen** —quién provee el bloque— de **naturaleza** �
 
 ## 7. Pruebas de la fase 2
 
-Los filtros por origen, los tags y la búsqueda se cerraron en R22 y se miden en
-`gate-correcciones`/`gate-busqueda`. El detalle de ficha sigue pendiente:
+Los filtros por origen, los tags, la búsqueda y el detalle se miden en
+`gate-correcciones`, `gate-busqueda` y `gate-bloques`:
 
-1. una ficha es un botón y abre `#modal-bloque`;
+1. una ficha con rol de botón abre `#modal-bloque`;
 2. el detalle muestra resumen, «Qué hace», datos y versión;
-3. sin imagen, aparece el icono de respaldo;
+3. sin imagen, queda el icono del bloque;
 4. instalar desde el detalle actualiza la barra y el catálogo;
 5. ESC cierra primero el detalle y después el catálogo;
 6. el foco vuelve a la ficha.
@@ -138,8 +139,7 @@ Los filtros por origen, los tags y la búsqueda se cerraron en R22 y se miden en
 ## 8. Orden de implementación
 
 1. Metadatos (`origen`, `naturaleza`, `tags`) + `catalogoItems()` + filtros: **hecho en R22**.
-2. Ficha como botón y `#modal-bloque` con textos, sin imágenes: **pendiente**.
-3. Imágenes y respaldo: **pendiente**.
-4. Cierre y commit del detalle.
-
-La barra de filtros se cerró en R22; el detalle queda como el siguiente frente de producto.
+2. Ficha como botón y `#modal-bloque` con textos: **hecho en R60**.
+3. Imágenes y respaldo: el detalle usa el icono del bloque; las capturas quedan
+   como recurso opcional.
+4. Cierre y commit del detalle: **hecho en R60**.

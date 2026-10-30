@@ -1,0 +1,51 @@
+/* notas.css — estilos del bloque Notas. */
+.notas-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--sp-4);align-items:start}
+.notas-lista{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-3);min-height:200px}
+.notas-lista .entrada{margin-bottom:var(--sp-2)}
+.nota-item{display:block;width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;padding:var(--sp-2);margin-bottom:var(--sp-1)}
+.nota-item:hover{background:var(--sup2)}
+.nota-item.on{background:var(--sup2);border-color:var(--line)}
+.nota-item b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nota-item small{color:var(--muted);font-size:var(--fs-xs)}
+.nota-editor{min-height:360px;display:flex;flex-direction:column}
+.nota-titulo{width:100%;border:0;border-bottom:1px solid var(--line2);background:transparent;color:var(--fg);font-size:1.3rem;font-weight:700;padding:0 0 var(--sp-2);margin-bottom:var(--sp-2)}
+.nota-titulo:disabled{opacity:.6}
+.nota-cuerpo{flex:1;width:100%;min-height:250px;border:0;background:transparent;color:var(--fg);resize:vertical;line-height:1.6}
+.nota-meta{font-size:var(--fs-xs);color:var(--muted)}
+  .notas-layout{grid-template-columns:1fr}
+.nota-toolbar{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-2)}
+.nota-toolbar .entrada{flex:1 1 140px;min-width:120px}
+.nota-formato{display:flex;align-items:center;gap:2px;flex-wrap:wrap;margin:0 0 var(--sp-2);padding:var(--sp-1);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup)}
+.nota-formato .btn{min-height:26px;padding:0 7px;font-size:var(--fs-xs);line-height:1}
+.nota-formato .btn:disabled{opacity:.5}
+.nota-preview{flex:1;min-height:250px;padding:var(--sp-2) 0;line-height:1.65;overflow:auto;overflow-wrap:anywhere}
+.nota-preview > :first-child{margin-top:0}
+.nota-preview > :last-child{margin-bottom:0}
+.nota-preview h1,.nota-preview h2,.nota-preview h3,.nota-preview h4,.nota-preview h5,.nota-preview h6{margin:var(--sp-3) 0 var(--sp-1);line-height:1.25}
+.nota-preview h1{font-size:1.8rem}
+.nota-preview h2{font-size:1.45rem}
+.nota-preview h3{font-size:1.2rem}
+.nota-preview h4{font-size:1.05rem}
+.nota-preview h5{font-size:1rem}
+.nota-preview h6{font-size:.92rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted2)}
+.nota-preview p{margin:0 0 var(--sp-2)}
+.nota-preview ul,.nota-preview ol{margin:0 0 var(--sp-2);padding-left:1.5em}
+.nota-preview li{margin:.15em 0}
+.nota-preview li > ul,.nota-preview li > ol{margin:.15em 0}
+.nota-preview blockquote{margin:0 0 var(--sp-2);padding:var(--sp-2) var(--sp-3);border-left:3px solid var(--ac);background:var(--sup2);color:var(--muted2)}
+.nota-preview blockquote > :last-child{margin-bottom:0}
+.nota-preview hr{border:0;border-top:1px solid var(--line);margin:var(--sp-3) 0}
+.nota-preview a{color:var(--ac);text-decoration:underline;text-underline-offset:2px}
+.nota-preview u{text-decoration:underline;text-underline-offset:2px}
+.nota-preview mark{background:var(--pill-warn-bg);color:var(--pill-warn-fg);padding:0 2px}
+.nota-preview code{background:var(--sup2);padding:1px 4px;border-radius:4px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em}
+.nota-preview pre{margin:0 0 var(--sp-2);padding:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);overflow:auto}
+.nota-preview pre code{display:block;padding:0;background:none;font-size:var(--fs-sm);line-height:1.5}
+.nota-preview table{width:100%;border-collapse:collapse;margin:0 0 var(--sp-2);font-size:var(--fs-sm)}
+.nota-preview th,.nota-preview td{border:1px solid var(--line);padding:var(--sp-1) var(--sp-2);text-align:left;vertical-align:top}
+.nota-preview th{background:var(--sup2);font-weight:600}
+.nota-preview img{max-width:100%;height:auto;border-radius:var(--r-sm)}
+.nota-preview input[type="checkbox"]{accent-color:var(--ac);margin-right:6px;vertical-align:-1px}
+.nota-preview .check-item{list-style:none;margin-left:-1.1em}
+.nota-pista{margin:0 0 var(--sp-2);color:var(--muted2);font-size:var(--fs-xs)}
+.nota-toolbar #btn-borrar-nota{margin-left:auto}

@@ -50,7 +50,7 @@ del tag y regenerar `.SRCINFO`.
 
 ```bash
 # en un Fedora con permisos de administrador
-sudo dnf install ./release/Mimo-1.2.0-beta.2-1.x86_64.rpm
+sudo dnf install ./release/Mimo-1.2.0-beta.3-1.x86_64.rpm
 mimo                                   # o desde el menu, como "Mimo"
 sudo dnf remove mimo
 ```

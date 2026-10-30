@@ -26,8 +26,8 @@ Un gate que no discrimina es un gate roto.
 | Gate | Bueno | Roto |
 |---|---|---|
 | `gate-shell` | el shell universal: instalar Tiempo, quitar hijo, kit Academics, tarea, nota, panel por sección, temas | sin demo: mide `app/index.html` |
-| `gate-bloques` | registro válido, base fija, Calificaciones sin Malla, curso creado desde Calificaciones, Malla lo ve y al quitarla los datos siguen; Tiempo sin Estudio y Estudio sin Tiempo | registro duplicado, base removible, curso o sesión perdidos |
-| `gate-arquitectura` | estático: orden de scripts, registro/dominio sin DOM, sin borrado en cascada, fuente de calendario, gates en el arnés | un dominio toca `document`/`estado`, falta un manifiesto o vuelve la copia de eventos |
+| `gate-bloques` | registro válido, host dinámico, montaje/desmontaje, base fija, dependencias, eventos de dominio, ficha de catálogo, Calificaciones sin Malla y datos conservados; Tiempo sin Estudio y Estudio sin Tiempo | registro duplicado, base removible, host que no se desmonta, curso o sesión perdidos, evento que no se emite |
+| `gate-arquitectura` | estático: orden de scripts, registro/dominio sin DOM, sin borrado en cascada, fuente de calendario, secciones fuera de `index.html`, vistas por bloque y gates en el arnés | un dominio toca `document`/`estado`, falta una vista, vuelve la copia de eventos o reaparece `evaluaciones` |
 | `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 9 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
 | `gate-busqueda` | Ctrl+K encuentra tareas, notas, eventos, ramos y periodos y navega | sin demo: mide `app/index.html` |

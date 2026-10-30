@@ -18,207 +18,12 @@
     });
   };
 
-  var I18N = {
-    es: {
-      "nav.calendario": "Calendario", "nav.tareas": "Tareas", "nav.notas": "Notas", "nav.tiempo": "Tiempo",
-      "nav.malla": "Malla", "nav.calificaciones": "Calificaciones", "nav.estudio": "Estudio", "nav.ajustes": "Ajustes",
-      "panel.contexto": "Contexto", "panel.detalle": "Detalle", "panel.notas": "Notas", "panel.bloques": "Bloques",
-      "sub.calendario": "Todo lo que tiene fecha, en un solo sitio.",
-      "sub.tareas": "Proyectos y tareas sobre tareas; el progreso se calcula solo.",
-      "sub.notas": "El material que no es tarea: texto, enlaces y contexto. Clic derecho en una nota para acciones.",
-      "sub.tiempo": "Elige cómo medir el tiempo.",
-      "sub.malla": "Tu carrera, ordenada por niveles. Elige un ramo para ver qué necesitas y qué desbloqueas.",
-      "sub.calificaciones": "Categorías, componentes, examen y eximición. La nota se calcula sola.",
-      "sub.estudio": "Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.",
-      "sub.ajustes": "Apariencia, idioma, datos y colaboración.",
-      "grupo.aplicacion": "Aplicación", "grupo.aplicacion.sub": "Lo que aplica a toda la app.",
-      "grupo.datos": "Datos", "grupo.datos.sub": "Tus datos, copias y sincronización.",
-      "grupo.extensiones": "Extensiones", "grupo.extensiones.sub": "Bloques y versión.",
-      "aj.apariencia": "Apariencia", "aj.apariencia.sub": "Elige el aspecto de Mimo. El botón sol/luna alterna entre claro y oscuro.",
-      "aj.idioma": "Idioma", "aj.idioma.sub": "Elige el idioma de la interfaz.",
-      "aj.notificaciones": "Notificaciones", "aj.notificaciones.sub": "Avisos y sonido.",
-      "aj.general": "General", "aj.general.sub": "Inicio de semana y formato de hora.",
-      "aj.navegacion": "Navegación", "aj.navegacion.sub": "Dónde se ubica la barra de secciones.",
-      "aj.paneles": "Paneles", "aj.paneles.sub": "Ancho y visibilidad del panel lateral.",
-      "aj.periodos": "Periodos", "aj.periodos.sub": "Fechas de clases, receso y exámenes.",
-      "aj.respaldo": "Respaldo", "aj.sync": "Sincronización", "aj.kits": "Kits y bloques",
-      "aj.laboratorio": "Vista dividida", "aj.laboratorio.sub": "Muestra dos secciones a la vez.",
-      "aj.temaClaro": "Tema claro", "aj.temaOscuro": "Tema oscuro", "aj.idioma.etiqueta": "Idioma",
-      "aj.avisos": "Avisos activos", "aj.semana": "La semana empieza en", "aj.lunes": "Lunes", "aj.domingo": "Domingo",
-      "aj.hora": "Formato de hora", "aj.barra": "Barra de secciones", "aj.arriba": "Arriba", "aj.izquierda": "Izquierda",
-      "aj.ancho": "Ancho", "aj.abierto": "Abierto al iniciar", "aj.abrirPanel": "Abrir panel",
-      "aj.acerca": "Acerca de",
-      "top.buscar": "Buscar", "cal.semana": "Sem",
-      "top.add": "Agregar un bloque", "top.nuevo": "Definir un periodo", "top.activo": "Periodo activo",
-      "top.version": "Versión", "top.sync": "Guardado en este equipo", "top.historial": "Historial y atajos", "top.tema": "Cambiar entre claro y oscuro",
-      "top.split": "Vista dividida", "top.panel": "Panel de herramientas", "top.ajustes": "Ajustes",
-      "panel.titulo": "Panel", "panel.herramientas": "Herramientas del panel", "panel.cerrar": "Cerrar panel",
-      "panel.ahora": "Ahora", "panel.sinEventos": "Sin eventos este mes.",
-      "panel.sinContexto": "Sin contexto", "panel.estaSeccion": "Esta sección no declara contexto.",
-      "periodo.sin": "Sin periodo", "pie.guardado": "local · guardado", "pie.ayuda": "Ayuda", "pie.panel": "Panel",
-      "acc.guardar": "Guardar", "acc.cancelar": "Cancelar", "acc.editar": "Editar", "acc.borrar": "Borrar", "acc.cerrar": "Cerrar",
-      "cal.vista.mes": "Mes", "cal.vista.semana": "Semana", "cal.vista.agenda": "Agenda", "cal.hoy": "Hoy",
-      "cal.nuevo": "+ Nuevo evento", "cal.contextos": "Contextos",
-      "cal.sinContextos": "Sin contextos todavía. Crea uno al primer evento o tarea.",
-      "cal.calendarios": "Calendarios", "cal.local": "Local · este equipo",
-      "cal.anterior": "Anterior", "cal.siguiente": "Siguiente",
-      "cal.kpi.eventos": "eventos este mes", "cal.kpi.tareas": "tareas con fecha",
-      "cal.kpi.horas": "registradas", "cal.kpi.bloques": "bloques instalados",
-      "cal.evento.titulo": "Título del evento", "cal.evento.fecha": "Fecha", "cal.evento.hora": "Hora",
-      "cal.evento.contexto": "Contexto (opcional)", "cal.contexto": "Contexto",
-      "cal.vacio": "Sin eventos. Todo lo que tenga fecha aparecerá aquí.",
-      "cal.agenda": "Agenda", "cal.proximo": "próximo", "cal.pasado": "pasado",
-      "cal.sinEventos": "Sin eventos todavía.", "cal.semanaDel": "Semana del",
-      "cal.receso": "receso", "cal.examenes": "exámenes",
-      "cal.tituloSemana": "Semana {n} de clases del periodo", "cal.tituloReceso": "Semana de receso",
-      "cal.tituloExamenes": "Semana de exámenes", "cal.fueraPeriodo": "Fuera del periodo activo",
-      "cal.clicTipo": "Clic para cambiar el tipo", "cal.evento": "evento", "cal.eventos": "eventos",
-      "cal.vistaAria": "Vista del calendario", "cal.clicDerecho": "Clic derecho: acciones",
-      "panel.evento": "Evento", "panel.fecha": "Fecha", "panel.hora": "Hora", "panel.contexto": "Contexto",
-      "panel.notasEnlazadas": "Notas enlazadas", "panel.sinTitulo": "Sin título",
-      "panel.proximoEvento": "El próximo evento aparece en la agenda.",
-      "panel.detalleVacio": "Selecciona una tarea, una nota o un ramo para ver su detalle.",
-      "panel.tarea": "Tarea", "panel.proyecto": "Proyecto", "panel.estado": "Estado",
-      "panel.hecha": "hecha", "panel.abierta": "abierta", "panel.prioridad": "Prioridad",
-      "panel.dentroDe": "Dentro de", "panel.progreso": "Progreso", "panel.subtareas": "Subtareas",
-      "panel.sinSubtareas": "Sin subtareas.", "panel.nota": "Nota", "panel.notas": "Notas", "panel.abrir": "Abrir", "panel.reabrir": "Reabrir", "panel.marcarHecha": "Hecha",
-      "panel.progresoTareas": "{hechas} de {total} tareas dentro"
-    },
-    en: {
-      "nav.calendario": "Calendar", "nav.tareas": "Tasks", "nav.notas": "Notes", "nav.tiempo": "Time",
-      "nav.malla": "Degree plan", "nav.calificaciones": "Grades", "nav.estudio": "Study", "nav.ajustes": "Settings",
-      "panel.contexto": "Context", "panel.detalle": "Details", "panel.notas": "Notes", "panel.bloques": "Blocks",
-      "sub.calendario": "Everything with a date, in one place.",
-      "sub.tareas": "Projects and tasks on tasks; progress is calculated.",
-      "sub.notas": "Material that is not a task: text, links and context. Right-click a note for actions.",
-      "sub.tiempo": "Choose how to measure time.",
-      "sub.malla": "Your degree, ordered by levels. Pick a course to see what you need and what it unlocks.",
-      "sub.calificaciones": "Categories, components, exam and exemption. Your grade is calculated.",
-      "sub.estudio": "Hours per course, weekly goal and progress. Time sessions land here.",
-      "sub.ajustes": "Appearance, language, data and collaboration.",
-      "grupo.aplicacion": "Application", "grupo.aplicacion.sub": "What applies to the whole app.",
-      "grupo.datos": "Data", "grupo.datos.sub": "Your data, backups and sync.",
-      "grupo.extensiones": "Extensions", "grupo.extensiones.sub": "Blocks and version.",
-      "aj.apariencia": "Appearance", "aj.apariencia.sub": "Pick how Mimo looks. The sun/moon button switches between light and dark.",
-      "aj.idioma": "Language", "aj.idioma.sub": "Choose the interface language.",
-      "aj.notificaciones": "Notifications", "aj.notificaciones.sub": "Alerts and sound.",
-      "aj.general": "General", "aj.general.sub": "Week start and time format.",
-      "aj.navegacion": "Navigation", "aj.navegacion.sub": "Where the sections bar sits.",
-      "aj.paneles": "Panels", "aj.paneles.sub": "Width and visibility of the side panel.",
-      "aj.periodos": "Terms", "aj.periodos.sub": "Class, break and exam dates.",
-      "aj.respaldo": "Backup", "aj.sync": "Sync", "aj.kits": "Kits and blocks",
-      "aj.laboratorio": "Split view", "aj.laboratorio.sub": "Shows two sections at once.",
-      "aj.temaClaro": "Light theme", "aj.temaOscuro": "Dark theme", "aj.idioma.etiqueta": "Language",
-      "aj.avisos": "Notifications", "aj.semana": "Week starts on", "aj.lunes": "Monday", "aj.domingo": "Sunday",
-      "aj.hora": "Time format", "aj.barra": "Section bar", "aj.arriba": "Top", "aj.izquierda": "Left",
-      "aj.ancho": "Width", "aj.abierto": "Open on start", "aj.abrirPanel": "Open panel",
-      "aj.acerca": "About",
-      "top.buscar": "Search", "cal.semana": "Wk",
-      "top.add": "Add a block", "top.nuevo": "Define a term", "top.activo": "Active term",
-      "top.version": "Version", "top.sync": "Saved on this device", "top.historial": "History and shortcuts", "top.tema": "Toggle light and dark",
-      "top.split": "Split view", "top.panel": "Tools panel", "top.ajustes": "Settings",
-      "panel.titulo": "Panel", "panel.herramientas": "Panel tools", "panel.cerrar": "Close panel",
-      "panel.ahora": "Now", "panel.sinEventos": "No events this month.",
-      "panel.sinContexto": "No context", "panel.estaSeccion": "This section declares no context.",
-      "periodo.sin": "No term", "pie.guardado": "local · saved", "pie.ayuda": "Help", "pie.panel": "Panel",
-      "acc.guardar": "Save", "acc.cancelar": "Cancel", "acc.editar": "Edit", "acc.borrar": "Delete", "acc.cerrar": "Close",
-      "cal.vista.mes": "Month", "cal.vista.semana": "Week", "cal.vista.agenda": "Agenda", "cal.hoy": "Today",
-      "cal.nuevo": "+ New event", "cal.contextos": "Contexts",
-      "cal.sinContextos": "No contexts yet. Create one on your first event or task.",
-      "cal.calendarios": "Calendars", "cal.local": "Local · this device",
-      "cal.anterior": "Previous", "cal.siguiente": "Next",
-      "cal.kpi.eventos": "events this month", "cal.kpi.tareas": "tasks with a date",
-      "cal.kpi.horas": "logged", "cal.kpi.bloques": "installed blocks",
-      "cal.evento.titulo": "Event title", "cal.evento.fecha": "Date", "cal.evento.hora": "Time",
-      "cal.evento.contexto": "Context (optional)", "cal.contexto": "Context",
-      "cal.vacio": "No events. Everything with a date will appear here.",
-      "cal.agenda": "Agenda", "cal.proximo": "upcoming", "cal.pasado": "past",
-      "cal.sinEventos": "No events yet.", "cal.semanaDel": "Week of",
-      "cal.receso": "break", "cal.examenes": "exams",
-      "cal.tituloSemana": "Week {n} of classes in the term", "cal.tituloReceso": "Break week",
-      "cal.tituloExamenes": "Exam week", "cal.fueraPeriodo": "Outside the active term",
-      "cal.clicTipo": "Click to change the type", "cal.evento": "event", "cal.eventos": "events",
-      "cal.vistaAria": "Calendar view", "cal.clicDerecho": "Right-click: actions",
-      "panel.evento": "Event", "panel.fecha": "Date", "panel.hora": "Time", "panel.contexto": "Context",
-      "panel.notasEnlazadas": "Linked notes", "panel.sinTitulo": "Untitled",
-      "panel.proximoEvento": "The next event appears in the agenda.",
-      "panel.detalleVacio": "Select a task, a note or a course. Details live here, not in a modal over the list.",
-      "panel.tarea": "Task", "panel.proyecto": "Project", "panel.estado": "Status",
-      "panel.hecha": "done", "panel.abierta": "open", "panel.prioridad": "Priority",
-      "panel.dentroDe": "Inside", "panel.progreso": "Progress", "panel.subtareas": "Subtasks",
-      "panel.sinSubtareas": "No subtasks.", "panel.nota": "Note", "panel.notas": "Notes", "panel.abrir": "Open", "panel.reabrir": "Reopen", "panel.marcarHecha": "Done",
-      "panel.progresoTareas": "{hechas} of {total} tasks inside"
-    },
-    zh: {
-      "nav.calendario": "日历", "nav.tareas": "任务", "nav.notas": "笔记", "nav.tiempo": "时间",
-      "nav.malla": "课程规划", "nav.calificaciones": "成绩", "nav.estudio": "学习", "nav.ajustes": "设置",
-      "panel.contexto": "上下文", "panel.detalle": "详情", "panel.notas": "笔记", "panel.bloques": "模块",
-      "sub.calendario": "所有带日期的事情，都集中在这里。",
-      "sub.tareas": "任务可以层层拆分，进度自动计算。",
-      "sub.notas": "不是任务的材料：文字、链接和上下文。右键点击笔记可操作。",
-      "sub.tiempo": "选择计时方式。",
-      "sub.malla": "你的学位按层级排列。选择一门课程，查看需要什么、能解锁什么。",
-      "sub.calificaciones": "分类、评分项、考试和免考。成绩自动计算。",
-      "sub.estudio": "按课程统计小时数、每周目标和进度。时间记录会自动进入这里。",
-      "sub.ajustes": "外观、语言、数据和参与。",
-      "grupo.aplicacion": "应用", "grupo.aplicacion.sub": "适用于整个应用的设置。",
-      "grupo.datos": "数据", "grupo.datos.sub": "你的数据、备份和同步。",
-      "grupo.extensiones": "扩展", "grupo.extensiones.sub": "模块和版本。",
-      "aj.apariencia": "外观", "aj.apariencia.sub": "选择 Mimo 的外观。太阳/月亮按钮在浅色和深色之间切换。",
-      "aj.idioma": "语言", "aj.idioma.sub": "选择界面语言。",
-      "aj.notificaciones": "通知", "aj.notificaciones.sub": "通知和声音。",
-      "aj.general": "常规", "aj.general.sub": "一周起始和小时格式。",
-      "aj.navegacion": "导航", "aj.navegacion.sub": "分区栏的位置。",
-      "aj.paneles": "面板", "aj.paneles.sub": "侧边面板的宽度和可见性。",
-      "aj.periodos": "学期", "aj.periodos.sub": "课程、假期和考试日期。",
-      "aj.respaldo": "备份", "aj.sync": "同步", "aj.kits": "套件与模块",
-      "aj.laboratorio": "分屏", "aj.laboratorio.sub": "同时显示两个分区。",
-      "aj.temaClaro": "浅色主题", "aj.temaOscuro": "深色主题", "aj.idioma.etiqueta": "语言",
-      "aj.avisos": "启用提醒", "aj.semana": "一周开始于", "aj.lunes": "星期一", "aj.domingo": "星期日",
-      "aj.hora": "时间格式", "aj.barra": "分区栏位置", "aj.arriba": "顶部", "aj.izquierda": "左侧",
-      "aj.ancho": "宽度", "aj.abierto": "启动时打开", "aj.abrirPanel": "打开面板",
-      "aj.acerca": "关于",
-      "top.buscar": "搜索", "cal.semana": "周",
-      "top.add": "添加模块", "top.nuevo": "定义学期", "top.activo": "当前学期",
-      "top.version": "版本", "top.sync": "已保存到本设备", "top.historial": "历史与快捷键", "top.tema": "切换浅色/深色",
-      "top.split": "分屏视图", "top.panel": "工具面板", "top.ajustes": "设置",
-      "panel.titulo": "面板", "panel.herramientas": "面板工具", "panel.cerrar": "关闭面板",
-      "panel.ahora": "现在", "panel.sinEventos": "本月没有事件。",
-      "panel.sinContexto": "无上下文", "panel.estaSeccion": "此分区没有上下文。",
-      "periodo.sin": "无学期", "pie.guardado": "本地 · 已保存", "pie.ayuda": "帮助", "pie.panel": "面板",
-      "acc.guardar": "保存", "acc.cancelar": "取消", "acc.editar": "编辑", "acc.borrar": "删除", "acc.cerrar": "关闭",
-      "cal.vista.mes": "月", "cal.vista.semana": "周", "cal.vista.agenda": "议程", "cal.hoy": "今天",
-      "cal.nuevo": "+ 新建事件", "cal.contextos": "情境",
-      "cal.sinContextos": "还没有情境。在第一个事件或任务中创建一个。",
-      "cal.calendarios": "日历", "cal.local": "本地 · 本设备",
-      "cal.anterior": "上一个", "cal.siguiente": "下一个",
-      "cal.kpi.eventos": "本月事件", "cal.kpi.tareas": "有日期的任务",
-      "cal.kpi.horas": "已记录", "cal.kpi.bloques": "已安装模块",
-      "cal.evento.titulo": "事件标题", "cal.evento.fecha": "日期", "cal.evento.hora": "时间",
-      "cal.evento.contexto": "情境（可选）", "cal.contexto": "情境",
-      "cal.vacio": "没有事件。所有带日期的事情都会出现在这里。",
-      "cal.agenda": "议程", "cal.proximo": "即将到来", "cal.pasado": "已过去",
-      "cal.sinEventos": "还没有事件。", "cal.semanaDel": "周：",
-      "cal.receso": "假期", "cal.examenes": "考试",
-      "cal.tituloSemana": "学期第 {n} 教学周", "cal.tituloReceso": "假期周",
-      "cal.tituloExamenes": "考试周", "cal.fueraPeriodo": "当前学期之外",
-      "cal.clicTipo": "点击更改类型", "cal.evento": "事件", "cal.eventos": "事件",
-      "cal.vistaAria": "日历视图", "cal.clicDerecho": "右键：操作",
-      "panel.evento": "事件", "panel.fecha": "日期", "panel.hora": "时间", "panel.contexto": "情境",
-      "panel.notasEnlazadas": "已链接笔记", "panel.sinTitulo": "无标题",
-      "panel.proximoEvento": "下一个事件会出现在议程中。",
-      "panel.detalleVacio": "选择任务、笔记或课程以查看详情。",
-      "panel.tarea": "任务", "panel.proyecto": "项目", "panel.estado": "状态",
-      "panel.hecha": "已完成", "panel.abierta": "未完成", "panel.prioridad": "优先级",
-      "panel.dentroDe": "所属", "panel.progreso": "进度", "panel.subtareas": "子任务",
-      "panel.sinSubtareas": "没有子任务。", "panel.nota": "笔记", "panel.notas": "笔记", "panel.abrir": "打开", "panel.reabrir": "重新打开", "panel.marcarHecha": "完成",
-      "panel.progresoTareas": "内部任务 {hechas}/{total}"
-    }
-  };
+  var I18N = window.MIMO_I18N || {};
   function idioma() { return (estado && estado.prefs && estado.prefs.idioma) || "es"; }
   function t(k) {
     var d = I18N[idioma()] || I18N.es;
-    return d[k] || I18N.es[k] || k;
+    var extra = window.MimoI18n && MimoI18n.extra ? MimoI18n.extra[k] : null;
+    return extra || d[k] || I18N.es[k] || k;
   }
   function tf(k, vars) {
     var s = t(k);
@@ -253,9 +58,26 @@
     malla: { nombre: "Malla", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["cursos", "prerrequisitos"], icono: "i-malla", desc: "Cursos, niveles y prerrequisitos." },
     calificaciones: { nombre: "Calificaciones", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["notas", "examen"], icono: "i-libro", desc: "Categorías, examen y eximición." },
     estudio: { nombre: "Estudio", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["horas", "metas"], icono: "i-tiempo", desc: "Horas por ramo y metas." },
-    evaluaciones: { nombre: "Evaluaciones", tipo: "aporte", origen: "nativo", naturaleza: "aporte", tags: ["calendario", "evaluaciones"], icono: "i-cal", desc: "Aporta evaluaciones al calendario." },
-    academics: { nombre: "Academics", tipo: "pack", origen: "kit", naturaleza: "kit", tags: ["kit", "malla", "calificaciones", "estudio"], icono: "i-libro", desc: "Kit: Malla, Calificaciones, Estudio y Evaluaciones.", instala: ["malla", "calificaciones", "estudio", "evaluaciones"] }
+    academics: { nombre: "Academics", tipo: "pack", origen: "kit", naturaleza: "kit", tags: ["kit", "malla", "calificaciones", "estudio"], icono: "i-libro", desc: "Kit: Malla, Calificaciones y Estudio.", instala: ["malla", "calificaciones", "estudio"] }
   };
+  var DETALLES = {
+    tiempo: { resumen: ["Cronómetro, temporizador, pomodoro y alarmas.", "Stopwatch, timer, pomodoro and alarms.", "秒表、计时器、番茄钟和闹钟。"],
+      queHace: [["Cuenta el tiempo y registra sesiones.", "Counts time and logs sessions.", "计时并记录会话。"], ["Vínculo opcional con tareas y ramos.", "Optional link to tasks and courses.", "可选关联任务和课程。"], ["Alarmas con aviso nativo.", "Alarms with native notifications.", "带原生通知的闹钟。"]],
+      datos: ["sesiones", "alarmas", "tiempoModo"], notas: ["Quitar Tiempo no borra las sesiones.", "Removing Time does not delete sessions.", "移除时间不会删除会话。"] },
+    malla: { resumen: ["La carrera por niveles, con prerrequisitos y créditos.", "Your degree by level, with prerequisites and credits.", "按层级排列的课程规划，含先修和学分。"],
+      queHace: [["Cursos y columnas por nivel.", "Courses and columns by level.", "课程和按层级分列。"], ["Prerrequisitos y desbloqueo.", "Prerequisites and unlocking.", "先修要求和解锁。"], ["Cierre de curso con o sin notas.", "Close a course with or without grades.", "有成绩或无成绩关闭课程。"]],
+      datos: ["cursos", "carrera"], notas: ["Malla no es dueña de las calificaciones.", "The plan does not own grades.", "规划不拥有成绩。"] },
+    calificaciones: { resumen: ["Categorías, componentes, examen y eximición.", "Categories, components, exam and exemption.", "分类、评分项、考试和免考。"],
+      queHace: [["Calcula presentación y final.", "Calculates presentation and final grade.", "计算平时成绩和最终成绩。"], ["Cierra y reabre cursos.", "Closes and reopens courses.", "关闭和重新打开课程。"], ["Crea un curso aunque falte Malla.", "Creates a course even without the plan.", "即使没有规划也能创建课程。"]],
+      datos: ["califs", "cursos"], notas: ["Sus componentes con fecha se derivan en el calendario.", "Dated components are derived in the calendar.", "带日期的评分项在日历中派生。"] },
+    estudio: { resumen: ["Horas por ramo, meta semanal y avance.", "Hours per course, weekly goal and progress.", "按课程小时、每周目标和进度。"],
+      queHace: [["Gráfico por semanas del periodo.", "Chart by term weeks.", "按学期周次绘图。"], ["Sesiones manuales.", "Manual sessions.", "手动会话。"], ["Metas por ramo y por semana.", "Goals per course and week.", "按课程和按周的目标。"]],
+      datos: ["sesiones", "estudio"], notas: ["Estudio no es dueño de las sesiones: las comparte con Tiempo.", "Study does not own sessions: it shares them with Time.", "学习不拥有会话：与时间共享。"] },
+    academics: { resumen: ["Kit: Malla, Calificaciones y Estudio.", "Kit: plan, grades and study.", "套件：规划、成绩和学习。"],
+      queHace: [["Instala los tres bloques académicos.", "Installs the three academic blocks.", "安装三个学术模块。"], ["Se puede quitar sin borrar datos.", "Can be removed without deleting data.", "可移除而不删除数据。"]],
+      datos: ["cursos", "califs", "sesiones"], notas: ["No incluye evaluaciones: se eliminó en R60.", "It does not include assessments: removed in R60.", "不包含评估：R60 已移除。"] }
+  };
+
   var BASE = ["calendario", "tareas", "notas", "ajustes"];
   var BASE_META = {
     calendario: { origen: "nativo", naturaleza: "base", tags: ["eventos", "periodos"] },
@@ -272,7 +94,7 @@
     alarmas: ["alarmas", "alarms", "闹钟"], cursos: ["cursos", "courses", "课程"],
     prerrequisitos: ["prerrequisitos", "prerequisites", "先修"], examen: ["examen", "exam", "考试"],
     horas: ["horas", "hours", "小时"], metas: ["metas", "goals", "目标"],
-    calendario: ["calendario", "calendar", "日历"], evaluaciones: ["evaluaciones", "assessments", "评估"],
+    calendario: ["calendario", "calendar", "日历"],
     kit: ["kit", "kit", "套件"]
   };
   var NATURALEZAS = {
@@ -285,7 +107,7 @@
     plugin: ["Plugins", "Plugins", "插件"]
   };
   var ORDEN = ["tiempo", "malla", "calificaciones", "estudio"];
-  var HIJOS = [["crono", "Cronómetro"], ["temporizador", "Temporizador"], ["pomodoro", "Pomodoro"], ["alarmas", "Alarmas"]];
+  var HIJOS = (window.MimoTiempoHijos || []).map(function (h) { return [h.id, h.nombre[0]]; });
 
   /* Fase 1: los bloques se declaran en el registro. Por ahora los manifiestos
      envuelven las funciones existentes; el HTML y el estado siguen igual. */
@@ -294,15 +116,32 @@
     [
       { id: "calendario", nombre: "Calendario", tipo: "seccion", fija: true, orden: 10,
         origen: "nativo", naturaleza: "base", icono: "i-cal", tags: ["eventos", "periodos"],
+        detalle: { resumen: ["Todo lo que tiene fecha, en un solo sitio.", "Everything with a date, in one place.", "所有有日期的事，都在一处。"],
+          queHace: [["Vista de mes, semana y agenda.", "Month, week and agenda views.", "月、周和议程视图。"], ["Eventos con contexto y periodos.", "Events with context and terms.", "带情境和学期的事件。"], ["Fuente de componentes de Calificaciones.", "Source for graded components.", "成绩评分项的来源。"]],
+          datos: ["eventos", "periodos"], notas: ["Quitar Calificaciones no borra los eventos base.", "Removing Grades does not delete base events.", "移除成绩不会删除基础事件。"] },
+        vista: window.MimoBloqueCalendarioVista, css: "calendario.css",
         pintar: pintarCalendario },
       { id: "tareas", nombre: "Tareas", tipo: "seccion", fija: true, orden: 20,
         origen: "nativo", naturaleza: "base", icono: "i-tareas", tags: ["tareas", "proyectos"],
+        detalle: { resumen: ["Proyectos y tareas; el progreso se calcula solo.", "Projects and tasks; progress is derived.", "项目和任务；进度自动计算。"],
+          queHace: [["Hoy, árbol y tablero.", "Today, tree and board.", "今天、树状和看板。"], ["Proyectos con subtareas.", "Projects with subtasks.", "带子任务的项目。"], ["Prioridad, fecha y contexto.", "Priority, date and context.", "优先级、日期和情境。"]],
+          datos: ["tareas"], notas: ["Los datos de Tareas no se borran al quitar otros bloques.", "Task data is not deleted when other blocks are removed.", "移除其他模块不会删除任务数据。"] },
+        vista: window.MimoBloqueTareasVista, css: "tareas.css",
         pintar: pintarTareas },
       { id: "notas", nombre: "Notas", tipo: "seccion", fija: true, orden: 30,
         origen: "nativo", naturaleza: "base", icono: "i-notas", tags: ["notas", "etiquetas"],
-        pintar: pintarNotas },
+        detalle: { resumen: ["Texto libre con Markdown, etiquetas y enlaces.", "Free text with Markdown, tags and links.", "带 Markdown、标签和链接的自由文本。"],
+          queHace: [["Editor con vista previa.", "Editor with preview.", "带预览的编辑器。"], ["Markdown, tablas y fórmulas.", "Markdown, tables and formulas.", "Markdown、表格和公式。"], ["Enlaces a tareas y eventos.", "Links to tasks and events.", "链接到任务和事件。"], ["Búsqueda por etiqueta.", "Search by tag.", "按标签搜索。"]],
+          datos: ["notas"], notas: ["Quitar Notas no está permitido: es base fija.", "Notes cannot be removed: it is fixed base.", "笔记不能移除：它是固定基础。"] },
+        vista: window.MimoBloqueNotasVista, css: "notas.css",
+        montar: window.MimoBloqueNotas && MimoBloqueNotas.montar,
+        desmontar: window.MimoBloqueNotas && MimoBloqueNotas.desmontar,
+        pintar: window.MimoBloqueNotas && MimoBloqueNotas.pintar },
       { id: "ajustes", nombre: "Ajustes", tipo: "seccion", fija: true, orden: 999,
         origen: "nativo", naturaleza: "base", icono: "i-ajustes", tags: ["ajustes", "temas"],
+        detalle: { resumen: ["Apariencia, idioma, datos y extensiones.", "Appearance, language, data and extensions.", "外观、语言、数据和扩展。"],
+          queHace: [["Temas claros y oscuros.", "Light and dark themes.", "浅色和深色主题。"], ["Idioma y navegación.", "Language and navigation.", "语言和导航。"], ["Respaldo, sync y catálogo.", "Backup, sync and catalog.", "备份、同步和目录。"]],
+          datos: ["prefs", "tema"], notas: ["Ajustes vive en el shell; no es un bloque instalable.", "Settings lives in the shell; it is not installable.", "设置位于外壳；不是可安装模块。"] },
         pintar: pintarAjustes }
     ].forEach(function (m) {
       try { MimoRegistro.registrar(m); } catch (e) { if (window.console) console.error(e); }
@@ -317,8 +156,12 @@
         MimoRegistro.registrar({
           id: id, nombre: b.nombre, tipo: b.tipo, origen: b.origen,
           naturaleza: b.naturaleza, tags: b.tags, icono: b.icono, desc: b.desc,
-          fija: false, oculto: id === "evaluaciones", orden: 40 + i * 10,
-          instala: b.instala || [], pintar: pintores[id] || null
+          fija: false, oculto: false, orden: 40 + i * 10,
+          instala: b.instala || [], pintar: pintores[id] || null, detalle: DETALLES[id] || null,
+          vista: window["MimoBloque" + id.charAt(0).toUpperCase() + id.slice(1) + "Vista"] || "",
+          css: id + ".css",
+          montar: window["MimoBloque" + id.charAt(0).toUpperCase() + id.slice(1)] && window["MimoBloque" + id.charAt(0).toUpperCase() + id.slice(1)].montar,
+          desmontar: window["MimoBloque" + id.charAt(0).toUpperCase() + id.slice(1)] && window["MimoBloque" + id.charAt(0).toUpperCase() + id.slice(1)].desmontar
         });
       } catch (e) { if (window.console) console.error(e); }
     });
@@ -375,6 +218,8 @@
         if (x && typeof x === "object") {
           Object.keys(d).forEach(function (k) { if (x[k] !== undefined) d[k] = x[k]; });
           if (!Array.isArray(d.instalados)) d.instalados = [];
+          // `evaluaciones` se retiró del producto y del kit: se desvincula de estados viejos.
+          d.instalados = d.instalados.filter(function (x) { return x !== "evaluaciones"; });
           if (!Array.isArray(d.tareas)) d.tareas = [];
           if (!Array.isArray(d.notas)) d.notas = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
@@ -391,6 +236,11 @@
           if (!d.prefs.temaOscuro) d.prefs.temaOscuro = "deepsea";
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
+          Object.keys(d.kits).forEach(function (k) {
+            if (!Array.isArray(d.kits[k])) { delete d.kits[k]; return; }
+            d.kits[k] = d.kits[k].filter(function (x) { return x !== "evaluaciones"; });
+          });
+          delete d.kits.evaluaciones;
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
         }
       } else {
@@ -401,8 +251,6 @@
   }
   var estado = leer();
   var pantalla = "calendario";
-  var notaBusqueda = "";
-  var notaModo = "editar";
   var vistaTareas = estado.vistaTareas || "hoy";
   var vistaCalendario = estado.vistaCalendario || "mes";
   var calCursor = new Date();
@@ -544,31 +392,20 @@
 
   /* ---- acciones: menú de clic derecho + borrado en toda la app ---- */
   var menuAcciones = {};
+  var menuAbiertoEn = 0;
 
   function notaPorId(id) {
-    return estado.notas.filter(function (n) { return n.id === id; })[0] || null;
+    return window.MimoBloqueNotas ? MimoBloqueNotas.porId(id) : null;
   }
   function crearNota() {
-    var n = {
-      id: "n" + Date.now(), titulo: "Sin título", cuerpo: "", contexto: "", etiquetas: [],
-      enlaces: [], fijada: false, actualizado: selloLocal()
-    };
-    estado.notas.unshift(n);
-    estado.notaSel = n.id;
-    guardar(); pintarNotas(); pintarPanel();
-    $("#nota-titulo").focus(); $("#nota-titulo").select();
+    return window.MimoBloqueNotas ? MimoBloqueNotas.crear() : null;
   }
   function crearTarea(tipo) {
     abrirFormulario(null);
     if (tipo === "proyecto") $("#tarea-tipo").value = "proyecto";
   }
   function abrirNota(id) {
-    if (!notaPorId(id)) return;
-    estado.notaSel = id;
-    estado.panel.notas = "detalle";
-    guardar();
-    if (pantalla !== "notas") ir("notas"); else { pintarNotas(); pintarPanel(); }
-    if (window.innerWidth <= 1255) abrirPanel();
+    if (window.MimoBloqueNotas) MimoBloqueNotas.abrir(id);
   }
   function abrirTarea(id) {
     if (!tareaPorId(id)) return;
@@ -597,17 +434,7 @@
     $("#evento-titulo").focus();
   }
   function borrarNota(id) {
-    var n = notaPorId(id); if (!n) return;
-    var tituloN = !n.titulo || n.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : n.titulo;
-    if (!window.confirm(L("¿Borrar la nota \"" + tituloN + "\"?", "Delete the note \"" + tituloN + "\"?", "删除笔记“" + tituloN + "”？"))) return;
-    var copia = Object.assign({}, n), pos = estado.notas.map(function (x) { return x.id; }).indexOf(id);
-    estado.notas = estado.notas.filter(function (x) { return x.id !== id; });
-    if (estado.notaSel === id) estado.notaSel = estado.notas.length ? estado.notas[0].id : null;
-    guardar(); pintarNotas(); pintarPanel();
-    aviso(L("Nota borrada.", "Note deleted.", "笔记已删除。"), function () {
-      estado.notas.splice(Math.max(0, Math.min(pos, estado.notas.length)), 0, copia);
-      estado.notaSel = copia.id; guardar(); pintarNotas(); pintarPanel(); aviso(L("Nota restaurada.", "Note restored.", "笔记已恢复。"));
-    });
+    if (window.MimoBloqueNotas) MimoBloqueNotas.borrar(id);
   }
   function borrarPeriodo(id) {
     var p = (estado.periodos || []).filter(function (x) { return x.id === id; })[0];
@@ -630,10 +457,11 @@
     var s = lista[idx]; if (!s) return;
     if (!window.confirm(L("¿Borrar la sesión de " + fmtDuracion(s.minutos) + " del " + s.fecha + "?", "Delete the " + fmtDuracion(s.minutos) + " session on " + s.fecha + "?", "删除 " + s.fecha + " 的 " + fmtDuracion(s.minutos) + " 会话？"))) return;
     var copia = Object.assign({}, s);
-    lista.splice(idx, 1);
+    estado.sesiones = window.MimoDominioSesiones ? MimoDominioSesiones.borrar(estado.sesiones, s.id) : lista.filter(function (x) { return x.id !== s.id; });
     guardar(); pintarTiempo(); refrescarEstudio();
     aviso(L("Sesión borrada.", "Session deleted.", "会话已删除。"), function () {
-      lista.splice(Math.max(0, Math.min(idx, lista.length)), 0, copia);
+      estado.sesiones.splice(Math.max(0, Math.min(idx, estado.sesiones.length)), 0, copia);
+      if (window.MimoEventos) MimoEventos.emitir("sesiones.creada", copia);
       guardar(); pintarTiempo(); refrescarEstudio(); aviso(L("Sesión restaurada.", "Session restored.", "会话已恢复。"));
     });
   }
@@ -665,10 +493,19 @@
     if (!s) return;
     var minutos = Math.min(1440, parseDuracion($("#sesion-duracion").value));
     if (!minutos) { aviso(L("La duración no puede quedar en cero.", "Duration cannot be zero.", "时长不能为零。")); return; }
-    s.fecha = $("#sesion-fecha").value || s.fecha || hoyISO();
-    s.minutos = Math.round(minutos * 100) / 100;
-    s.ramo = $("#sesion-ramo").value || "";
-    s.hora = $("#sesion-hora").value || "";
+    if (window.MimoDominioSesiones) {
+      MimoDominioSesiones.actualizar(s, {
+        fecha: $("#sesion-fecha").value || s.fecha || hoyISO(),
+        minutos: Math.round(minutos * 100) / 100,
+        ramo: $("#sesion-ramo").value || "",
+        hora: $("#sesion-hora").value || ""
+      });
+    } else {
+      s.fecha = $("#sesion-fecha").value || s.fecha || hoyISO();
+      s.minutos = Math.round(minutos * 100) / 100;
+      s.ramo = $("#sesion-ramo").value || "";
+      s.hora = $("#sesion-hora").value || "";
+    }
     guardar(); cerrarSesionModal(); pintarTiempo(); refrescarEstudio();
     aviso(L("Sesión corregida: ", "Session updated: ", "会话已修正：") + fmtDuracion(s.minutos) + ".");
   }
@@ -815,6 +652,7 @@
     });
     m.innerHTML = html;
     m.hidden = false;
+    menuAbiertoEn = Date.now();
     m.style.left = "0px"; m.style.top = "0px";
     var r = m.getBoundingClientRect();
     m.style.left = Math.max(8, Math.min(x, window.innerWidth - r.width - 8)) + "px";
@@ -843,8 +681,7 @@
       malla: ["Cursos, niveles y prerrequisitos.", "Courses, levels and prerequisites.", "课程、层级和先修要求。"],
       calificaciones: ["Categorías, examen y eximición.", "Categories, exam and exemption.", "分类、考试和免考。"],
       estudio: ["Horas por ramo y metas.", "Hours per course and goals.", "按课程小时和目标。"],
-      evaluaciones: ["Aporta evaluaciones al calendario.", "Adds assessments to the calendar.", "将评估添加到日历。"],
-      academics: ["Kit: Malla, Calificaciones, Estudio y Evaluaciones.", "Kit: plan, grades, study and assessments.", "套件：规划、成绩、学习和评估。"]
+      academics: ["Kit: Malla, Calificaciones y Estudio.", "Kit: plan, grades and study.", "套件：规划、成绩和学习。"]
     }[id];
     return m ? L(m[0], m[1], m[2]) : (BLOQUES[id] ? BLOQUES[id].desc : L("Sección base.", "Base section.", "基础分区。"));
   }
@@ -942,6 +779,67 @@
     pintarAjustes();
   }
 
+  var montajes = {};
+  function cargarCSSBloque(b) {
+    if (!b || !b.css) return;
+    var href = b.css.charAt(0) === "/" ? b.css : "css/bloques/" + b.css;
+    if ($('link[data-bloque-css="' + href + '"]')) return;
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute("data-bloque-css", href);
+    document.head.appendChild(link);
+  }
+  function contextoRuntime() {
+    var ctx = {
+      $: $, $$: $$, esc: esc, L: L, t: t, tf: tf, tr: tr, icono: icono,
+      guardar: guardar, aviso: aviso, ir: ir, pintarTabs: pintarTabs,
+      pintarPanel: pintarPanel, pintarPanelDe: pintarPanelDe, ctxDe: ctxDe,
+      abrirPanel: abrirPanel, cerrarPanel: cerrarPanel, selloLocal: selloLocal,
+      conservar: conservar, localeActual: localeActual,
+      normalizarEventos: normalizarEventos, normalizarTareas: normalizarTareas,
+      normalizarCursos: normalizarCursos, normalizarCalifs: normalizarCalifs,
+      normalizarEstudio: normalizarEstudio, normalizarNotas: function () { return normalizarNotas(); },
+      eventoPorId: eventoPorId, eventosTodos: eventosTodos, eventosDe: eventosDe,
+      tareaPorId: tareaPorId, ramoPorCodigo: ramoPorCodigo, califDe: califDe,
+      abrirNota: function (id) { return abrirNota(id); },
+      abrirTarea: function (id) { return abrirTarea(id); },
+      abrirEventoDetalle: function (id) { return abrirEventoDetalle(id); },
+      abrirFormulario: function (t, p) { return abrirFormulario(t, p); },
+      abrirFormularioRamo: function (c) { return abrirFormularioRamo(c); },
+      bindMalla: bindMalla, bindCalificaciones: bindCalificaciones,
+      bindEstudio: bindEstudio, bindTiempo: bindTiempo,
+      comprobarAlarmas: comprobarAlarmas,
+      limpiarTiempo: function () { if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; } }
+    };
+    Object.defineProperty(ctx, "estado", { get: function () { return estado; }, enumerable: true });
+    Object.defineProperty(ctx, "pantalla", { get: function () { return pantalla; }, enumerable: true });
+    Object.defineProperty(ctx, "splitOn", { get: function () { return splitOn; }, enumerable: true });
+    return ctx;
+  }
+  function montarHost(id) {
+    if (montajes[id]) return true;
+    var b = window.MimoRegistro && MimoRegistro.obtener(id);
+    if (!b) return false;
+    var sec = seccionEl(id);
+    if (!sec) {
+      if (!b.vista) return false;
+      sec = document.createElement("section");
+      sec.className = "seccion";
+      sec.setAttribute("data-pantalla", id);
+      sec.id = "p-" + id;
+      sec.hidden = true;
+      sec.setAttribute("data-dinamica", "1");
+      sec.innerHTML = typeof b.vista === "function" ? b.vista() : b.vista;
+      $("#contenido").appendChild(sec);
+    }
+    cargarCSSBloque(b);
+    if (b.montar) {
+      MimoRegistro.montar(id, sec, contextoRuntime());
+    }
+    montajes[id] = true;
+    return true;
+  }
   function mostrarPaneles() {
     $$(".seccion[data-pantalla]").forEach(function (s) {
       var sid = s.getAttribute("data-pantalla");
@@ -955,6 +853,7 @@
     if (ctx === pantalla) pintarPanel(); else pintarPanelEn(ctx);
   }
   function pintarSeccion(id) {
+    montarHost(id);
     if (window.MimoRegistro && MimoRegistro.pintar(id)) return;
     if (id === "calendario") pintarCalendario();
     else if (id === "tareas") pintarTareas();
@@ -967,6 +866,7 @@
   }
   function ir(id) {
     if (secciones().indexOf(id) === -1) return;
+    montarHost(id);
     if (splitOn && Date.now() < splitNavHasta) {
       if (id === estado.splitSeccion) {
         pintarSeccion(id);
@@ -1430,6 +1330,9 @@
     var c = String(cod || "").trim().toUpperCase();
     return (estado.cursos || []).filter(function (x) { return x.codigo === c; })[0] || null;
   }
+  function notificarCurso(c) {
+    if (c && window.MimoDominioCursos) MimoDominioCursos.actualizar(c, {});
+  }
   function creditosDe(c) { return Number(c.creditos) || 0; }
   function etiquetaNivel(n) { return Number(n) === 99 ? L("Electivos", "Electives", "选修") : L("Nivel ", "Level ", "层级 ") + n; }
   function etiquetaEstado(e) {
@@ -1678,6 +1581,7 @@
       if (!window.confirm(pregunta)) return;
       c.cerrado = true; c.aprobado = true; c.resultado = "aprobado";
       c.notaCierre = null; c.cerradoEn = selloLocal(); c.enCurso = false;
+      notificarCurso(c);
       guardar(); pintarMalla(); pintarPanel();
       aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
       return;
@@ -1695,6 +1599,7 @@
     if (!window.confirm(L("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) + "? Quedará " + res.toUpperCase() + ".", "Close \"" + c.codigo + " — " + c.nombre + "\" with a final grade of " + fmtNota(nf) + "? It will be " + res.toUpperCase() + ".", "以 " + fmtNota(nf) + " 的最终成绩关闭“" + c.codigo + " — " + c.nombre + "”？结果将为 " + res.toUpperCase() + "。"))) return;
     c.cerrado = true; c.aprobado = res === "aprobado"; c.resultado = res;
     c.notaCierre = Math.round(nf * 10) / 10; c.cerradoEn = selloLocal(); c.enCurso = false;
+    notificarCurso(c);
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
     aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
   }
@@ -1703,6 +1608,7 @@
     if (!window.confirm(L("¿Reabrir \"" + c.codigo + " — " + c.nombre + "\"? Dejará de contar como " + (c.aprobado ? "aprobado" : "reprobado") + " y volverá a en curso.", "Reopen \"" + c.codigo + " — " + c.nombre + "\"? It will stop counting as " + (c.aprobado ? "passed" : "failed") + " and return to in progress.", "重新打开“" + c.codigo + " — " + c.nombre + "”？它将不再计为" + (c.aprobado ? "已通过" : "未通过") + "，并回到进行中。"))) return;
     c.cerrado = false; c.aprobado = false; c.resultado = "";
     c.notaCierre = null; c.cerradoEn = ""; c.enCurso = true;
+    notificarCurso(c);
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
     aviso(L("Curso reabierto. Sus notas siguen ahí.", "Course reopened. Its grades are still there.", "课程已重新打开。成绩仍然保留。"));
   }
@@ -1733,12 +1639,14 @@
         (x.requisitos_o || []).some(function (g) { return g.indexOf(cod) !== -1; });
     }).length;
     if (!window.confirm(L("¿Borrar \"" + c.codigo + " — " + c.nombre + "\"? Sus calificaciones se conservan como historial." + (dependientes ? " Se quitará de los requisitos de " + dependientes + " ramo(s)." : ""), "Delete \"" + c.codigo + " — " + c.nombre + "\"? Its grades are kept as history." + (dependientes ? " It will be removed from the prerequisites of " + dependientes + " course(s)." : ""), "删除“" + c.codigo + " — " + c.nombre + "”？其成绩将作为历史保留。" + (dependientes ? " 它将从 " + dependientes + " 门课程的先修要求中移除。" : "")))) return;
-    estado.cursos = estado.cursos.filter(function (x) { return x.codigo !== cod; });
+    estado.cursos = window.MimoDominioCursos ? MimoDominioCursos.borrar(estado.cursos, cod) :
+      estado.cursos.filter(function (x) { return x.codigo !== cod; });
     estado.cursos.forEach(function (x) {
       x.requisitos = (x.requisitos || []).filter(function (r) { return r !== cod; });
       x.requisitos_o = (x.requisitos_o || []).map(function (g) {
         return g.filter(function (r) { return r !== cod; });
       }).filter(function (g) { return g.length; });
+      notificarCurso(x);
     });
     if (estado.ramoSel === cod) estado.ramoSel = null;
     guardar(); pintarMalla(); pintarPanel(); aviso(L("Ramo borrado.", "Course deleted.", "课程已删除。"));
@@ -1966,8 +1874,8 @@
     n.prefs.idioma = (idi === "en" || idi === "zh") ? idi : "es";
     // Un respaldo académico trae datos de Malla, Calificaciones y Estudio: se instalan sus
     // bloques para que se vean al abrir, sin pedirle al usuario que adivine el catálogo.
-    n.instalados = ["tiempo", "malla", "calificaciones", "estudio", "evaluaciones"];
-    n.kits = { academics: ["malla", "calificaciones", "estudio", "evaluaciones"] };
+    n.instalados = ["tiempo", "malla", "calificaciones", "estudio"];
+    n.kits = { academics: ["malla", "calificaciones", "estudio"] };
     return n;
   }
 
@@ -2549,240 +2457,18 @@
     if (pantalla === "estudio") pintarPanel();
   }
   function normalizarNotas() {
-    estado.notas = (estado.notas || []).map(function (n, i) {
-      return conservar({
-        id: n.id || "n" + i,
-        titulo: n.titulo || "Sin título",
-        cuerpo: n.cuerpo || "",
-        contexto: n.contexto || "",
-        etiquetas: Array.isArray(n.etiquetas) ? n.etiquetas : (n.tags || []),
-        enlaces: Array.isArray(n.enlaces) ? n.enlaces : [],
-        fijada: !!n.fijada,
-        actualizado: n.actualizado || ""
-      }, n);
-    });
+    if (window.MimoBloqueNotas) MimoBloqueNotas.normalizarEstado(estado);
   }
   function notaActual() {
-    return estado.notas.filter(function (n) { return n.id === estado.notaSel; })[0] || null;
-  }
-  function marcaInline(txt) {
-    var s = esc(txt);
-    s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
-    s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    return s;
-  }
-  function renderMathHTML(html) {
-    if (typeof window.renderMathInElement !== "function") return html;
-    var cont = document.createElement("div");
-    cont.innerHTML = html;
-    try {
-      window.renderMathInElement(cont, {
-        delimiters: [
-          { left: "$$", right: "$$", display: true },
-          { left: "\\[", right: "\\]", display: true },
-          { left: "$", right: "$", display: false },
-          { left: "\\(", right: "\\)", display: false }
-        ],
-        throwOnError: false,
-        errorColor: "#b91c1c",
-        ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
-      });
-    } catch (e) { /* si KaTeX falla, la nota sigue en texto plano */ }
-    return cont.innerHTML;
-  }
-  function renderMarkdownBasico(txt) {
-    var guardados = [];
-    var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
-      guardados.push(m);
-      return "@@MATH" + (guardados.length - 1) + "@@";
-    });
-    var lineas = fuente.split("\n"), out = [], lista = false;
-    function cerrar() { if (lista) { out.push("</ul>"); lista = false; } }
-    lineas.forEach(function (l) {
-      var t = l.trim();
-      if (!t) { cerrar(); return; }
-      if (/^###\s+/.test(t)) { cerrar(); out.push("<h3>" + marcaInline(t.slice(4)) + "</h3>"); return; }
-      if (/^##\s+/.test(t)) { cerrar(); out.push("<h2>" + marcaInline(t.slice(3)) + "</h2>"); return; }
-      if (/^#\s+/.test(t)) { cerrar(); out.push("<h1>" + marcaInline(t.slice(2)) + "</h1>"); return; }
-      if (/^[-*]\s+\[[ xX]\]\s+/.test(t)) {
-        if (!lista) { out.push("<ul>"); lista = true; }
-        var m = t.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/);
-        out.push('<li class="check-item"><input type="checkbox" disabled ' + (m[1].toLowerCase() === "x" ? "checked" : "") + "> " + marcaInline(m[2]) + "</li>");
-        return;
-      }
-      if (/^[-*]\s+/.test(t)) {
-        if (!lista) { out.push("<ul>"); lista = true; }
-        out.push("<li>" + marcaInline(t.slice(2)) + "</li>");
-        return;
-      }
-      cerrar();
-      out.push("<p>" + marcaInline(t) + "</p>");
-    });
-    cerrar();
-    var html = out.join("").replace(/@@MATH(\d+)@@/g, function (_, i) {
-      return esc(guardados[parseInt(i, 10)] || "");
-    });
-    return renderMathHTML(html);
-  }
-  function renderMarkdown(txt) {
-    if (!window.marked || !window.DOMPurify) return renderMarkdownBasico(txt);
-    var guardados = [];
-    var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
-      guardados.push(m);
-      return "@@MATH" + (guardados.length - 1) + "@@";
-    });
-    fuente = fuente.replace(/^([ \t]*)([-*+])\s+\[([ xX])\]\s+(.+)$/gm, function (_, ind, bullet, ch, texto) {
-      return ind + bullet + ' <input type="checkbox" disabled' + (ch.toLowerCase() === "x" ? " checked" : "") + "> " + texto;
-    });
-    var renderer = new marked.Renderer();
-    renderer.link = function (href, title, text) {
-      var h = String(href || "").trim();
-      if (!/^(https?:\/\/|mailto:|#)/i.test(h)) h = "#";
-      return '<a href="' + esc(h) + '" target="_blank" rel="noopener noreferrer"' +
-        (title ? ' title="' + esc(title) + '"' : "") + ">" + text + "</a>";
-    };
-    var html;
-    try {
-      html = marked.parse(fuente, { gfm: true, breaks: false, headerIds: false, mangle: false, renderer: renderer });
-    } catch (e) {
-      return renderMarkdownBasico(txt);
-    }
-    html = DOMPurify.sanitize(html, {
-      ADD_ATTR: ["target", "rel", "checked", "disabled", "type", "class"],
-      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|data:image\/)|#|\/|\.{1,2}\/|[^:]*$)/i
-    });
-    html = html.replace(/@@MATH(\d+)@@/g, function (_, i) {
-      return esc(guardados[parseInt(i, 10)] || "");
-    });
-    return renderMathHTML(html);
-  }
-  function pintarNotasLista(destino, conClick) {
-    var cont = $(destino);
-    if (!cont) return;
-    var q = notaBusqueda.toLowerCase();
-    var vis = estado.notas.filter(function (n) {
-      return !q || (n.titulo + " " + n.cuerpo + " " + n.contexto + " " + n.etiquetas.join(" ")).toLowerCase().indexOf(q) !== -1;
-    }).sort(function (a, b) { return (b.fijada ? 1 : 0) - (a.fijada ? 1 : 0); });
-    cont.innerHTML = vis.map(function (n) {
-      return '<button class="nota-item' + (n.id === estado.notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '" title="' + esc(t("cal.clicDerecho")) + '"><b>' +
-        (n.fijada ? "★ " : "") + esc(!n.titulo || n.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : n.titulo) + "</b><small>" +
-        esc((n.cuerpo || "").slice(0, 70) || L("Vacía", "Empty", "空白")) + (n.contexto ? " · " + esc(n.contexto) : "") + "</small></button>";
-    }).join("");
-    if (conClick) {
-      $$(destino + " [data-nota]").forEach(function (b) {
-        b.addEventListener("click", function () {
-          var ctx = ctxDe(b);
-          estado.notaSel = b.getAttribute("data-nota");
-          estado.panel[ctx] = "detalle";
-          guardar(); pintarNotas(); pintarPanelDe(ctx);
-        });
-      });
-    }
-  }
-  function notaVinculoActual(n) {
-    return n && n.enlaces && n.enlaces[0] ? n.enlaces[0].tipo + ":" + n.enlaces[0].id : "";
-  }
-  function aplicarFormato(tipo) {
-    var ta = $("#nota-cuerpo");
-    if (!ta || ta.disabled || !notaActual()) return;
-    var ini = ta.selectionStart, fin = ta.selectionEnd, val = ta.value, sel = val.slice(ini, fin);
-    function cambiar(a, b, texto, cIni, cFin) {
-      ta.value = val.slice(0, a) + texto + val.slice(b);
-      ta.focus();
-      ta.setSelectionRange(cIni, cFin);
-      ta.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    var par = { negrita: ["**", "**"], cursiva: ["*", "*"], subrayado: ["<u>", "</u>"], tachado: ["~~", "~~"] }[tipo];
-    if (par) {
-      var pre = par[0], post = par[1];
-      if (sel.length >= pre.length + post.length && sel.indexOf(pre) === 0 && sel.slice(-post.length) === post) {
-        var dentro = sel.slice(pre.length, sel.length - post.length);
-        cambiar(ini, fin, dentro, ini, ini + dentro.length);
-      } else {
-        var texto = sel || L("texto", "text", "文本");
-        cambiar(ini, fin, pre + texto + post, ini + pre.length, ini + pre.length + texto.length);
-      }
-      return;
-    }
-    if (tipo === "codigo") {
-      if (sel.indexOf("\n") !== -1) {
-        var bloque = "```\n" + sel + "\n```";
-        cambiar(ini, fin, bloque, ini + 4, ini + 4 + sel.length);
-      } else {
-        var cod = sel || L("código", "code", "代码");
-        cambiar(ini, fin, "`" + cod + "`", ini + 1, ini + 1 + cod.length);
-      }
-      return;
-    }
-    if (tipo === "h1" || tipo === "h2" || tipo === "h3") {
-      var marca = { h1: "# ", h2: "## ", h3: "### " }[tipo];
-      var linea = val.lastIndexOf("\n", ini - 1) + 1;
-      if (val.slice(linea, linea + marca.length) === marca) {
-        cambiar(linea, linea + marca.length, "", Math.max(linea, ini - marca.length), Math.max(linea, fin - marca.length));
-      } else {
-        cambiar(linea, linea, marca, ini + marca.length, fin + marca.length);
-      }
-      return;
-    }
-    if (tipo === "cita" || tipo === "lista" || tipo === "tarea") {
-      var pref = tipo === "cita" ? "> " : tipo === "tarea" ? "- [ ] " : "- ";
-      var desde = val.lastIndexOf("\n", ini - 1) + 1;
-      var hasta = fin;
-      if (desde === hasta) { hasta = val.indexOf("\n", fin); if (hasta < 0) hasta = val.length; }
-      var lineas = val.slice(desde, hasta).split("\n").map(function (l) {
-        return l.indexOf(pref) === 0 ? l.slice(pref.length) : pref + l;
-      });
-      var nuevo = lineas.join("\n");
-      cambiar(desde, hasta, nuevo, desde, desde + nuevo.length);
-      return;
-    }
-    if (tipo === "tabla") {
-      var col = L("Columna", "Column", "列"), celda = L("Texto", "Text", "文本");
-      var tabla = "| " + col + " | " + col + " |\n| --- | --- |\n| " + celda + " | " + celda + " |\n";
-      cambiar(ini, fin, tabla, ini + tabla.length, ini + tabla.length);
-    }
+    return window.MimoBloqueNotas ? MimoBloqueNotas.actual() : null;
   }
   function pintarNotas() {
-    normalizarNotas();
-    pintarNotasLista("#notas-items", true);
-    pintarNotasLista("#notas-lista-b", true);
-    $("#notas-vacio").hidden = estado.notas.length > 0;
-    var n = notaActual();
-    $("#nota-titulo").disabled = !n;
-    $("#nota-cuerpo").disabled = !n;
-    $("#nota-contexto").disabled = !n;
-    $("#nota-etiquetas").disabled = !n;
-    $("#nota-vinculo").disabled = !n;
-    $("#nota-modo").disabled = !n;
-    $("#nota-fijar").disabled = !n;
-    $("#btn-borrar-nota").disabled = !n;
-    $("#nota-formato").hidden = !n || notaModo === "preview";
-    $$("#nota-formato [data-formato]").forEach(function (b) { b.disabled = !n; });
-    $("#nota-titulo").value = n ? n.titulo : "";
-    $("#nota-cuerpo").value = n ? n.cuerpo : "";
-    $("#nota-contexto").value = n ? n.contexto : "";
-    $("#nota-etiquetas").value = n ? n.etiquetas.join(", ") : "";
-    $("#nota-fijar").textContent = n && n.fijada ? L("Fijada", "Pinned", "已置顶") : L("Fijar", "Pin", "置顶");
-    $("#nota-fijar").setAttribute("aria-pressed", n && n.fijada ? "true" : "false");
-    var sel = $("#nota-vinculo");
-    var ops = ['<option value="">' + esc(L("Enlazar a…", "Link to…", "链接到…")) + '</option>'];
-    estado.tareas.forEach(function (t) { ops.push('<option value="tarea:' + t.id + '">' + esc(L("Tarea", "Task", "任务")) + " · " + esc(t.titulo) + "</option>"); });
-    estado.eventos.forEach(function (e) { ops.push('<option value="evento:' + e.id + '">' + esc(L("Evento", "Event", "事件")) + " · " + esc(e.titulo) + "</option>"); });
-    sel.innerHTML = ops.join("");
-    sel.value = n ? notaVinculoActual(n) : "";
-    $("#nota-modo").textContent = notaModo === "preview" ? L("Editar", "Edit", "编辑") : L("Vista previa", "Preview", "预览");
-    $("#nota-cuerpo").hidden = notaModo === "preview";
-    $("#nota-preview").hidden = notaModo !== "preview";
-    $("#nota-preview").innerHTML = notaModo === "preview" && n ? renderMarkdown(n.cuerpo) : "";
-    $("#nota-meta").textContent = n ? L("Guardada en este equipo · ", "Saved on this device · ", "已保存到本设备 · ") + n.actualizado : L("Sin nota abierta.", "No note open.", "没有打开的笔记。");
+    if (window.MimoBloqueNotas) MimoBloqueNotas.pintar();
   }
 
   function nombreModo(id) {
-    var n = { crono: ["Cronómetro", "Stopwatch", "秒表"], temporizador: ["Temporizador", "Timer", "计时器"],
-      pomodoro: ["Pomodoro", "Pomodoro", "番茄钟"], alarmas: ["Alarmas", "Alarms", "闹钟"] }[id];
-    return n ? L(n[0], n[1], n[2]) : id;
+    var h = (window.MimoTiempoHijos || []).filter(function (x) { return x.id === id; })[0];
+    return h ? L(h.nombre[0], h.nombre[1], h.nombre[2]) : id;
   }
   function duracionPomo() {
     var p = estado.pomo || {};
@@ -3607,6 +3293,7 @@
   }
   function cerrarModal() { $("#modal").classList.remove("on"); }
   function cerrarCapaSuperior() {
+    if ($("#modal-bloque") && $("#modal-bloque").classList.contains("on")) { cerrarDetalleBloque(); return true; }
     if ($("#modal-historial").classList.contains("on")) { cerrarHistorial(); return true; }
     if ($("#modal-sync-conflict").classList.contains("on")) { $("#sync-conf-cancelar").click(); return true; }
     if ($("#modal-split").classList.contains("on")) { cerrarSplitModal(); return true; }
@@ -3620,8 +3307,9 @@
     return false;
   }
   function estaKit(id) {
-    var b = BLOQUES[id];
-    return b && b.tipo === "pack" && b.instala.every(instalado);
+    var b = window.MimoRegistro ? MimoRegistro.obtener(id) : null;
+    if (!b || b.tipo !== "pack") return false;
+    return b.instala.every(instalado);
   }
   function origenNombre(id) {
     var o = ORIGENES[id];
@@ -3641,21 +3329,20 @@
     return s;
   }
   function catalogoItems() {
-    var out = BASE.map(function (id) {
-      var m = BASE_META[id] || { origen: "nativo", naturaleza: "base", tags: [] };
-      return {
-        id: id, fija: true, tipo: "base", origen: m.origen, naturaleza: m.naturaleza,
-        tags: m.tags || [], nombre: nombre(id), desc: descripcionBase(id)
-      };
-    });
-    Object.keys(BLOQUES).forEach(function (id) {
-      var b = BLOQUES[id];
-      if (id === "evaluaciones" || b.oculto) return;
+    var out = [];
+    var reg = window.MimoRegistro;
+    var lista = reg ? reg.visibles() : [];
+    lista.forEach(function (b) {
+      if (b.tipo === "hijo") return;
+      if (b.tipo === "pack" && b.oculto) return;
+      var fija = !!b.fija;
       out.push({
-        id: id, fija: false, tipo: b.tipo,
+        id: b.id, fija: fija, tipo: fija ? "base" : b.tipo,
         origen: b.origen || (b.tipo === "pack" ? "kit" : "nativo"),
         naturaleza: b.naturaleza || "aporte", tags: b.tags || [],
-        nombre: nombre(id), desc: descripcionBloque(id)
+        nombre: nombre(b.id),
+        desc: fija ? descripcionBase(b.id) : descripcionBloque(b.id),
+        detalle: b.detalle || null, version: b.version || "1.0.0"
       });
     });
     return out;
@@ -3701,7 +3388,8 @@
     }).join("");
     var pie = '<span>' + esc(it.fija ? L("base fija", "fixed base", "固定基础") : "v1.0") + "</span>" + accion;
     return '<article class="bcard" data-bloque="' + esc(it.id) + '" data-origen="' + esc(it.origen) +
-      '" data-naturaleza="' + esc(it.naturaleza) + '">' +
+      '" data-naturaleza="' + esc(it.naturaleza) + '" data-abrir-bloque="' + esc(it.id) +
+      '" role="button" tabindex="0" aria-label="' + esc(it.nombre) + '">' +
       '<div class="bcard__nom">' + esc(it.nombre) + " " + pills + "</div>" +
       '<div class="bcard__desc">' + esc(it.desc) + "</div>" +
       '<div class="bcard__tags">' + tags + "</div>" +
@@ -3729,7 +3417,8 @@
       x.addEventListener("click", function () { quitar(x.getAttribute("data-quitar")); });
     });
     $$("#catalogo [data-tag]").forEach(function (x) {
-      x.addEventListener("click", function () {
+      x.addEventListener("click", function (e) {
+        e.stopPropagation();
         var t = x.getAttribute("data-tag");
         estado.prefs.catalogoTag = estado.prefs.catalogoTag === t ? "" : t;
         guardar(); pintarCatalogo();
@@ -3737,6 +3426,65 @@
         if (foco) foco.focus();
       });
     });
+    $$("#catalogo [data-abrir-bloque]").forEach(function (card) {
+      function abrir(e) {
+        if (e.target.closest("[data-instalar], [data-quitar], [data-tag]")) return;
+        abrirDetalleBloque(card.getAttribute("data-abrir-bloque"), card);
+      }
+      card.addEventListener("click", abrir);
+      card.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(e); }
+      });
+    });
+  }
+  var focoBloque = null;
+  function trio(v) {
+    return Array.isArray(v) ? L(v[0] || "", v[1] || v[0] || "", v[2] || v[0] || "") : String(v || "");
+  }
+  function listaDetalle(v) {
+    return "<ul>" + (v || []).map(function (x) {
+      return "<li>" + esc(trio(x)) + "</li>";
+    }).join("") + "</ul>";
+  }
+  function abrirDetalleBloque(id, origen) {
+    var b = window.MimoRegistro && MimoRegistro.obtener(id);
+    if (!b) return;
+    focoBloque = origen || null;
+    var it = catalogoItems().filter(function (x) { return x.id === id; })[0] || {};
+    var d = b.detalle || {};
+    $("#modal-bloque-tit").textContent = it.nombre || b.nombre;
+    $("#modal-bloque-sub").textContent = origenNombre(b.origen) + " · " + naturalezaDe(b.naturaleza) + " · v" + (b.version || "1.0.0");
+    $("#modal-bloque-resumen").textContent = trio(d.resumen || it.desc || "");
+    var cuerpo = "";
+    if (d.queHace && d.queHace.length) cuerpo += "<h3>" + esc(L("Qué hace", "What it does", "功能")) + "</h3>" + listaDetalle(d.queHace);
+    if (d.datos && d.datos.length) cuerpo += "<h3>" + esc(L("Qué datos toca", "What data it touches", "涉及的数据")) + "</h3><p class=\"muted\">" +
+      esc(d.datos.map(function (x) { return String(x); }).join(" · ")) + "</p>";
+    if (d.notas) cuerpo += "<p class=\"muted\">" + esc(trio(d.notas)) + "</p>";
+    var accion = "";
+    if (b.fija) accion = '<span class="pill">' + esc(L("base fija", "fixed base", "固定基础")) + "</span>";
+    else {
+      var esta = b.tipo === "pack" ? estaKit(id) : instalado(id);
+      accion = '<button class="btn ' + (esta ? "btn-peligro" : "btn-primario") + '" type="button" data-mb-accion="' +
+        (esta ? "quitar" : "instalar") + '" data-mb-id="' + esc(id) + '">' +
+        esc(esta ? L("Quitar", "Remove", "移除") : L("Instalar", "Install", "安装")) + "</button>";
+    }
+    $("#modal-bloque-cuerpo").innerHTML = cuerpo;
+    $("#modal-bloque-acciones").innerHTML = accion;
+    $$("#modal-bloque-acciones [data-mb-accion]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var accion = btn.getAttribute("data-mb-accion"), bid = btn.getAttribute("data-mb-id");
+        cerrarDetalleBloque();
+        if (accion === "instalar") instalar(bid); else quitar(bid);
+      });
+    });
+    $("#modal-bloque").classList.add("on");
+    var cerrar = $("#modal-bloque-x"); if (cerrar) cerrar.focus();
+  }
+  function cerrarDetalleBloque() {
+    var m = $("#modal-bloque");
+    if (m) m.classList.remove("on");
+    var f = focoBloque; focoBloque = null;
+    if (f && f.focus) f.focus();
   }
   function pintarCatalogo() {
     var items = catalogoItems();
@@ -3792,33 +3540,59 @@
     }
     pintarTarjetas(items);
   }
-  function instalar(id) {
-    var b = BLOQUES[id];
-    if (!b) return;
-    if (b.tipo === "pack") {
-      var faltan = b.instala.filter(function (h) { return !instalado(h); });
-      faltan.forEach(function (h) { estado.instalados.push(h); });
-      estado.kits[id] = (estado.kits[id] || []).concat(faltan);
-      aviso(faltan.length ? nombre(id) + ": " + faltan.length + " " + L("bloque(s) agregado(s).", "block(s) added.", "个模块已添加。") : nombre(id) + " " + L("ya estaba completo.", "was already complete.", "已经完整。"));
-    } else if (!instalado(id)) {
+  function agregarInstalable(id, nuevos) {
+    var b = window.MimoRegistro && MimoRegistro.obtener(id);
+    if (!b || b.tipo === "hijo") return;
+    (b.requiere || []).forEach(function (r) { agregarInstalable(r, nuevos); });
+    if (b.fija) return;
+    if (!instalado(id)) {
       estado.instalados.push(id);
-      aviso(nombre(id) + " " + L("instalado. Aparece en la barra.", "installed. It appears in the bar.", "已安装，会出现在栏中。"));
+      nuevos.push(id);
     }
+  }
+  function instalar(id) {
+    var b = window.MimoRegistro ? MimoRegistro.obtener(id) : null;
+    if (!b) return;
+    var nuevos = [];
+    if (b.tipo === "pack") {
+      b.instala.forEach(function (h) { agregarInstalable(h, nuevos); });
+      if (nuevos.length) estado.kits[id] = (estado.kits[id] || []).concat(nuevos);
+    } else {
+      agregarInstalable(id, nuevos);
+    }
+    nuevos.forEach(montarHost);
     guardar(); pintarTabs(); pintarCatalogo(); pintarPanel();
     if (secciones().indexOf(pantalla) !== -1) pintarSeccion(pantalla);
-    if (b.tipo === "seccion") ir(id);
+    if (b.tipo === "seccion" && instalado(id)) ir(id);
+    aviso(nuevos.length
+      ? nombre(id) + ": " + nuevos.length + " " + L("bloque(s) agregado(s).", "block(s) added.", "个模块已添加。")
+      : nombre(id) + " " + L("ya estaba completo.", "was already complete.", "已经完整。"));
   }
   function quitar(id) {
     var m = window.MimoRegistro && MimoRegistro.obtener(id);
-    if (m && m.fija) {
+    if (!m) return;
+    if (m.fija) {
       aviso(L("Ese bloque es base fija y no se quita.", "That block is fixed base and cannot be removed.", "该模块是固定基础，不能移除。"));
       return;
     }
-    var b = BLOQUES[id];
-    if (!b) return;
-    var fuera = b.tipo === "pack" ? (estado.kits[id] || []) : [id];
+    var fuera = m.tipo === "pack" ? (estado.kits[id] || []).slice() : [id];
+    var permiso = MimoRegistro.puedeQuitar(id, estado.instalados);
+    if (permiso.dependientes && permiso.dependientes.length) {
+      if (!window.confirm(L("Estos bloques dependen de " + nombre(id) + ": " + permiso.dependientes.join(", ") + ". ¿Quitarlos también?", "These blocks depend on " + nombre(id) + ": " + permiso.dependientes.join(", ") + ". Remove them too?", "这些模块依赖 " + nombre(id) + "：" + permiso.dependientes.join(", ") + "。也要移除吗？"))) return;
+      permiso.dependientes.forEach(function (d) { fuera.push(d); });
+    }
     estado.instalados = estado.instalados.filter(function (x) { return fuera.indexOf(x) === -1; });
-    if (b.tipo === "pack") delete estado.kits[id];
+    if (m.tipo === "pack") delete estado.kits[id];
+    fuera.forEach(function (x) {
+      MimoRegistro.desmontar(x);
+      delete montajes[x];
+      var sec = seccionEl(x);
+      if (sec && sec.getAttribute("data-dinamica")) {
+        var link = document.querySelector('link[data-bloque-css]');
+        sec.parentNode.removeChild(sec);
+        if (link && link.getAttribute("data-bloque-css").indexOf("/" + x + ".css") !== -1) link.parentNode.removeChild(link);
+      }
+    });
     guardar(); pintarTabs(); pintarCatalogo(); pintarPanel();
     if (secciones().indexOf(pantalla) !== -1) pintarSeccion(pantalla);
     if (fuera.indexOf(pantalla) !== -1) ir("calendario");
@@ -3952,6 +3726,165 @@
       setTimeout(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 350);
     }
   }
+  function bindMalla() {
+    $("#btn-nuevo-ramo").addEventListener("click", function () { abrirFormularioRamo(null); });
+    $("#malla-crear").addEventListener("click", function () { abrirFormularioRamo(null); });
+    $("#ramo-cancelar").addEventListener("click", cerrarFormularioRamo);
+    $("#btn-importar-malla").addEventListener("click", function () { $("#archivo-malla").click(); });
+    $("#malla-importar-vacio").addEventListener("click", function () { $("#archivo-malla").click(); });
+    $("#btn-exportar-malla").addEventListener("click", exportarMalla);
+    $("#btn-editar-carrera").addEventListener("click", function () {
+      var c = estado.carrera || {};
+      $("#carrera-titulo").value = c.titulo || "";
+      $("#carrera-universidad").value = c.universidad || "";
+      $("#carrera-pais").value = c.pais || "";
+      $("#carrera-form").hidden = false;
+      $("#carrera-titulo").focus();
+    });
+    $("#carrera-cancelar").addEventListener("click", function () { $("#carrera-form").hidden = true; });
+    $("#carrera-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      estado.carrera = {
+        titulo: $("#carrera-titulo").value.trim(),
+        universidad: $("#carrera-universidad").value.trim(),
+        pais: $("#carrera-pais").value.trim()
+      };
+      guardar(); $("#carrera-form").hidden = true; pintarMalla();
+      aviso(L("Datos de la carrera guardados.", "Degree details saved.", "学位信息已保存。"));
+    });
+    $("#archivo-malla").addEventListener("change", function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      importarMalla(f); e.target.value = "";
+    });
+    $("#malla-buscar").addEventListener("input", function (e) { mallaBusqueda = e.target.value; pintarMalla(); });
+    $("#malla-filtro").addEventListener("change", function (e) { mallaFiltro = e.target.value; pintarMalla(); });
+    $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
+    $("#malla-quitar-sel").addEventListener("click", limpiarSeleccionMalla);
+    $("#ramo-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var cod = $("#ramo-codigo").value.trim().toUpperCase();
+      var nombre = $("#ramo-nombre").value.trim();
+      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
+      normalizarCursos();
+      var original = formRamoId ? ramoPorCodigo(formRamoId) : null;
+      var choque = ramoPorCodigo(cod);
+      if (choque && (!original || choque.codigo !== original.codigo)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
+      var reqs = $("#ramo-requisitos").value.split(/[,;]+/).map(function (r) {
+        return r.trim().toUpperCase();
+      }).filter(function (r) { return r && r !== cod; });
+      reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
+      if (original && original.codigo !== cod) {
+        var viejo = original.codigo;
+        estado.cursos.forEach(function (x) {
+          x.requisitos = x.requisitos.map(function (r) { return r === viejo ? cod : r; });
+          x.requisitos_o = (x.requisitos_o || []).map(function (g) {
+            return g.map(function (r) { return r === viejo ? cod : r; });
+          });
+        });
+        if (estado.ramoSel === viejo) estado.ramoSel = cod;
+        if (estado.califSel === viejo) estado.califSel = cod;
+        if (estado.califs && estado.califs[viejo]) { estado.califs[cod] = estado.califs[viejo]; delete estado.califs[viejo]; }
+        original.codigo = cod;
+      }
+      var c = original || { codigo: cod };
+      c.nombre = nombre;
+      c.creditos = Math.max(0, parseInt($("#ramo-creditos").value, 10) || 0);
+      c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
+      c.requisitos = reqs;
+      c.requisitos_o = c.requisitos_o || [];
+      c.color = hexColor($("#ramo-color").value) || "";
+      var aprobado = $("#ramo-aprobado").checked;
+      var enCurso = $("#ramo-curso").checked && !aprobado;
+      var cerrado = aprobado || (!!original && original.cerrado && !original.aprobado && !enCurso);
+      c.cerrado = cerrado;
+      c.aprobado = cerrado && aprobado;
+      c.resultado = cerrado ? (c.aprobado ? "aprobado" : "reprobado") : "";
+      c.notaCierre = cerrado ? (original ? original.notaCierre : null) : null;
+      c.cerradoEn = cerrado ? (original && original.cerradoEn ? original.cerradoEn : selloLocal()) : "";
+      c.enCurso = enCurso;
+      if (!original) estado.cursos.push(c);
+      notificarCurso(c);
+      estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
+      guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel();
+      aviso(original ? "Ramo guardado." : "Ramo creado.");
+    });
+
+  }
+  function bindCalificaciones() {
+    $("#btn-calif-malla").addEventListener("click", function () { ir("malla"); });
+    $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
+    $("#calif-curso-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var cod = String($("#calif-curso-codigo").value || "").trim().toUpperCase();
+      var nombre = String($("#calif-curso-nombre").value || "").trim();
+      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
+      normalizarCursos();
+      if (ramoPorCodigo(cod)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
+      var nuevo = window.MimoDominioCursos ? MimoDominioCursos.crear({ codigo: cod, nombre: nombre }) : { codigo: cod, nombre: nombre, creditos: 0, nivel: 1 };
+      if (!nuevo) { aviso(L("No se pudo crear el curso.", "Could not create the course.", "无法创建课程。")); return; }
+      nuevo.enCurso = true;
+      estado.cursos.push(nuevo);
+      califSel = nuevo.codigo; estado.califSel = califSel; estado.ramoSel = califSel;
+      estado.panel.calificaciones = "detalle";
+      califDe(califSel);
+      guardar(); pintarCalificaciones(); pintarPanel();
+      $("#calif-curso-codigo").value = ""; $("#calif-curso-nombre").value = "";
+      aviso(L("Curso creado. Ya puedes cargar sus notas.", "Course created. You can now enter its grades.", "课程已创建。现在可以录入成绩。"));
+    });
+    $("#calif-lista").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-calif]"); if (!b) return;
+      califSel = b.getAttribute("data-calif"); estado.califSel = califSel;
+      estado.ramoSel = califSel; estado.panel.calificaciones = "detalle";
+      guardar(); pintarCalificaciones(); pintarPanel();
+      if (window.innerWidth <= 1255) abrirPanel();
+    });
+    $("#calif-detalle").addEventListener("change", cambioCalif);
+    $("#calif-detalle").addEventListener("click", accionCalif);
+
+  }
+  function bindEstudio() {
+    $("#btn-estudio-malla").addEventListener("click", function () { ir("malla"); });
+    $("#est-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      normalizarEstudio();
+      var fecha = $("#est-fecha").value || hoyISO();
+      var minutos = Math.min(1440, parseDuracion($("#est-minutos").value));
+      if (!minutos) { aviso(L("Escribe una duración: 90, 1:30 o 2:30:21.", "Enter a duration: 90, 1:30 or 2:30:21.", "输入时长：90、1:30 或 2:30:21。")); return; }
+      var sesion = { fecha: fecha, hora: "", minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "", tipo: "manual" };
+      estado.sesiones.push(window.MimoDominioSesiones ? MimoDominioSesiones.crear(sesion) : sesion);
+      guardar(); pintarEstudio(); pintarTiempo();
+      aviso(L("Sesión de ", "Session of ", "会话 ") + fmtDuracion(minutos) + L(" registrada.", " logged.", " 已记录。"));
+    });
+    $("#est-meta").addEventListener("change", function (e) {
+      normalizarEstudio(); estado.estudio.metaSemanal = Math.max(0, Number(e.target.value) || 0);
+      guardar(); pintarEstudio();
+    });
+    $("#est-tabla").addEventListener("change", function (e) {
+      var el = e.target.closest("[data-est-meta-ramo]"); if (!el) return;
+      normalizarEstudio();
+      estado.estudio.metasRamo[el.getAttribute("data-est-meta-ramo")] = Math.max(0, Number(el.value) || 0);
+      guardar(); pintarEstudio();
+    });
+    $("#est-metas-semana").addEventListener("change", function (e) {
+      var el = e.target.closest("[data-est-meta-semana]"); if (!el) return;
+      normalizarEstudio();
+      estado.estudio.metasSemana[el.getAttribute("data-est-meta-semana")] = Math.max(0, Number(el.value) || 0);
+      guardar(); pintarEstudio();
+    });
+    $("#est-sesiones").addEventListener("click", function (e) {
+      var be = e.target.closest("[data-editar-estudio]");
+      if (be) { abrirSesionModal(be.getAttribute("data-editar-estudio")); return; }
+      var b = e.target.closest("[data-borrar-estudio]"); if (!b) return;
+      borrarSesion(b.getAttribute("data-borrar-estudio"));
+    });
+  }
+  function bindTiempo() {
+    $("#btn-empezar").addEventListener("click", empezarTiempo);
+    $("#btn-pausar").addEventListener("click", pausarTiempo);
+    $("#btn-parar").addEventListener("click", pararTiempo);
+    $("#btn-reiniciar").addEventListener("click", reiniciarTiempo);
+  }
+
   async function init() {
     registrarFuenteCalendario("calificaciones", fuenteCalificaciones);
     // La app nativa trae tutorial.json junto al frontend. Solo se carga cuando no hay
@@ -3971,6 +3904,9 @@
         }
       } catch (e) {}
     }
+    // Monta el host de cada bloque antes de enlazar eventos. El HTML de un bloque
+    // vive en su carpeta y se inyecta aquí; las secciones siguen pintándose al entrar.
+    secciones().forEach(montarHost);
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
@@ -4133,6 +4069,8 @@
     $("#pie-ayuda").addEventListener("click", function () { aviso(L("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10.", "Right-click a note, task, event, term or session to open its actions and delete. Shift+F10 also works.", "右键点击笔记、任务、事件、学期或会话可打开操作并删除。也可按 Shift+F10。")); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });
+    $("#modal-bloque-x").addEventListener("click", cerrarDetalleBloque);
+    $("#modal-bloque").addEventListener("click", function (e) { if (e.target === $("#modal-bloque")) cerrarDetalleBloque(); });
 
     $("#menu-ctx").addEventListener("click", function (e) {
       var b = e.target.closest("[data-accion]");
@@ -4170,7 +4108,11 @@
       e.preventDefault();
       menuPorTeclado(el);
     });
-    window.addEventListener("scroll", cerrarMenu, true);
+    window.addEventListener("scroll", function () {
+      // El clic derecho puede desplazar la sección antes de abrir el menú; no lo
+      // cerramos por ese desplazamiento inmediato.
+      if (Date.now() - menuAbiertoEn > 150) cerrarMenu();
+    }, true);
     window.addEventListener("resize", cerrarMenu);
     $$(".panel__tab").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -4224,210 +4166,6 @@
       guardar(); pintarTareas(); pintarPanel();
       aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
     });
-    $("#btn-nuevo-ramo").addEventListener("click", function () { abrirFormularioRamo(null); });
-    $("#malla-crear").addEventListener("click", function () { abrirFormularioRamo(null); });
-    $("#ramo-cancelar").addEventListener("click", cerrarFormularioRamo);
-    $("#btn-importar-malla").addEventListener("click", function () { $("#archivo-malla").click(); });
-    $("#malla-importar-vacio").addEventListener("click", function () { $("#archivo-malla").click(); });
-    $("#btn-exportar-malla").addEventListener("click", exportarMalla);
-    $("#btn-editar-carrera").addEventListener("click", function () {
-      var c = estado.carrera || {};
-      $("#carrera-titulo").value = c.titulo || "";
-      $("#carrera-universidad").value = c.universidad || "";
-      $("#carrera-pais").value = c.pais || "";
-      $("#carrera-form").hidden = false;
-      $("#carrera-titulo").focus();
-    });
-    $("#carrera-cancelar").addEventListener("click", function () { $("#carrera-form").hidden = true; });
-    $("#carrera-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      estado.carrera = {
-        titulo: $("#carrera-titulo").value.trim(),
-        universidad: $("#carrera-universidad").value.trim(),
-        pais: $("#carrera-pais").value.trim()
-      };
-      guardar(); $("#carrera-form").hidden = true; pintarMalla();
-      aviso(L("Datos de la carrera guardados.", "Degree details saved.", "学位信息已保存。"));
-    });
-    $("#archivo-malla").addEventListener("change", function (e) {
-      var f = e.target.files[0]; if (!f) return;
-      importarMalla(f); e.target.value = "";
-    });
-    $("#malla-buscar").addEventListener("input", function (e) { mallaBusqueda = e.target.value; pintarMalla(); });
-    $("#malla-filtro").addEventListener("change", function (e) { mallaFiltro = e.target.value; pintarMalla(); });
-    $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
-    $("#malla-quitar-sel").addEventListener("click", limpiarSeleccionMalla);
-    $("#btn-calif-malla").addEventListener("click", function () { ir("malla"); });
-    $("#btn-estudio-malla").addEventListener("click", function () { ir("malla"); });
-    $("#est-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      normalizarEstudio();
-      var fecha = $("#est-fecha").value || hoyISO();
-      var minutos = Math.min(1440, parseDuracion($("#est-minutos").value));
-      if (!minutos) { aviso(L("Escribe una duración: 90, 1:30 o 2:30:21.", "Enter a duration: 90, 1:30 or 2:30:21.", "输入时长：90、1:30 或 2:30:21。")); return; }
-      estado.sesiones.push({
-        id: "s" + Date.now() + "-" + Math.floor(Math.random() * 1000),
-        fecha: fecha, hora: "", minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "", tipo: "manual"
-      });
-      guardar(); pintarEstudio(); pintarTiempo();
-      aviso(L("Sesión de ", "Session of ", "会话 ") + fmtDuracion(minutos) + L(" registrada.", " logged.", " 已记录。"));
-    });
-    $("#est-meta").addEventListener("change", function (e) {
-      normalizarEstudio(); estado.estudio.metaSemanal = Math.max(0, Number(e.target.value) || 0);
-      guardar(); pintarEstudio();
-    });
-    $("#est-tabla").addEventListener("change", function (e) {
-      var el = e.target.closest("[data-est-meta-ramo]"); if (!el) return;
-      normalizarEstudio();
-      estado.estudio.metasRamo[el.getAttribute("data-est-meta-ramo")] = Math.max(0, Number(el.value) || 0);
-      guardar(); pintarEstudio();
-    });
-    $("#est-metas-semana").addEventListener("change", function (e) {
-      var el = e.target.closest("[data-est-meta-semana]"); if (!el) return;
-      normalizarEstudio();
-      estado.estudio.metasSemana[el.getAttribute("data-est-meta-semana")] = Math.max(0, Number(el.value) || 0);
-      guardar(); pintarEstudio();
-    });
-    $("#est-sesiones").addEventListener("click", function (e) {
-      var be = e.target.closest("[data-editar-estudio]");
-      if (be) { abrirSesionModal(be.getAttribute("data-editar-estudio")); return; }
-      var b = e.target.closest("[data-borrar-estudio]"); if (!b) return;
-      borrarSesion(b.getAttribute("data-borrar-estudio"));
-    });
-    $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
-    $("#calif-curso-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var cod = String($("#calif-curso-codigo").value || "").trim().toUpperCase();
-      var nombre = String($("#calif-curso-nombre").value || "").trim();
-      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
-      normalizarCursos();
-      if (ramoPorCodigo(cod)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
-      var nuevo = window.MimoDominioCursos ? MimoDominioCursos.crear({ codigo: cod, nombre: nombre }) : { codigo: cod, nombre: nombre, creditos: 0, nivel: 1 };
-      if (!nuevo) { aviso(L("No se pudo crear el curso.", "Could not create the course.", "无法创建课程。")); return; }
-      nuevo.enCurso = true;
-      estado.cursos.push(nuevo);
-      califSel = nuevo.codigo; estado.califSel = califSel; estado.ramoSel = califSel;
-      estado.panel.calificaciones = "detalle";
-      califDe(califSel);
-      guardar(); pintarCalificaciones(); pintarPanel();
-      $("#calif-curso-codigo").value = ""; $("#calif-curso-nombre").value = "";
-      aviso(L("Curso creado. Ya puedes cargar sus notas.", "Course created. You can now enter its grades.", "课程已创建。现在可以录入成绩。"));
-    });
-    $("#calif-lista").addEventListener("click", function (e) {
-      var b = e.target.closest("[data-calif]"); if (!b) return;
-      califSel = b.getAttribute("data-calif"); estado.califSel = califSel;
-      estado.ramoSel = califSel; estado.panel.calificaciones = "detalle";
-      guardar(); pintarCalificaciones(); pintarPanel();
-      if (window.innerWidth <= 1255) abrirPanel();
-    });
-    $("#calif-detalle").addEventListener("change", cambioCalif);
-    $("#calif-detalle").addEventListener("click", accionCalif);
-
-    $("#ramo-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var cod = $("#ramo-codigo").value.trim().toUpperCase();
-      var nombre = $("#ramo-nombre").value.trim();
-      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
-      normalizarCursos();
-      var original = formRamoId ? ramoPorCodigo(formRamoId) : null;
-      var choque = ramoPorCodigo(cod);
-      if (choque && (!original || choque.codigo !== original.codigo)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
-      var reqs = $("#ramo-requisitos").value.split(/[,;]+/).map(function (r) {
-        return r.trim().toUpperCase();
-      }).filter(function (r) { return r && r !== cod; });
-      reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
-      if (original && original.codigo !== cod) {
-        var viejo = original.codigo;
-        estado.cursos.forEach(function (x) {
-          x.requisitos = x.requisitos.map(function (r) { return r === viejo ? cod : r; });
-          x.requisitos_o = (x.requisitos_o || []).map(function (g) {
-            return g.map(function (r) { return r === viejo ? cod : r; });
-          });
-        });
-        if (estado.ramoSel === viejo) estado.ramoSel = cod;
-        if (estado.califSel === viejo) estado.califSel = cod;
-        if (estado.califs && estado.califs[viejo]) { estado.califs[cod] = estado.califs[viejo]; delete estado.califs[viejo]; }
-        original.codigo = cod;
-      }
-      var c = original || { codigo: cod };
-      c.nombre = nombre;
-      c.creditos = Math.max(0, parseInt($("#ramo-creditos").value, 10) || 0);
-      c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
-      c.requisitos = reqs;
-      c.requisitos_o = c.requisitos_o || [];
-      c.color = hexColor($("#ramo-color").value) || "";
-      var aprobado = $("#ramo-aprobado").checked;
-      var enCurso = $("#ramo-curso").checked && !aprobado;
-      var cerrado = aprobado || (!!original && original.cerrado && !original.aprobado && !enCurso);
-      c.cerrado = cerrado;
-      c.aprobado = cerrado && aprobado;
-      c.resultado = cerrado ? (c.aprobado ? "aprobado" : "reprobado") : "";
-      c.notaCierre = cerrado ? (original ? original.notaCierre : null) : null;
-      c.cerradoEn = cerrado ? (original && original.cerradoEn ? original.cerradoEn : selloLocal()) : "";
-      c.enCurso = enCurso;
-      if (!original) estado.cursos.push(c);
-      estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
-      guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel();
-      aviso(original ? "Ramo guardado." : "Ramo creado.");
-    });
-
-    $("#btn-nueva-nota").addEventListener("click", crearNota);
-    $("#btn-borrar-nota").addEventListener("click", function () {
-      if (estado.notaSel) borrarNota(estado.notaSel);
-    });
-    $("#buscar-nota").addEventListener("input", function (e) {
-      notaBusqueda = e.target.value; pintarNotasLista("#notas-items", true);
-    });
-    $("#nota-titulo").addEventListener("input", function (e) {
-      var n = notaActual(); if (!n) return;
-      n.titulo = e.target.value;
-      n.actualizado = selloLocal();
-      guardar();
-    });
-    $("#nota-titulo").addEventListener("change", function () {
-      pintarNotasLista("#notas-items", true); pintarPanel();
-    });
-    $("#nota-cuerpo").addEventListener("input", function (e) {
-      var n = notaActual(); if (!n) return;
-      n.cuerpo = e.target.value;
-      n.actualizado = selloLocal();
-      guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
-    });
-    $("#nota-cuerpo").addEventListener("keydown", function (e) {
-      if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
-      var atajo = { b: "negrita", i: "cursiva", u: "subrayado" }[String(e.key || "").toLowerCase()];
-      if (!atajo) return;
-      e.preventDefault();
-      aplicarFormato(atajo);
-    });
-    $$("#nota-formato [data-formato]").forEach(function (b) {
-      b.addEventListener("click", function () { aplicarFormato(b.getAttribute("data-formato")); });
-    });
-    $("#nota-modo").addEventListener("click", function () { notaModo = notaModo === "preview" ? "editar" : "preview"; pintarNotas(); });
-    $("#nota-fijar").addEventListener("click", function () {
-      var n = notaActual(); if (!n) return;
-      n.fijada = !n.fijada; guardar(); pintarNotas(); pintarPanel();
-    });
-    $("#nota-contexto").addEventListener("input", function (e) {
-      var n = notaActual(); if (!n) return; n.contexto = e.target.value; guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
-    });
-    $("#nota-etiquetas").addEventListener("input", function (e) {
-      var n = notaActual(); if (!n) return;
-      n.etiquetas = e.target.value.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
-      guardar(); pintarNotasLista("#notas-items", true); pintarPanel();
-    });
-    $("#nota-vinculo").addEventListener("change", function (e) {
-      var n = notaActual(); if (!n) return;
-      var v = e.target.value, tipo = v.split(":")[0], id = v.split(":")[1];
-      if (!v) { n.enlaces = []; }
-      else {
-        var titulo = "";
-        if (tipo === "tarea") { var t = tareaPorId(id); titulo = t ? t.titulo : ""; }
-        else { var ev = eventoPorId(id); titulo = ev ? ev.titulo : ""; }
-        n.enlaces = [{ tipo: tipo, id: id, titulo: titulo }];
-      }
-      guardar(); pintarNotas(); pintarPanel();
-    });
     $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
     $("#btn-periodo").addEventListener("click", abrirPeriodo);
     $("#sesion-x").addEventListener("click", cerrarSesionModal);
@@ -4474,10 +4212,6 @@
       }
       estado.splitSeccion = e.target.value; guardar(); pintarSplit();
     });
-    $("#btn-empezar").addEventListener("click", empezarTiempo);
-    $("#btn-pausar").addEventListener("click", pausarTiempo);
-    $("#btn-parar").addEventListener("click", pararTiempo);
-    $("#btn-reiniciar").addEventListener("click", reiniciarTiempo);
     $("#btn-buscar").addEventListener("click", abrirBusqueda);
     $("#buscar-x").addEventListener("click", cerrarBusqueda);
     $("#modal-buscar").addEventListener("click", function (e) { if (e.target === $("#modal-buscar")) cerrarBusqueda(); });
@@ -4563,7 +4297,6 @@
         cerrarModal(); cerrarPanel();
       }
     });
-    setInterval(comprobarAlarmas, 1000);
     window.addEventListener("resize", function () {
       if (window.innerWidth > 1255) document.body.classList.remove("panel-abierto");
       else document.body.classList.remove("panel-oculto");

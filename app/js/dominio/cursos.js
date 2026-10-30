@@ -13,6 +13,10 @@
 
   function codigo(v) { return String(v || "").trim().toUpperCase(); }
 
+  function emitir(nombre, dato) {
+    if (window.MimoEventos && MimoEventos.emitir) MimoEventos.emitir(nombre, dato);
+  }
+
   function normalizar(lista) {
     var vistos = {}, out = [];
     (Array.isArray(lista) ? lista : []).forEach(function (c) {
@@ -74,13 +78,37 @@
       tipo: datos.tipo, enMalla: datos.enMalla,
       color: datos.color, semestre: datos.semestre
     }])[0];
+    if (nuevo) emitir("cursos.creado", nuevo);
     return nuevo || null;
+  }
+
+  function actualizar(curso, datos) {
+    if (!curso) return null;
+    var d = datos || {};
+    ["nombre", "creditos", "nivel", "requisitos", "requisitos_o", "tipo", "enMalla",
+      "color", "semestre", "alias", "ficha", "extra"].forEach(function (k) {
+      if (d[k] !== undefined) curso[k] = d[k];
+    });
+    var normal = normalizar([curso])[0] || curso;
+    Object.keys(normal).forEach(function (k) { curso[k] = normal[k]; });
+    emitir("cursos.actualizado", curso);
+    return curso;
+  }
+
+  function borrar(lista, valor) {
+    var cod = codigo(valor);
+    var fuera = (Array.isArray(lista) ? lista : []).filter(function (c) { return c.codigo === cod; })[0] || null;
+    var out = (Array.isArray(lista) ? lista : []).filter(function (c) { return c.codigo !== cod; });
+    if (fuera) emitir("cursos.borrado", fuera);
+    return out;
   }
 
   window.MimoDominioCursos = {
     normalizar: normalizar,
     obtener: obtener,
     crear: crear,
+    actualizar: actualizar,
+    borrar: borrar,
     codigo: codigo
   };
 })();

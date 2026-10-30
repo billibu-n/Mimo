@@ -1,8 +1,9 @@
 # Esquema de datos de Mimo
 
-> **Beta.3 (R57):** `cursos` y `sesiones` tienen dominio compartido
-> (`app/js/dominio/`). Calificaciones ya no borra cursos ni copia eventos en
-> `estado.eventos`: los componentes con fecha se derivan en el calendario. El
+> **Beta.3 (R60):** `cursos` y `sesiones` tienen dominio compartido
+> (`app/js/dominio/`) y emiten eventos. Calificaciones ya no borra cursos ni copia
+> eventos en `estado.eventos`: los componentes con fecha se derivan en el
+> calendario. `evaluaciones` se eliminó y se limpia de los estados viejos. El
 > esquema de exportación sigue siendo el mismo.
 
 **Versión:** 1 · **App:** 1.2.0-beta.2 · **Módulo:** `app/js/esquema.js`
@@ -46,7 +47,7 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
     "tema": "clasico",
     "prefs": {"idioma": "es", "inicioSemana": "lunes", "hora": "24", "panelAncho": "320"},
     "instalados": ["tiempo", "malla", "calificaciones", "estudio"],
-    "kits": {"academics": ["malla", "calificaciones", "estudio", "evaluaciones"]},
+    "kits": {"academics": ["malla", "calificaciones", "estudio"]},
     "panel": {"calendario": "contexto"},
     "tareas": [], "notas": [], "eventos": [], "sesiones": [],
     "periodos": [], "periodoActivo": null,
