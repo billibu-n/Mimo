@@ -1,6 +1,6 @@
 pkgbase = mimo
 	pkgdesc = Organizador personal offline: calendario, tareas, notas, malla, estudio y tiempo
-	pkgver = 1.2.0beta.2
+	pkgver = 1.2.0beta.3
 	pkgrel = 1
 	url = https://github.com/billibu-n/Mimo
 	install = mimo.install
@@ -21,7 +21,7 @@ pkgbase = mimo
 	depends = at-spi2-atk
 	depends = librsvg
 	depends = hicolor-icon-theme
-	source = mimo-1.2.0beta.2.tar.gz::https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.2.tar.gz
+	source = mimo-1.2.0beta.3.tar.gz::https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.3.tar.gz
 	sha256sums = SKIP
 
 pkgname = mimo

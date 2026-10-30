@@ -13,11 +13,11 @@ makepkg -si
 ## Antes de publicar en AUR
 
 El `sha256sums` está en `SKIP` porque el tag todavía no existe. Cuando se publique
-`v1.2.0-beta.2`:
+`v1.2.0-beta.3`:
 
 ```bash
 cd packaging/arch
-URL="https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.2.tar.gz"
+URL="https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.3.tar.gz"
 SUMA=$(curl -L "$URL" | sha256sum | cut -d' ' -f1)
 sed -i "s/^sha256sums=.*/sha256sums=('$SUMA')/" PKGBUILD
 makepkg --printsrcinfo > .SRCINFO

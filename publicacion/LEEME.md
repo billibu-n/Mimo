@@ -1,20 +1,21 @@
-# Mimo 1.2.0-beta.2
+# Mimo 1.2.0-beta.3
 
 Mimo es un organizador personal de escritorio que funciona sin conexión: calendario, tareas,
 notas, malla, calificaciones, estudio y tiempo. No hay cuenta ni registro, y tus datos viven en
 tu equipo.
 
-Esta beta añade **Colaborar** en Ajustes, **color por ramo** (también en el calendario) y la
-**ficha de carrera** con título, universidad y país.
+Esta beta consolida los **bloques con carpeta y ciclo de vida propios**, el catálogo con ficha
+de detalle, el calendario en dos columnas y los selectores de cursos en curso. **Evaluaciones
+se eliminó**: ya no aparece en el catálogo ni en el kit Academics.
 
 ## Qué descargar
 
 | Sistema | Archivo |
 |---|---|
-| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.2-1.x86_64.rpm` |
-| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.2_amd64.deb` |
-| Arch Linux x86_64 | `mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst` |
-| Windows 10/11 x64 | `Mimo_1.2.0-beta.2_x64-setup.exe` |
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.3-1.x86_64.rpm` |
+| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.3_amd64.deb` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.3-1-x86_64.pkg.tar.zst` |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.3_x64-setup.exe` |
 
 También se incluyen `tutorial.json`, `LICENSE` y `SHA256SUMS`.
 
@@ -23,14 +24,14 @@ También se incluyen `tutorial.json`, `LICENSE` y `SHA256SUMS`.
 ### Fedora 40+ / RHEL 10+
 
 ```bash
-sudo dnf install ./Mimo-1.2.0-beta.2-1.x86_64.rpm
+sudo dnf install ./Mimo-1.2.0-beta.3-1.x86_64.rpm
 mimo
 ```
 
 ### Debian / Ubuntu
 
 ```bash
-sudo apt install ./Mimo_1.2.0-beta.2_amd64.deb
+sudo apt install ./Mimo_1.2.0-beta.3_amd64.deb
 mimo
 ```
 
@@ -39,13 +40,13 @@ En Debian 13 o Ubuntu 24.04 en adelante. `apt` resuelve las dependencias.
 ### Arch Linux
 
 ```bash
-sudo pacman -U ./mimo-1.2.0beta.2-1-x86_64.pkg.tar.zst
+sudo pacman -U ./mimo-1.2.0beta.3-1-x86_64.pkg.tar.zst
 mimo
 ```
 
 ### Windows 10/11 x64
 
-Ejecuta `Mimo_1.2.0-beta.2_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
+Ejecuta `Mimo_1.2.0-beta.3_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
 pide administrador. Si Windows no tiene WebView2, el instalador lo descarga y pide conexión una
 vez.
 
@@ -97,5 +98,6 @@ guarda una copia cifrada; la contraseña de cifrado no se guarda.
 - Los paquetes no están firmados; la integridad se comprueba con `SHA256SUMS`.
 - La sincronización con una cuenta real de Tab Digital todavía no se probó desde el binario.
 - macOS, iOS y Android no están preparados.
+- Los paquetes no están firmados; la integridad se comprueba con `SHA256SUMS`.
 
 El código, las pruebas y las instrucciones de compilación están en el repositorio. Licencia MIT.
