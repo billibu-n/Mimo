@@ -1631,12 +1631,17 @@
   function alternarRamo(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
     if (c.cerrado) { reabrirCurso(cod); return; }
-    var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
+    var conCalif = instalado("calificaciones");
+    var q = conCalif ? califDe(cod) : null;
+    var P = q ? presentacionDe(q) : null, nf = q ? notaFinalDe(q) : null;
     if (P === null) {
-      if (!window.confirm(L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？"))) return;
+      var pregunta = conCalif
+        ? L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？")
+        : L("Calificaciones no está instalado. ¿Cerrar \"" + c.codigo + "\" como aprobado manualmente?", "Grades is not installed. Close \"" + c.codigo + "\" as passed manually?", "成绩未安装。要手动将“" + c.codigo + "”关闭为通过吗？");
+      if (!window.confirm(pregunta)) return;
       c.cerrado = true; c.aprobado = true; c.resultado = "aprobado";
       c.notaCierre = null; c.cerradoEn = selloLocal(); c.enCurso = false;
-      guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+      guardar(); pintarMalla(); pintarPanel();
       aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
       return;
     }
@@ -3131,7 +3136,8 @@
           '<div class="panel__bloque"><span>' + esc(L("Nivel", "Level", "层级")) + '</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +
           (reqR ? '<div class="panel__bloque"><span>' + esc(L("Requiere", "Requires", "需要")) + '</span><small>' + esc(reqR) + "</small></div>" : "") +
           (faltanR.length ? '<h2>' + esc(L("Falta", "Missing", "缺少")) + '</h2><p class="panel__nota">' + esc(faltanR.join(", ")) + "</p>" : "") +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Calificaciones", "Grades", "成绩")) + '</button>' +
+          '<div class="fila" style="margin-top:10px">' +
+          (instalado("calificaciones") ? '<button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Calificaciones", "Grades", "成绩")) + '</button>' : "") +
           '<button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
           '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程")) + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';

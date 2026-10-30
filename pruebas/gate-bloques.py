@@ -122,6 +122,30 @@ def main() -> int:
             exigir(not errores, f"consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()
+
+    # Malla sola: cerrar un curso no debe inventar calificaciones.
+    with Navegador() as nav:
+        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        page.on("dialog", lambda d: d.accept())
+        try:
+            instalar(page, "malla")
+            page.locator("#btn-nuevo-ramo").click()
+            page.locator("#ramo-codigo").fill("MA1001")
+            page.locator("#ramo-nombre").fill("Cálculo I")
+            page.locator('#ramo-form button[type="submit"]').click()
+            page.wait_for_timeout(200)
+            exigir(page.locator('[data-abrir-calif]').count() == 0,
+                   "malla sola: no ofrece Calificaciones si no está", fallas)
+            page.locator("[data-toggle-ramo]").click()
+            page.wait_for_timeout(220)
+            califs = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).califs || {}")
+            exigir(len(califs) == 0,
+                   f"malla sola: cerrar no crea calificaciones — {califs}", fallas)
+            exigir("APROBADO" in page.locator('.ramo-card[data-ramo="MA1001"]').inner_text(),
+                   "malla sola: el cierre manual deja el ramo aprobado", fallas)
+            exigir(not errores, f"malla sola: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
     return salir("gate-bloques", fallas)
 
 
