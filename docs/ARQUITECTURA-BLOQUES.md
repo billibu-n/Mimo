@@ -3,7 +3,7 @@
 **Estado:** plan vivo. La rama ya tiene la primera implementación (registro, dominio de cursos/sesiones, independencia de Calificaciones y de Estudio).
 **Base:** `main` en `c71ebe3` (R47).
 **Rama:** `t/mimo-beta3-bloques`.
-**Último commit de código:** `d24cbd8` (R54).
+**Último commit de código:** `7a68ba0` (R57).
 **Fecha:** 2026-10-30.
 **Para quién:** el próximo agente que retome este trabajo, y el dueño del proyecto.
 
@@ -989,9 +989,11 @@ Objetivo: que la lista de bloques deje de estar hard-codeada, sin cambiar la UI.
   los hijos de Tiempo; apuntan a las funciones existentes (`pintarCalendario`, …).
 - [x] `secciones()` e `ir()` usan el registro; `pintarSeccion()` despacha por
   manifiesto y deja el `if` solo como respaldo.
-- [ ] Reemplazar del todo `BLOQUES`, `BASE`, `ORDEN`, `instalar()`, `quitar()`,
-  `nombre()`, `iconoDe()` y `descripcionBloque()` por lecturas del registro.
-- [ ] `init()` deja de llamar a todos los pintores; monta el bloque activo.
+- [x] `BLOQUES`, `BASE` y `ORDEN` se derivan del registro; `instalar()`/`quitar()`
+  siguen usándolos como vistas compatibles. `nombre()`/`iconoDe()` conservan el
+  diccionario de i18n.
+- [x] `init()` ya no pinta todos los bloques: pinta la sección activa y las demás
+  se montan al entrar.
 - [ ] `montar`/`desmontar` reales: hoy `pintar` es el ciclo de vida mínimo.
 - [x] `gate-bloques` cubre registro, base fija, Calificaciones sin Malla, Malla sin
   Calificaciones, Tiempo sin Estudio y Estudio sin Tiempo.
@@ -1068,7 +1070,7 @@ Objetivo: quitar las dependencias más duras.
 - [x] Calificaciones: `califs` propio; cursos desde dominio; no borra cursos.
 - [x] Estudio: `estudio` propio; sesiones desde dominio; cursos/periodos opcionales.
 - [x] `normalizarCalifs` deja de borrar; `borrarRamo` deja de borrar calificaciones.
-- [ ] Calificaciones sigue escribiendo `estado.eventos`; falta la fuente de calendario.
+- [x] Calificaciones ya no escribe `estado.eventos`; el calendario deriva sus componentes con fecha.
 - [ ] `dominio/cursos` y `dominio/sesiones` todavía no emiten eventos de dominio.
 
 **Gates:** `gate-malla`, `gate-calificaciones`, `gate-estudio`, `gate-datos`,
@@ -1121,7 +1123,12 @@ Hecho en la rama:
 - `app/js/dominio/cursos.js`: normalización, búsqueda y creación de cursos.
 - `app/js/dominio/sesiones.js`: normalización, creación, actualización y borrado.
 - `shell.js`: `secciones()` e `ir()` usan el registro; `pintarSeccion()` despacha
-  por manifiesto. `BLOQUES` sigue como fuente de metadatos y el HTML sigue estático.
+  por manifiesto. `BLOQUES`, `BASE` y `ORDEN` se derivan del registro y quedan como
+  vistas compatibles. El HTML sigue estático y `init()` ya pinta solo la sección
+  activa.
+- Calendario acepta fuentes. Calificaciones ya no copia eventos en `estado.eventos`:
+  los componentes con fecha se derivan en la agenda y el panel; al quitar
+  Calificaciones, dejan de mostrarse sin borrar datos.
 - Calificaciones se instala sola, crea un curso mínimo sin Malla y conserva los
   cursos al quitar Malla.
 - Malla puede cerrar un curso sin Calificaciones y no inventa `califs`; el botón
@@ -1133,10 +1140,10 @@ Hecho en la rama:
 
 Pendiente inmediato:
 
-- Reemplazar `BLOQUES`/`BASE`/`ORDEN` por el registro y quitar la duplicación.
-- `montar`/`desmontar` reales y `init()` perezoso; hoy `pintar` es el ciclo mínimo.
-- Mover HTML, CSS e i18n de cada bloque.
-- Fuentes de calendario para que Calificaciones no escriba `estado.eventos`.
+- `montar`/`desmontar` reales; hoy `pintar` es el ciclo mínimo y el HTML sigue
+  estático.
+- Mover HTML, CSS e i18n de cada bloque (Fase 2).
+- Emitir eventos de dominio desde `dominio/cursos` y `dominio/sesiones`.
 - Correr `gate-tauri` (33 medidas) después de compilar.
 
 Commits de esta sesión:
@@ -1150,6 +1157,9 @@ Commits de esta sesión:
 | `6e8bec7` | R52: Calificaciones sin Malla y `gate-bloques` |
 | `47699a0` | R53: base fija y sesiones sin Estudio |
 | `d24cbd8` | R54: Malla y Calificaciones opcionales entre sí |
+| `ad97900` | R55: estado de implementación |
+| `ca735ee` | R56: calendario por fuentes y `gate-arquitectura` |
+| `7a68ba0` | R57: montaje perezoso de la sección activa |
 
 ---
 

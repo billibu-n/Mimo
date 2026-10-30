@@ -1,5 +1,10 @@
 # Esquema de datos de Mimo
 
+> **Beta.3 (R57):** `cursos` y `sesiones` tienen dominio compartido
+> (`app/js/dominio/`). Calificaciones ya no borra cursos ni copia eventos en
+> `estado.eventos`: los componentes con fecha se derivan en el calendario. El
+> esquema de exportación sigue siendo el mismo.
+
 **Versión:** 1 · **App:** 1.2.0-beta.2 · **Módulo:** `app/js/esquema.js`
 
 La app guarda el estado vivo en `localStorage['mimo.shell.v1']`. Para moverlo entre equipos

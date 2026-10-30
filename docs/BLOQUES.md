@@ -1,5 +1,11 @@
 # Catálogo de bloques — contrato para la fase 2
 
+> **Estado beta.3 (R57):** la estructura real de bloques vive en
+> `app/js/nucleo/registro.js` (`MimoRegistro`). `BLOQUES` es una vista compatible
+> derivada del registro; la base Calendario/Tareas/Notas/Ajustes es fija y los
+> opcionales se montan al entrar. Este documento sigue siendo el contrato de la
+> ficha/detalle del catálogo, que aún no se implementó.
+
 **Estado:** filtros, tags y búsqueda implementados en R22; ficha presionable y ventana de
 detalle siguen pendientes. Este documento fija el motor para que la implementación no cambie
 el esquema de datos ni rompa los bloques existentes.
