@@ -604,6 +604,9 @@
       estado.periodos.push(copia); estado.periodoActivo = activo; guardar(); pintarPeriodo(); aviso(L("Periodo restaurado.", "Term restored.", "学期已恢复。"));
     });
   }
+  function refrescarEstudio() {
+    if (!window.MimoRegistro || instalado("estudio")) pintarEstudio();
+  }
   function borrarSesion(ref) {
     var lista = estado.sesiones || [];
     var idx = typeof ref === "number" ? ref : lista.map(function (s) { return s.id; }).indexOf(String(ref));
@@ -611,10 +614,10 @@
     if (!window.confirm(L("¿Borrar la sesión de " + fmtDuracion(s.minutos) + " del " + s.fecha + "?", "Delete the " + fmtDuracion(s.minutos) + " session on " + s.fecha + "?", "删除 " + s.fecha + " 的 " + fmtDuracion(s.minutos) + " 会话？"))) return;
     var copia = Object.assign({}, s);
     lista.splice(idx, 1);
-    guardar(); pintarTiempo(); pintarEstudio();
+    guardar(); pintarTiempo(); refrescarEstudio();
     aviso(L("Sesión borrada.", "Session deleted.", "会话已删除。"), function () {
       lista.splice(Math.max(0, Math.min(idx, lista.length)), 0, copia);
-      guardar(); pintarTiempo(); pintarEstudio(); aviso(L("Sesión restaurada.", "Session restored.", "会话已恢复。"));
+      guardar(); pintarTiempo(); refrescarEstudio(); aviso(L("Sesión restaurada.", "Session restored.", "会话已恢复。"));
     });
   }
   function duracionInput(min) {
@@ -649,7 +652,7 @@
     s.minutos = Math.round(minutos * 100) / 100;
     s.ramo = $("#sesion-ramo").value || "";
     s.hora = $("#sesion-hora").value || "";
-    guardar(); cerrarSesionModal(); pintarTiempo(); pintarEstudio();
+    guardar(); cerrarSesionModal(); pintarTiempo(); refrescarEstudio();
     aviso(L("Sesión corregida: ", "Session updated: ", "会话已修正：") + fmtDuracion(s.minutos) + ".");
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || L("Sin título", "Untitled", "无标题")); }
@@ -2979,7 +2982,7 @@
       minutos: minutos, vinculo: estado.tiempoVinculo || "", ramo: estado.tiempoRamo || "", tipo: tipo || "crono"
     };
     estado.sesiones.push(window.MimoDominioSesiones ? MimoDominioSesiones.crear(datos) : datos);
-    guardar(); pintarTiempo(); pintarEstudio();
+    guardar(); pintarTiempo(); refrescarEstudio();
   }
   function pitido() {
     try {
@@ -3760,6 +3763,11 @@
     if (b.tipo === "seccion") ir(id);
   }
   function quitar(id) {
+    var m = window.MimoRegistro && MimoRegistro.obtener(id);
+    if (m && m.fija) {
+      aviso(L("Ese bloque es base fija y no se quita.", "That block is fixed base and cannot be removed.", "该模块是固定基础，不能移除。"));
+      return;
+    }
     var b = BLOQUES[id];
     if (!b) return;
     var fuera = b.tipo === "pack" ? (estado.kits[id] || []) : [id];

@@ -88,6 +88,37 @@ def main() -> int:
                    "quitar Malla: Calificaciones conserva el curso", fallas)
             exigir(not page.locator("#calif-curso-form").is_visible(),
                    "quitar Malla: con cursos no muestra el formulario vacío", fallas)
+
+            # Tiempo solo: cronómetro y sesión sin Estudio.
+            instalar(page, "tiempo")
+            page.locator('#tabs .tab[data-ir="tiempo"]').click()
+            page.wait_for_timeout(120)
+            page.locator("#btn-empezar").click()
+            page.wait_for_timeout(1200)
+            page.locator("#btn-parar").click()
+            page.wait_for_timeout(200)
+            exigir(page.locator(".sesion-item").count() == 1,
+                   "tiempo solo: registra una sesión sin Estudio", fallas)
+            exigir(page.locator("#tiempo-sesiones").inner_text().strip() == "1",
+                   "tiempo solo: el contador de sesiones sube", fallas)
+
+            # Quitar Tiempo y usar Estudio solo: el formulario manual sigue.
+            abrir_catalogo(page)
+            page.locator('.bcard[data-bloque="tiempo"] [data-quitar]').click()
+            page.wait_for_timeout(180)
+            page.locator("#modal-x").click()
+            page.wait_for_timeout(100)
+            instalar(page, "estudio")
+            page.locator('#tabs .tab[data-ir="estudio"]').click()
+            page.wait_for_timeout(180)
+            exigir(page.locator("#est-form").is_visible(),
+                   "estudio solo: ofrece registrar una sesión manual", fallas)
+            page.locator("#est-minutos").fill("0:30")
+            page.locator('#est-form button[type="submit"]').click()
+            page.wait_for_timeout(220)
+            exigir(page.locator(".est-sesion").count() >= 1,
+                   "estudio solo: la sesión manual entra", fallas)
+
             exigir(not errores, f"consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()
