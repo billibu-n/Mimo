@@ -333,6 +333,23 @@
     });
     var fallas = MimoRegistro.validar();
     if (fallas.length && window.console) console.warn("MimoRegistro:", fallas);
+    // El registro es la fuente de estructura; BLOQUES/BASE/ORDEN quedan como
+    // vistas compatibles para el código que todavía los consulta.
+    var nuevo = {};
+    MimoRegistro.todos().forEach(function (b) {
+      if (b.tipo === "seccion" && b.fija) return;
+      nuevo[b.id] = {
+        nombre: b.nombre, tipo: b.tipo, origen: b.origen, naturaleza: b.naturaleza,
+        tags: b.tags, icono: b.icono, desc: b.desc, instala: b.instala, oculto: b.oculto
+      };
+    });
+    BLOQUES = nuevo;
+    BASE = MimoRegistro.base().map(function (b) { return b.id; });
+    BASE_META = {};
+    MimoRegistro.base().forEach(function (b) {
+      BASE_META[b.id] = { origen: b.origen, naturaleza: b.naturaleza, tags: b.tags };
+    });
+    ORDEN = MimoRegistro.opcionales().map(function (b) { return b.id; });
   }
   registrarManifiestos();
 
@@ -1052,9 +1069,29 @@
       }, e);
     });
   }
-  function eventoPorId(id) { return estado.eventos.filter(function (e) { return e.id === id; })[0] || null; }
+  var calendarioFuentes = {};
+  function registrarFuenteCalendario(id, fn) {
+    if (typeof fn === "function") calendarioFuentes[id] = fn;
+  }
+  function eventosBase() {
+    return (estado.eventos || []).filter(function (e) { return !/^calif-/.test(String(e.id || "")); });
+  }
+  function eventosFuente() {
+    var out = [];
+    Object.keys(calendarioFuentes).forEach(function (id) {
+      try {
+        var lista = calendarioFuentes[id]();
+        (Array.isArray(lista) ? lista : []).forEach(function (e) {
+          if (e && e.fecha) out.push(Object.assign({}, e, { origen: id }));
+        });
+      } catch (e) { if (window.console) console.warn("fuente de calendario " + id, e); }
+    });
+    return out;
+  }
+  function eventosTodos() { return eventosBase().concat(eventosFuente()); }
+  function eventoPorId(id) { return eventosTodos().filter(function (e) { return e.id === id; })[0] || null; }
   function eventosDe(fecha) {
-    return estado.eventos.filter(function (e) { return e.fecha === fecha; })
+    return eventosTodos().filter(function (e) { return e.fecha === fecha; })
       .sort(function (a, b) { return (a.hora || "99:99") < (b.hora || "99:99") ? -1 : 1; });
   }
   function isoFecha(f) {
@@ -1091,7 +1128,7 @@
     normalizarEventos();
     pintarContextosCursos();
     var hoy = new Date(), y = calCursor.getFullYear(), m = calCursor.getMonth();
-    var total = estado.eventos.length;
+    var total = eventosTodos().length;
     $("#kpi-eventos").textContent = String(total);
     $("#kpi-tareas").textContent = String(estado.tareas.filter(function (t) { return t.fecha; }).length);
     $$("#vista-calendario button").forEach(function (b) {
@@ -1102,7 +1139,7 @@
     grid.hidden = vistaCalendario === "agenda";
     var visibles = 0;
     if (vistaCalendario === "agenda") {
-      var orden = estado.eventos.slice().sort(function (a, b) {
+      var orden = eventosTodos().slice().sort(function (a, b) {
         return (a.fecha + " " + (a.hora || "")) < (b.fecha + " " + (b.hora || "")) ? -1 : 1;
       });
       visibles = orden.length;
@@ -2224,7 +2261,7 @@
       else if (el.hasAttribute("data-comp-cat")) q.componentes[ix].categoria = el.value;
       else if (el.hasAttribute("data-comp-nota")) q.componentes[ix].nota = notaNum(el.value);
       else q.componentes[ix].fecha = el.value;
-      sincronizarEventoComp(q, ix, false);
+      if (instalado("calendario") && (el.hasAttribute("data-comp-fecha") || el.hasAttribute("data-comp-nombre"))) pintarCalendario();
     } else if (el.hasAttribute("data-exam-activo")) q.examen.activo = el.checked;
     else if (el.hasAttribute("data-exam-peso")) q.examen.peso = Math.max(0, Math.min(100, Number(el.value) || 0));
     else if (el.hasAttribute("data-exam-nota")) q.examen.nota = notaNum(el.value);
@@ -2243,20 +2280,22 @@
     guardar(); pintarCalificaciones(); pintarPanel();
   }
   function eventoCompId(codigo, i) { return "calif-" + codigo + "-" + i; }
-  function sincronizarEventoComp(q, i, crear) {
-    var comp = q && q.componentes ? q.componentes[i] : null;
-    if (!comp) return;
-    var id = eventoCompId(califSel, i), ev = eventoPorId(id);
-    if (!comp.fecha) {
-      if (ev) estado.eventos = estado.eventos.filter(function (e) { return e.id !== id; });
-      return;
-    }
-    if (!ev && !crear) return;
-    if (!ev) { ev = { id: id, hora: "", nota: "" }; estado.eventos.push(ev); }
-    ev.titulo = comp.nombre + " · " + califSel;
-    ev.fecha = comp.fecha;
-    ev.contexto = "Calificaciones";
-    ev.nota = comp.categoria || "";
+  function fuenteCalificaciones() {
+    if (!instalado("calificaciones")) return [];
+    var out = [];
+    Object.keys(estado.califs || {}).forEach(function (cod) {
+      var q = estado.califs[cod];
+      if (!q || !Array.isArray(q.componentes)) return;
+      q.componentes.forEach(function (comp, i) {
+        if (!comp || !comp.fecha) return;
+        out.push({
+          id: eventoCompId(cod, i), titulo: comp.nombre + " · " + cod,
+          fecha: comp.fecha, hora: "", contexto: "Calificaciones",
+          nota: comp.categoria || "", codigo: cod, indice: i
+        });
+      });
+    });
+    return out;
   }
   function accionCalif(e) {
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
@@ -2267,8 +2306,7 @@
     if (accion === "comp-cal") {
       var comp = q.componentes[i];
       if (!comp || !comp.fecha) { aviso(L("Ponle una fecha al componente primero.", "Give the component a date first.", "请先给评分项设置日期。")); return; }
-      sincronizarEventoComp(q, i, true);
-      guardar(); pintarCalificaciones(); pintarCalendario();
+      guardar(); pintarCalificaciones(); if (instalado("calendario")) pintarCalendario();
       aviso(L("Componente pasado al calendario.", "Component sent to the calendar.", "评分项已发送到日历。"));
       return;
     }
@@ -2282,8 +2320,6 @@
       q.categorias.splice(i, 1);
       q.componentes.forEach(function (x) { if (x.categoria === nombre) x.categoria = q.categorias[0].nombre; });
     } else if (accion === "comp-quitar") {
-      var evId = eventoCompId(califSel, i);
-      estado.eventos = (estado.eventos || []).filter(function (e) { return e.id !== evId; });
       q.componentes.splice(i, 1);
       if (q.examen.reemplaza === i) q.examen.reemplaza = null;
       else if (q.examen.reemplaza > i) q.examen.reemplaza--;
@@ -3142,14 +3178,17 @@
           '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程")) + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
       } else if (pantalla === "calendario" && ev) {
+        var accionesEvento = ev.origen === "calificaciones"
+          ? '<p class="panel__nota">' + esc(L("Viene de Calificaciones. Se edita allí.", "It comes from Grades. Edit it there.", "来自成绩。请在成绩中编辑。")) + '</p>' +
+            '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ev.codigo || "") + '">' + esc(L("Abrir Calificaciones", "Open Grades", "打开成绩")) + "</button></div>"
+          : '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">' + esc(t("acc.editar")) + '</button>' +
+            '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">' + esc(t("acc.borrar")) + "</button></div>";
         html = "<h2>" + esc(t("panel.evento")) + "</h2><h3>" + esc(ev.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(ev.fecha) + "</small></div>" +
           (ev.hora ? '<div class="panel__bloque"><span>' + esc(t("panel.hora")) + '</span><small>' + esc(ev.hora) + "</small></div>" : "") +
           (ev.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
           (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
-          bloqueNotasEnlazadas("evento", ev.id) +
-          '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">' + esc(t("acc.editar")) + '</button>' +
-          '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">' + esc(t("acc.borrar")) + "</button></div>";
+          bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
       } else if (pantalla === "tareas" && tareaP) {
         var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
         html = "<h2>" + esc(t(tareaP.tipo === "proyecto" ? "panel.proyecto" : "panel.tarea")) + "</h2><h3>" + esc(tareaP.titulo) + "</h3>" +
@@ -3189,7 +3228,7 @@
         '<button class="btn panel__anadir" type="button" data-abrir-modal>' + esc(L("+ Agregar bloque o kit", "+ Add block or kit", "+ 添加模块或套件")) + '</button>';
     } else {
       var cuentas = {
-        calendario: [estado.eventos.length + " " + t(estado.eventos.length === 1 ? "cal.evento" : "cal.eventos"), estado.eventos.length ? t("panel.proximoEvento") : t("panel.sinEventos")],
+        calendario: [eventosTodos().length + " " + t(eventosTodos().length === 1 ? "cal.evento" : "cal.eventos"), eventosTodos().length ? t("panel.proximoEvento") : t("panel.sinEventos")],
         tareas: [estado.tareas.length + " " + L("tareas", "tasks", "任务"), estado.tareas.filter(function (x) { return !x.hecha; }).length + " " + L("abiertas", "open", "未完成")],
         notas: [estado.notas.length + " " + L("notas", "notes", "笔记"), L("Lista y editor en la misma sección.", "List and editor in the same section.", "列表和编辑器在同一分区。")],
         malla: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Cursos, niveles, prerrequisitos y créditos.", "Courses, levels, prerequisites and credits.", "课程、层级、先修要求和学分。")],
@@ -3766,6 +3805,7 @@
       aviso(nombre(id) + " " + L("instalado. Aparece en la barra.", "installed. It appears in the bar.", "已安装，会出现在栏中。"));
     }
     guardar(); pintarTabs(); pintarCatalogo(); pintarPanel();
+    if (secciones().indexOf(pantalla) !== -1) pintarSeccion(pantalla);
     if (b.tipo === "seccion") ir(id);
   }
   function quitar(id) {
@@ -3780,6 +3820,7 @@
     estado.instalados = estado.instalados.filter(function (x) { return fuera.indexOf(x) === -1; });
     if (b.tipo === "pack") delete estado.kits[id];
     guardar(); pintarTabs(); pintarCatalogo(); pintarPanel();
+    if (secciones().indexOf(pantalla) !== -1) pintarSeccion(pantalla);
     if (fuera.indexOf(pantalla) !== -1) ir("calendario");
     aviso(nombre(id) + " " + L("quitado. Tus datos se conservan.", "removed. Your data is preserved.", "已移除。你的数据保留。"));
   }
@@ -3912,6 +3953,7 @@
     }
   }
   async function init() {
+    registrarFuenteCalendario("calificaciones", fuenteCalificaciones);
     // La app nativa trae tutorial.json junto al frontend. Solo se carga cuando no hay
     // estado guardado (primer arranque o Restablecer de fábrica). En file:// se omite:
     // los gates abren el HTML directo y no deben depender de fetch.

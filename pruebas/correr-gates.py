@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-GATES = ("gate-shell.py", "gate-bloques.py", "gate-malla.py", "gate-calificaciones.py", "gate-estudio.py", "gate-tiempo.py", "gate-busqueda.py", "gate-sync.py", "gate-webdav.py", "gate-correcciones.py", "gate-ronda14.py", "gate-diseno.py", "gate-datos.py", "gate-idioma.py", "gate-esquema.py", "gate-tutorial.py")
+GATES = ("gate-shell.py", "gate-bloques.py", "gate-arquitectura.py", "gate-malla.py", "gate-calificaciones.py", "gate-estudio.py", "gate-tiempo.py", "gate-busqueda.py", "gate-sync.py", "gate-webdav.py", "gate-correcciones.py", "gate-ronda14.py", "gate-diseno.py", "gate-datos.py", "gate-idioma.py", "gate-esquema.py", "gate-tutorial.py")
 
 
 def main() -> int:

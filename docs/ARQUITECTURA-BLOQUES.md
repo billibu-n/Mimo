@@ -94,7 +94,7 @@ Interpretación de trabajo:
 | `app/css/base.css` + `tokens.css` | 229 líneas | Base y tokens compartidos |
 | `app/tutorial.json` | 242 líneas | Tutorial precargado; menciona bloques y kit |
 | Textos i18n | 447 claves | Un solo diccionario para toda la app |
-| Gates web | 16 | Todos abren `app/index.html` como `file://` |
+| Gates web | 17 | 16 de navegador + 1 estático |
 | Medidas Tauri | 33 | Binario release, tutorial, sync nativa, persistencia |
 
 Las secciones del HTML son:
@@ -372,7 +372,7 @@ Shadow DOM o iframe aislado.
 ### 4.9 Módulos ES: buenos, pero rompen los gates actuales
 
 Los módulos ES (`import`/`export`) son la forma nativa de dividir código, pero el
-navegador los carga con CORS y no funcionan desde `file://`. Los 16 gates abren
+navegador los carga con CORS y no funcionan desde `file://`. Los 16 gates de navegador abren
 `app/index.html` con `page.goto(file://…)`. Lo verifiqué en esta sesión: un
 `<script type="module">` desde `file://` falla con “blocked by CORS policy”.
 
@@ -875,7 +875,7 @@ Carga diferida:
 
 ### 5.10 Pruebas y “architecture fitness”
 
-Además de los 16 gates actuales:
+Además de los 17 gates actuales:
 
 `gate-bloques.py` (implementado en esta rama):
 
@@ -894,7 +894,7 @@ Además de los 16 gates actuales:
 9. Exportar/importar con un bloque desinstalado: sus datos se conservan.
 10. `file://` y Tauri: mismo comportamiento.
 
-`gate-arquitectura.py` (nuevo, estático):
+`gate-arquitectura.py` (estático, implementado):
 
 - Los bloques no leen `estado.cursos`, `estado.tareas`, etc. fuera de su manifiesto.
 - No hay llamadas directas a funciones de otro bloque.
@@ -999,7 +999,7 @@ Objetivo: que la lista de bloques deje de estar hard-codeada, sin cambiar la UI.
 **No hacer todavía:** mover HTML, CSS ni i18n. Los bloques siguen usando el DOM
 estático y las funciones globales; el registro es una fachada.
 
-**Gates:** los 16 actuales + `gate-bloques`. Si `gate-shell`/`gate-ronda14` fallan,
+**Gates:** los 17 actuales. Si `gate-shell`/`gate-ronda14` fallan,
 el registro no respeta el orden o los IDs.
 
 **Riesgo:** medio. Es el cambio de flujo de control; se hace con la app funcionando.
@@ -1105,7 +1105,7 @@ ida y vuelta y backup antes/después.
 - `CHANGELOG.md`: beta.3.
 - `fixtures/manifiestos-v1.1.json` -> versión con `api`, `requiere`, `provee`,
   `estado`, `assets`.
-- Correr 16 gates + `gate-arquitectura`.
+- Correr 17 gates.
 - Compilar Tauri; `gate-tauri` 33/33; `MIMO_HEADLESS=1`; FPS >= baseline.
 - Revisar que `app/` no tenga material de taller; el informe se queda en `docs/`
   solo si se decide que es documentación de arquitectura, no handoff.
@@ -1129,7 +1129,7 @@ Hecho en la rama:
 - Tiempo registra sesiones sin Estudio; Estudio registra sesiones manuales sin
   Tiempo. Las dos usan `dominio/sesiones`.
 - `califs` ya no borra cursos ausentes; `borrarRamo` ya no borra calificaciones.
-- `gate-bloques` (nuevo) y los 16 gates web en verde.
+- `gate-bloques` y `gate-arquitectura` implementados; 17 gates web en verde.
 
 Pendiente inmediato:
 
@@ -1137,7 +1137,6 @@ Pendiente inmediato:
 - `montar`/`desmontar` reales y `init()` perezoso; hoy `pintar` es el ciclo mínimo.
 - Mover HTML, CSS e i18n de cada bloque.
 - Fuentes de calendario para que Calificaciones no escriba `estado.eventos`.
-- `gate-arquitectura` estático.
 - Correr `gate-tauri` (33 medidas) después de compilar.
 
 Commits de esta sesión:
@@ -1199,7 +1198,7 @@ Calificaciones.
 6. **Montaje:** cada bloque se monta y desmonta sin errores de consola; `signal` corta
    listeners/intervalos; el foco vuelve a un lugar razonable.
 7. **Split:** mover un bloque no duplica IDs ni pierde estado.
-8. **Gates:** 16/16 actuales + `gate-arquitectura` en verde;
+8. **Gates:** 17/17 actuales en verde;
    `gate-tauri` 33/33.
 9. **Rendimiento:** boot y FPS no empeoran; baseline conocido 145 fps en 144 Hz
    (R47, no re-medido en esta sesión).
@@ -1326,7 +1325,7 @@ infirieron por funciones y límites de responsabilidad.
   `#p-malla`, `#p-calificaciones`, `#p-estudio`, `#p-ajustes`.
 - Orden de tabs y `Ctrl+1..9`.
 - Instalar/quitar Tiempo y kit Academics como hoy.
-- 16 gates web y 33 medidas Tauri.
+- 17 gates web y 33 medidas Tauri.
 - Español/inglés/chino; temas claro/oscuro; contraste AA.
 - Offline; sin red; sin cuenta.
 - FPS: baseline 145 en 144 Hz (R47).
