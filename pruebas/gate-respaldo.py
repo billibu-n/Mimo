@@ -51,7 +51,7 @@ def nota(page, titulo):
 
 def backup(nota_titulo):
     return {
-        "schema": "mimo.backup", "version": 1, "app": "Mimo", "appVersion": "1.2.0-beta.4",
+        "schema": "mimo.backup", "version": 1, "app": "Mimo", "appVersion": "1.2.0-beta.5",
         "entorno": {"notas": [{"id": "n-imp", "titulo": nota_titulo, "cuerpo": "x", "contexto": "",
                                "etiquetas": [], "enlaces": [], "fijada": False, "actualizado": ""}],
                     "tareas": [], "eventos": [], "periodos": [], "sesiones": []},
@@ -75,7 +75,7 @@ def main() -> int:
             doc = json.loads(exportado.read_text(encoding="utf-8"))
             exigir(doc.get("schema") == "mimo.backup" and doc.get("version") == 1,
                    f"backup: schema v1 — {doc.get('schema')}/{doc.get('version')}", fallas)
-            exigir(doc.get("appVersion") == "1.2.0-beta.4",
+            exigir(doc.get("appVersion") == "1.2.0-beta.5",
                    f"backup: appVersion beta.4 — {doc.get('appVersion')}", fallas)
 
             # Importación válida: el respaldo previo se descarga antes de reemplazar.

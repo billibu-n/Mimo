@@ -1,6 +1,6 @@
 # Mimo 1.2.0-beta.5
 
-Estado: **borrador**. No publicada. Fecha por definir.
+Estado: **pre-release publicada** el 2026-10-31.
 
 ## Firma del RPM
 

@@ -20,7 +20,7 @@ AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent
 GEN = RAIZ / "scripts" / "updates" / "generar-manifiesto.py"
 CONF = RAIZ / "escritorio" / "src-tauri" / "tauri.conf.json"
-VERSION = "1.2.0-beta.4"
+VERSION = "1.2.0-beta.5"
 
 fallas: list[str] = []
 

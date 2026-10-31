@@ -12,7 +12,7 @@
 (function () {
   "use strict";
 
-  var APP = "Mimo", APP_VERSION = (typeof window !== "undefined" && window.MIMO_VERSION) || "1.2.0-beta.4", V = 1;
+  var APP = "Mimo", APP_VERSION = (typeof window !== "undefined" && window.MIMO_VERSION) || "1.2.0-beta.5", V = 1;
   var ultimoError = "";
   var ENTORNO = "mimo.entorno", MALLA = "mimo.malla", BACKUP = "mimo.backup";
 

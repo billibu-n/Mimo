@@ -1,4 +1,4 @@
-# Compatibilidad de Mimo 1.2.0-beta.4
+# Compatibilidad de Mimo 1.2.0-beta.5
 
 Mimo es una aplicación de escritorio Tauri 2. El mismo código y el mismo frontend se empaquetan
 para Linux y Windows. Esta tabla dice qué está preparado y qué no.

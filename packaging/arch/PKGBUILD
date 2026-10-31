@@ -13,9 +13,9 @@ depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'openssl' 'cairo' 'pango'
          'gdk-pixbuf2' 'at-spi2-atk' 'librsvg' 'hicolor-icon-theme')
 makedepends=('rust' 'cargo' 'python' 'pkgconf')
 install=mimo.install
-source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.4.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.5.tar.gz")
 sha256sums=('SKIP')
-_archivo="Mimo-1.2.0-beta.4"
+_archivo="Mimo-1.2.0-beta.5"
 
 build() {
   cd "$_archivo"

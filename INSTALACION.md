@@ -1,20 +1,20 @@
 # Instalar Mimo
 
 Mimo es una aplicación de escritorio. Descarga el archivo de tu sistema desde la
-[última release](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.4), instálalo y ábrelo. No hay
+[última release](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.5), instálalo y ábrelo. No hay
 cuenta ni registro.
 
 | Sistema | Archivo | Instalación |
 |---|---|---|
-| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.4-1.x86_64.rpm` | `sudo dnf install ./Mimo-1.2.0-beta.4-1.x86_64.rpm` |
-| Debian 13 / Ubuntu 24.04+ amd64 | `Mimo_1.2.0-beta.4_amd64.deb` | `sudo apt install ./Mimo_1.2.0-beta.4_amd64.deb` |
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.5-1.x86_64.rpm` | `sudo dnf install ./Mimo-1.2.0-beta.5-1.x86_64.rpm` |
+| Debian 13 / Ubuntu 24.04+ amd64 | `Mimo_1.2.0-beta.5_amd64.deb` | `sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb` |
 | Arch Linux x86_64 | `mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` | `sudo pacman -U ./mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` |
-| Windows 10/11 x64 | `Mimo_1.2.0-beta.4_x64-setup.exe` | Doble clic; instalación por usuario |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.5_x64-setup.exe` | Doble clic; instalación por usuario |
 
 ## Fedora 40+ / RHEL 10+
 
 ```bash
-sudo dnf install ./Mimo-1.2.0-beta.4-1.x86_64.rpm
+sudo dnf install ./Mimo-1.2.0-beta.5-1.x86_64.rpm
 mimo
 ```
 
@@ -25,7 +25,7 @@ ejecuta `update-desktop-database ~/.local/share/applications` si instalaste a ma
 ## Debian / Ubuntu
 
 ```bash
-sudo apt install ./Mimo_1.2.0-beta.4_amd64.deb
+sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb
 mimo
 ```
 
@@ -36,7 +36,7 @@ Si `apt` se queja de dependencias, actualiza el sistema y vuelve a intentar:
 
 ```bash
 sudo apt update
-sudo apt install ./Mimo_1.2.0-beta.4_amd64.deb
+sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb
 ```
 
 ## Arch Linux
@@ -59,7 +59,7 @@ Todavía no está en AUR.
 
 ## Windows 10/11
 
-1. Descarga `Mimo_1.2.0-beta.4_x64-setup.exe`.
+1. Descarga `Mimo_1.2.0-beta.5_x64-setup.exe`.
 2. Doble clic. Se instala para tu usuario y crea una entrada en el menú Inicio; no pide
    administrador.
 3. Abre **Mimo** desde el menú Inicio.
@@ -92,7 +92,7 @@ sha256sum -c SHA256SUMS
 En Windows:
 
 ```powershell
-certutil -hashfile Mimo_1.2.0-beta.4_x64-setup.exe SHA256
+certutil -hashfile Mimo_1.2.0-beta.5_x64-setup.exe SHA256
 ```
 
 Compara la salida con la línea del archivo en `SHA256SUMS`. Si no coincide, no lo instales.

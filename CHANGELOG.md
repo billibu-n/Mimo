@@ -1,5 +1,44 @@
 # Cambios
 
+## 1.2.0-beta.5 — 2026-10-31
+
+### Sincronización
+
+- El pie dice cuándo se guardó y cuándo se sincronizó —«Local · 12:03», «Nube · 12:04»,
+  «Sin subir · 12:05»— con un punto de color; el título del botón da el detalle y un clic abre
+  la tarjeta.
+- Comprobante de cada sincronización (qué se movió, cuándo, cuánto pesa, cuántas cosas) y botón
+  «Ver la copia» que lee el destino de verdad.
+- «En mi Nextcloud» se configura con la dirección del servidor: Mimo comprueba `status.php`, lee
+  el perfil por OCS y arma la ruta WebDAV.
+- Autorización desde el navegador con el Login Flow v2: abre el navegador, espera el permiso y
+  recibe usuario y contraseña de aplicación sin que se escriban.
+- La contraseña de aplicación va al **llavero del sistema**; si no hay, se guarda cifrada con la
+  clave derivada. «Desconectar» la borra.
+- Los errores HTTP se explican con una acción, no con un código.
+
+### Interfaz
+
+- La hora de Alarmas es la real y sigue corriendo (antes se congelaba al abrir).
+- **Tamaño de letra** en Ajustes → Apariencia: del 90 % al 140 %, se recuerda en el equipo.
+- Cada bloque lleva un **código de dos dígitos** (01–08) y Estudio tiene icono propio: ya no
+  comparte el de Tiempo.
+- La mascota lleva a la primera sección (`Ctrl+1`); si ya estás ahí, no hace nada.
+- El botón de historial usa un icono de historial, no una flecha de deshacer.
+- Fuera el botón de desarrollador «Guardar tutorial».
+
+### Pruebas
+
+- `gate-senal.py` (21 comprobaciones): señal del pie, comprobante y contraseña de aplicación.
+- `gate-webdav`: conector de Nextcloud y autorización desde el navegador contra un servidor falso.
+- `gate-tauri`: 39 comprobaciones sobre el binario release, con sync nativa y RPM.
+
+### Notas
+
+- El RPM se firma con GPG en CI. Beta.4 queda como se publicó, sin esa firma.
+- Los conectores Dropbox y Google Drive quedan pendientes de registrar las aplicaciones:
+  <https://github.com/billibu-n/Mimo/issues/1>.
+
 ## 1.2.0-beta.4 — 2026-10-30
 
 ### Actualización

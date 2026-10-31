@@ -2,7 +2,7 @@
 
 ## Versiones con soporte
 
-Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.4` es una pre-release.
+Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.5` es una pre-release.
 
 ## Cómo reportar
 

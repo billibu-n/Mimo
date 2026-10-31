@@ -75,7 +75,7 @@ def main() -> int:
         return 1
 
     conf = json.loads((ESCRITORIO / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8"))
-    exigir(conf.get("version") == "1.2.0-beta.4", f"tauri: version 1.2.0-beta.4 — {conf.get('version')}", fallas)
+    exigir(conf.get("version") == "1.2.0-beta.5", f"tauri: version 1.2.0-beta.5 — {conf.get('version')}", fallas)
     exigir(conf.get("build", {}).get("frontendDist") == "../../app",
            "tauri: frontendDist apunta a la app fuente", fallas)
 
@@ -122,7 +122,7 @@ def main() -> int:
         exigir(r.get("grupos") == 4, f"tauri: Ajustes con 4 grupos — {r.get('grupos')}", fallas)
         exigir(r.get("sync_card") is True, "tauri: tarjeta de sincronizacion", fallas)
         act = r.get("actualizaciones") or {}
-        exigir(act.get("card") is True and act.get("version") == "1.2.0-beta.4",
+        exigir(act.get("card") is True and act.get("version") == "1.2.0-beta.5",
                f"tauri: tarjeta de actualizaciones y versión — {act}", fallas)
         exigir(act.get("channel") is True, f"tauri: Channel disponible — {act}", fallas)
         exigir(act.get("canal_invalido") is True, f"tauri: canal inválido se rechaza — {act}", fallas)
