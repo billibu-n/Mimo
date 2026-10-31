@@ -63,7 +63,8 @@ jobs:
 
           PASSFILE=$(mktemp)
           WRAP=$(mktemp)
-          trap 'rm -f "$PASSFILE" "$WRAP"' EXIT
+          LOG=$(mktemp)
+          trap 'cat "$LOG" 2>/dev/null || true; rm -f "$PASSFILE" "$WRAP" "$LOG"' EXIT
 
           printf '%s\n' "$RPM_GPG_PRIVATE_KEY" | gpg --batch --import
           printf '%s' "${RPM_GPG_PASSPHRASE%$'\n'}" > "$PASSFILE"
@@ -71,7 +72,8 @@ jobs:
 
           {
             echo '#!/bin/sh'
-            printf 'exec /usr/bin/gpg --batch --pinentry-mode loopback --passphrase-file %s "$@"\n' "$PASSFILE"
+            printf 'echo "gpg-args: $*" >> %s\n' "$LOG"
+            printf 'exec /usr/bin/gpg --batch --yes --pinentry-mode loopback --passphrase-file %s "$@"\n' "$PASSFILE"
           } > "$WRAP"
           chmod +x "$WRAP"
 
