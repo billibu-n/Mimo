@@ -20,7 +20,7 @@ No hay cuenta, no hay nube propia y no se envía nada a un servidor. Tus datos v
 |---|---|---|
 | **Fedora 40+ / RHEL 10+** | [Mimo-1.2.0-beta.5-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/Mimo-1.2.0-beta.5-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.5-1.x86_64.rpm` |
 | **Debian / Ubuntu 24.04+** | [Mimo_1.2.0-beta.5_amd64.deb](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/Mimo_1.2.0-beta.5_amd64.deb) | `sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb` |
-| **Arch Linux** | [mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` |
+| **Arch Linux** | [mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst` |
 | **Windows 10/11 x64** | [Mimo_1.2.0-beta.5_x64-setup.exe](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/Mimo_1.2.0-beta.5_x64-setup.exe) | Doble clic. Se instala por usuario, sin administrador. |
 
 Los paquetes Linux necesitan **WebKitGTK 4.1** y **GTK 3**, y glibc **2.39** o superior. En

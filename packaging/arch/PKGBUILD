@@ -2,7 +2,7 @@
 # Paquete de Arch Linux para Mimo. La fuente es el tarball del tag de GitHub.
 # Antes de enviarlo a AUR: publicar el tag y reemplazar SKIP por su sha256.
 pkgname=mimo
-pkgver=1.2.0beta.4
+pkgver=1.2.0beta.5
 pkgrel=1
 pkgdesc="Organizador personal offline: calendario, tareas, notas, malla, estudio y tiempo"
 arch=('x86_64')

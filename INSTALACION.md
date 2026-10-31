@@ -8,7 +8,7 @@ cuenta ni registro.
 |---|---|---|
 | Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.5-1.x86_64.rpm` | `sudo dnf install ./Mimo-1.2.0-beta.5-1.x86_64.rpm` |
 | Debian 13 / Ubuntu 24.04+ amd64 | `Mimo_1.2.0-beta.5_amd64.deb` | `sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb` |
-| Arch Linux x86_64 | `mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` | `sudo pacman -U ./mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst` | `sudo pacman -U ./mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst` |
 | Windows 10/11 x64 | `Mimo_1.2.0-beta.5_x64-setup.exe` | Doble clic; instalación por usuario |
 
 ## Fedora 40+ / RHEL 10+
@@ -42,7 +42,7 @@ sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb
 ## Arch Linux
 
 ```bash
-sudo pacman -U ./mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst
+sudo pacman -U ./mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst
 mimo
 ```
 
