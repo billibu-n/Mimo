@@ -52,6 +52,7 @@
       version: 1, provider: "", manualOnly: true, clientId: uuid(),
       lastRemoteRev: "", lastRemoteVersion: 0, lastLocalHash: "",
       lastSyncAt: "", folderName: "", ultimoCambio: "", ultimaPrueba: null,
+      nc: false, ncUrl: "",
       webdav: { url: "", usuario: "", clave: "", carpeta: "Mimo" },
       cifrado: { sal: "", activo: false }
     };
@@ -455,7 +456,9 @@
   }
   function cabeceras(extra) {
     var h = Object.assign({ "Accept": "application/json, text/plain, */*" }, extra || {});
-    var a = cabeceraAuth(); if (a) h.Authorization = a;
+    /* La credencial guardada rellena las peticiones de WebDAV, pero nunca pisa una
+       cabecera explícita: el conector de Nextcloud comprueba las suyas. */
+    var a = cabeceraAuth(); if (a && !h.Authorization) h.Authorization = a;
     return h;
   }
   function esTauri() {
@@ -510,6 +513,61 @@
       y.red = true; y.causa = e; throw y;
     } finally { clearTimeout(t); }
   }
+  /* ---- conector de Nextcloud ----
+     El usuario escribe la dirección como la escribe en el navegador. Mimo confirma
+     que hay un Nextcloud, pide el perfil para saber el identificador y arma la ruta
+     WebDAV: /remote.php/dav/files/<id>/. Es el campo donde más gente se equivoca. */
+  function normalizarDireccion(v) {
+    var s = String(v || "").trim();
+    if (!s) return "";
+    if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+    return s.replace(/\/+$/, "");
+  }
+  function decirNc(texto, mal) {
+    var e = $("#sync-nc-estado");
+    if (!e) return;
+    e.textContent = texto;
+    e.className = "muted" + (mal ? " err" : "");
+  }
+  async function conectarNextcloud() {
+    var dir = normalizarDireccion($("#sync-nc-url") ? $("#sync-nc-url").value : "");
+    var usuario = $("#sync-nc-usuario") ? $("#sync-nc-usuario").value.trim() : "";
+    var clave = $("#sync-nc-clave") ? $("#sync-nc-clave").value : "";
+    if (!dir) { decirNc(L("Escribe la dirección de tu Nextcloud.", "Type your Nextcloud address.", "请输入你的 Nextcloud 地址。"), true); return; }
+    if (!usuario || !clave) { decirNc(L("Faltan el usuario o la contraseña de aplicación.", "The user or the app password is missing.", "缺少用户名或应用密码。"), true); return; }
+    decirNc(L("Comprobando…", "Checking…", "检查中…"));
+    try {
+      var st = await pedir(dir + "/status.php", { method: "GET" });
+      if (!st.ok) throw new Error(explicarHttp(st.status, L("Esa dirección no responde como un Nextcloud", "That address does not answer as a Nextcloud", "该地址的响应不像 Nextcloud")));
+      var info = {};
+      try { info = JSON.parse(st.texto) || {}; } catch (e) {}
+      if (info.installed === false) throw new Error(L("Ese Nextcloud todavía no está instalado.", "That Nextcloud is not installed yet.", "该 Nextcloud 尚未安装。"));
+      var auth = "Basic " + btoa(unescape(encodeURIComponent(usuario + ":" + clave)));
+      var ocs = await pedir(dir + "/ocs/v2.php/cloud/user?format=json", { method: "GET", headers: { Authorization: auth, "OCS-APIRequest": "true" } });
+      if (ocs.status === 401 || ocs.status === 403) {
+        throw new Error(L("El usuario o la contraseña de aplicación no son correctos. Créala en Ajustes personales → Seguridad.", "The user or the app password is wrong. Create one in Personal settings → Security.", "用户名或应用密码不正确。请在个人设置 → 安全中创建。"));
+      }
+      if (!ocs.ok) throw new Error(explicarHttp(ocs.status, L("No se pudo leer el perfil de Nextcloud", "Could not read the Nextcloud profile", "无法读取 Nextcloud 资料")));
+      var datos = {};
+      try { datos = ((JSON.parse(ocs.texto) || {}).ocs || {}).data || {}; } catch (e) {}
+      var id = datos.id || datos.uid || usuario;
+      meta.provider = "webdav"; meta.nc = true; meta.ncUrl = dir;
+      meta.webdav = Object.assign({}, meta.webdav, {
+        url: dir + "/remote.php/dav/files/" + encodeURIComponent(id),
+        usuario: usuario,
+        carpeta: meta.webdav.carpeta || "Mimo"
+      });
+      claveAcceso = clave;
+      guardarMeta(); guardarAcceso();
+      if ($("#sync-nc-clave")) $("#sync-nc-clave").value = "";
+      decirNc(L("Conectado como ", "Connected as ", "已连接为 ") + id + ".");
+      cargarCamposWebDAV(); pintarUI();
+      avisar(L("Nextcloud conectado. Pulsa «Sincronizar ahora».", "Nextcloud connected. Press “Sync now”.", "Nextcloud 已连接。请按“立即同步”。"));
+    } catch (e) {
+      decirNc(e && e.message ? e.message : L("No se pudo conectar.", "Could not connect.", "无法连接。"), true);
+    }
+  }
+
   /* Un error HTTP no es un mensaje: es una pista. Se traduce a lo que el usuario
      puede hacer, sin perder el código para quien depure. */
   function explicarHttp(estado, donde) {
@@ -693,8 +751,10 @@
     else texto = L("Listo para sincronizar.", "Ready to sync.", "可以同步。");
     est.textContent = texto;
     est.className = clase;
-    var sel = $("#sync-proveedor"); if (sel) sel.value = meta.provider || "";
+    var sel = $("#sync-proveedor"); if (sel) sel.value = meta.provider === "webdav" && meta.nc ? "nextcloud" : (meta.provider || "");
     var w = $("#sync-webdav"); if (w) w.hidden = meta.provider !== "webdav";
+    var cw = $("#sync-webdav-conexion"); if (cw) cw.hidden = !!meta.nc;
+    var nc = $("#sync-nextcloud"); if (nc) nc.hidden = !(meta.provider === "webdav" && meta.nc);
     var c = $("#sync-carpeta"); if (c) c.hidden = meta.provider !== "carpeta";
     var a = $("#sync-archivo"); if (a) a.hidden = meta.provider !== "archivo";
     var m = $("#sync-manual");
@@ -962,7 +1022,8 @@
   }
   function cambiarProveedor() {
     var v = $("#sync-proveedor").value;
-    meta.provider = v || "";
+    if (v === "nextcloud") { meta.provider = "webdav"; meta.nc = true; }
+    else { meta.provider = v || ""; if (v === "webdav") meta.nc = false; }
     if (v === "archivo") meta.manualOnly = true;
     if (!v) { meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0; meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.folderName = ""; }
     guardarMeta(); cargarCamposWebDAV(); pintarUI();
@@ -976,7 +1037,8 @@
   }
   function desconectar() {
     if (!window.confirm(L("¿Desconectar la sincronización? No se borran tus datos ni el archivo remoto.", "Disconnect sync? Your data and the remote file are not deleted.", "断开同步？你的数据和远程文件不会被删除。"))) return;
-    meta.provider = ""; meta.folderName = ""; meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
+    meta.provider = ""; meta.folderName = ""; meta.nc = false; meta.ncUrl = "";
+    meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
     meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
     meta.webdav.clave = "";
     claveAcceso = "";
@@ -1071,6 +1133,8 @@
     pintarUI(); avisar(L("Clave olvidada en este equipo. Se pedirá de nuevo para sincronizar.", "Key forgotten on this device. It will be requested again to sync.", "已忘记此设备上的密钥。同步时会再次请求。"));
   }
   function cargarCamposWebDAV() {
+    var ncu = $("#sync-nc-url"); if (ncu) ncu.value = meta.ncUrl || "";
+    var ncu2 = $("#sync-nc-usuario"); if (ncu2) ncu2.value = meta.webdav.usuario || "";
     var u = $("#sync-webdav-url"); if (u) u.value = meta.webdav.url || "";
     var us = $("#sync-webdav-usuario"); if (us) us.value = meta.webdav.usuario || "";
     var c = $("#sync-webdav-clave-acceso"); if (c) c.value = "";
@@ -1106,6 +1170,7 @@
     sel.addEventListener("change", cambiarProveedor);
     enlazarCamposWebDAV();
     cargarCamposWebDAV();
+    var ncc = $("#sync-nc-conectar"); if (ncc) ncc.addEventListener("click", conectarNextcloud);
     $("#sync-elegir-carpeta").addEventListener("click", elegirCarpeta);
     $("#sync-ahora").addEventListener("click", function () { sincronizar(false); });
     $("#sync-desconectar").addEventListener("click", desconectar);

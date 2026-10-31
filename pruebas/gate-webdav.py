@@ -242,7 +242,49 @@ def main() -> int:
                 finally:
                     ctx_d.close()
 
-                exigir(not err_a and not err_b and not err_c and not err_d,
+                # Conector de Nextcloud: se escribe la dirección del servidor y Mimo
+                # encuentra el identificador y arma la ruta WebDAV.
+                ctx_n, n, err_n = abrir_contexto(nav)
+                try:
+                    nota(n, "Nota Nextcloud", "por el conector")
+                    n.locator('#tabs [data-ir="ajustes"]').click()
+                    n.wait_for_timeout(150)
+                    n.locator("#sync-proveedor").select_option("nextcloud")
+                    n.locator("#sync-nc-url").fill(srv.url)
+                    n.locator("#sync-nc-usuario").fill("mimo")
+                    n.locator("#sync-nc-clave").fill("prueba")
+                    n.locator("#sync-nc-conectar").click()
+                    conectado = esperar(n, lambda: "Conectado" in n.locator("#sync-nc-estado").inner_text())
+                    exigir(conectado, f"nextcloud: conecta con dirección y credenciales — {n.locator('#sync-nc-estado').inner_text()}", fallas)
+                    meta_nc = n.evaluate("JSON.parse(localStorage.getItem('mimo.sync.v1') || '{}')")
+                    esperada = srv.url + "/remote.php/dav/files/mimo"
+                    exigir((meta_nc.get("webdav") or {}).get("url") == esperada,
+                           f"nextcloud: arma la ruta DAV desde el servidor — {(meta_nc.get('webdav') or {}).get('url')}", fallas)
+                    exigir(meta_nc.get("nc") is True, "nextcloud: recuerda que es un Nextcloud", fallas)
+                    exigir(not n.locator("#sync-webdav-conexion").is_visible(),
+                           "nextcloud: no pide la URL de WebDAV a mano", fallas)
+
+                    n.locator("#sync-webdav-clave").fill(CLAVE)
+                    n.locator("#sync-webdav-guardar-clave").click()
+                    n.wait_for_timeout(400)
+                    sincronizar(n)
+                    exigir(esperar(n, lambda: "Sincronizado" in n.locator("#sync-estado").inner_text()),
+                           f"nextcloud: sincroniza por la ruta encontrada — {n.locator('#sync-estado').inner_text()}", fallas)
+                    exigir("/remote.php/dav/files/mimo/Mimo/mimo-sync.json.enc" in srv.datos,
+                           "nextcloud: el archivo llega a la carpeta DAV correcta", fallas)
+
+                    n.locator("#sync-proveedor").select_option("nextcloud")
+                    n.locator("#sync-nc-usuario").fill("mimo")
+                    n.locator("#sync-nc-clave").fill("otra-cosa")
+                    n.locator("#sync-nc-conectar").click()
+                    n.wait_for_timeout(900)
+                    malo = n.locator("#sync-nc-estado").inner_text().lower()
+                    exigir("contraseña" in malo or "incorrect" in malo or "应用密码" in malo,
+                           f"nextcloud: una contraseña mala se explica — «{malo[:60]}»", fallas)
+                finally:
+                    ctx_n.close()
+
+                exigir(not err_a and not err_b and not err_c and not err_d and not err_n,
                        f"webdav: sin pageerror — {err_a[:1]}{err_b[:1]}{err_c[:1]}{err_d[:1]}", fallas)
             finally:
                 ctx_a.close()

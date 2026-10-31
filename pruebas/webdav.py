@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
@@ -83,9 +84,28 @@ class ServidorWebDAV:
                 self._cabeceras(204)
 
             def do_GET(self):
+                ruta = self._ruta()
+                # Nextcloud: `status.php` es público y la OCS dice el identificador,
+                # que es lo que el conector usa para armar /remote.php/dav/files/<id>/.
+                if ruta == "/status.php":
+                    cuerpo = json.dumps({"installed": True, "version": "34.0.4", "productname": "Nextcloud"}).encode()
+                    servidor.peticiones.append(("GET", ruta, 200))
+                    self._cabeceras(200, {"Content-Type": "application/json", "Content-Length": str(len(cuerpo))})
+                    self.wfile.write(cuerpo)
+                    return
+                if ruta.startswith("/ocs/v2.php/cloud/user"):
+                    if self._rechazar():
+                        return
+                    cuerpo = json.dumps({
+                        "ocs": {"meta": {"status": "ok", "statuscode": 200},
+                                "data": {"id": servidor.usuario, "displayname": servidor.usuario}}
+                    }).encode()
+                    servidor.peticiones.append(("GET", ruta, 200))
+                    self._cabeceras(200, {"Content-Type": "application/json", "Content-Length": str(len(cuerpo))})
+                    self.wfile.write(cuerpo)
+                    return
                 if self._rechazar():
                     return
-                ruta = self._ruta()
                 with servidor._lock:
                     cuerpo = servidor.datos.get(ruta)
                     etag = servidor.etags.get(ruta, "")

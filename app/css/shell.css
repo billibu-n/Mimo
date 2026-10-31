@@ -331,6 +331,7 @@ body.nav-izq .shell{margin-left:64px}
 .sync-modo select{max-width:360px}
 
 .sync-columnas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--sp-6);align-items:start}
+.sync-columnas--una{grid-template-columns:minmax(0,1fr)}
 .sync-bloque{min-width:0}
 .sync-bloque + .sync-bloque{border-left:1px solid var(--line2);padding-left:var(--sp-6)}
 .sync-bloque h3{margin:0 0 var(--sp-2);font-size:var(--fs-xs);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}

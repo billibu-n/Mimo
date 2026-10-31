@@ -152,7 +152,7 @@ def main() -> int:
             aire = page.evaluate("""() => {
               const q = s => document.querySelector(s);
               const c = getComputedStyle(q('#sync-card'));
-              const cols = getComputedStyle(q('.sync-columnas'));
+              const cols = getComputedStyle(q('#sync-webdav .sync-columnas'));
               const campo = getComputedStyle(q('.sync-campo'));
               const acc = getComputedStyle(q('.sync-acciones'));
               return {
@@ -164,7 +164,7 @@ def main() -> int:
             }""")
             exigir(aire["pad"] >= 20 and aire["colGap"] >= 24 and aire["campoGap"] >= 12 and aire["accGap"] >= 12,
                    f"sync: espaciado con aire — {aire}", fallas)
-            columnas_sync = page.locator(".sync-columnas").evaluate(
+            columnas_sync = page.locator("#sync-webdav .sync-columnas").evaluate(
                 "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
             exigir(columnas_sync == 2, f"sync: conexión y cifrado en dos columnas — {columnas_sync}", fallas)
 
@@ -262,7 +262,7 @@ def main() -> int:
                 "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
                 " document.body.scrollWidth - document.body.clientWidth)")
             exigir(desborde == 0, f"sync: 411 sin desborde — {desborde}px", fallas)
-            una_col = page.locator(".sync-columnas").evaluate(
+            una_col = page.locator("#sync-webdav .sync-columnas").evaluate(
                 "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
             exigir(una_col == 1, f"sync: en móvil una columna — {una_col}", fallas)
             exigir(not [e for e in errores if e.startswith("pageerror")],

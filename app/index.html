@@ -187,7 +187,8 @@
             <label for="sync-proveedor" data-l10n-es="¿Dónde guardar tu copia?" data-l10n-en="Where should the copy live?" data-l10n-zh="副本保存在哪里？">¿Dónde guardar tu copia?</label>
             <select class="entrada" id="sync-proveedor">
               <option value="" data-l10n-es="Elegir…" data-l10n-en="Choose…" data-l10n-zh="选择…">Elegir…</option>
-              <option value="webdav" data-l10n-es="En mi Nextcloud u otro servidor" data-l10n-en="In my Nextcloud or another server" data-l10n-zh="在我的 Nextcloud 或其他服务器">En mi Nextcloud u otro servidor</option>
+              <option value="nextcloud" data-l10n-es="En mi Nextcloud" data-l10n-en="In my Nextcloud" data-l10n-zh="在我的 Nextcloud">En mi Nextcloud</option>
+              <option value="webdav" data-l10n-es="En otro servidor WebDAV" data-l10n-en="On another WebDAV server" data-l10n-zh="在其他 WebDAV 服务器">En otro servidor WebDAV</option>
               <option value="carpeta" data-l10n-es="En una carpeta de este equipo" data-l10n-en="In a folder on this device" data-l10n-zh="在本设备的一个文件夹">En una carpeta de este equipo</option>
               <option value="archivo" data-l10n-es="En un archivo que yo mueva" data-l10n-en="In a file I move myself" data-l10n-zh="在我自己移动的文件中">En un archivo que yo mueva</option>
             </select>
@@ -195,9 +196,35 @@
 
           <p class="sync-nota" id="sync-pista" data-l10n-es="Si usas Dropbox, Google Drive, OneDrive o iCloud, elige «una carpeta de este equipo» y apunta a la carpeta que esa nube ya sincroniza: no hay cuentas ni contraseñas que configurar." data-l10n-en="If you use Dropbox, Google Drive, OneDrive or iCloud, choose “a folder on this device” and point it at the folder that cloud already syncs: no accounts or passwords to set up." data-l10n-zh="如果你使用 Dropbox、Google Drive、OneDrive 或 iCloud，请选择“本设备的一个文件夹”，并指向该云盘已同步的文件夹：无需配置账户或密码。">Si usas Dropbox, Google Drive, OneDrive o iCloud, elige «una carpeta de este equipo» y apunta a la carpeta que esa nube ya sincroniza: no hay cuentas ni contraseñas que configurar.</p>
 
+          <div id="sync-nextcloud" hidden>
+            <div class="sync-columnas sync-columnas--una">
+              <section class="sync-bloque" aria-labelledby="sync-nc-tit">
+                <h3 id="sync-nc-tit" data-l10n-es="Tu Nextcloud" data-l10n-en="Your Nextcloud" data-l10n-zh="你的 Nextcloud">Tu Nextcloud</h3>
+                <p class="sync-nota" data-l10n-es="La dirección del servidor, no la de una carpeta: Mimo encuentra la carpeta y el nombre de usuario." data-l10n-en="The server address, not a folder: Mimo works out the folder and the user name." data-l10n-zh="服务器地址，不是文件夹：Mimo 会找出文件夹和用户名。">La dirección del servidor, no la de una carpeta: Mimo encuentra la carpeta y el nombre de usuario.</p>
+                <label class="sync-campo"><span data-l10n-es="Dirección" data-l10n-en="Address" data-l10n-zh="地址">Dirección</span>
+                  <input class="entrada" id="sync-nc-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://nube.ejemplo.cl">
+                  <span class="sync-pista" data-l10n-es="Como la escribes en el navegador. Mimo añade https:// si falta." data-l10n-en="As you type it in the browser. Mimo adds https:// if missing." data-l10n-zh="和你浏览器里的一样。缺少时 Mimo 会加上 https://。">Como la escribes en el navegador. Mimo añade https:// si falta.</span>
+                </label>
+                <div class="sync-dos">
+                  <label class="sync-campo"><span data-l10n-es="Usuario" data-l10n-en="User" data-l10n-zh="用户">Usuario</span>
+                    <input class="entrada" id="sync-nc-usuario" type="text" autocomplete="username" spellcheck="false">
+                  </label>
+                  <label class="sync-campo"><span data-l10n-es="Contraseña de aplicación" data-l10n-en="App password" data-l10n-zh="应用密码">Contraseña de aplicación</span>
+                    <input class="entrada" id="sync-nc-clave" type="password" autocomplete="off">
+                  </label>
+                </div>
+                <div class="sync-fila">
+                  <button class="btn btn-primario" id="sync-nc-conectar" type="button" data-l10n-es="Conectar" data-l10n-en="Connect" data-l10n-zh="连接">Conectar</button>
+                  <span class="muted" id="sync-nc-estado" data-l10n-es="Sin conectar." data-l10n-en="Not connected." data-l10n-zh="未连接。">Sin conectar.</span>
+                </div>
+                <p class="sync-nota sync-nota--final" data-l10n-es="La contraseña de aplicación se crea en Nextcloud, en Ajustes personales → Seguridad. No es la contraseña de tu cuenta." data-l10n-en="The app password is created in Nextcloud, under Personal settings → Security. It is not your account password." data-l10n-zh="应用密码在 Nextcloud 的个人设置 → 安全中创建。它不是你的账户密码。">La contraseña de aplicación se crea en Nextcloud, en Ajustes personales → Seguridad. No es la contraseña de tu cuenta.</p>
+              </section>
+            </div>
+          </div>
+
           <div id="sync-webdav" hidden>
             <div class="sync-columnas">
-              <section class="sync-bloque" aria-labelledby="sync-conexion-tit">
+              <section class="sync-bloque" id="sync-webdav-conexion" aria-labelledby="sync-conexion-tit">
                 <h3 id="sync-conexion-tit" data-l10n-es="Conexión" data-l10n-en="Connection" data-l10n-zh="连接">Conexión</h3>
                 <p class="sync-nota" data-l10n-es="La cuenta la entrega tu proveedor de nube, por ejemplo Nextcloud." data-l10n-en="Your cloud provider gives you the account, for example Nextcloud." data-l10n-zh="账户由你的云服务商提供，例如 Nextcloud。">La cuenta la entrega tu proveedor de nube, por ejemplo Nextcloud.</p>
 

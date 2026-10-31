@@ -44,6 +44,9 @@ La firma del RPM entra en esta misma beta.
   crear una; un 404, cómo termina la dirección de Nextcloud; un 405 o un 507, qué revisar.
 - **La tarjeta empieza por la pregunta buena:** «¿Dónde guardar tu copia?», con una pista que
   explica que Dropbox, Google Drive, OneDrive e iCloud se usan eligiendo una carpeta, sin cuentas.
+- **«En mi Nextcloud» se configura con la dirección del servidor.** Mimo comprueba que hay un
+  Nextcloud, pregunta el perfil y arma la ruta WebDAV (`/remote.php/dav/files/<usuario>/`). Ya no
+  hay que saber dónde termina la dirección ni pegar rutas a mano.
 
 ## Instalación
 
