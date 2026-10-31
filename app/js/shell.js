@@ -54,10 +54,10 @@
     ["alto-contraste", "Alto contraste oscuro", "oscuro"]
   ];
   var BLOQUES = {
-    tiempo: { nombre: "Tiempo", tipo: "seccion", origen: "nativo", naturaleza: "tiempo", tags: ["cronometro", "pomodoro", "alarmas"], icono: "i-tiempo", desc: "Cronómetro, temporizador, pomodoro y alarmas." },
-    malla: { nombre: "Malla", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["cursos", "prerrequisitos"], icono: "i-malla", desc: "Cursos, niveles y prerrequisitos." },
-    calificaciones: { nombre: "Calificaciones", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["notas", "examen"], icono: "i-libro", desc: "Categorías, examen y eximición." },
-    estudio: { nombre: "Estudio", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["horas", "metas"], icono: "i-tiempo", desc: "Horas por ramo y metas." },
+    tiempo: { nombre: "Tiempo", tipo: "seccion", origen: "nativo", naturaleza: "tiempo", tags: ["cronometro", "pomodoro", "alarmas"], icono: "i-tiempo", codigo: "04", desc: "Cronómetro, temporizador, pomodoro y alarmas." },
+    malla: { nombre: "Malla", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["cursos", "prerrequisitos"], icono: "i-malla", codigo: "05", desc: "Cursos, niveles y prerrequisitos." },
+    calificaciones: { nombre: "Calificaciones", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["notas", "examen"], icono: "i-libro", codigo: "06", desc: "Categorías, examen y eximición." },
+    estudio: { nombre: "Estudio", tipo: "seccion", origen: "nativo", naturaleza: "academico", tags: ["horas", "metas"], icono: "i-estudio", codigo: "07", desc: "Horas por ramo y metas." },
     academics: { nombre: "Academics", tipo: "pack", origen: "kit", naturaleza: "kit", tags: ["kit", "malla", "calificaciones", "estudio"], icono: "i-libro", desc: "Kit: Malla, Calificaciones y Estudio.", instala: ["malla", "calificaciones", "estudio"] }
   };
   var DETALLES = {
@@ -115,21 +115,21 @@
     if (!window.MimoRegistro) return;
     [
       { id: "calendario", nombre: "Calendario", tipo: "seccion", fija: true, orden: 10,
-        origen: "nativo", naturaleza: "base", icono: "i-cal", tags: ["eventos", "periodos"],
+        origen: "nativo", naturaleza: "base", icono: "i-cal", codigo: "01", tags: ["eventos", "periodos"],
         detalle: { resumen: ["Todo lo que tiene fecha, en un solo sitio.", "Everything with a date, in one place.", "所有有日期的事，都在一处。"],
           queHace: [["Vista de mes, semana y agenda.", "Month, week and agenda views.", "月、周和议程视图。"], ["Eventos con contexto y periodos.", "Events with context and terms.", "带情境和学期的事件。"], ["Fuente de componentes de Calificaciones.", "Source for graded components.", "成绩评分项的来源。"]],
           datos: ["eventos", "periodos"], notas: ["Quitar Calificaciones no borra los eventos base.", "Removing Grades does not delete base events.", "移除成绩不会删除基础事件。"] },
         vista: window.MimoBloqueCalendarioVista, css: "calendario.css",
         pintar: pintarCalendario },
       { id: "tareas", nombre: "Tareas", tipo: "seccion", fija: true, orden: 20,
-        origen: "nativo", naturaleza: "base", icono: "i-tareas", tags: ["tareas", "proyectos"],
+        origen: "nativo", naturaleza: "base", icono: "i-tareas", codigo: "02", tags: ["tareas", "proyectos"],
         detalle: { resumen: ["Proyectos y tareas; el progreso se calcula solo.", "Projects and tasks; progress is derived.", "项目和任务；进度自动计算。"],
           queHace: [["Hoy, árbol y tablero.", "Today, tree and board.", "今天、树状和看板。"], ["Proyectos con subtareas.", "Projects with subtasks.", "带子任务的项目。"], ["Prioridad, fecha y contexto.", "Priority, date and context.", "优先级、日期和情境。"]],
           datos: ["tareas"], notas: ["Los datos de Tareas no se borran al quitar otros bloques.", "Task data is not deleted when other blocks are removed.", "移除其他模块不会删除任务数据。"] },
         vista: window.MimoBloqueTareasVista, css: "tareas.css",
         pintar: pintarTareas },
       { id: "notas", nombre: "Notas", tipo: "seccion", fija: true, orden: 30,
-        origen: "nativo", naturaleza: "base", icono: "i-notas", tags: ["notas", "etiquetas"],
+        origen: "nativo", naturaleza: "base", icono: "i-notas", codigo: "03", tags: ["notas", "etiquetas"],
         detalle: { resumen: ["Texto libre con Markdown, etiquetas y enlaces.", "Free text with Markdown, tags and links.", "带 Markdown、标签和链接的自由文本。"],
           queHace: [["Editor con vista previa.", "Editor with preview.", "带预览的编辑器。"], ["Markdown, tablas y fórmulas.", "Markdown, tables and formulas.", "Markdown、表格和公式。"], ["Enlaces a tareas y eventos.", "Links to tasks and events.", "链接到任务和事件。"], ["Búsqueda por etiqueta.", "Search by tag.", "按标签搜索。"]],
           datos: ["notas"], notas: ["Quitar Notas no está permitido: es base fija.", "Notes cannot be removed: it is fixed base.", "笔记不能移除：它是固定基础。"] },
@@ -138,7 +138,7 @@
         desmontar: window.MimoBloqueNotas && MimoBloqueNotas.desmontar,
         pintar: window.MimoBloqueNotas && MimoBloqueNotas.pintar },
       { id: "ajustes", nombre: "Ajustes", tipo: "seccion", fija: true, orden: 999,
-        origen: "nativo", naturaleza: "base", icono: "i-ajustes", tags: ["ajustes", "temas"],
+        origen: "nativo", naturaleza: "base", icono: "i-ajustes", codigo: "08", tags: ["ajustes", "temas"],
         detalle: { resumen: ["Apariencia, idioma, datos y extensiones.", "Appearance, language, data and extensions.", "外观、语言、数据和扩展。"],
           queHace: [["Temas claros y oscuros.", "Light and dark themes.", "浅色和深色主题。"], ["Idioma y navegación.", "Language and navigation.", "语言和导航。"], ["Respaldo, sync y catálogo.", "Backup, sync and catalog.", "备份、同步和目录。"]],
           datos: ["prefs", "tema"], notas: ["Ajustes vive en el shell; no es un bloque instalable.", "Settings lives in the shell; it is not installable.", "设置位于外壳；不是可安装模块。"] },
@@ -155,7 +155,7 @@
       try {
         MimoRegistro.registrar({
           id: id, nombre: b.nombre, tipo: b.tipo, origen: b.origen,
-          naturaleza: b.naturaleza, tags: b.tags, icono: b.icono, desc: b.desc,
+          naturaleza: b.naturaleza, tags: b.tags, icono: b.icono, codigo: b.codigo, desc: b.desc,
           fija: false, oculto: false, orden: 40 + i * 10,
           instala: b.instala || [], pintar: pintores[id] || null, detalle: DETALLES[id] || null,
           vista: window["MimoBloque" + id.charAt(0).toUpperCase() + id.slice(1) + "Vista"] || "",
@@ -183,7 +183,7 @@
       if (b.tipo === "seccion" && b.fija) return;
       nuevo[b.id] = {
         nombre: b.nombre, tipo: b.tipo, origen: b.origen, naturaleza: b.naturaleza,
-        tags: b.tags, icono: b.icono, desc: b.desc, instala: b.instala, oculto: b.oculto
+        tags: b.tags, icono: b.icono, codigo: b.codigo, desc: b.desc, instala: b.instala, oculto: b.oculto
       };
     });
     BLOQUES = nuevo;
@@ -203,7 +203,7 @@
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", notificaciones: true, panelAbierto: true,
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: true,
         temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
@@ -794,6 +794,10 @@
     }[id];
     return m ? L(m[0], m[1], m[2]) : L("Sección fija. No se quita.", "Fixed section. It cannot be removed.", "固定分区，不能移除。");
   }
+  function codigoDe(id) {
+    var b = window.MimoRegistro && MimoRegistro.obtener ? MimoRegistro.obtener(id) : null;
+    return (b && b.codigo) || (BLOQUES[id] && BLOQUES[id].codigo) || "";
+  }
   function iconoDe(id) {
     return { calendario: "i-cal", tareas: "i-tareas", notas: "i-notas", ajustes: "i-ajustes" }[id] ||
       (BLOQUES[id] ? BLOQUES[id].icono : "i-plus");
@@ -843,8 +847,9 @@
   function pintarTabs() {
     $("#tabs").innerHTML = secciones().map(function (id) {
       var on = id === pantalla ? " on" : "";
-      return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
-        icono(iconoDe(id)) + "</button>";
+      var cod = codigoDe(id);
+      return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" data-codigo="' + esc(cod) + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
+        icono(iconoDe(id)) + (cod ? '<span class="cod cod--tab" aria-hidden="true">' + esc(cod) + "</span>" : "") + "</button>";
     }).join("");
     $$("#tabs .tab").forEach(function (b) {
       var id = b.getAttribute("data-ir");
@@ -3116,6 +3121,7 @@
 
   function aplicarPrefs() {
     var p = estado.prefs || {};
+    document.documentElement.style.fontSize = (Number(p.escala) || 100) + "%";
     document.documentElement.style.setProperty("--ancho-panel", (p.panelAncho || "320") + "px");
     document.body.classList.toggle("nav-izq", p.navPos === "izquierda");
     var fi = $("#pref-inicio"), fh = $("#pref-hora"), fp = $("#pref-panel-ancho");
@@ -3124,6 +3130,7 @@
     if (fp) fp.value = p.panelAncho || "320";
     if ($("#pref-nav")) $("#pref-nav").value = p.navPos || "arriba";
     if ($("#pref-idioma")) $("#pref-idioma").value = p.idioma || "es";
+    if ($("#pref-escala")) $("#pref-escala").value = String(Number(p.escala) || 100);
     pintarBandera();
     if ($("#pref-notif")) $("#pref-notif").checked = p.notificaciones !== false;
     if ($("#pref-panel-abierto")) $("#pref-panel-abierto").checked = p.panelAbierto !== false;
@@ -3470,7 +3477,7 @@
       if (b.tipo === "pack" && b.oculto) return;
       var fija = !!b.fija;
       out.push({
-        id: b.id, fija: fija, tipo: fija ? "base" : b.tipo,
+        id: b.id, fija: fija, tipo: fija ? "base" : b.tipo, codigo: b.codigo || "",
         origen: b.origen || (b.tipo === "pack" ? "kit" : "nativo"),
         naturaleza: b.naturaleza || "aporte", tags: b.tags || [],
         nombre: nombre(b.id),
@@ -3523,7 +3530,7 @@
     return '<article class="bcard" data-bloque="' + esc(it.id) + '" data-origen="' + esc(it.origen) +
       '" data-naturaleza="' + esc(it.naturaleza) + '" data-abrir-bloque="' + esc(it.id) +
       '" role="button" tabindex="0" aria-label="' + esc(it.nombre) + '">' +
-      '<div class="bcard__nom">' + esc(it.nombre) + " " + pills + "</div>" +
+      '<div class="bcard__nom">' + (it.codigo ? '<span class="cod" aria-hidden="true">' + esc(it.codigo) + "</span> " : "") + esc(it.nombre) + " " + pills + "</div>" +
       '<div class="bcard__desc">' + esc(it.desc) + "</div>" +
       '<div class="bcard__tags">' + tags + "</div>" +
       '<div class="bcard__pie">' + pie + "</div></article>";
@@ -4069,6 +4076,10 @@
     });
     $("#btn-ajustes").addEventListener("click", function () { ir("ajustes"); });
     $("#btn-historial").addEventListener("click", abrirHistorial);
+    $("#btn-mimo").addEventListener("click", function () {
+      var primera = secciones()[0];
+      if (primera && primera !== pantalla) ir(primera);
+    });
     $("#hist-x").addEventListener("click", cerrarHistorial);
     $("#modal-historial").addEventListener("click", function (e) {
       if (e.target === $("#modal-historial")) cerrarHistorial();
@@ -4121,6 +4132,9 @@
     $("#pref-panel-ancho").addEventListener("change", function (e) { estado.prefs.panelAncho = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-nav").addEventListener("change", function (e) { estado.prefs.navPos = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); repintarIdioma(); });
+    $("#pref-escala").addEventListener("change", function (e) {
+      estado.prefs.escala = e.target.value; guardar(); aplicarPrefs();
+    });
     $("#pref-tema-claro").addEventListener("change", function (e) {
       estado.prefs.temaClaro = temaValido(e.target.value, "clasico");
       if (temaModo(estado.tema) === "claro") aplicarTema(estado.prefs.temaClaro, true);
@@ -4210,6 +4224,10 @@
     $("#pie-sync").addEventListener("click", abrirEnSync);
     document.addEventListener("mimo:sync", pintarPie);
     setInterval(pintarPie, 30000);
+    /* Alarmas muestra la hora real: sin este latido se quedaba congelada al abrir. */
+    setInterval(function () {
+      if (pantalla === "tiempo" && (estado.tiempoModo || "crono") === "alarmas") pintaReloj();
+    }, 1000);
     $("#pie-ayuda").addEventListener("click", function () { aviso(L("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10.", "Right-click a note, task, event, term or session to open its actions and delete. Shift+F10 also works.", "右键点击笔记、任务、事件、学期或会话可打开操作并删除。也可按 Shift+F10。")); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });

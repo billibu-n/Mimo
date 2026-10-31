@@ -6,7 +6,8 @@ Mide sobre app/index.html:
   1. el cronómetro registra una sesión con ramo;
   2. el temporizador de 0,1 min termina y registra;
   3. el pomodoro de 0,1 min pasa a pausa corta y registra el trabajo;
-  4. una alarma a la hora actual avisa y queda en la lista;
+  4. una alarma a la hora actual avisa y queda en la lista; y la hora de Alarmas
+     sigue corriendo después de abrir la sección;
   5. los controles de reloj se ocultan en Alarmas;
   6. 411 sin desborde y consola limpia.
 
@@ -15,6 +16,7 @@ Uso: python3 pruebas/gate-tiempo.py
 from __future__ import annotations
 
 import datetime
+import re
 import sys
 from pathlib import Path
 
@@ -104,6 +106,14 @@ def main() -> int:
             page.wait_for_timeout(150)
             exigir(not page.locator(".tiempo-caja .fila").is_visible(),
                    "tiempo: Alarmas oculta los controles del reloj", fallas)
+            # La hora de Alarmas es la real y sigue corriendo: no se congela al abrir.
+            primera = page.locator("#reloj").inner_text().strip()
+            page.wait_for_timeout(2200)
+            segunda = page.locator("#reloj").inner_text().strip()
+            exigir(bool(re.fullmatch(r"\d{2}:\d{2}:\d{2}", primera)),
+                   f"tiempo: Alarmas muestra la hora real — «{primera}»", fallas)
+            exigir(primera != segunda,
+                   f"tiempo: la hora de Alarmas sigue corriendo — «{primera}» → «{segunda}»", fallas)
             hora = datetime.datetime.now().strftime("%H:%M")
             page.locator("#alarma-hora").fill(hora)
             page.locator("#alarma-texto").fill("Prueba")

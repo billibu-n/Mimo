@@ -77,6 +77,8 @@
   <symbol id="i-tiempo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6"/></symbol>
   <symbol id="i-malla" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
   <symbol id="i-libro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/></symbol>
+  <symbol id="i-estudio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5 12 4l10 4.5-10 4.5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 8.5V14"/></symbol>
+  <symbol id="i-historial" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></symbol>
   <symbol id="i-ajustes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
@@ -103,7 +105,7 @@
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
-  <button class="icono-btn" id="btn-historial" type="button" title="Historial y atajos (Ctrl+Z)" data-i18n-title="top.historial"><svg class="icono" aria-hidden="true"><use href="#i-undo"/></svg></button>
+  <button class="icono-btn" id="btn-historial" type="button" title="Historial y atajos (Ctrl+Z)" data-i18n-title="top.historial"><svg class="icono" aria-hidden="true"><use href="#i-historial"/></svg></button>
   <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro" data-i18n-title="top.tema"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
   <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false" data-i18n-title="top.split"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
   <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true" data-i18n-title="top.panel"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
@@ -147,6 +149,15 @@
               <label class="campo"><span data-i18n="aj.temaClaro">Tema claro</span> <select class="entrada" id="pref-tema-claro"></select></label>
               <label class="campo"><span data-i18n="aj.temaOscuro">Tema oscuro</span> <select class="entrada" id="pref-tema-oscuro"></select></label>
             </div>
+            <label class="campo"><span data-i18n="aj.letra">Tamaño de letra</span>
+              <select class="entrada" id="pref-escala">
+                <option value="90" data-l10n-es="Compacto (90 %)" data-l10n-en="Compact (90%)" data-l10n-zh="紧凑（90%）">Compacto (90 %)</option>
+                <option value="100" data-l10n-es="Normal (100 %)" data-l10n-en="Normal (100%)" data-l10n-zh="标准（100%）">Normal (100 %)</option>
+                <option value="110" data-l10n-es="Grande (110 %)" data-l10n-en="Large (110%)" data-l10n-zh="大（110%）">Grande (110 %)</option>
+                <option value="125" data-l10n-es="Muy grande (125 %)" data-l10n-en="Very large (125%)" data-l10n-zh="很大（125%）">Muy grande (125 %)</option>
+                <option value="140" data-l10n-es="Máximo (140 %)" data-l10n-en="Maximum (140%)" data-l10n-zh="最大（140%）">Máximo (140 %)</option>
+              </select></label>
+            <p class="muted" data-l10n-es="Se aplica a toda la app y se recuerda en este equipo." data-l10n-en="Applies to the whole app and is remembered on this device." data-l10n-zh="应用于整个应用，并在此设备上记住。">Se aplica a toda la app y se recuerda en este equipo.</p>
           </section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg><span data-i18n="aj.idioma">Idioma</span></h2><p class="muted" data-i18n="aj.idioma.sub">Elige el idioma de la interfaz.</p>
             <label class="campo"><span data-i18n="aj.idioma.etiqueta">Idioma</span> <span class="idioma-campo"><span id="idioma-bandera" class="idioma-bandera" aria-hidden="true"></span><select class="entrada" id="pref-idioma"><option value="es">Español (Latinoamérica)</option><option value="en">English</option><option value="zh">中文（简体）</option></select></span></label>
