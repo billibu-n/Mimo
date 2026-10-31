@@ -14,7 +14,8 @@ Mide sobre app/index.html:
      sanea el HTML peligroso y conserva $...$ / $$...$$ con KaTeX;
   8. la tarjeta de sincronización tiene aire (padding, columnas y campos), ofrece
      el registro de Nextcloud y no desborda en móvil;
-  9. Guardar tutorial descarga `tutorial.json` y Restablecer de fábrica deja la app vacía.
+  9. el botón de desarrollador «Guardar tutorial» ya no está y Restablecer de fábrica deja
+     la app vacía.
 
 Uso: python3 pruebas/gate-correcciones.py
 """
@@ -267,10 +268,8 @@ def main() -> int:
             exigir(not [e for e in errores if e.startswith("pageerror")],
                    f"consola: sin pageerror — {errores[:2]}", fallas)
 
-            with page.expect_download() as info:
-                page.locator("#btn-exportar-tutorial").click()
-            exigir(info.value.suggested_filename == "tutorial.json",
-                   f"tutorial: descarga con nombre — {info.value.suggested_filename}", fallas)
+            exigir(page.locator("#btn-exportar-tutorial").count() == 0,
+                   "ajustes: el botón de desarrollador «Guardar tutorial» ya no está", fallas)
 
             page.locator("#btn-reset-fabrica").click()
             page.wait_for_timeout(600)

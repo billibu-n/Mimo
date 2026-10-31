@@ -4175,12 +4175,6 @@
         if (r) aviso(L("Respaldo completo exportado: entorno y malla.", "Full backup exported: environment and degree plan.", "完整备份已导出：环境和课程规划。"));
       });
     });
-    $("#btn-exportar-tutorial").addEventListener("click", function () {
-      if (!window.MimoEsquema) { aviso("Falta el esquema de datos."); return; }
-      descargarJSON(MimoEsquema.exportarBackup(estado), "tutorial.json").then(function (r) {
-        if (r) aviso(L("Tutorial guardado.", "Tutorial saved.", "教程已保存。"));
-      });
-    });
     $("#btn-reset-fabrica").addEventListener("click", function () {
       var texto = L("Se borrarán los datos y la configuración de este equipo: notas, tareas, malla, temas y sync. No se puede deshacer. ¿Continuar?",
         "This device's data and settings will be erased: notes, tasks, degree plan, themes and sync. This cannot be undone. Continue?",
