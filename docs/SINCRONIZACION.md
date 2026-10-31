@@ -39,9 +39,9 @@ sincronización, el comprobante de cada sincronización, el botón «ver la copi
 error traducidos a acciones, la tarjeta que empieza preguntando dónde guardar, la contraseña de
 aplicación que sobrevive al reinicio —llavero del sistema o cifrada—, el **conector de Nextcloud
 que se queda con la dirección del servidor** y arma solo la ruta WebDAV, y la **autorización desde
-el navegador (Login Flow v2)**. Todo medido con `gate-senal.py`, `gate-webdav.py` y los veinte
-gates en verde; el caparazón compila (`cargo check`), pero `gate-tauri` no se ejecutó en esta
-sesión.
+el navegador (Login Flow v2)**. Todo medido con `gate-senal.py`, `gate-webdav.py`, los veinte
+gates web y `gate-tauri` sobre el binario release (39 comprobaciones, incluidas la sincronización
+WebDAV por el puente nativo, la carpeta nativa y el RPM).
 
 **Recomendación en una frase:** tres destinos para el usuario —«una carpeta», «tu nube» y «otro
 servidor»—, con el motor actual detrás y tres arreglos previos; los proveedores con OAuth entran
