@@ -31,11 +31,10 @@ propósito: subirla antes de tener los assets deja `gate-release.py` en rojo.
 3. Commit `Rxx: version 1.2.0-beta.5`.
 4. `git tag -a v1.2.0-beta.5 -m "Mimo 1.2.0-beta.5"` y `git push origin v1.2.0-beta.5`.
 5. Aprobar el deployment del workflow.
-6. Descargar los artefactos a `publicacion/` y ejecutar
+6. Descargar los artefactos a `publicacion/` (carpeta de montaje, ignorada por git) y ejecutar
    `python3 scripts/updates/generar-manifiesto.py --version 1.2.0-beta.5 --tag v1.2.0-beta.5`.
-   - Antes de generar el manifiesto, actualizar `app/tutorial.json` y su copia publicada: la nota
-     de bienvenida aún dice que la contraseña no se guarda, y desde R80 la de aplicación sí se
-     guarda cifrada (`gate-tutorial` exige que los dos archivos sean idénticos).
+   - `publicacion/` no se versiona: se arma en cada release y se sube como assets. Las notas viven
+     en `docs/releases/` y el cuerpo del release sale de ahí.
 7. Crear la release como **pre-release** y subir los assets.
 8. Copiar `beta.json` a la rama `updates` y empujar.
 9. Verificar `rpm --checksig` y `sha256sum -c SHA256SUMS`.

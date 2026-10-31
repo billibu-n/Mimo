@@ -7,10 +7,9 @@ capturas/
 referencia/
 __pycache__/
 escritorio/release
-# Publicación: solo se versionan la semilla editable y su LEEME; los binarios no.
-publicacion/*
-!publicacion/LEEME.md
-!publicacion/tutorial.json
+# Publicación: es una carpeta de montaje, no parte del repositorio. Los assets los
+# genera el workflow y se suben al release; aquí solo viven mientras se arma.
+publicacion/
 # Arch: makepkg deja fuentes y paquetes generados.
 packaging/arch/src/
 packaging/arch/pkg/

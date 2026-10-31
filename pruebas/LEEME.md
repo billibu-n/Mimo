@@ -38,7 +38,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-tauri` | binario release: app universal, tutorial precargado, navegación, nota en `localStorage`, Ajustes, sync WebDAV nativa (sin preflight CORS), remoto cifrado, persistencia entre aperturas y RPM | falta el binario, la ventana no abre, el tutorial no se precarga o el remoto queda en claro |
 | `gate-respaldo` | exportar/importar conserva los datos, crea copia previa, rechaza versión futura y el banner de cuota aparece si localStorage falla | importación sin copia previa, versión 99 aplicada o fallo de cuota silencioso |
 | `gate-actualizacion` | configuración Tauri del updater, tarjeta de Ajustes, versión única y manifiesto por tipo de paquete (sin genérico ni Arch) | falta pubkey, endpoint `latest`, manifiesto con clave genérica o firma ausente |
-| `gate-tutorial` | `app/tutorial.json` y `publicacion/tutorial.json` son el mismo `mimo.backup`, con el proyecto Mimo, 11 tareas y la nota con Markdown | JSON distinto, sin proyecto o sin la nota |
+| `gate-tutorial` | `app/tutorial.json` es un `mimo.backup` con la versión de la app, el proyecto Mimo, 11 tareas y la nota con Markdown | JSON inválido, versión distinta, sin proyecto o sin la nota |
 
 ## Fixtures
 

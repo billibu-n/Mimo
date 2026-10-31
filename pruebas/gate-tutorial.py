@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """gate-tutorial.py — el tutorial aprobado que la app precarga.
 
-Comprueba que `app/tutorial.json` y `publicacion/tutorial.json` son el mismo archivo,
-que es un `mimo.backup` importable, que trae el proyecto Mimo con sus tareas y que la
+Comprueba que `app/tutorial.json` es un `mimo.backup` importable, que su `appVersion`
+coincide con la versión de la app, que trae el proyecto Mimo con sus tareas y que la
 nota de bienvenida conserva los ejemplos de Markdown que se publican.
 """
 from __future__ import annotations
@@ -15,7 +15,7 @@ from pathlib import Path
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent
 APP = RAIZ / "app" / "tutorial.json"
-PUB = RAIZ / "publicacion" / "tutorial.json"
+VERSION = RAIZ / "app" / "js" / "version.js"
 
 sys.path.insert(0, str(AQUI))
 from gatelib import exigir, salir  # noqa: E402
@@ -24,12 +24,8 @@ from gatelib import exigir, salir  # noqa: E402
 def main() -> int:
     fallas: list[str] = []
     exigir(APP.is_file(), f"tutorial: existe {APP}", fallas)
-    exigir(PUB.is_file(), f"tutorial: existe {PUB}", fallas)
-    if not (APP.is_file() and PUB.is_file()):
+    if not APP.is_file():
         return salir("gate-tutorial", fallas)
-
-    exigir(APP.read_bytes() == PUB.read_bytes(),
-           "tutorial: app y publicación son el mismo archivo", fallas)
     try:
         doc = json.loads(APP.read_text(encoding="utf-8"))
     except Exception as e:
@@ -38,6 +34,14 @@ def main() -> int:
 
     exigir(doc.get("schema") == "mimo.backup" and doc.get("version") == 1,
            "tutorial: schema mimo.backup v1", fallas)
+    version_app = ""
+    if VERSION.is_file():
+        for trozo in VERSION.read_text(encoding="utf-8").split('"'):
+            if trozo.startswith("1."):
+                version_app = trozo
+                break
+    exigir(bool(version_app) and doc.get("appVersion") == version_app,
+           f"tutorial: appVersion {doc.get('appVersion')} coincide con la app {version_app}", fallas)
     entorno = doc.get("entorno") or {}
     tareas = entorno.get("tareas") or []
     proyecto = next((t for t in tareas if t.get("tipo") == "proyecto"), None)

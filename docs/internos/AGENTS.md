@@ -53,7 +53,7 @@ Estas reglas son para cualquier agente que retome el proyecto. La app se llama
 - Conserva los IDs de sección (`#p-calendario`, `#p-tareas`, `#p-notas`,
   `#p-tiempo`, `#p-malla`, `#p-calificaciones`, `#p-estudio`, `#p-ajustes`) y el
   orden de tabs/`Ctrl+1..9`.
-- Conserva `app/tutorial.json` y `publicacion/tutorial.json` idénticos.
+- Conserva `app/tutorial.json` con la misma versión que `app/js/version.js`.
 - La app debe seguir funcionando offline, sin red y sin cuenta.
 - `MIMO_HEADLESS=1` y la ventana fuera de pantalla deben seguir funcionando.
 

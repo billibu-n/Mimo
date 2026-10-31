@@ -7,7 +7,7 @@
 **Fecha:** 2026-10-30.
 **Para quién:** el próximo agente que retome este trabajo, y el dueño del proyecto.
 
-> **Reglas de sesión:** antes de tocar código, lee `AGENTS.md` en la raíz del repo.
+> **Reglas de sesión:** antes de tocar código, lee `docs/internos/AGENTS.md`.
 > Este informe es la memoria larga; `AGENTS.md` es el contrato corto de trabajo.
 
 > **Si perdiste el contexto, lee en este orden:** §1 (diagnóstico), §5 (arquitectura
@@ -1181,7 +1181,7 @@ Commits de esta sesión:
 
 Cierre medido:
 
-- `CHANGELOG.md` y `RELEASE-NOTES-1.2.0-beta.3.md` actualizados.
+- `CHANGELOG.md` y `docs/releases/RELEASE-NOTES-1.2.0-beta.3.md` actualizados.
 - Tauri compilado como `1.2.0-beta.3`; `gate-tauri` en verde con **FPS 185** en la
   ventana de prueba y RPM de 4,3 MB.
 - `MIMO_HEADLESS=1` y el modo offline se midieron en `gate-tauri` y en los gates web.
@@ -1356,7 +1356,7 @@ infirieron por funciones y límites de responsabilidad.
 
 - `localStorage['mimo.shell.v1']` y sus claves actuales.
 - Documentos `mimo.entorno`, `mimo.malla`, `mimo.backup`, versión 1.
-- `app/tutorial.json` y `publicacion/tutorial.json` idénticos.
+- `app/tutorial.json` con la misma versión que `app/js/version.js`.
 - `?reset=1` y carga limpia.
 - `MIMO_HEADLESS=1` y ventana fuera de pantalla.
 - IDs de sección `#p-calendario`, `#p-tareas`, `#p-notas`, `#p-tiempo`,
