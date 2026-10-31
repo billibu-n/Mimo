@@ -555,9 +555,11 @@ que es exactamente lo que la fase C quiere hacer explícito.
 ### 6.3 Fase B — una nube con OAuth (beta.6)
 
 Solo si la fase A deja el motor sano. El trabajo difícil es **una vez**: abrir el navegador del
-sistema (`tauri-plugin-opener`, hoy no está), escuchar la redirección en `127.0.0.1` (un comando
-Rust pequeño), guardar el token de refresco en el llavero y saber revocarlo al desconectar. A
-partir de ahí, cada proveedor es un conector más.
+sistema, escuchar la redirección en `127.0.0.1` y guardar el token de refresco en el llavero.
+**Hecho** (R85): los comandos `oauth_escucha`/`oauth_espera` en Rust, con puerto fijo 53682 porque
+Dropbox compara la redirección exacta, y el llavero por cuenta. **Falta** el registro de las
+aplicaciones (pasos en [`CONECTAR-NUBE.md`](CONECTAR-NUBE.md)) y los conectores de archivo, que no
+se pueden medir de verdad sin ese registro. A partir de ahí, cada proveedor es un conector más.
 
 1. **Dropbox** (`app_folder`): registro inmediato, 500 usuarios de margen en desarrollo, PKCE
    recomendado por su propia documentación. **Es el banco de pruebas del flujo**, no el destino
