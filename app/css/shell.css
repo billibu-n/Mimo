@@ -277,7 +277,7 @@ body.nav-izq .shell{margin-left:64px}
 .alarma-item b{color:var(--ac);font-variant-numeric:tabular-nums}
 .alarma-item span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
 .alarma-item.off{opacity:.55}
-.alarma-item .btn{min-height:24px;font-size:10px}
+.alarma-item .btn{min-height:var(--sp-6);font-size:var(--fs-xs)}
 
 /* ---- U6: buscador global ---- */
 .modal-buscar .modal__caja{width:min(680px,100%);padding:var(--sp-4)}
@@ -286,7 +286,7 @@ body.nav-izq .shell{margin-left:64px}
 .buscar-resultados{display:flex;flex-direction:column;gap:2px;max-height:52vh;overflow:auto;margin-top:var(--sp-2)}
 .buscar-res{display:grid;grid-template-columns:68px minmax(0,1fr) auto;align-items:center;gap:var(--sp-2);width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);font:inherit;padding:var(--sp-2);cursor:pointer}
 .buscar-res:hover,.buscar-res:focus-visible{background:var(--sup2);border-color:var(--line2)}
-.buscar-tipo{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ac);border:1px solid color-mix(in srgb,var(--ac) 35%,var(--line));border-radius:4px;text-align:center;padding:2px 3px}
+.buscar-tipo{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;color:var(--ac);border:1px solid color-mix(in srgb,var(--ac) 35%,var(--line));border-radius:4px;text-align:center;padding:2px 3px}
 .buscar-txt{min-width:0}
 .buscar-txt b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .buscar-txt small{display:block;color:var(--muted);font-size:var(--fs-xs);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
@@ -418,7 +418,7 @@ body.nav-izq .shell{margin-left:64px}
 .semana-chip{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:var(--r-sm);background:var(--sup);color:var(--fg);padding:var(--sp-1) var(--sp-2);font:inherit;text-align:left;cursor:pointer;min-height:48px}
 .semana-chip b{font-size:var(--fs-sm)}
 .semana-chip span{font-size:var(--fs-xs);font-weight:600}
-.semana-chip small{font-size:10px;color:var(--muted)}
+.semana-chip small{font-size:var(--fs-xs);color:var(--muted)}
 .semana-chip.tipo-receso{border-left-color:var(--warn)}
 .semana-chip.tipo-receso span{color:var(--warn)}
 .semana-chip.tipo-examenes{border-left-color:var(--bad)}

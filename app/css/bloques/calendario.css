@@ -13,7 +13,7 @@
 .cal-dow--sem,.cal-sem-col{font-size:var(--fs-xs);color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center}
 .cal-sem-col{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);font-weight:700;letter-spacing:.02em}
 .cal-sem-col[title*="receso"],.cal-sem-col[title*="examen"]{color:var(--warn)}
-@media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:54px;font-size:10px}}
+@media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:calc(54px * var(--esc));font-size:var(--fs-xs)}}
 .cal-vacio{grid-column:1/-1}
 @media (max-width:900px){.cal-layout{grid-template-columns:1fr}}
 @media (max-width:520px){.cal-dia{min-height:54px}}

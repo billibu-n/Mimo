@@ -3121,7 +3121,11 @@
 
   function aplicarPrefs() {
     var p = estado.prefs || {};
-    document.documentElement.style.fontSize = (Number(p.escala) || 100) + "%";
+    var escala = Number(p.escala) || 100;
+    document.documentElement.style.fontSize = escala + "%";
+    // Los huecos no siguen al font-size de la raíz: se escalan aparte, o la letra
+    // crece y las cajas se quedan igual (era el defecto de beta.5).
+    document.documentElement.style.setProperty("--esc", String(escala / 100));
     document.documentElement.style.setProperty("--ancho-panel", (p.panelAncho || "320") + "px");
     document.body.classList.toggle("nav-izq", p.navPos === "izquierda");
     var fi = $("#pref-inicio"), fh = $("#pref-hora"), fp = $("#pref-panel-ancho");
