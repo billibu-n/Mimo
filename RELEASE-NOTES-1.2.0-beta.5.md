@@ -18,10 +18,14 @@ Estado: **borrador**. No publicada. Fecha por definir.
   incrustada, para que el actualizador siga aceptando el paquete.
 - Beta.4 queda como se publicó: sin firma GPG.
 
-## Sin cambios funcionales
+## Objetivo
 
-Esta beta no cambia bloques, datos ni esquema. El objetivo es estrenar la cadena de firma
-y comprobar la actualización in-app desde beta.4.
+El frente de esta beta es la **sincronización en la nube**. Hoy existe la vía Nextcloud,
+pero configurarla no es intuitiva ni fácil. Beta.5 debe ofrecer varias alternativas de
+sincronización, incluida la más sencilla, y ninguna de ellas puede exigir conocimientos
+de servidor para funcionar.
+
+La firma del RPM entra en esta misma beta.
 
 ## Instalación
 
