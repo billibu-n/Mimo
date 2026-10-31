@@ -7,7 +7,7 @@
    ============================================================================ */
 
 *{box-sizing:border-box}
-html{background:var(--bg);color-scheme:light}
+html{background:var(--bg);color-scheme:light;height:100%}
 /* Los controles nativos (select, date, checkbox) siguen el tema; sin esto,
    WebKit y Firefox pueden pintar texto oscuro sobre fondo oscuro. */
 [data-tema="clasico"],[data-tema="bosque"],[data-tema="sepia"],[data-tema="pinky"],
@@ -15,6 +15,7 @@ html{background:var(--bg);color-scheme:light}
 [data-tema="deepsea"],[data-tema="medianoche"],[data-tema="negro"],[data-tema="vino"],
 [data-tema="alto-contraste"]{color-scheme:dark}
 body{
+  height:100%;display:flex;flex-direction:column;
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   font-size:var(--fs-md);
@@ -58,7 +59,8 @@ input.entrada,select.entrada,textarea.entrada{-webkit-text-fill-color:var(--fg)}
 .icono-btn:hover{background:var(--sup2);color:var(--fg)}
 
 .navbar{
-  height:var(--alto-navbar);
+  height:var(--alto-navbar-viva);overflow:hidden;
+  transition:height .18s var(--curva),padding .18s var(--curva),border-color .18s var(--curva);
   display:flex;align-items:center;gap:var(--sp-2);
   padding:0 var(--sp-4);
   background:var(--bg);
@@ -78,7 +80,7 @@ input.entrada,select.entrada,textarea.entrada{-webkit-text-fill-color:var(--fg)}
 .tab:hover{background:var(--sup2);color:var(--fg)}
 .tab.on{background:var(--ac);color:var(--ac-txt);border-color:var(--ac);font-weight:600}
 
-.shell{display:flex;align-items:stretch;min-height:calc(100vh - var(--alto-topbar) - var(--alto-navbar))}
+.shell{display:flex;align-items:stretch;min-height:calc(100vh - var(--alto-topbar) - var(--alto-navbar-viva))}
 .contenido{
   flex:1;min-width:0;
   width:100%;max-width:var(--ancho-contenido);
@@ -90,7 +92,7 @@ input.entrada,select.entrada,textarea.entrada{-webkit-text-fill-color:var(--fg)}
   width:var(--ancho-rail);
   background:var(--sup);border:1px solid var(--line);border-radius:var(--r-lg);
   padding:var(--sp-3);
-  position:sticky;top:calc(var(--alto-topbar) + var(--alto-navbar) + var(--sp-3));
+  position:sticky;top:calc(var(--alto-topbar) + var(--alto-navbar-viva) + var(--sp-3));
 }
 .rail h3{margin:0 0 var(--sp-2);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .rail hr{border:0;border-top:1px solid var(--line2);margin:var(--sp-3) 0}

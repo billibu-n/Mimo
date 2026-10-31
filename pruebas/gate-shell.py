@@ -254,10 +254,10 @@ def main() -> int:
             page.wait_for_timeout(60)
             exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)
             page.locator("#btn-panel").click()
-            page.wait_for_timeout(80)
+            page.wait_for_timeout(300)   # el panel se desliza (180 ms)
             exigir(not page.locator(".panel").is_visible(), "geometría: el panel se oculta sin mover el pie", fallas)
             page.locator("#btn-panel").click()
-            page.wait_for_timeout(80)
+            page.wait_for_timeout(300)
             exigir(page.locator(".panel").is_visible(), "geometría: el panel vuelve", fallas)
             exigir(page.locator(".footer").is_visible(), "geometría: el pie sigue visible", fallas)
 

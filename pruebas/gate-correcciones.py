@@ -15,7 +15,7 @@ Mide sobre app/index.html:
   8. la tarjeta de sincronización tiene aire (padding y campos), separa la conexión del
      cifrado en paneles, ofrece el registro de Nextcloud y no desborda en móvil;
   9. el tamaño de letra se aplica, no desborda y se recuerda; la mascota lleva a la primera
-     sección; los bloques llevan código de dos dígitos e iconos propios;
+     sección; la barra dice el nombre de cada sección, sin códigos, con icono propio;
  10. el botón de desarrollador «Guardar tutorial» ya no está y Restablecer de fábrica deja
      la app vacía.
 
@@ -210,9 +210,12 @@ def main() -> int:
                    "mascota: estando ya ahí no cambia de sección", fallas)
 
             # Identidad de los bloques: código de dos dígitos e iconos distintos.
+            # El código de dos dígitos salió de la pestaña (R2): ahora dice su nombre.
             codigos = page.eval_on_selector_all("#tabs .cod", "els => els.map(e => e.textContent.trim())")
-            exigir(codigos and all(re.fullmatch(r"\d{2}", c) for c in codigos),
-                   f"bloques: los códigos son de dos dígitos — {codigos}", fallas)
+            exigir(not codigos, f"barra: la pestaña ya no lleva código de bloque — {codigos}", fallas)
+            nombres = page.eval_on_selector_all("#tabs .tab__nom", "els => els.map(e => e.textContent.trim())")
+            exigir(nombres[:4] == ["Calendario", "Tareas", "Notas", "Tiempo"],
+                   f"barra: cada pestaña dice su nombre — {nombres[:4]}", fallas)
             exigir(len(set(codigos)) == len(codigos), f"bloques: códigos únicos — {codigos}", fallas)
             exigir(page.evaluate("MimoRegistro.obtener('estudio').icono") != page.evaluate("MimoRegistro.obtener('tiempo').icono"),
                    "bloques: Estudio y Tiempo ya no comparten icono", fallas)

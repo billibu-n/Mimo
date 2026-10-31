@@ -42,6 +42,8 @@
      la escala: si no, el armazón se queda a 53 px y la letra grande no cabe. */
   --alto-topbar:calc(53px * var(--esc));
   --alto-navbar:calc(55px * var(--esc));
+  /* El alto que ocupa de verdad: pasa a 0 cuando la barra se oculta (☰). */
+  --alto-navbar-viva:var(--alto-navbar);
   --ancho-contenido:1240px;
   --alto-kpi:calc(68px * var(--esc));
   --alto-pie:calc(42px * var(--esc));

@@ -15,7 +15,7 @@
 .periodo{background:transparent;border:1px solid transparent;color:var(--muted);font-size:var(--fs-sm);padding:0 var(--sp-2);height:var(--sp-7);border-radius:var(--r-sm)}
 .periodo:hover{background:var(--sup2);color:var(--fg)}
 .tab-add{
-  margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
+  margin-left:0;display:inline-flex;align-items:center;justify-content:center;
   width:var(--sp-7);height:var(--sp-7);flex:none;
   border:1px dashed var(--line);border-radius:var(--r-sm);
   background:transparent;color:var(--muted);
@@ -130,6 +130,8 @@ body.split #contenido-b{display:block}
 }
 @media (max-width:520px){
   .badge{display:none}
+  .topbar .marca .wordmark{display:none}
+  .topbar .buscador kbd{display:none}
   .nav-acciones .periodo{display:none}
   .panel{width:100%}
   .modal{padding:var(--sp-2)}
@@ -144,10 +146,10 @@ body.split #contenido-b{display:block}
 
 /* ---- geometría estable: el panel no mueve header ni footer ---- */
 body{padding-bottom:var(--alto-pie)}
-.shell{height:calc(100vh - var(--alto-topbar) - var(--alto-navbar) - var(--alto-pie));min-height:0;align-items:stretch}
-.contenido{overflow:auto;min-height:0}
+.shell{flex:1;min-height:0;align-items:stretch;transition:margin-left .18s var(--curva)}
+.contenido{overflow:auto;min-height:0;scrollbar-gutter:stable}
 .contenido-b{height:100%;max-height:none;overflow:auto}
-.panel{height:100%;overflow:auto}
+.panel{height:100%}
 .footer{
   position:fixed;left:0;right:0;bottom:0;height:var(--alto-pie);z-index:30;
   display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-3);
@@ -167,9 +169,17 @@ body{padding-bottom:var(--alto-pie)}
 .footer__punto--gris{background:var(--muted2)}
 .footer__punto--girando{background:var(--ok);animation:pulso-punto 1.1s ease-in-out infinite}
 @keyframes pulso-punto{0%,100%{opacity:1}50%{opacity:.35}}
-@media (min-width:1256px){body.panel-oculto .panel{display:none}}
+/* El panel se abre y se cierra en un solo paso: animar el ancho reflotaba el
+   calendario fotograma a fotograma y lo deformaba. Lo que se anima (el chevron y el
+   cajón del móvil) no toca la maqueta. */
+.panel{display:flex;flex-direction:column;overflow:hidden;
+  transition:width .18s var(--curva),opacity .18s var(--curva),padding .18s var(--curva),border-left-width .18s var(--curva)}
+#panel-cuerpo{overflow:auto;min-height:0;flex:1}
+@media (min-width:1256px){
+  body.panel-oculto .panel{width:0;opacity:0;padding-left:0;padding-right:0;border-left-width:0}
+}
 @media (max-width:1255px){
-  .panel{top:calc(var(--alto-topbar) + var(--alto-navbar));bottom:var(--alto-pie);height:auto}
+  .panel{top:calc(var(--alto-topbar) + var(--alto-navbar-viva));bottom:var(--alto-pie);height:auto}
   }
 
 /* ---- U2: árbol, tablero y detalle de tareas ---- */
@@ -189,8 +199,27 @@ body{padding-bottom:var(--alto-pie)}
 .marca:hover img{transform:scale(1.06)}
 .navbar .tabs{flex:1;min-width:0}
 .navbar .nav-acciones{margin-left:auto;flex:none}
-.tab{width:40px;justify-content:center;padding:0}
-.tab span{display:none}
+body.nav-oculta{--alto-navbar-viva:0px}
+body.nav-oculta .navbar{padding-top:0;padding-bottom:0;border-bottom-width:0}
+/* Ocultar manda sobre el carril, esté desplegado o plegado: si no, con el carril
+   en 64 px el ☰ no hacía nada. */
+body.nav-oculta.nav-izq .navbar,
+body.nav-oculta.nav-izq.nav-plegada .navbar{width:0;padding:0;border-right-width:0}
+body.nav-oculta.nav-izq .shell,
+body.nav-oculta.nav-izq.nav-plegada .shell{margin-left:0}
+.tab__nom{white-space:nowrap}
+.tab-plegar{display:inline-flex;align-items:center;justify-content:center;width:var(--sp-7);height:var(--sp-7);flex:none;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--muted);cursor:pointer}
+.tab-plegar:hover{background:var(--sup2);color:var(--fg)}
+.tab-plegar .icono{transition:transform var(--t) var(--curva)}
+body.nav-plegada .tab-plegar .icono{transform:rotate(180deg)}
+/* plegada: sólo iconos, y el botón queda para volver a abrirla */
+body.nav-plegada .tab{width:40px;justify-content:center;padding:0}
+body.nav-plegada .tab__nom{display:none}
+/* ventana angosta: se pliega sola sin tocar la preferencia */
+@media (max-width:1180px){
+  body:not(.nav-izq) .tab{width:40px;justify-content:center;padding:0}
+  body:not(.nav-izq) .tab__nom{display:none}
+}
 .btn-periodo-nuevo{width:32px;height:32px;min-height:32px;padding:0;font-size:1.1rem;line-height:1}
 .periodo{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .periodo-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-2);margin:var(--sp-3) 0}
@@ -210,7 +239,7 @@ body{padding-bottom:var(--alto-pie)}
 @keyframes mimo-brinco{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-4px) rotate(-6deg)}70%{transform:translateY(1px) rotate(4deg)}}
 body.split #contenido{flex:1 1 50%;max-width:none;margin:0}
 body.split #contenido-b{flex:1 1 50%;width:auto;max-width:none}
-.navbar .tabs{margin-left:auto}
+.navbar .tabs{justify-content:flex-end}
 body.split #contenido{width:auto}
 .ajustes-grid .campo{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--muted);margin:var(--sp-2) 0}
 .ajustes-grid .campo select{max-width:160px}
@@ -218,13 +247,20 @@ body.split #contenido{width:auto}
 .navbar .tabs{justify-content:flex-end}
 
 /* ---- navegación en rail izquierdo (preferencia) ---- */
-body.nav-izq .navbar{position:fixed;left:0;top:var(--alto-topbar);bottom:var(--alto-pie);width:64px;height:auto;flex-direction:column;align-items:center;padding:var(--sp-2) 0;border-right:1px solid var(--line);border-bottom:0;z-index:25}
-body.nav-izq .navbar .tabs{flex-direction:column;justify-content:flex-start;align-items:center;margin:0;width:100%;overflow:visible}
-body.nav-izq .navbar .tab{width:44px;height:44px}
+body.nav-izq .navbar{position:fixed;left:0;top:var(--alto-topbar);bottom:var(--alto-pie);width:184px;height:auto;flex-direction:column;align-items:stretch;padding:var(--sp-2);border-right:1px solid var(--line);border-bottom:0;z-index:25;transition:width .18s var(--curva),padding .18s var(--curva),border-color .18s var(--curva)}
+body.nav-izq .navbar .tabs{flex-direction:column;justify-content:flex-start;align-items:stretch;margin:0;width:100%;overflow:visible}
+body.nav-izq .navbar .tab{width:100%;height:44px;justify-content:flex-start;padding:0 var(--sp-2)}
 body.nav-izq .navbar .nav-acciones{flex-direction:column;margin:0;gap:var(--sp-1)}
 body.nav-izq .navbar .periodo{display:none}
-body.nav-izq .navbar .tab-add{margin:0}
-body.nav-izq .shell{margin-left:64px}
+body.nav-izq .navbar .tab-add{margin:var(--sp-2) 0 0;width:100%}
+body.nav-izq .navbar .tab-plegar{align-self:flex-end;margin-top:auto}
+body.nav-izq .shell{margin-left:184px}
+body.nav-izq.nav-plegada .navbar{width:64px;align-items:center}
+body.nav-izq.nav-plegada .navbar .tabs{align-items:center}
+body.nav-izq.nav-plegada .navbar .tab{width:44px;justify-content:center;padding:0}
+body.nav-izq.nav-plegada .navbar .tab-add{width:44px;margin:var(--sp-2) 0 0}
+body.nav-izq.nav-plegada .navbar .tab-plegar{align-self:center}
+body.nav-izq.nav-plegada .shell{margin-left:64px}
 
 /* ---- acciones universales: clic derecho y borrado ---- */
 .menu-ctx{

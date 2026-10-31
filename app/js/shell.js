@@ -203,7 +203,7 @@
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: true,
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: true, navPlegada: false, navOculta: false,
         temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
@@ -844,12 +844,45 @@
     }
   }
 
+  /* El rótulo del botón de plegar dice lo que hará al pulsarlo, en el idioma de
+     turno. Se pinta aquí y en aplicarPrefs: pintarTabs corre al cambiar idioma. */
+  /* ☰: la barra de secciones se oculta entera y el contenido sube. */
+  function pintarSecciones() {
+    var bs = $("#btn-secciones"); if (!bs) return;
+    var oculta = !!(estado.prefs || {}).navOculta;
+    var rotulo = oculta ? L("Mostrar las secciones", "Show the sections", "显示分区")
+                        : L("Ocultar las secciones", "Hide the sections", "隐藏分区");
+    bs.setAttribute("aria-expanded", oculta ? "false" : "true");
+    bs.setAttribute("aria-label", rotulo);
+    bs.title = rotulo;
+  }
+  /* El botón del panel dice lo que hará: ocultarlo o mostrarlo. */
+  function pintarBotonPanel() {
+    var bp = $("#btn-panel"); if (!bp) return;
+    var abierto = window.innerWidth > 1255
+      ? !document.body.classList.contains("panel-oculto")
+      : document.body.classList.contains("panel-abierto");
+    var rotulo = abierto ? L("Ocultar el panel", "Hide the panel", "隐藏面板")
+                         : L("Mostrar el panel", "Show the panel", "显示面板");
+    bp.setAttribute("aria-expanded", abierto ? "true" : "false");
+    bp.setAttribute("aria-label", rotulo);
+    bp.title = rotulo;
+  }
+  function pintarPlegado() {
+    var bp = $("#btn-plegar"); if (!bp) return;
+    var plegada = !!(estado.prefs || {}).navPlegada;
+    var rotulo = plegada ? L("Desplegar la barra", "Expand the bar", "展开栏")
+                         : L("Plegar la barra", "Collapse the bar", "收起栏");
+    bp.setAttribute("aria-expanded", plegada ? "false" : "true");
+    bp.setAttribute("aria-label", rotulo);
+    bp.title = rotulo;
+  }
   function pintarTabs() {
     $("#tabs").innerHTML = secciones().map(function (id) {
       var on = id === pantalla ? " on" : "";
       var cod = codigoDe(id);
       return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" data-codigo="' + esc(cod) + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
-        icono(iconoDe(id)) + (cod ? '<span class="cod cod--tab" aria-hidden="true">' + esc(cod) + "</span>" : "") + "</button>";
+        icono(iconoDe(id)) + '<span class="tab__nom">' + esc(nombre(id)) + "</span></button>";
     }).join("");
     $$("#tabs .tab").forEach(function (b) {
       var id = b.getAttribute("data-ir");
@@ -881,6 +914,9 @@
     });
     var kb = $("#kpi-bloques");
     if (kb) kb.textContent = String(estado.instalados.length);
+    pintarPlegado();
+    pintarSecciones();
+    pintarBotonPanel();
     pintarAjustes();
   }
 
@@ -3128,6 +3164,9 @@
     document.documentElement.style.setProperty("--esc", String(escala / 100));
     document.documentElement.style.setProperty("--ancho-panel", (p.panelAncho || "320") + "px");
     document.body.classList.toggle("nav-izq", p.navPos === "izquierda");
+    document.body.classList.toggle("nav-plegada", !!p.navPlegada);
+    document.body.classList.toggle("nav-oculta", !!p.navOculta);
+    pintarPlegado(); pintarSecciones();
     var fi = $("#pref-inicio"), fh = $("#pref-hora"), fp = $("#pref-panel-ancho");
     if (fi) fi.value = p.inicioSemana || "lunes";
     if (fh) fh.value = p.hora || "24";
@@ -3746,12 +3785,12 @@
   function abrirPanel() {
     document.body.classList.remove("panel-oculto");
     document.body.classList.add("panel-abierto");
-    $("#btn-panel").setAttribute("aria-expanded", "true");
+    pintarBotonPanel();
   }
   function cerrarPanel() {
     document.body.classList.remove("panel-abierto");
     if (window.innerWidth > 1255) document.body.classList.add("panel-oculto");
-    $("#btn-panel").setAttribute("aria-expanded", "false");
+    pintarBotonPanel();
   }
   function alternarPanel() {
     if (window.innerWidth > 1255) {
@@ -4124,6 +4163,14 @@
       });
     });
     $("#btn-add").addEventListener("click", abrirModal);
+    $("#btn-plegar").addEventListener("click", function () {
+      estado.prefs.navPlegada = !estado.prefs.navPlegada;
+      guardar(); aplicarPrefs();
+    });
+    $("#btn-secciones").addEventListener("click", function () {
+      estado.prefs.navOculta = !estado.prefs.navOculta;
+      guardar(); aplicarPrefs();
+    });
     $("#btn-catalogo-ajustes").addEventListener("click", abrirModal);
     $("#btn-periodo-ajustes").addEventListener("click", abrirPeriodo);
     ["#periodo-semanas", "#periodo-receso", "#periodo-examenes"].forEach(function (sel) {
