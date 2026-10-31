@@ -12,15 +12,19 @@ Mide sobre app/index.html:
   6. Ajustes queda en tres grupos y con los selectores de pareja;
   7. Notas renderiza Markdown GFM (títulos, tabla, subrayado, tareas, código),
      sanea el HTML peligroso y conserva $...$ / $$...$$ con KaTeX;
-  8. la tarjeta de sincronización tiene aire (padding, columnas y campos), ofrece
-     el registro de Nextcloud y no desborda en móvil;
-  9. Guardar tutorial descarga `tutorial.json` y Restablecer de fábrica deja la app vacía.
+  8. la tarjeta de sincronización tiene aire (padding y campos), separa la conexión del
+     cifrado en paneles, ofrece el registro de Nextcloud y no desborda en móvil;
+  9. el tamaño de letra se aplica, no desborda y se recuerda; la mascota lleva a la primera
+     sección; los bloques llevan código de dos dígitos e iconos propios;
+ 10. el botón de desarrollador «Guardar tutorial» ya no está y Restablecer de fábrica deja
+     la app vacía.
 
 Uso: python3 pruebas/gate-correcciones.py
 """
 from __future__ import annotations
 
 import json
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -135,6 +139,9 @@ def main() -> int:
             despues = page.locator("#mimo-ic").get_attribute("src")
             exigir(antes != despues and page.locator("#mimo-menu").count() == 0,
                    "mascota: anima sin abrir menú", fallas)
+            exigir(page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir") == "calendario",
+                   "mascota: desde Ajustes salta a la primera sección", fallas)
+            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(220)
             exigir(page.locator("#pref-tema-claro option").count() == 5,
                    "ajustes: 5 temas claros", fallas)
             exigir(page.locator("#pref-tema-oscuro option").count() == 5,
@@ -151,7 +158,7 @@ def main() -> int:
             aire = page.evaluate("""() => {
               const q = s => document.querySelector(s);
               const c = getComputedStyle(q('#sync-card'));
-              const cols = getComputedStyle(q('.sync-columnas'));
+              const cols = getComputedStyle(q('#sync-webdav .sync-columnas'));
               const campo = getComputedStyle(q('.sync-campo'));
               const acc = getComputedStyle(q('.sync-acciones'));
               return {
@@ -163,9 +170,55 @@ def main() -> int:
             }""")
             exigir(aire["pad"] >= 20 and aire["colGap"] >= 24 and aire["campoGap"] >= 12 and aire["accGap"] >= 12,
                    f"sync: espaciado con aire — {aire}", fallas)
-            columnas_sync = page.locator(".sync-columnas").evaluate(
+            columnas_sync = page.locator("#sync-webdav .sync-columnas").evaluate(
                 "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
-            exigir(columnas_sync == 2, f"sync: conexión y cifrado en dos columnas — {columnas_sync}", fallas)
+            exigir(columnas_sync == 1, f"sync: el panel de WebDAV lleva solo la conexión — {columnas_sync}", fallas)
+            exigir(page.locator("#sync-cifrado .sync-bloque--cifrado").count() == 1,
+                   "sync: el cifrado vive en su propio panel", fallas)
+
+            # Tamaño de letra: se aplica a toda la app y se recuerda.
+            base = page.evaluate("getComputedStyle(document.documentElement).fontSize")
+            page.locator("#pref-escala").select_option("140")
+            page.wait_for_timeout(250)
+            grande = page.evaluate("getComputedStyle(document.documentElement).fontSize")
+            exigir(float(grande.replace("px", "")) > float(base.replace("px", "")),
+                   f"letra: el tamaño grande crece — {base} → {grande}", fallas)
+            ancho_roto = page.evaluate(
+                "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
+                " document.body.scrollWidth - document.body.clientWidth)")
+            exigir(ancho_roto == 0, f"letra: 140 % sin desborde — {ancho_roto}px", fallas)
+            page.goto(APP.as_uri(), wait_until="load")  # sin ?reset=1, para no borrar la preferencia
+            page.wait_for_timeout(500)
+            tras = page.evaluate("getComputedStyle(document.documentElement).fontSize")
+            exigir(tras == grande, f"letra: el tamaño se recuerda — {tras}", fallas)
+            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.wait_for_timeout(200)
+            page.locator("#pref-escala").select_option("100")
+            page.wait_for_timeout(200)
+
+            # Mascota: lleva a la primera sección, y no repite si ya estás ahí.
+            page.locator('#tabs [data-ir="notas"]').click()
+            page.wait_for_timeout(200)
+            page.locator("#btn-mimo").click()
+            page.wait_for_timeout(300)
+            primera = page.evaluate("document.querySelector('#tabs .tab').dataset.ir")
+            activa = page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir")
+            exigir(activa == primera, f"mascota: lleva a la primera sección — {activa}", fallas)
+            page.locator("#btn-mimo").click()
+            page.wait_for_timeout(300)
+            exigir(page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir") == primera,
+                   "mascota: estando ya ahí no cambia de sección", fallas)
+
+            # Identidad de los bloques: código de dos dígitos e iconos distintos.
+            codigos = page.eval_on_selector_all("#tabs .cod", "els => els.map(e => e.textContent.trim())")
+            exigir(codigos and all(re.fullmatch(r"\d{2}", c) for c in codigos),
+                   f"bloques: los códigos son de dos dígitos — {codigos}", fallas)
+            exigir(len(set(codigos)) == len(codigos), f"bloques: códigos únicos — {codigos}", fallas)
+            exigir(page.evaluate("MimoRegistro.obtener('estudio').icono") != page.evaluate("MimoRegistro.obtener('tiempo').icono"),
+                   "bloques: Estudio y Tiempo ya no comparten icono", fallas)
+            exigir(page.get_attribute("#btn-historial use", "href") == "#i-historial",
+                   "historial: el botón usa un icono de historial", fallas)
+            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(220)
 
             page.locator("[data-editar-periodo]").first.click(); page.wait_for_timeout(150)
             page.locator("#periodo-nombre").fill("Primavera 2026 bis")
@@ -261,16 +314,14 @@ def main() -> int:
                 "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
                 " document.body.scrollWidth - document.body.clientWidth)")
             exigir(desborde == 0, f"sync: 411 sin desborde — {desborde}px", fallas)
-            una_col = page.locator(".sync-columnas").evaluate(
+            una_col = page.locator("#sync-webdav .sync-columnas").evaluate(
                 "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
             exigir(una_col == 1, f"sync: en móvil una columna — {una_col}", fallas)
             exigir(not [e for e in errores if e.startswith("pageerror")],
                    f"consola: sin pageerror — {errores[:2]}", fallas)
 
-            with page.expect_download() as info:
-                page.locator("#btn-exportar-tutorial").click()
-            exigir(info.value.suggested_filename == "tutorial.json",
-                   f"tutorial: descarga con nombre — {info.value.suggested_filename}", fallas)
+            exigir(page.locator("#btn-exportar-tutorial").count() == 0,
+                   "ajustes: el botón de desarrollador «Guardar tutorial» ya no está", fallas)
 
             page.locator("#btn-reset-fabrica").click()
             page.wait_for_timeout(600)

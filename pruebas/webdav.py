@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import unquote, urlsplit
@@ -21,6 +22,7 @@ class ServidorWebDAV:
         self.clave = clave
         self.exigir_auth = exigir_auth
         self.datos: dict[str, bytes] = {}
+        self.sondeos: dict[str, int] = {}
         self.etags: dict[str, str] = {}
         self.peticiones: list[tuple[str, str, int]] = []
         self.ultimo_if_match: str | None = None
@@ -83,9 +85,34 @@ class ServidorWebDAV:
                 self._cabeceras(204)
 
             def do_GET(self):
+                ruta = self._ruta()
+                # Nextcloud: `status.php` es público y la OCS dice el identificador,
+                # que es lo que el conector usa para armar /remote.php/dav/files/<id>/.
+                if ruta == "/status.php":
+                    cuerpo = json.dumps({"installed": True, "version": "34.0.4", "productname": "Nextcloud"}).encode()
+                    servidor.peticiones.append(("GET", ruta, 200))
+                    self._cabeceras(200, {"Content-Type": "application/json", "Content-Length": str(len(cuerpo))})
+                    self.wfile.write(cuerpo)
+                    return
+                if ruta.startswith("/login/v2/flow/"):
+                    cuerpo = b"<html><body><h1>Autoriza a Mimo</h1></body></html>"
+                    servidor.peticiones.append(("GET", ruta, 200))
+                    self._cabeceras(200, {"Content-Type": "text/html; charset=utf-8", "Content-Length": str(len(cuerpo))})
+                    self.wfile.write(cuerpo)
+                    return
+                if ruta.startswith("/ocs/v2.php/cloud/user"):
+                    if self._rechazar():
+                        return
+                    cuerpo = json.dumps({
+                        "ocs": {"meta": {"status": "ok", "statuscode": 200},
+                                "data": {"id": servidor.usuario, "displayname": servidor.usuario}}
+                    }).encode()
+                    servidor.peticiones.append(("GET", ruta, 200))
+                    self._cabeceras(200, {"Content-Type": "application/json", "Content-Length": str(len(cuerpo))})
+                    self.wfile.write(cuerpo)
+                    return
                 if self._rechazar():
                     return
-                ruta = self._ruta()
                 with servidor._lock:
                     cuerpo = servidor.datos.get(ruta)
                     etag = servidor.etags.get(ruta, "")
@@ -112,6 +139,42 @@ class ServidorWebDAV:
                     self._cabeceras(404, {"Content-Length": "0"})
                     return
                 self._cabeceras(200, {"Content-Length": str(len(cuerpo)), "ETag": etag})
+
+            def do_POST(self):
+                ruta = self._ruta()
+                if ruta == "/index.php/login/v2":
+                    token = "token-de-prueba-2026"
+                    cuerpo = json.dumps({
+                        "poll": {"token": token, "endpoint": servidor.url + "/login/v2/poll"},
+                        "login": servidor.url + "/login/v2/flow/" + token,
+                    }).encode()
+                    servidor.peticiones.append(("POST", ruta, 200))
+                    self._leer_cuerpo()
+                    self._cabeceras(200, {"Content-Type": "application/json", "Content-Length": str(len(cuerpo))})
+                    self.wfile.write(cuerpo)
+                    return
+                if ruta == "/login/v2/poll":
+                    cuerpo = self._leer_cuerpo().decode("utf-8", "replace")
+                    token = ""
+                    for trozo in cuerpo.split("&"):
+                        if trozo.startswith("token="):
+                            token = unquote(trozo[6:])
+                    n = servidor.sondeos.get(token, 0) + 1
+                    servidor.sondeos[token] = n
+                    if n <= 2:
+                        servidor.peticiones.append(("POST", ruta, 404))
+                        self._cabeceras(404, {"Content-Length": "0"})
+                        return
+                    salida = json.dumps({
+                        "server": servidor.url,
+                        "loginName": servidor.usuario,
+                        "appPassword": servidor.clave,
+                    }).encode()
+                    servidor.peticiones.append(("POST", ruta, 200))
+                    self._cabeceras(200, {"Content-Type": "application/json", "Content-Length": str(len(salida))})
+                    self.wfile.write(salida)
+                    return
+                self._cabeceras(404, {"Content-Length": "0"})
 
             def do_PUT(self):
                 if self._rechazar():

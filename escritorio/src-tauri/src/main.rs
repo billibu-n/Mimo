@@ -303,6 +303,129 @@ fn sonda_informe(payload: String) {
     std::process::exit(0);
 }
 
+/// Abre una URL en el navegador del sistema. Sin plugin y sin shell: se lanza el
+/// abridor del escritorio. Solo http y https.
+#[tauri::command]
+fn abrir_navegador(url: String) -> Result<(), String> {
+    if !(url.starts_with("http://") || url.starts_with("https://")) {
+        return Err("Solo se permite http o https.".into());
+    }
+    #[cfg(target_os = "linux")]
+    let (programa, args) = ("xdg-open", vec![url.clone()]);
+    #[cfg(target_os = "macos")]
+    let (programa, args) = ("open", vec![url.clone()]);
+    #[cfg(target_os = "windows")]
+    let (programa, args) = ("cmd", vec!["/C".to_string(), "start".to_string(), String::new(), url.clone()]);
+    std::process::Command::new(programa)
+        .args(args)
+        .spawn()
+        .map(|_| ())
+        .map_err(|e| format!("no se pudo abrir el navegador: {e}"))
+}
+
+/// Llavero del sistema. Guarda la contraseña de aplicación de WebDAV y los tokens
+/// de OAuth. Si el sistema no ofrece llavero, la pagina usa el respaldo cifrado.
+const LLAVERO_SERVICIO: &str = "cl.mimo.escritorio";
+
+fn entrada_llavero(cuenta: &str) -> Result<keyring::Entry, String> {
+    keyring::Entry::new(LLAVERO_SERVICIO, cuenta).map_err(|e| format!("llavero: {e}"))
+}
+
+#[tauri::command]
+fn llavero_guardar(cuenta: String, clave: String) -> Result<(), String> {
+    entrada_llavero(&cuenta)?
+        .set_password(&clave)
+        .map_err(|e| format!("llavero: {e}"))
+}
+
+#[tauri::command]
+fn llavero_leer(cuenta: String) -> Result<Option<String>, String> {
+    match entrada_llavero(&cuenta)?.get_password() {
+        Ok(clave) => Ok(Some(clave)),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(e) => Err(format!("llavero: {e}")),
+    }
+}
+
+#[tauri::command]
+fn llavero_borrar(cuenta: String) -> Result<(), String> {
+    match entrada_llavero(&cuenta)?.delete_credential() {
+        Ok(()) => Ok(()),
+        Err(keyring::Error::NoEntry) => Ok(()),
+        Err(e) => Err(format!("llavero: {e}")),
+    }
+}
+
+/// OAuth de escritorio: se abre una escucha local de un solo uso y se espera el
+/// `code` que el navegador deja en la redirección. Sin servidor propio.
+struct OAuthEspera(Mutex<Option<std::sync::mpsc::Receiver<String>>>);
+
+fn decodificar_porcentaje(v: &str) -> String {
+    let bytes = v.as_bytes();
+    let mut salida = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'%' if i + 2 < bytes.len() => {
+                let hex = std::str::from_utf8(&bytes[i + 1..i + 3]).unwrap_or("00");
+                salida.push(u8::from_str_radix(hex, 16).unwrap_or(b'?'));
+                i += 3;
+            }
+            b'+' => { salida.push(b' '); i += 1; }
+            b => { salida.push(b); i += 1; }
+        }
+    }
+    String::from_utf8_lossy(&salida).to_string()
+}
+
+#[tauri::command]
+fn oauth_escucha(estado: tauri::State<'_, OAuthEspera>, puerto: u16) -> Result<u16, String> {
+    use std::io::{Read, Write};
+    /* Puerto fijo: Dropbox compara la redirección exacta, así que no puede ser efímero. */
+    let escucha = std::net::TcpListener::bind(("127.0.0.1", puerto)).map_err(|e| format!("oauth: {e}"))?;
+    let puerto = escucha.local_addr().map_err(|e| format!("oauth: {e}"))?.port();
+    let (emisor, receptor) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        if let Ok((mut flujo, _)) = escucha.accept() {
+            let mut buffer = [0u8; 4096];
+            let leido = flujo.read(&mut buffer).unwrap_or(0);
+            let peticion = String::from_utf8_lossy(&buffer[..leido]).to_string();
+            let linea = peticion.lines().next().unwrap_or("");
+            let ruta = linea.split_whitespace().nth(1).unwrap_or("");
+            let mut codigo = String::new();
+            if let Some(consulta) = ruta.split('?').nth(1) {
+                for par in consulta.split('&') {
+                    let mut partes = par.splitn(2, '=');
+                    let clave = partes.next().unwrap_or("");
+                    let valor = partes.next().unwrap_or("");
+                    if clave == "code" { codigo = decodificar_porcentaje(valor); }
+                }
+            }
+            let cuerpo = "<!doctype html><meta charset=\"utf-8\"><title>Mimo</title><body style=\"font:16px system-ui;padding:2rem\"><h1>Listo</h1><p>Puedes cerrar esta ventana y volver a Mimo.</p></body>";
+            let _ = flujo.write_all(format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                cuerpo.len(), cuerpo
+            ).as_bytes());
+            let _ = emisor.send(codigo);
+        }
+    });
+    *estado.0.lock().map_err(|_| "oauth: estado bloqueado")? = Some(receptor);
+    Ok(puerto)
+}
+
+#[tauri::command]
+async fn oauth_espera(estado: tauri::State<'_, OAuthEspera>, segundos: u64) -> Result<String, String> {
+    let receptor = estado.0.lock().map_err(|_| "oauth: estado bloqueado")?.take();
+    let receptor = receptor.ok_or("oauth: no hay escucha abierta")?;
+    tauri::async_runtime::spawn_blocking(move || {
+        receptor
+            .recv_timeout(std::time::Duration::from_secs(segundos))
+            .map_err(|_| "oauth: la autorización no llegó a tiempo".to_string())
+    })
+    .await
+    .map_err(|e| format!("oauth: {e}"))?
+}
+
 /// Puente HTTP nativo para WebDAV. Evita el CORS del WebView: la peticion la hace Rust.
 /// Solo admite http/https y devuelve estado, cabeceras y cuerpo como texto.
 #[tauri::command]
@@ -554,6 +677,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(CarpetaSync(Mutex::new(None)))
+        .manage(OAuthEspera(Mutex::new(None)))
         .manage(actualizaciones::ActualizacionPendiente(Mutex::new(None)))
         .invoke_handler(tauri::generate_handler![
             sonda_informe,
@@ -563,6 +687,12 @@ fn main() {
             leer_carpeta,
             escribir_carpeta,
             olvidar_carpeta,
+            abrir_navegador,
+            llavero_guardar,
+            llavero_leer,
+            llavero_borrar,
+            oauth_escucha,
+            oauth_espera,
             guardar_json,
             almacen::estado_guardar,
             almacen::estado_leer,

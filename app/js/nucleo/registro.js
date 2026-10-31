@@ -30,6 +30,7 @@
       origen: texto(m.origen) || "nativo",
       naturaleza: texto(m.naturaleza) || (tipo === "pack" ? "kit" : "base"),
       icono: texto(m.icono) || "i-bloque",
+      codigo: texto(m.codigo),
       desc: texto(m.desc),
       tags: Array.isArray(m.tags) ? m.tags.slice() : [],
       fija: !!m.fija,

@@ -77,6 +77,8 @@
   <symbol id="i-tiempo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6"/></symbol>
   <symbol id="i-malla" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
   <symbol id="i-libro" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h12"/></symbol>
+  <symbol id="i-estudio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5 12 4l10 4.5-10 4.5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5M22 8.5V14"/></symbol>
+  <symbol id="i-historial" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></symbol>
   <symbol id="i-ajustes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
@@ -103,7 +105,7 @@
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
-  <button class="icono-btn" id="btn-historial" type="button" title="Historial y atajos (Ctrl+Z)" data-i18n-title="top.historial"><svg class="icono" aria-hidden="true"><use href="#i-undo"/></svg></button>
+  <button class="icono-btn" id="btn-historial" type="button" title="Historial y atajos (Ctrl+Z)" data-i18n-title="top.historial"><svg class="icono" aria-hidden="true"><use href="#i-historial"/></svg></button>
   <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro" data-i18n-title="top.tema"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
   <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-pressed="false" data-i18n-title="top.split"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
   <button class="icono-btn" id="btn-panel" type="button" title="Panel de herramientas" aria-expanded="true" data-i18n-title="top.panel"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
@@ -147,6 +149,15 @@
               <label class="campo"><span data-i18n="aj.temaClaro">Tema claro</span> <select class="entrada" id="pref-tema-claro"></select></label>
               <label class="campo"><span data-i18n="aj.temaOscuro">Tema oscuro</span> <select class="entrada" id="pref-tema-oscuro"></select></label>
             </div>
+            <label class="campo"><span data-i18n="aj.letra">Tamaño de letra</span>
+              <select class="entrada" id="pref-escala">
+                <option value="90" data-l10n-es="Compacto (90 %)" data-l10n-en="Compact (90%)" data-l10n-zh="紧凑（90%）">Compacto (90 %)</option>
+                <option value="100" data-l10n-es="Normal (100 %)" data-l10n-en="Normal (100%)" data-l10n-zh="标准（100%）">Normal (100 %)</option>
+                <option value="110" data-l10n-es="Grande (110 %)" data-l10n-en="Large (110%)" data-l10n-zh="大（110%）">Grande (110 %)</option>
+                <option value="125" data-l10n-es="Muy grande (125 %)" data-l10n-en="Very large (125%)" data-l10n-zh="很大（125%）">Muy grande (125 %)</option>
+                <option value="140" data-l10n-es="Máximo (140 %)" data-l10n-en="Maximum (140%)" data-l10n-zh="最大（140%）">Máximo (140 %)</option>
+              </select></label>
+            <p class="muted" data-l10n-es="Se aplica a toda la app y se recuerda en este equipo." data-l10n-en="Applies to the whole app and is remembered on this device." data-l10n-zh="应用于整个应用，并在此设备上记住。">Se aplica a toda la app y se recuerda en este equipo.</p>
           </section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg><span data-i18n="aj.idioma">Idioma</span></h2><p class="muted" data-i18n="aj.idioma.sub">Elige el idioma de la interfaz.</p>
             <label class="campo"><span data-i18n="aj.idioma.etiqueta">Idioma</span> <span class="idioma-campo"><span id="idioma-bandera" class="idioma-bandera" aria-hidden="true"></span><select class="entrada" id="pref-idioma"><option value="es">Español (Latinoamérica)</option><option value="en">English</option><option value="zh">中文（简体）</option></select></span></label>
@@ -176,7 +187,7 @@
       <div class="ajustes-grid">
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-cal"/></svg><span data-i18n="aj.periodos">Periodos</span></h2><p class="muted" data-i18n="aj.periodos.sub">Fechas de clases, receso y exámenes.</p><div id="ajustes-periodos"></div><button class="btn btn-primario" type="button" id="btn-periodo-ajustes" data-l10n-es="+ Nuevo periodo" data-l10n-en="+ New term" data-l10n-zh="+ 新建学期">+ Nuevo periodo</button></section>
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-i18n="aj.respaldo">Respaldo</span></h2><p class="muted" id="ajustes-datos" data-l10n-es="Datos locales." data-l10n-en="Local data." data-l10n-zh="本地数据。">Datos locales.</p><div class="fila"><button class="btn" type="button" id="btn-exportar-entorno" data-l10n-es="Exportar datos" data-l10n-en="Export data" data-l10n-zh="导出数据">Exportar datos</button><button class="btn" type="button" id="btn-exportar-malla-aj" data-l10n-es="Exportar malla" data-l10n-en="Export degree plan" data-l10n-zh="导出课程规划">Exportar malla</button><button class="btn" type="button" id="btn-exportar-todo" data-l10n-es="Exportar todo" data-l10n-en="Export all" data-l10n-zh="全部导出">Exportar todo</button></div>
-          <div class="fila"><button class="btn" type="button" id="btn-exportar-tutorial" data-l10n-es="Guardar tutorial" data-l10n-en="Save tutorial" data-l10n-zh="保存教程" data-l10n-title-es="Guardar el estado actual como tutorial.json" data-l10n-title-en="Save current state as tutorial.json" data-l10n-title-zh="将当前状态保存为 tutorial.json">Guardar tutorial</button><button class="btn btn-primario" type="button" id="btn-importar" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
+          <div class="fila"><button class="btn btn-primario" type="button" id="btn-importar" data-l10n-es="Importar" data-l10n-en="Import" data-l10n-zh="导入">Importar</button><input type="file" id="archivo-importar" accept=".json" hidden></div>
           <div class="fila"><button class="btn btn-peligro" type="button" id="btn-reset-fabrica" data-l10n-es="Restablecer de fábrica" data-l10n-en="Factory reset" data-l10n-zh="恢复出厂设置" data-l10n-title-es="Borrar los datos y la configuración de este equipo" data-l10n-title-en="Erase this device's data and settings" data-l10n-title-zh="清除此设备的数据和设置">Restablecer de fábrica</button></div>
         </section>
         <section class="card card--ancho" id="sync-card">
@@ -184,18 +195,53 @@
           <p class="muted sync-estado" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
 
           <div class="sync-modo">
-            <label for="sync-proveedor" data-l10n-es="Modo" data-l10n-en="Mode" data-l10n-zh="模式">Modo</label>
+            <label for="sync-proveedor" data-l10n-es="¿Dónde guardar tu copia?" data-l10n-en="Where should the copy live?" data-l10n-zh="副本保存在哪里？">¿Dónde guardar tu copia?</label>
             <select class="entrada" id="sync-proveedor">
               <option value="" data-l10n-es="Elegir…" data-l10n-en="Choose…" data-l10n-zh="选择…">Elegir…</option>
-              <option value="webdav" data-l10n-es="Nube privada (cifrada)" data-l10n-en="Private cloud (encrypted)" data-l10n-zh="私有云（加密）">Nube privada (cifrada)</option>
-              <option value="carpeta" data-l10n-es="Carpeta local" data-l10n-en="Local folder" data-l10n-zh="本地文件夹">Carpeta local</option>
-              <option value="archivo" data-l10n-es="Archivo manual" data-l10n-en="Manual file" data-l10n-zh="手动文件">Archivo manual</option>
+              <option value="nextcloud" data-l10n-es="En mi Nextcloud" data-l10n-en="In my Nextcloud" data-l10n-zh="在我的 Nextcloud">En mi Nextcloud</option>
+              <option value="webdav" data-l10n-es="En otro servidor WebDAV" data-l10n-en="On another WebDAV server" data-l10n-zh="在其他 WebDAV 服务器">En otro servidor WebDAV</option>
+              <option value="carpeta" data-l10n-es="En una carpeta de este equipo" data-l10n-en="In a folder on this device" data-l10n-zh="在本设备的一个文件夹">En una carpeta de este equipo</option>
+              <option value="archivo" data-l10n-es="En un archivo que yo mueva" data-l10n-en="In a file I move myself" data-l10n-zh="在我自己移动的文件中">En un archivo que yo mueva</option>
             </select>
           </div>
 
+          <p class="sync-nota" id="sync-pista" data-l10n-es="Si usas Dropbox, Google Drive, OneDrive o iCloud, elige «una carpeta de este equipo» y apunta a la carpeta que esa nube ya sincroniza: no hay cuentas ni contraseñas que configurar." data-l10n-en="If you use Dropbox, Google Drive, OneDrive or iCloud, choose “a folder on this device” and point it at the folder that cloud already syncs: no accounts or passwords to set up." data-l10n-zh="如果你使用 Dropbox、Google Drive、OneDrive 或 iCloud，请选择“本设备的一个文件夹”，并指向该云盘已同步的文件夹：无需配置账户或密码。">Si usas Dropbox, Google Drive, OneDrive o iCloud, elige «una carpeta de este equipo» y apunta a la carpeta que esa nube ya sincroniza: no hay cuentas ni contraseñas que configurar.</p>
+
+          <div id="sync-nextcloud" hidden>
+            <div class="sync-columnas sync-columnas--una">
+              <section class="sync-bloque" aria-labelledby="sync-nc-tit">
+                <h3 id="sync-nc-tit" data-l10n-es="Tu Nextcloud" data-l10n-en="Your Nextcloud" data-l10n-zh="你的 Nextcloud">Tu Nextcloud</h3>
+                <p class="sync-nota" data-l10n-es="Escribe la dirección de tu servidor y pulsa «Autorizar en el navegador»: Mimo abre tu Nextcloud, espera a que le des permiso y se queda con las credenciales solas." data-l10n-en="Type your server address and press “Authorise in the browser”: Mimo opens your Nextcloud, waits for your permission and keeps the credentials by itself." data-l10n-zh="输入服务器地址并按“在浏览器中授权”：Mimo 会打开你的 Nextcloud，等你允许后自行保存凭据。">Escribe la dirección de tu servidor y pulsa «Autorizar en el navegador»: Mimo abre tu Nextcloud, espera a que le des permiso y se queda con las credenciales solas.</p>
+                <label class="sync-campo"><span data-l10n-es="Dirección" data-l10n-en="Address" data-l10n-zh="地址">Dirección</span>
+                  <input class="entrada" id="sync-nc-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://nube.ejemplo.cl">
+                  <span class="sync-pista" data-l10n-es="Como la escribes en el navegador. Mimo añade https:// si falta." data-l10n-en="As you type it in the browser. Mimo adds https:// if missing." data-l10n-zh="和你浏览器里的一样。缺少时 Mimo 会加上 https://。">Como la escribes en el navegador. Mimo añade https:// si falta.</span>
+                </label>
+                <div class="sync-fila">
+                  <button class="btn btn-primario" id="sync-nc-navegador" type="button" data-l10n-es="Autorizar en el navegador" data-l10n-en="Authorise in the browser" data-l10n-zh="在浏览器中授权">Autorizar en el navegador</button>
+                  <button class="btn" id="sync-nc-cancelar" type="button" hidden data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
+                  <a id="sync-nc-enlace" class="sync-nota" href="#" target="_blank" rel="noopener noreferrer" hidden data-l10n-es="Abrir la página de autorización" data-l10n-en="Open the authorisation page" data-l10n-zh="打开授权页面">Abrir la página de autorización</a>
+                </div>
+                <p class="sync-nota" data-l10n-es="O escribe los datos a mano:" data-l10n-en="Or type the details yourself:" data-l10n-zh="或者手动输入：">O escribe los datos a mano:</p>
+                <div class="sync-dos">
+                  <label class="sync-campo"><span data-l10n-es="Usuario" data-l10n-en="User" data-l10n-zh="用户">Usuario</span>
+                    <input class="entrada" id="sync-nc-usuario" type="text" autocomplete="username" spellcheck="false">
+                  </label>
+                  <label class="sync-campo"><span data-l10n-es="Contraseña de aplicación" data-l10n-en="App password" data-l10n-zh="应用密码">Contraseña de aplicación</span>
+                    <input class="entrada" id="sync-nc-clave" type="password" autocomplete="off">
+                  </label>
+                </div>
+                <div class="sync-fila">
+                  <button class="btn btn-primario" id="sync-nc-conectar" type="button" data-l10n-es="Conectar" data-l10n-en="Connect" data-l10n-zh="连接">Conectar</button>
+                  <span class="muted" id="sync-nc-estado" data-l10n-es="Sin conectar." data-l10n-en="Not connected." data-l10n-zh="未连接。">Sin conectar.</span>
+                </div>
+                <p class="sync-nota sync-nota--final" data-l10n-es="La contraseña de aplicación se crea en Nextcloud, en Ajustes personales → Seguridad. No es la contraseña de tu cuenta." data-l10n-en="The app password is created in Nextcloud, under Personal settings → Security. It is not your account password." data-l10n-zh="应用密码在 Nextcloud 的个人设置 → 安全中创建。它不是你的账户密码。">La contraseña de aplicación se crea en Nextcloud, en Ajustes personales → Seguridad. No es la contraseña de tu cuenta.</p>
+              </section>
+            </div>
+          </div>
+
           <div id="sync-webdav" hidden>
-            <div class="sync-columnas">
-              <section class="sync-bloque" aria-labelledby="sync-conexion-tit">
+            <div class="sync-columnas sync-columnas--una">
+              <section class="sync-bloque" id="sync-webdav-conexion" aria-labelledby="sync-conexion-tit">
                 <h3 id="sync-conexion-tit" data-l10n-es="Conexión" data-l10n-en="Connection" data-l10n-zh="连接">Conexión</h3>
                 <p class="sync-nota" data-l10n-es="La cuenta la entrega tu proveedor de nube, por ejemplo Nextcloud." data-l10n-en="Your cloud provider gives you the account, for example Nextcloud." data-l10n-zh="账户由你的云服务商提供，例如 Nextcloud。">La cuenta la entrega tu proveedor de nube, por ejemplo Nextcloud.</p>
 
@@ -223,9 +269,13 @@
                   <span class="sync-sin-cuenta"><span data-l10n-es="¿No tienes cuenta?" data-l10n-en="No account?" data-l10n-zh="没有账户？">¿No tienes cuenta?</span> <a id="sync-webdav-registro" href="https://nextcloud.com/es/sign-up/" target="_blank" rel="noopener noreferrer" data-l10n-es="Crea una en Nextcloud" data-l10n-en="Create one in Nextcloud" data-l10n-zh="在 Nextcloud 创建一个">Crea una en Nextcloud</a></span>
                 </div>
 
-                <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de tu cuenta. Se pide al sincronizar y no se guarda en el equipo. Si la conexión falla, prueba con Archivo manual." data-l10n-en="Use an app password, not your account password. It is requested when syncing and is not saved on the device. If the connection fails, try Manual file." data-l10n-zh="请使用应用密码，而不是账户密码。同步时会请求它，不会保存在设备上。如果连接失败，请尝试手动文件。">Usa una contraseña de aplicación, no la de tu cuenta. Se pide al sincronizar y no se guarda en el equipo. Si la conexión falla, prueba con Archivo manual.</p>
+                <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de tu cuenta. Mimo la guarda en este equipo cifrada con tu contraseña de cifrado, para no pedirla en cada arranque; «Desconectar» la borra. Si la conexión falla, prueba con «una carpeta de este equipo»." data-l10n-en="Use an app password, not your account password. Mimo stores it on this device encrypted with your encryption password, so you do not retype it on every start; “Disconnect” erases it. If the connection fails, try “a folder on this device”." data-l10n-zh="请使用应用密码，而不是账户密码。Mimo 会用你的加密密码加密并在本设备保存它，以免每次启动都要重新输入；“断开连接”会删除它。如果连接失败，请尝试“本设备的一个文件夹”。">Usa una contraseña de aplicación, no la de tu cuenta. Mimo la guarda en este equipo cifrada con tu contraseña de cifrado, para no pedirla en cada arranque; «Desconectar» la borra. Si la conexión falla, prueba con «una carpeta de este equipo».</p>
               </section>
+            </div>
+          </div>
 
+          <div id="sync-cifrado" hidden>
+            <div class="sync-columnas sync-columnas--una">
               <section class="sync-bloque sync-bloque--cifrado" aria-labelledby="sync-cifrado-tit">
                 <h3 id="sync-cifrado-tit" data-l10n-es="Cifrado" data-l10n-en="Encryption" data-l10n-zh="加密">Cifrado</h3>
                 <p class="sync-nota"><b data-l10n-es="Obligatorio antes de subir." data-l10n-en="Required before uploading." data-l10n-zh="上传前必填。">Obligatorio antes de subir.</b> <span data-l10n-es="La copia se cifra en este equipo con tu contraseña. No guardamos esa contraseña: sin ella nadie puede abrir la copia, ni siquiera tú. Anótala." data-l10n-en="The copy is encrypted on this device with your password. We do not store that password: without it nobody can open the copy, not even you. Write it down." data-l10n-zh="副本在此设备上用你的密码加密。我们不保存该密码：没有它，任何人都无法打开副本，包括你。请记下它。">La copia se cifra en este equipo con tu contraseña. No guardamos esa contraseña: sin ella nadie puede abrir la copia, ni siquiera tú. Anótala.</span></p>
@@ -264,8 +314,10 @@
             <div class="sync-fila sync-fila--acciones">
               <button class="btn btn-primario" id="sync-ahora" type="button" data-l10n-es="Sincronizar ahora" data-l10n-en="Sync now" data-l10n-zh="立即同步">Sincronizar ahora</button>
               <button class="btn" id="sync-desconectar" type="button" data-l10n-es="Desconectar" data-l10n-en="Disconnect" data-l10n-zh="断开连接">Desconectar</button>
+              <button class="btn" id="sync-ver-copia" type="button" hidden data-l10n-es="Ver la copia" data-l10n-en="View the copy" data-l10n-zh="查看副本">Ver la copia</button>
             </div>
             <p class="muted" id="sync-ultima" data-l10n-es="Nunca sincronizado." data-l10n-en="Never synced." data-l10n-zh="从未同步。">Nunca sincronizado.</p>
+            <p class="muted" id="sync-prueba" data-l10n-es="Sin comprobante todavía: la primera sincronización lo deja aquí." data-l10n-en="No receipt yet: the first sync will leave it here." data-l10n-zh="还没有凭据：第一次同步会留在这里。">Sin comprobante todavía: la primera sincronización lo deja aquí.</p>
             <p class="muted" id="sync-ayuda" data-l10n-es="La nube guarda siempre una copia cifrada. El archivo y la carpeta local no están cifrados: úsalos solo en un lugar de confianza." data-l10n-en="The cloud always stores an encrypted copy. The file and local folder are not encrypted: use them only in a trusted place." data-l10n-zh="云端始终保存加密副本。文件和本地文件夹不加密：仅在可信位置使用。">La nube guarda siempre una copia cifrada. El archivo y la carpeta local no están cifrados: úsalos solo en un lugar de confianza.</p>
           </div>
         </section>
@@ -321,7 +373,7 @@
 </div>
 
 <footer class="footer" aria-label="Pie de la aplicación">
-  <button class="footer__btn" id="pie-sync" type="button"><span class="footer__punto" aria-hidden="true"></span><span data-i18n="pie.guardado">local · guardado</span></button>
+  <button class="footer__btn" id="pie-sync" type="button" aria-live="polite" title=""><span class="footer__punto" aria-hidden="true"></span><span id="pie-sync-texto">local · guardado</span></button>
   <span class="footer__centro" id="pie-centro">Calendario</span>
   <button class="footer__btn" id="pie-ayuda" type="button" data-i18n="pie.ayuda">Ayuda</button>
   <button class="footer__btn" id="pie-panel" type="button" data-i18n="pie.panel">Panel</button>

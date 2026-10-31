@@ -12,6 +12,7 @@
   "use strict";
 
   var CLAVE_META = "mimo.sync.v1";
+  var CLAVE_ACCESO = "mimo.sync.acceso.v1";
   var CLAVE_BACKUP = "mimo.sync.backup";
   var CLAVE_COLA = "mimo.sync.cola.v1";
   var ARCHIVO = "mimo-sync.json";
@@ -25,7 +26,11 @@
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   function L(es, en, zh) { return window.MimoI18n ? window.MimoI18n.L(es, en, zh) : es; }
-  var claveAcceso = ""; /* solo memoria/sesión: la contraseña WebDAV no va a localStorage */
+  /* La contraseña de aplicación de WebDAV se guarda en este equipo, cifrada con la
+     misma clave derivada que protege la copia (AES-GCM). No es un secreto frente a
+     quien pueda leer el almacenamiento de la app, pero evita pedirla en cada arranque.
+     «Desconectar» la borra. */
+  var claveAcceso = "";
   try { claveAcceso = sessionStorage.getItem("mimo.sync.clave.sesion") || ""; } catch (e) {}
   var meta = cargarMeta();
   var cola = cargarCola();
@@ -35,6 +40,7 @@
   var cambios = false, ultimoError = "";
   var timerAuto = null, timerEstado = null, timerAutoLargo = null, timerReintento = null, timerVigia = null;
   var proveedorPrueba = null;
+  var esperaNc = null; /* autorización en el navegador en curso */
   var claveMemo = null, claveSal = "";
 
   function ahora() { return new Date().toISOString(); }
@@ -46,7 +52,8 @@
     return {
       version: 1, provider: "", manualOnly: true, clientId: uuid(),
       lastRemoteRev: "", lastRemoteVersion: 0, lastLocalHash: "",
-      lastSyncAt: "", folderName: "", ultimoCambio: "",
+      lastSyncAt: "", folderName: "", ultimoCambio: "", ultimaPrueba: null,
+      nc: false, ncUrl: "", accesoEn: "",
       webdav: { url: "", usuario: "", clave: "", carpeta: "Mimo" },
       cifrado: { sal: "", activo: false }
     };
@@ -149,6 +156,21 @@
     var u = new Uint8Array(n);
     crypto.getRandomValues(u);
     return u;
+  }
+
+  /* ---- comprobante de la última sincronización ----
+     Sirve para responder "¿esto se subió de verdad?" sin abrir la nube: qué se
+     movió, cuándo, cuánto pesa y cuántas cosas lleva. */
+  function tamano(texto) {
+    var b = 0;
+    try { b = new Blob([texto]).size; } catch (e) { b = String(texto || "").length; }
+    return b < 1024 ? b + " B" : (b / 1024).toFixed(1) + " KB";
+  }
+  function cuentasDe(estado) {
+    try { return resumen(estado); } catch (e) { return { tareas: 0, notas: 0, eventos: 0, ramos: 0, sesiones: 0 }; }
+  }
+  function anotarPrueba(p) {
+    try { meta.ultimaPrueba = p; guardarMeta(); } catch (e) {}
   }
 
   /* ---- archivo de sincronización ---- */
@@ -320,6 +342,60 @@
       });
     } catch (e) {}
   }
+  /* El llavero del sistema manda cuando existe. Si no (o si falla), el respaldo es
+     el envoltorio AES-GCM con la clave derivada que ya protege la copia. */
+  async function llaveroGuardar(clave) {
+    if (!esTauri()) return false;
+    try { await invocarTauri("llavero_guardar", { clave: clave }); return true; } catch (e) { return false; }
+  }
+  async function llaveroLeer() {
+    if (!esTauri()) return null;
+    try { return await invocarTauri("llavero_leer", {}); } catch (e) { return null; }
+  }
+  async function llaveroBorrar() {
+    if (!esTauri()) return;
+    try { await invocarTauri("llavero_borrar", {}); } catch (e) {}
+  }
+  function ponerClaveAcceso(plano) {
+    claveAcceso = plano;
+    try { sessionStorage.setItem("mimo.sync.clave.sesion", plano); } catch (e) {}
+    var campo = $("#sync-webdav-clave-acceso");
+    if (campo && !campo.value) campo.value = plano;
+  }
+  async function guardarAcceso() {
+    if (!claveAcceso) return false;
+    if (await llaveroGuardar(claveAcceso)) {
+      try { localStorage.removeItem(CLAVE_ACCESO); } catch (e) {}
+      meta.accesoEn = "llavero"; guardarMeta();
+      return true;
+    }
+    try {
+      if (!meta.cifrado.sal) return false; /* sin clave de cifrado no hay con qué envolverla */
+      var envuelta = await cifrar(claveAcceso);
+      localStorage.setItem(CLAVE_ACCESO, envuelta);
+      meta.accesoEn = "cifrado"; guardarMeta();
+      return true;
+    } catch (e) { return false; }
+  }
+  async function recuperarAcceso() {
+    var delLlavero = await llaveroLeer();
+    if (delLlavero) { ponerClaveAcceso(delLlavero); meta.accesoEn = "llavero"; guardarMeta(); return true; }
+    var guardada = "";
+    try { guardada = localStorage.getItem(CLAVE_ACCESO) || ""; } catch (e) {}
+    if (!guardada) return false;
+    try {
+      var plano = await descifrar(guardada);
+      if (!plano) return false;
+      ponerClaveAcceso(plano);
+      meta.accesoEn = "cifrado"; guardarMeta();
+      return true;
+    } catch (e) { return false; }
+  }
+  function borrarAcceso() {
+    try { localStorage.removeItem(CLAVE_ACCESO); } catch (e) {}
+    llaveroBorrar();
+  }
+
   async function obtenerCarpeta(pedir) {
     if (proveedorPrueba) return proveedorPrueba;
     if (esTauri()) {
@@ -408,7 +484,9 @@
   }
   function cabeceras(extra) {
     var h = Object.assign({ "Accept": "application/json, text/plain, */*" }, extra || {});
-    var a = cabeceraAuth(); if (a) h.Authorization = a;
+    /* La credencial guardada rellena las peticiones de WebDAV, pero nunca pisa una
+       cabecera explícita: el conector de Nextcloud comprueba las suyas. */
+    var a = cabeceraAuth(); if (a && !h.Authorization) h.Authorization = a;
     return h;
   }
   function esTauri() {
@@ -463,24 +541,173 @@
       y.red = true; y.causa = e; throw y;
     } finally { clearTimeout(t); }
   }
+  /* ---- conector de Nextcloud ----
+     El usuario escribe la dirección como la escribe en el navegador. Mimo confirma
+     que hay un Nextcloud, pide el perfil para saber el identificador y arma la ruta
+     WebDAV: /remote.php/dav/files/<id>/. Es el campo donde más gente se equivoca. */
+  function normalizarDireccion(v) {
+    var s = String(v || "").trim();
+    if (!s) return "";
+    if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+    return s.replace(/\/+$/, "");
+  }
+  function decirNc(texto, mal) {
+    var e = $("#sync-nc-estado");
+    if (!e) return;
+    e.textContent = texto;
+    e.className = "muted" + (mal ? " err" : "");
+  }
+  function dormir(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function mostrarEsperaNc(activo, enlace) {
+    var c = $("#sync-nc-cancelar"); if (c) c.hidden = !activo;
+    var a = $("#sync-nc-enlace");
+    if (a) { a.hidden = !enlace; if (enlace) a.href = enlace; }
+  }
+
+  async function abrirNavegador(url) {
+    if (esTauri()) {
+      try { await invocarTauri("abrir_navegador", { url: url }); return true; } catch (e) {}
+    }
+    try { var w = window.open(url, "_blank"); return !!w; } catch (e) { return false; }
+  }
+
+  /* Con servidor, usuario y contraseña de aplicación ya en la mano: se pregunta el
+     identificador real (que puede no ser el nombre de login) y se arma la ruta DAV. */
+  async function aplicarCredenciales(dir, usuario, clave) {
+    var auth = "Basic " + btoa(unescape(encodeURIComponent(usuario + ":" + clave)));
+    var ocs = await pedir(dir + "/ocs/v2.php/cloud/user?format=json", { method: "GET", headers: { Authorization: auth, "OCS-APIRequest": "true" } });
+    if (ocs.status === 401 || ocs.status === 403) {
+      throw new Error(L("El usuario o la contraseña de aplicación no son correctos. Créala en Ajustes personales → Seguridad.", "The user or the app password is wrong. Create one in Personal settings → Security.", "用户名或应用密码不正确。请在个人设置 → 安全中创建。"));
+    }
+    if (!ocs.ok) throw new Error(explicarHttp(ocs.status, L("No se pudo leer el perfil de Nextcloud", "Could not read the Nextcloud profile", "无法读取 Nextcloud 资料")));
+    var datos = {};
+    try { datos = ((JSON.parse(await ocs.text()) || {}).ocs || {}).data || {}; } catch (e) {}
+    var id = datos.id || datos.uid || usuario;
+    meta.provider = "webdav"; meta.nc = true; meta.ncUrl = dir;
+    meta.webdav = Object.assign({}, meta.webdav, {
+      url: dir + "/remote.php/dav/files/" + encodeURIComponent(id),
+      usuario: usuario,
+      carpeta: meta.webdav.carpeta || "Mimo"
+    });
+    ponerClaveAcceso(clave);
+    guardarMeta(); guardarAcceso();
+    if ($("#sync-nc-clave")) $("#sync-nc-clave").value = "";
+    cargarCamposWebDAV(); pintarUI();
+    return id;
+  }
+
+  async function conectarNextcloud() {
+    var dir = normalizarDireccion($("#sync-nc-url") ? $("#sync-nc-url").value : "");
+    var usuario = $("#sync-nc-usuario") ? $("#sync-nc-usuario").value.trim() : "";
+    var clave = $("#sync-nc-clave") ? $("#sync-nc-clave").value : "";
+    if (!dir) { decirNc(L("Escribe la dirección de tu Nextcloud.", "Type your Nextcloud address.", "请输入你的 Nextcloud 地址。"), true); return; }
+    if (!usuario || !clave) { decirNc(L("Faltan el usuario o la contraseña de aplicación.", "The user or the app password is missing.", "缺少用户名或应用密码。"), true); return; }
+    decirNc(L("Comprobando…", "Checking…", "检查中…"));
+    try {
+      var st = await pedir(dir + "/status.php", { method: "GET" });
+      if (!st.ok) throw new Error(explicarHttp(st.status, L("Esa dirección no responde como un Nextcloud", "That address does not answer as a Nextcloud", "该地址的响应不像 Nextcloud")));
+      var info = {};
+      try { info = JSON.parse(await st.text()) || {}; } catch (e) {}
+      if (info.installed === false) throw new Error(L("Ese Nextcloud todavía no está instalado.", "That Nextcloud is not installed yet.", "该 Nextcloud 尚未安装。"));
+      var id = await aplicarCredenciales(dir, usuario, clave);
+      decirNc(L("Conectado como ", "Connected as ", "已连接为 ") + id + ".");
+      avisar(L("Nextcloud conectado. Pulsa «Sincronizar ahora».", "Nextcloud connected. Press “Sync now”.", "Nextcloud 已连接。请按“立即同步”。"));
+    } catch (e) {
+      decirNc(e && e.message ? e.message : L("No se pudo conectar.", "Could not connect.", "无法连接。"), true);
+    }
+  }
+
+  /* Login Flow v2: se pide el enlace al servidor, se abre el navegador del sistema y
+     se sondea hasta que el usuario concede el acceso. Vuelven servidor, usuario y
+     contraseña de aplicación sin escribirlos. */
+  async function autorizarEnNavegador() {
+    var dir = normalizarDireccion($("#sync-nc-url") ? $("#sync-nc-url").value : "");
+    if (!dir) { decirNc(L("Escribe la dirección de tu Nextcloud.", "Type your Nextcloud address.", "请输入你的 Nextcloud 地址。"), true); return; }
+    esperaNc = { dir: dir };
+    decirNc(L("Abriendo tu Nextcloud…", "Opening your Nextcloud…", "正在打开你的 Nextcloud…"));
+    try {
+      var inicio = await pedir(dir + "/index.php/login/v2", { method: "POST", headers: { "OCS-APIRequest": "true" } });
+      if (!inicio.ok) throw new Error(explicarHttp(inicio.status, L("Ese servidor no ofrece la autorización desde el navegador", "That server does not offer browser authorisation", "该服务器不支持在浏览器中授权")));
+      var datos = {};
+      try { datos = JSON.parse(await inicio.text()) || {}; } catch (e) {}
+      var poll = datos.poll || {}, enlace = datos.login || "";
+      if (!poll.token || !poll.endpoint || !enlace) throw new Error(L("El servidor no devolvió el enlace de autorización.", "The server did not return the authorisation link.", "服务器没有返回授权链接。"));
+      var abierto = await abrirNavegador(enlace);
+      mostrarEsperaNc(true, abierto ? "" : enlace);
+      decirNc(abierto
+        ? L("Esperando a que autorices en el navegador…", "Waiting for you to authorise in the browser…", "等待你在浏览器中授权…")
+        : L("Abre la página de autorización y vuelve aquí.", "Open the authorisation page and come back here.", "请打开授权页面然后回到这里。"), !abierto);
+      for (var i = 0; i < 300; i++) {
+        if (!esperaNc) return;
+        await dormir(2000);
+        if (!esperaNc) return;
+        var r = await pedir(poll.endpoint, {
+          method: "POST",
+          body: "token=" + encodeURIComponent(poll.token),
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        });
+        if (r.status === 404) continue;
+        if (!r.ok) throw new Error(explicarHttp(r.status, L("No se pudo completar la autorización", "Could not complete the authorisation", "无法完成授权")));
+        var cred = {};
+        try { cred = JSON.parse(await r.text()) || {}; } catch (e) {}
+        if (!cred.appPassword) throw new Error(L("La autorización llegó incompleta.", "The authorisation arrived incomplete.", "授权信息不完整。"));
+        var servidor = normalizarDireccion(cred.server || dir);
+        var id = await aplicarCredenciales(servidor, cred.loginName || "", cred.appPassword);
+        decirNc(L("Autorizado como ", "Authorised as ", "已授权为 ") + id + ".");
+        avisar(L("Nextcloud conectado. Pulsa «Sincronizar ahora».", "Nextcloud connected. Press “Sync now”.", "Nextcloud 已连接。请按“立即同步”。"));
+        return;
+      }
+      throw new Error(L("La autorización caducó. Vuelve a intentarlo.", "The authorisation expired. Try again.", "授权已过期，请重试。"));
+    } catch (e) {
+      decirNc(e && e.message ? e.message : L("No se pudo completar la autorización.", "Could not complete the authorisation.", "无法完成授权。"), true);
+    } finally {
+      esperaNc = null; mostrarEsperaNc(false, "");
+    }
+  }
+
+  /* Un error HTTP no es un mensaje: es una pista. Se traduce a lo que el usuario
+     puede hacer, sin perder el código para quien depure. */
+  function explicarHttp(estado, donde) {
+    var cola = " (HTTP " + estado + ")";
+    if (estado === 401 || estado === 403) {
+      return L("El servidor rechazó el usuario o la contraseña de aplicación" + cola + ". Revisa las credenciales; si es Nextcloud, crea una contraseña de aplicación en Ajustes personales → Seguridad.",
+        "The server rejected the user or the app password" + cola + ". Check the credentials; for Nextcloud, create an app password in Personal settings → Security.",
+        "服务器拒绝了用户名或应用密码" + cola + "。请检查凭据；Nextcloud 请在个人设置 → 安全中创建应用密码。");
+    }
+    if (estado === 404) {
+      return L("Esa dirección no tiene la carpeta de Mimo" + cola + ". En Nextcloud la dirección termina en /remote.php/dav/files/TU-USUARIO/.",
+        "That address has no Mimo folder" + cola + ". In Nextcloud the address ends with /remote.php/dav/files/YOUR-USER/.",
+        "该地址没有 Mimo 文件夹" + cola + "。Nextcloud 的地址以 /remote.php/dav/files/你的用户名/ 结尾。");
+    }
+    if (estado === 405) {
+      return L("El destino no admite escritura por WebDAV" + cola + ". Comprueba que la cuenta puede crear archivos en esa carpeta.",
+        "The destination does not allow WebDAV writes" + cola + ". Check that the account can create files in that folder.",
+        "目标不允许通过 WebDAV 写入" + cola + "。请检查该账户能否在该文件夹中创建文件。");
+    }
+    if (estado === 507) {
+      return L("No queda espacio en el destino" + cola + ".", "The destination is out of space" + cola + ".", "目标空间不足" + cola + "。");
+    }
+    return donde + cola + ".";
+  }
   async function asegurarCarpeta() {
     var partes = trozosCarpeta(); if (!partes.length) return;
     var acum = urlBase();
     for (var i = 0; i < partes.length; i++) {
       acum += "/" + encodeURIComponent(partes[i]);
       var res = await pedir(acum, { method: "MKCOL" });
-      if ([201, 200, 204, 301, 405, 409, 403].indexOf(res.status) === -1) {
-        throw new Error(L("No se pudo crear la carpeta remota (HTTP " + res.status + ").", "Could not create the remote folder (HTTP " + res.status + ").", "无法创建远程文件夹（HTTP " + res.status + "）。"));
+      if (res.status === 401 || res.status === 403) throw new Error(explicarHttp(res.status, ""));
+      if ([201, 200, 204, 301, 405, 409].indexOf(res.status) === -1) {
+        throw new Error(explicarHttp(res.status, L("No se pudo crear la carpeta remota", "Could not create the remote folder", "无法创建远程文件夹")));
       }
-      if (res.status === 401) throw new Error(L("El servidor rechazó las credenciales (HTTP 401).", "The server rejected the credentials (HTTP 401).", "服务器拒绝了凭据（HTTP 401）。"));
     }
   }
   async function webdavLeer() {
     if (!urlBase()) throw new Error(L("Falta la URL del servidor WebDAV.", "The WebDAV server URL is missing.", "缺少 WebDAV 服务器 URL。"));
     var res = await pedir(urlArchivo(), { method: "GET" });
     if (res.status === 404) return null;
-    if (res.status === 401 || res.status === 403) throw new Error(L("El servidor rechazó las credenciales (HTTP " + res.status + ").", "The server rejected the credentials (HTTP " + res.status + ").", "服务器拒绝了凭据（HTTP " + res.status + "）。"));
-    if (!res.ok) throw new Error(L("WebDAV respondió HTTP " + res.status + " al leer.", "WebDAV returned HTTP " + res.status + " while reading.", "WebDAV 读取时返回 HTTP " + res.status + "。"));
+    if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error(explicarHttp(res.status, ""));
+    if (!res.ok) throw new Error(explicarHttp(res.status, L("No se pudo leer la copia remota", "Could not read the remote copy", "无法读取远程副本")));
     var cuerpo = await res.text();
     var rev = await hashTexto(cuerpo);
     var etag = res.headers.get("ETag") || "";
@@ -507,7 +734,7 @@
     if (res.status === 412) {
       var c = new Error(L("El archivo remoto cambió mientras sincronizabas.", "The remote file changed while you were syncing.", "同步时远程文件发生了变化。")); c.codigo = 412; throw c;
     }
-    if (!res.ok) throw new Error(L("WebDAV respondió HTTP " + res.status + " al escribir.", "WebDAV returned HTTP " + res.status + " while writing.", "WebDAV 写入时返回 HTTP " + res.status + "。"));
+    if (!res.ok) throw new Error(explicarHttp(res.status, L("No se pudo escribir la copia remota", "Could not write the remote copy", "无法写入远程副本")));
     return { rev: await hashTexto(cuerpo), etag: res.headers.get("ETag") || "" };
   }
   async function probarWebDAV() {
@@ -603,7 +830,7 @@
     if (!p) return;
     var tiene = !!meta.cifrado.activo;
     p.textContent = tiene
-      ? L("Cifrado activo en este equipo (AES-GCM). La contraseña no se guarda: solo la clave derivada.", "Encryption active on this device (AES-GCM). The password is not saved: only the derived key.", "此设备已启用加密（AES-GCM）。密码不保存，只保存派生密钥。")
+      ? L("Cifrado activo en este equipo (AES-GCM). La contraseña de cifrado no se guarda: solo la clave derivada, que también protege la contraseña de aplicación.", "Encryption active on this device (AES-GCM). The encryption password is not saved: only the derived key, which also protects the app password.", "此设备已启用加密（AES-GCM）。加密密码不保存，只保存派生密钥，它同时保护应用密码。")
       : L("Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.", "No key on this device. Enter it before syncing; nothing is uploaded without it.", "此设备没有密钥。同步前请输入；没有它不会上传任何内容。");
     p.className = "muted" + (tiene ? " ok" : "");
   }
@@ -622,8 +849,11 @@
     else texto = L("Listo para sincronizar.", "Ready to sync.", "可以同步。");
     est.textContent = texto;
     est.className = clase;
-    var sel = $("#sync-proveedor"); if (sel) sel.value = meta.provider || "";
-    var w = $("#sync-webdav"); if (w) w.hidden = meta.provider !== "webdav";
+    var sel = $("#sync-proveedor"); if (sel) sel.value = meta.provider === "webdav" && meta.nc ? "nextcloud" : (meta.provider || "");
+    var w = $("#sync-webdav"); if (w) w.hidden = meta.provider !== "webdav" || !!meta.nc;
+    var cw = $("#sync-webdav-conexion"); if (cw) cw.hidden = !!meta.nc;
+    var nc = $("#sync-nextcloud"); if (nc) nc.hidden = !(meta.provider === "webdav" && meta.nc);
+    var cf = $("#sync-cifrado"); if (cf) cf.hidden = meta.provider !== "webdav";
     var c = $("#sync-carpeta"); if (c) c.hidden = meta.provider !== "carpeta";
     var a = $("#sync-archivo"); if (a) a.hidden = meta.provider !== "archivo";
     var m = $("#sync-manual");
@@ -646,7 +876,50 @@
         : L("Sincronizado; clic para sincronizar ahora", "Synced; click to sync now", "已同步；点击立即同步");
       b.innerHTML = icono(sincronizando ? "i-sync" : (ultimoError || conflicto ? "i-alerta" : "i-check"));
     }
+    var pr = $("#sync-prueba");
+    if (pr) {
+      var prueba = meta.ultimaPrueba;
+      if (prueba && prueba.fecha) {
+        pr.textContent = L("Comprobante: ", "Receipt: ", "凭据：") + fecha(new Date(prueba.fecha).getTime())
+          + " · " + resumenTexto(prueba.cuentas || { tareas: 0, notas: 0, eventos: 0, ramos: 0, sesiones: 0 })
+          + " · " + (prueba.peso || "")
+          + " · " + (prueba.sentido === "bajada" ? L("recibida", "received", "已接收") : L("enviada", "sent", "已发送"))
+          + (prueba.clientId ? " · " + L("equipo ", "device ", "设备 ") + prueba.clientId : "") + ".";
+        pr.className = "muted ok";
+      } else {
+        pr.textContent = L("Sin comprobante todavía: la primera sincronización lo deja aquí.", "No receipt yet: the first sync will leave it here.", "还没有凭据：第一次同步会留在这里。");
+        pr.className = "muted";
+      }
+    }
+    var vc = $("#sync-ver-copia");
+    if (vc) vc.hidden = !meta.provider;
     pintarClave();
+    try { document.dispatchEvent(new CustomEvent("mimo:sync")); } catch (e) {}
+  }
+
+  /* ---- ver la copia remota: la prueba que el usuario puede leer ---- */
+  async function verCopia() {
+    if (!meta.provider) {
+      avisar(L("Elige primero un destino de sincronización.", "Choose a sync destination first.", "请先选择同步目标。"));
+      return;
+    }
+    try {
+      sincronizando = true; ultimoError = ""; pintarUI();
+      var r = await leerRemoto();
+      if (!r || r.texto == null) {
+        avisar(L("El destino todavía no tiene ninguna copia de Mimo.", "The destination has no Mimo copy yet.", "目标上还没有 Mimo 副本。"));
+        return;
+      }
+      var env = leerEnvelope(r.texto);
+      var cuando = env.lastModified ? fecha(env.lastModified) : L("fecha desconocida", "unknown date", "日期未知");
+      avisar(L("En el destino: ", "In the destination: ", "目标中：") + cuando
+        + " · " + resumenTexto(cuentasDe(env.estado))
+        + " · " + tamano(r.texto)
+        + " · " + L("equipo ", "device ", "设备 ") + String(env.clientId || "?").slice(0, 8) + ".");
+    } catch (e) {
+      ultimoError = e && e.message ? e.message : L("No se pudo leer el destino.", "Could not read the destination.", "无法读取目标。");
+      avisar(ultimoError);
+    } finally { sincronizando = false; pintarUI(); }
   }
   async function recalcularCambios() {
     if (!host()) return;
@@ -722,6 +995,8 @@
     meta.lastRemoteVersion = version;
     meta.lastLocalHash = localHash;
     meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
+    guardarAcceso();
+    anotarPrueba({ fecha: meta.lastSyncAt, peso: tamano(texto), sentido: "subida", version: version, cuentas: cuentasDe(local), clientId: meta.clientId && meta.clientId.slice ? meta.clientId.slice(0, 8) : "" });
     guardarMeta(); cambios = false; ultimoError = ""; limpiarCola();
     limpiarCampoClave();
     avisar(meta.provider === "archivo" ? L("Archivo de sincronización guardado. Cópialo a tu nube.", "Sync file saved. Copy it to your cloud.", "同步文件已保存。请复制到你的云端。")
@@ -736,6 +1011,7 @@
     meta.lastRemoteRev = remoto.rev;
     meta.lastRemoteVersion = Number(env.syncVersion) || 1;
     meta.lastLocalHash = h; meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
+    anotarPrueba({ fecha: meta.lastSyncAt, peso: tamano(remoto.texto), sentido: "bajada", version: Number(env.syncVersion) || 1, cuentas: cuentasDe(env.estado), clientId: env.clientId && env.clientId.slice ? env.clientId.slice(0, 8) : "" });
     guardarMeta(); cambios = false; ultimoError = ""; aplicando = false; limpiarCola();
     limpiarCampoClave();
     avisar(L("Datos remotos aplicados. La copia local quedó como respaldo.", "Remote data applied. The local copy was kept as a backup.", "已应用远程数据。本地副本保留为备份。"));
@@ -845,7 +1121,8 @@
   }
   function cambiarProveedor() {
     var v = $("#sync-proveedor").value;
-    meta.provider = v || "";
+    if (v === "nextcloud") { meta.provider = "webdav"; meta.nc = true; }
+    else { meta.provider = v || ""; if (v === "webdav") meta.nc = false; }
     if (v === "archivo") meta.manualOnly = true;
     if (!v) { meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0; meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.folderName = ""; }
     guardarMeta(); cargarCamposWebDAV(); pintarUI();
@@ -859,10 +1136,12 @@
   }
   function desconectar() {
     if (!window.confirm(L("¿Desconectar la sincronización? No se borran tus datos ni el archivo remoto.", "Disconnect sync? Your data and the remote file are not deleted.", "断开同步？你的数据和远程文件不会被删除。"))) return;
-    meta.provider = ""; meta.folderName = ""; meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
+    meta.provider = ""; meta.folderName = ""; meta.nc = false; meta.ncUrl = "";
+    meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
     meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
     meta.webdav.clave = "";
     claveAcceso = "";
+    borrarAcceso();
     try { sessionStorage.removeItem("mimo.sync.clave.sesion"); } catch (e) {}
     carpetaHandle = null; handleLeido = true; borrarHandle();
     carpetaTauri = null;
@@ -932,6 +1211,7 @@
       claveMemo = k; claveSal = sal;
       meta.cifrado.sal = sal; meta.cifrado.activo = true;
       guardarMeta();
+      guardarAcceso();
       ultimoError = "";
       avisar(L("Clave de cifrado guardada en este equipo. No se puede recuperar: anótala.", "Encryption key saved on this device. It cannot be recovered: write it down.", "加密密钥已保存在此设备。无法恢复：请记下它。"));
       pintarUI();
@@ -945,12 +1225,15 @@
   }
   async function olvidarClave() {
     await borrarClaves();
+    borrarAcceso(); claveAcceso = "";
     claveMemo = null; claveSal = "";
     limpiarCampoClave();
     meta.cifrado.activo = false; guardarMeta();
     pintarUI(); avisar(L("Clave olvidada en este equipo. Se pedirá de nuevo para sincronizar.", "Key forgotten on this device. It will be requested again to sync.", "已忘记此设备上的密钥。同步时会再次请求。"));
   }
   function cargarCamposWebDAV() {
+    var ncu = $("#sync-nc-url"); if (ncu) ncu.value = meta.ncUrl || "";
+    var ncu2 = $("#sync-nc-usuario"); if (ncu2) ncu2.value = meta.webdav.usuario || "";
     var u = $("#sync-webdav-url"); if (u) u.value = meta.webdav.url || "";
     var us = $("#sync-webdav-usuario"); if (us) us.value = meta.webdav.usuario || "";
     var c = $("#sync-webdav-clave-acceso"); if (c) c.value = "";
@@ -970,6 +1253,7 @@
     if (acceso) acceso.addEventListener("input", function () {
       claveAcceso = acceso.value;
       try { sessionStorage.setItem("mimo.sync.clave.sesion", claveAcceso); } catch (e) {}
+      guardarAcceso();
     });
     unir("#sync-webdav-carpeta", "carpeta");
   }
@@ -985,6 +1269,14 @@
     sel.addEventListener("change", cambiarProveedor);
     enlazarCamposWebDAV();
     cargarCamposWebDAV();
+    var ncc = $("#sync-nc-conectar"); if (ncc) ncc.addEventListener("click", conectarNextcloud);
+    var ncn = $("#sync-nc-navegador"); if (ncn) ncn.addEventListener("click", autorizarEnNavegador);
+    var ncx = $("#sync-nc-cancelar");
+    if (ncx) ncx.addEventListener("click", function () {
+      esperaNc = null;
+      decirNc(L("Autorización cancelada.", "Authorisation cancelled.", "授权已取消。"));
+      mostrarEsperaNc(false, "");
+    });
     $("#sync-elegir-carpeta").addEventListener("click", elegirCarpeta);
     $("#sync-ahora").addEventListener("click", function () { sincronizar(false); });
     $("#sync-desconectar").addEventListener("click", desconectar);
@@ -1005,6 +1297,8 @@
     $("#modal-sync-conflict").addEventListener("click", function (e) {
       if (e.target === $("#modal-sync-conflict")) { conflicto = null; cerrarConflicto(); pintarUI(); }
     });
+    var vc = $("#sync-ver-copia");
+    if (vc) vc.addEventListener("click", verCopia);
     $("#btn-sync").addEventListener("click", function () {
       if (!meta.provider) { host().ir("ajustes"); avisar(L("Elige un modo de sincronización.", "Choose a sync mode.", "请选择同步方式。")); return; }
       sincronizar(false);
@@ -1026,6 +1320,7 @@
     setTimeout(function () {
       if (esNube()) leerClave(meta.cifrado.sal).then(function (k) {
         if (!k && meta.cifrado.activo) { meta.cifrado.activo = false; guardarMeta(); pintarUI(); }
+        if (esWebDAV()) recuperarAcceso();
       });
     }, 200);
     if (esNube() && cola.pendiente && cola.reintentar && navigator.onLine) programarReintento(2500);

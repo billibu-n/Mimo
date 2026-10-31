@@ -21,7 +21,7 @@ propósito: subirla antes de tener los assets deja `gate-release.py` en rojo.
 - `packaging/arch/PKGBUILD`, `.SRCINFO` y `README.md`
 - `escritorio/README.md`
 - `pruebas/gate-actualizacion.py`, `gate-correcciones.py`, `gate-release.py`,
-  `gate-respaldo.py`, `gate-tauri.py`
+  `gate-respaldo.py`, `gate-tauri.py`, `gate-senal.py`
 - `README.md`, `INSTALACION.md`, `COMPATIBILIDAD.md`, `SECURITY.md`
 
 ## Abrir la beta
@@ -33,12 +33,15 @@ propósito: subirla antes de tener los assets deja `gate-release.py` en rojo.
 5. Aprobar el deployment del workflow.
 6. Descargar los artefactos a `publicacion/` y ejecutar
    `python3 scripts/updates/generar-manifiesto.py --version 1.2.0-beta.5 --tag v1.2.0-beta.5`.
+   - Antes de generar el manifiesto, actualizar `app/tutorial.json` y su copia publicada: la nota
+     de bienvenida aún dice que la contraseña no se guarda, y desde R80 la de aplicación sí se
+     guarda cifrada (`gate-tutorial` exige que los dos archivos sean idénticos).
 7. Crear la release como **pre-release** y subir los assets.
 8. Copiar `beta.json` a la rama `updates` y empujar.
 9. Verificar `rpm --checksig` y `sha256sum -c SHA256SUMS`.
 
 ## Criterio de cierre
 
-- 19 gates web y `gate-tauri` en verde.
+- 20 gates web y `gate-tauri` en verde.
 - RPM con firma GPG `OK` y `.sig` minisign con `version:1.2.0-beta.5`.
 - Release pre-release con 11 assets y `SHA256SUMS` verificado.
