@@ -54,7 +54,7 @@
           "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
         },
         "depends": [
-          "glibc >= 2.39",
+          "libc.so.6(GLIBC_2.39)(64bit)",
           "openssl-libs"
         ]
       },

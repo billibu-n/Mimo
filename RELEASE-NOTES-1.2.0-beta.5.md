@@ -66,3 +66,11 @@ La firma del RPM entra en esta misma beta.
 
 - Arch recibe aviso y enlace; el plugin no instala `.pkg.tar.zst`.
 - Windows sin Authenticode puede mostrar SmartScreen.
+
+## Corregido en el paquete RPM
+
+- Beta.4 no se podía instalar en Fedora: el paquete pedía una capacidad llamada literalmente
+  «glibc >= 2.39», que ningún sistema provee, y `dnf` abortaba. Ahora la dependencia se declara
+  como la versión de símbolo `libc.so.6(GLIBC_2.39)(64bit)`, que fija el mismo mínimo real y sí
+  se resuelve.
+- Si instalaste beta.4 y falló, prueba de nuevo con este RPM.
