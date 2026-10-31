@@ -34,6 +34,11 @@ puente `http_pedir` en `escritorio/src-tauri/src/main.rs`, los gates `gate-sync.
    cifrado opcional con código de recuperación, y fusionar por campo en vez de elegir entre todo
    local y todo remoto.
 
+**Hecho ya en esta rama:** la señal del pie con la hora del último cambio y de la última
+sincronización, el comprobante de cada sincronización, el botón «ver la copia», los mensajes de
+error traducidos a acciones y la tarjeta que empieza preguntando dónde guardar. Todo medido con
+`gate-senal.py` y los 20 gates en verde.
+
 **Recomendación en una frase:** tres destinos para el usuario —«una carpeta», «tu nube» y «otro
 servidor»—, con el motor actual detrás y tres arreglos previos; los proveedores con OAuth entran
 después, uno por uno y solo si el flujo se prueba contra una cuenta real.
@@ -521,6 +526,12 @@ snapshot, la misma cola y el mismo cifrado.
 | A5 | **Comprobante** tras sincronizar y botón «ver qué hay en la nube» | Pequeño | El usuario puede responder «sí, está subido» sin dudar |
 | A6 | Errores traducidos a acciones | Pequeño | Ningún mensaje con «HTTP» en la ruta normal |
 | A7 | Gate nuevo con un **Nextcloud falso** que implemente login flow, OCS y WebDAV | Medio | El flujo completo se mide en CI, sin cuenta real |
+
+**A8 — la señal en el pie (pedida por el dueño).** El pie no decía nada útil. Ahora muestra
+destino y hora —«Local · 12:03», «Nube · 12:04», «Sin subir · 12:05», «Sincronizando…»,
+«Conflicto»— con un punto de color, y el detalle completo en el título: último cambio guardado,
+última sincronización, destino y error pendiente. Un clic abre la tarjeta de sincronización.
+Se mide con `gate-senal.py` (17 comprobaciones).
 
 A1, A2, A3, A5 y A6 son el corazón: sin ellos el frente no cambia. A4 toca una decisión de la beta
 anterior —el cifrado dejó de ser opcional en la fase 2— y necesita el visto bueno del dueño antes de

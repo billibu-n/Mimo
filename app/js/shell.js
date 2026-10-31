@@ -250,6 +250,7 @@
     return d;
   }
   var estado = leer();
+  textoGuardado = JSON.stringify(estado);
   var pantalla = "calendario";
   var vistaTareas = estado.vistaTareas || "hoy";
   var vistaCalendario = estado.vistaCalendario || "mes";
@@ -265,6 +266,7 @@
   var catalogoBusqueda = "";
   var HISTORIAL_MAX = 60, historial = [], historialPos = -1, historialTimer = null, historialSilencio = false;
   var falloGuardado = false, copiaNativa = null;
+  var ultimoGuardado = 0, textoGuardado = "";
 
   function mostrarBannerAlmacen(texto, restaurar) {
     var b = $("#banner-almacen"), t = $("#banner-almacen-texto"), r = $("#banner-almacen-restaurar");
@@ -278,6 +280,7 @@
   }
   function guardar() {
     var texto = JSON.stringify(estado);
+    if (texto !== textoGuardado) { textoGuardado = texto; ultimoGuardado = Date.now(); pintarPie(); }
     var ok = true;
     try { localStorage.setItem(CLAVE, texto); } catch (e) {
       ok = false;
@@ -390,6 +393,71 @@
     t.classList.add("on");
     clearTimeout(t._t);
     t._t = setTimeout(function () { t.classList.remove("on"); }, typeof deshacer === "function" ? 6500 : 2600);
+  }
+  /* ---- señal del pie: cuándo se guardó y cuándo se sincronizó ----
+     El pie responde a la pregunta que la app no contestaba: ¿esto está guardado?
+     ¿está en la nube? ¿de cuándo? Un punto de color y una hora corta; el detalle,
+     en el título del botón. Clic: abre Ajustes en la tarjeta de sincronización. */
+  function horaCorta(ms) {
+    var d = new Date(ms);
+    if (!isFinite(d.getTime())) return "";
+    return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+  }
+  function fechaHora(ms) {
+    try {
+      var i = window.MimoI18n ? MimoI18n.idioma() : "es";
+      var loc = i === "zh" ? "zh-CN" : i === "en" ? "en-US" : "es-CL";
+      return new Date(ms).toLocaleString(loc, { dateStyle: "short", timeStyle: "short" });
+    } catch (e) { return new Date(ms).toLocaleString(); }
+  }
+  function nombreDestino(meta) {
+    if (!meta || !meta.provider) return L("Local", "Local", "本地");
+    if (meta.provider === "webdav") return L("Nube", "Cloud", "云端");
+    if (meta.provider === "carpeta") return L("Carpeta", "Folder", "文件夹");
+    return L("Archivo", "File", "文件");
+  }
+  function pintarPie() {
+    var b = $("#pie-sync"); if (!b) return;
+    var punto = b.querySelector(".footer__punto");
+    var salida = $("#pie-sync-texto");
+    var sync = window.MimoSync, st = sync && sync.estado ? sync.estado() : null;
+    var meta = st ? st.meta : null;
+    var hayDestino = !!(meta && meta.provider);
+    var pendiente = !!(st && (st.cola.pendiente || st.cambios));
+    var texto, clase = "gris";
+    if (!st) {
+      texto = L("Local", "Local", "本地") + (ultimoGuardado ? " · " + horaCorta(ultimoGuardado) : "");
+    } else if (st.sincronizando) {
+      texto = L("Sincronizando…", "Syncing…", "同步中…"); clase = "girando";
+    } else if (st.conflicto) {
+      texto = L("Conflicto", "Conflict", "冲突"); clase = "err";
+    } else if (hayDestino && !st.online) {
+      texto = L("Sin conexión", "Offline", "离线") + (ultimoGuardado ? " · " + horaCorta(ultimoGuardado) : ""); clase = "warn";
+    } else if (hayDestino && pendiente) {
+      texto = L("Sin subir", "Not uploaded", "未上传") + (ultimoGuardado ? " · " + horaCorta(ultimoGuardado) : ""); clase = "warn";
+    } else if (hayDestino && meta.lastSyncAt) {
+      texto = nombreDestino(meta) + " · " + horaCorta(new Date(meta.lastSyncAt).getTime()); clase = "ok";
+    } else if (hayDestino) {
+      texto = L("Por sincronizar", "Not synced yet", "尚未同步"); clase = "warn";
+    } else {
+      texto = L("Local", "Local", "本地") + (ultimoGuardado ? " · " + horaCorta(ultimoGuardado) : "");
+    }
+    if (salida) salida.textContent = texto;
+    if (punto) punto.className = "footer__punto footer__punto--" + clase;
+    var detalle = [
+      L("Último cambio guardado: ", "Last change saved: ", "上次更改已保存：") + (ultimoGuardado ? fechaHora(ultimoGuardado) : L("sin cambios", "no changes", "没有更改")),
+      L("Última sincronización: ", "Last sync: ", "上次同步：") + (meta && meta.lastSyncAt ? fechaHora(new Date(meta.lastSyncAt).getTime()) : L("nunca", "never", "从未")),
+      L("Destino: ", "Destination: ", "目标：") + nombreDestino(meta)
+    ];
+    if (pendiente) detalle.push(L("Hay cambios pendientes de subir.", "There are changes pending upload.", "有更改等待上传。"));
+    if (st && st.cola && st.cola.ultimoError) detalle.push(L("Último error: ", "Last error: ", "上次错误：") + st.cola.ultimoError);
+    b.title = detalle.join("\n");
+    b.setAttribute("aria-label", texto + ". " + detalle[0] + ". " + detalle[1] + ".");
+  }
+  function abrirEnSync() {
+    try { ir("ajustes"); } catch (e) {}
+    var c = $("#sync-card");
+    if (c && c.scrollIntoView) c.scrollIntoView({ block: "center", behavior: "smooth" });
   }
   function resumenEstado(s) {
     s = s || estado;
@@ -3122,6 +3190,7 @@
     pintarPanel();
     pintarSplit();
     pintarAjustes();
+    pintarPie();
     if ($("#modal").classList.contains("on")) pintarCatalogo();
   }
   function pintarAjustes() {
@@ -4144,7 +4213,9 @@
     });
     $("#btn-panel-ajustes").addEventListener("click", abrirPanel);
     $("#pie-panel").addEventListener("click", alternarPanel);
-    $("#pie-sync").addEventListener("click", function () { aviso(L("Guardado en este equipo.", "Saved on this device.", "已保存到本设备。")); });
+    $("#pie-sync").addEventListener("click", abrirEnSync);
+    document.addEventListener("mimo:sync", pintarPie);
+    setInterval(pintarPie, 30000);
     $("#pie-ayuda").addEventListener("click", function () { aviso(L("Clic derecho en una nota, tarea, evento, periodo o sesión para abrir sus acciones y borrar. También Shift+F10.", "Right-click a note, task, event, term or session to open its actions and delete. Shift+F10 also works.", "右键点击笔记、任务、事件、学期或会话可打开操作并删除。也可按 Shift+F10。")); });
     $("#modal-x").addEventListener("click", cerrarModal);
     $("#modal").addEventListener("click", function (e) { if (e.target === $("#modal")) cerrarModal(); });
@@ -4417,6 +4488,11 @@
       }).catch(function () {});
     }
     guardar();
+    /* El guardado de arranque no es un cambio del usuario: la señal del pie no
+       debe encenderse al abrir. Se toma el estado ya normalizado como línea base. */
+    textoGuardado = JSON.stringify(estado);
+    ultimoGuardado = 0;
+    pintarPie();
     setTimeout(quitarCarga, 30);
   }
 

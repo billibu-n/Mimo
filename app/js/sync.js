@@ -46,7 +46,7 @@
     return {
       version: 1, provider: "", manualOnly: true, clientId: uuid(),
       lastRemoteRev: "", lastRemoteVersion: 0, lastLocalHash: "",
-      lastSyncAt: "", folderName: "", ultimoCambio: "",
+      lastSyncAt: "", folderName: "", ultimoCambio: "", ultimaPrueba: null,
       webdav: { url: "", usuario: "", clave: "", carpeta: "Mimo" },
       cifrado: { sal: "", activo: false }
     };
@@ -149,6 +149,21 @@
     var u = new Uint8Array(n);
     crypto.getRandomValues(u);
     return u;
+  }
+
+  /* ---- comprobante de la última sincronización ----
+     Sirve para responder "¿esto se subió de verdad?" sin abrir la nube: qué se
+     movió, cuándo, cuánto pesa y cuántas cosas lleva. */
+  function tamano(texto) {
+    var b = 0;
+    try { b = new Blob([texto]).size; } catch (e) { b = String(texto || "").length; }
+    return b < 1024 ? b + " B" : (b / 1024).toFixed(1) + " KB";
+  }
+  function cuentasDe(estado) {
+    try { return resumen(estado); } catch (e) { return { tareas: 0, notas: 0, eventos: 0, ramos: 0, sesiones: 0 }; }
+  }
+  function anotarPrueba(p) {
+    try { meta.ultimaPrueba = p; guardarMeta(); } catch (e) {}
   }
 
   /* ---- archivo de sincronización ---- */
@@ -463,24 +478,48 @@
       y.red = true; y.causa = e; throw y;
     } finally { clearTimeout(t); }
   }
+  /* Un error HTTP no es un mensaje: es una pista. Se traduce a lo que el usuario
+     puede hacer, sin perder el código para quien depure. */
+  function explicarHttp(estado, donde) {
+    var cola = " (HTTP " + estado + ")";
+    if (estado === 401 || estado === 403) {
+      return L("El servidor rechazó el usuario o la contraseña de aplicación" + cola + ". Revisa las credenciales; si es Nextcloud, crea una contraseña de aplicación en Ajustes personales → Seguridad.",
+        "The server rejected the user or the app password" + cola + ". Check the credentials; for Nextcloud, create an app password in Personal settings → Security.",
+        "服务器拒绝了用户名或应用密码" + cola + "。请检查凭据；Nextcloud 请在个人设置 → 安全中创建应用密码。");
+    }
+    if (estado === 404) {
+      return L("Esa dirección no tiene la carpeta de Mimo" + cola + ". En Nextcloud la dirección termina en /remote.php/dav/files/TU-USUARIO/.",
+        "That address has no Mimo folder" + cola + ". In Nextcloud the address ends with /remote.php/dav/files/YOUR-USER/.",
+        "该地址没有 Mimo 文件夹" + cola + "。Nextcloud 的地址以 /remote.php/dav/files/你的用户名/ 结尾。");
+    }
+    if (estado === 405) {
+      return L("El destino no admite escritura por WebDAV" + cola + ". Comprueba que la cuenta puede crear archivos en esa carpeta.",
+        "The destination does not allow WebDAV writes" + cola + ". Check that the account can create files in that folder.",
+        "目标不允许通过 WebDAV 写入" + cola + "。请检查该账户能否在该文件夹中创建文件。");
+    }
+    if (estado === 507) {
+      return L("No queda espacio en el destino" + cola + ".", "The destination is out of space" + cola + ".", "目标空间不足" + cola + "。");
+    }
+    return donde + cola + ".";
+  }
   async function asegurarCarpeta() {
     var partes = trozosCarpeta(); if (!partes.length) return;
     var acum = urlBase();
     for (var i = 0; i < partes.length; i++) {
       acum += "/" + encodeURIComponent(partes[i]);
       var res = await pedir(acum, { method: "MKCOL" });
-      if ([201, 200, 204, 301, 405, 409, 403].indexOf(res.status) === -1) {
-        throw new Error(L("No se pudo crear la carpeta remota (HTTP " + res.status + ").", "Could not create the remote folder (HTTP " + res.status + ").", "无法创建远程文件夹（HTTP " + res.status + "）。"));
+      if (res.status === 401 || res.status === 403) throw new Error(explicarHttp(res.status, ""));
+      if ([201, 200, 204, 301, 405, 409].indexOf(res.status) === -1) {
+        throw new Error(explicarHttp(res.status, L("No se pudo crear la carpeta remota", "Could not create the remote folder", "无法创建远程文件夹")));
       }
-      if (res.status === 401) throw new Error(L("El servidor rechazó las credenciales (HTTP 401).", "The server rejected the credentials (HTTP 401).", "服务器拒绝了凭据（HTTP 401）。"));
     }
   }
   async function webdavLeer() {
     if (!urlBase()) throw new Error(L("Falta la URL del servidor WebDAV.", "The WebDAV server URL is missing.", "缺少 WebDAV 服务器 URL。"));
     var res = await pedir(urlArchivo(), { method: "GET" });
     if (res.status === 404) return null;
-    if (res.status === 401 || res.status === 403) throw new Error(L("El servidor rechazó las credenciales (HTTP " + res.status + ").", "The server rejected the credentials (HTTP " + res.status + ").", "服务器拒绝了凭据（HTTP " + res.status + "）。"));
-    if (!res.ok) throw new Error(L("WebDAV respondió HTTP " + res.status + " al leer.", "WebDAV returned HTTP " + res.status + " while reading.", "WebDAV 读取时返回 HTTP " + res.status + "。"));
+    if (res.status === 401 || res.status === 403 || res.status === 404) throw new Error(explicarHttp(res.status, ""));
+    if (!res.ok) throw new Error(explicarHttp(res.status, L("No se pudo leer la copia remota", "Could not read the remote copy", "无法读取远程副本")));
     var cuerpo = await res.text();
     var rev = await hashTexto(cuerpo);
     var etag = res.headers.get("ETag") || "";
@@ -507,7 +546,7 @@
     if (res.status === 412) {
       var c = new Error(L("El archivo remoto cambió mientras sincronizabas.", "The remote file changed while you were syncing.", "同步时远程文件发生了变化。")); c.codigo = 412; throw c;
     }
-    if (!res.ok) throw new Error(L("WebDAV respondió HTTP " + res.status + " al escribir.", "WebDAV returned HTTP " + res.status + " while writing.", "WebDAV 写入时返回 HTTP " + res.status + "。"));
+    if (!res.ok) throw new Error(explicarHttp(res.status, L("No se pudo escribir la copia remota", "Could not write the remote copy", "无法写入远程副本")));
     return { rev: await hashTexto(cuerpo), etag: res.headers.get("ETag") || "" };
   }
   async function probarWebDAV() {
@@ -646,7 +685,50 @@
         : L("Sincronizado; clic para sincronizar ahora", "Synced; click to sync now", "已同步；点击立即同步");
       b.innerHTML = icono(sincronizando ? "i-sync" : (ultimoError || conflicto ? "i-alerta" : "i-check"));
     }
+    var pr = $("#sync-prueba");
+    if (pr) {
+      var prueba = meta.ultimaPrueba;
+      if (prueba && prueba.fecha) {
+        pr.textContent = L("Comprobante: ", "Receipt: ", "凭据：") + fecha(new Date(prueba.fecha).getTime())
+          + " · " + resumenTexto(prueba.cuentas || { tareas: 0, notas: 0, eventos: 0, ramos: 0, sesiones: 0 })
+          + " · " + (prueba.peso || "")
+          + " · " + (prueba.sentido === "bajada" ? L("recibida", "received", "已接收") : L("enviada", "sent", "已发送"))
+          + (prueba.clientId ? " · " + L("equipo ", "device ", "设备 ") + prueba.clientId : "") + ".";
+        pr.className = "muted ok";
+      } else {
+        pr.textContent = L("Sin comprobante todavía: la primera sincronización lo deja aquí.", "No receipt yet: the first sync will leave it here.", "还没有凭据：第一次同步会留在这里。");
+        pr.className = "muted";
+      }
+    }
+    var vc = $("#sync-ver-copia");
+    if (vc) vc.hidden = !meta.provider;
     pintarClave();
+    try { document.dispatchEvent(new CustomEvent("mimo:sync")); } catch (e) {}
+  }
+
+  /* ---- ver la copia remota: la prueba que el usuario puede leer ---- */
+  async function verCopia() {
+    if (!meta.provider) {
+      avisar(L("Elige primero un destino de sincronización.", "Choose a sync destination first.", "请先选择同步目标。"));
+      return;
+    }
+    try {
+      sincronizando = true; ultimoError = ""; pintarUI();
+      var r = await leerRemoto();
+      if (!r || r.texto == null) {
+        avisar(L("El destino todavía no tiene ninguna copia de Mimo.", "The destination has no Mimo copy yet.", "目标上还没有 Mimo 副本。"));
+        return;
+      }
+      var env = leerEnvelope(r.texto);
+      var cuando = env.lastModified ? fecha(env.lastModified) : L("fecha desconocida", "unknown date", "日期未知");
+      avisar(L("En el destino: ", "In the destination: ", "目标中：") + cuando
+        + " · " + resumenTexto(cuentasDe(env.estado))
+        + " · " + tamano(r.texto)
+        + " · " + L("equipo ", "device ", "设备 ") + String(env.clientId || "?").slice(0, 8) + ".");
+    } catch (e) {
+      ultimoError = e && e.message ? e.message : L("No se pudo leer el destino.", "Could not read the destination.", "无法读取目标。");
+      avisar(ultimoError);
+    } finally { sincronizando = false; pintarUI(); }
   }
   async function recalcularCambios() {
     if (!host()) return;
@@ -722,6 +804,7 @@
     meta.lastRemoteVersion = version;
     meta.lastLocalHash = localHash;
     meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
+    anotarPrueba({ fecha: meta.lastSyncAt, peso: tamano(texto), sentido: "subida", version: version, cuentas: cuentasDe(local), clientId: meta.clientId && meta.clientId.slice ? meta.clientId.slice(0, 8) : "" });
     guardarMeta(); cambios = false; ultimoError = ""; limpiarCola();
     limpiarCampoClave();
     avisar(meta.provider === "archivo" ? L("Archivo de sincronización guardado. Cópialo a tu nube.", "Sync file saved. Copy it to your cloud.", "同步文件已保存。请复制到你的云端。")
@@ -736,6 +819,7 @@
     meta.lastRemoteRev = remoto.rev;
     meta.lastRemoteVersion = Number(env.syncVersion) || 1;
     meta.lastLocalHash = h; meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
+    anotarPrueba({ fecha: meta.lastSyncAt, peso: tamano(remoto.texto), sentido: "bajada", version: Number(env.syncVersion) || 1, cuentas: cuentasDe(env.estado), clientId: env.clientId && env.clientId.slice ? env.clientId.slice(0, 8) : "" });
     guardarMeta(); cambios = false; ultimoError = ""; aplicando = false; limpiarCola();
     limpiarCampoClave();
     avisar(L("Datos remotos aplicados. La copia local quedó como respaldo.", "Remote data applied. The local copy was kept as a backup.", "已应用远程数据。本地副本保留为备份。"));
@@ -1005,6 +1089,8 @@
     $("#modal-sync-conflict").addEventListener("click", function (e) {
       if (e.target === $("#modal-sync-conflict")) { conflicto = null; cerrarConflicto(); pintarUI(); }
     });
+    var vc = $("#sync-ver-copia");
+    if (vc) vc.addEventListener("click", verCopia);
     $("#btn-sync").addEventListener("click", function () {
       if (!meta.provider) { host().ir("ajustes"); avisar(L("Elige un modo de sincronización.", "Choose a sync mode.", "请选择同步方式。")); return; }
       sincronizar(false);

@@ -157,7 +157,13 @@ body{padding-bottom:var(--alto-pie)}
 .footer__btn{display:inline-flex;align-items:center;gap:var(--sp-1);border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--muted);font:inherit;font-size:var(--fs-xs);padding:var(--sp-1) var(--sp-2);cursor:pointer}
 .footer__btn:hover{background:var(--sup2);color:var(--fg)}
 .footer__centro{margin-left:auto;margin-right:auto;color:var(--muted2)}
-.footer__punto{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.footer__punto{width:6px;height:6px;border-radius:50%;background:var(--muted2);flex:0 0 auto}
+.footer__punto--ok{background:var(--ok)}
+.footer__punto--warn{background:var(--warn)}
+.footer__punto--err{background:var(--bad)}
+.footer__punto--gris{background:var(--muted2)}
+.footer__punto--girando{background:var(--ok);animation:pulso-punto 1.1s ease-in-out infinite}
+@keyframes pulso-punto{0%,100%{opacity:1}50%{opacity:.35}}
 @media (min-width:1256px){body.panel-oculto .panel{display:none}}
 @media (max-width:1255px){
   .panel{top:calc(var(--alto-topbar) + var(--alto-navbar));bottom:var(--alto-pie);height:auto}

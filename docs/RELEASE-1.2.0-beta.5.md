@@ -21,7 +21,7 @@ propósito: subirla antes de tener los assets deja `gate-release.py` en rojo.
 - `packaging/arch/PKGBUILD`, `.SRCINFO` y `README.md`
 - `escritorio/README.md`
 - `pruebas/gate-actualizacion.py`, `gate-correcciones.py`, `gate-release.py`,
-  `gate-respaldo.py`, `gate-tauri.py`
+  `gate-respaldo.py`, `gate-tauri.py`, `gate-senal.py`
 - `README.md`, `INSTALACION.md`, `COMPATIBILIDAD.md`, `SECURITY.md`
 
 ## Abrir la beta
@@ -39,6 +39,6 @@ propósito: subirla antes de tener los assets deja `gate-release.py` en rojo.
 
 ## Criterio de cierre
 
-- 19 gates web y `gate-tauri` en verde.
+- 20 gates web y `gate-tauri` en verde.
 - RPM con firma GPG `OK` y `.sig` minisign con `version:1.2.0-beta.5`.
 - Release pre-release con 11 assets y `SHA256SUMS` verificado.

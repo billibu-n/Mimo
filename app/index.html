@@ -184,14 +184,16 @@
           <p class="muted sync-estado" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
 
           <div class="sync-modo">
-            <label for="sync-proveedor" data-l10n-es="Modo" data-l10n-en="Mode" data-l10n-zh="模式">Modo</label>
+            <label for="sync-proveedor" data-l10n-es="¿Dónde guardar tu copia?" data-l10n-en="Where should the copy live?" data-l10n-zh="副本保存在哪里？">¿Dónde guardar tu copia?</label>
             <select class="entrada" id="sync-proveedor">
               <option value="" data-l10n-es="Elegir…" data-l10n-en="Choose…" data-l10n-zh="选择…">Elegir…</option>
-              <option value="webdav" data-l10n-es="Nube privada (cifrada)" data-l10n-en="Private cloud (encrypted)" data-l10n-zh="私有云（加密）">Nube privada (cifrada)</option>
-              <option value="carpeta" data-l10n-es="Carpeta local" data-l10n-en="Local folder" data-l10n-zh="本地文件夹">Carpeta local</option>
-              <option value="archivo" data-l10n-es="Archivo manual" data-l10n-en="Manual file" data-l10n-zh="手动文件">Archivo manual</option>
+              <option value="webdav" data-l10n-es="En mi Nextcloud u otro servidor" data-l10n-en="In my Nextcloud or another server" data-l10n-zh="在我的 Nextcloud 或其他服务器">En mi Nextcloud u otro servidor</option>
+              <option value="carpeta" data-l10n-es="En una carpeta de este equipo" data-l10n-en="In a folder on this device" data-l10n-zh="在本设备的一个文件夹">En una carpeta de este equipo</option>
+              <option value="archivo" data-l10n-es="En un archivo que yo mueva" data-l10n-en="In a file I move myself" data-l10n-zh="在我自己移动的文件中">En un archivo que yo mueva</option>
             </select>
           </div>
+
+          <p class="sync-nota" id="sync-pista" data-l10n-es="Si usas Dropbox, Google Drive, OneDrive o iCloud, elige «una carpeta de este equipo» y apunta a la carpeta que esa nube ya sincroniza: no hay cuentas ni contraseñas que configurar." data-l10n-en="If you use Dropbox, Google Drive, OneDrive or iCloud, choose “a folder on this device” and point it at the folder that cloud already syncs: no accounts or passwords to set up." data-l10n-zh="如果你使用 Dropbox、Google Drive、OneDrive 或 iCloud，请选择“本设备的一个文件夹”，并指向该云盘已同步的文件夹：无需配置账户或密码。">Si usas Dropbox, Google Drive, OneDrive o iCloud, elige «una carpeta de este equipo» y apunta a la carpeta que esa nube ya sincroniza: no hay cuentas ni contraseñas que configurar.</p>
 
           <div id="sync-webdav" hidden>
             <div class="sync-columnas">
@@ -264,8 +266,10 @@
             <div class="sync-fila sync-fila--acciones">
               <button class="btn btn-primario" id="sync-ahora" type="button" data-l10n-es="Sincronizar ahora" data-l10n-en="Sync now" data-l10n-zh="立即同步">Sincronizar ahora</button>
               <button class="btn" id="sync-desconectar" type="button" data-l10n-es="Desconectar" data-l10n-en="Disconnect" data-l10n-zh="断开连接">Desconectar</button>
+              <button class="btn" id="sync-ver-copia" type="button" hidden data-l10n-es="Ver la copia" data-l10n-en="View the copy" data-l10n-zh="查看副本">Ver la copia</button>
             </div>
             <p class="muted" id="sync-ultima" data-l10n-es="Nunca sincronizado." data-l10n-en="Never synced." data-l10n-zh="从未同步。">Nunca sincronizado.</p>
+            <p class="muted" id="sync-prueba" data-l10n-es="Sin comprobante todavía: la primera sincronización lo deja aquí." data-l10n-en="No receipt yet: the first sync will leave it here." data-l10n-zh="还没有凭据：第一次同步会留在这里。">Sin comprobante todavía: la primera sincronización lo deja aquí.</p>
             <p class="muted" id="sync-ayuda" data-l10n-es="La nube guarda siempre una copia cifrada. El archivo y la carpeta local no están cifrados: úsalos solo en un lugar de confianza." data-l10n-en="The cloud always stores an encrypted copy. The file and local folder are not encrypted: use them only in a trusted place." data-l10n-zh="云端始终保存加密副本。文件和本地文件夹不加密：仅在可信位置使用。">La nube guarda siempre una copia cifrada. El archivo y la carpeta local no están cifrados: úsalos solo en un lugar de confianza.</p>
           </div>
         </section>
@@ -321,7 +325,7 @@
 </div>
 
 <footer class="footer" aria-label="Pie de la aplicación">
-  <button class="footer__btn" id="pie-sync" type="button"><span class="footer__punto" aria-hidden="true"></span><span data-i18n="pie.guardado">local · guardado</span></button>
+  <button class="footer__btn" id="pie-sync" type="button" aria-live="polite" title=""><span class="footer__punto" aria-hidden="true"></span><span id="pie-sync-texto">local · guardado</span></button>
   <span class="footer__centro" id="pie-centro">Calendario</span>
   <button class="footer__btn" id="pie-ayuda" type="button" data-i18n="pie.ayuda">Ayuda</button>
   <button class="footer__btn" id="pie-panel" type="button" data-i18n="pie.panel">Panel</button>
