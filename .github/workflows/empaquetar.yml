@@ -98,16 +98,23 @@ jobs:
 
           if [ -f "$TAURI_SIGNING_PRIVATE_KEY" ]; then
             KEY="$TAURI_SIGNING_PRIVATE_KEY"
+            LIMPIAR=0
           else
             KEY=$(mktemp)
             printf '%s' "$TAURI_SIGNING_PRIVATE_KEY" > "$KEY"
+            LIMPIAR=1
           fi
 
           for rpm in escritorio/src-tauri/target/release/bundle/rpm/*.rpm; do
             rm -f "$rpm.sig"
-            tauri signer sign -f "$KEY" -p "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" \
+            env -u TAURI_SIGNING_PRIVATE_KEY \
+              tauri signer sign -f "$KEY" -p "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" \
               --app-version "$VERSION" "$rpm"
           done
+
+          if [ "$LIMPIAR" = "1" ]; then
+            rm -f "$KEY"
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
