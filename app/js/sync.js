@@ -12,6 +12,7 @@
   "use strict";
 
   var CLAVE_META = "mimo.sync.v1";
+  var CLAVE_ACCESO = "mimo.sync.acceso.v1";
   var CLAVE_BACKUP = "mimo.sync.backup";
   var CLAVE_COLA = "mimo.sync.cola.v1";
   var ARCHIVO = "mimo-sync.json";
@@ -25,7 +26,11 @@
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   function L(es, en, zh) { return window.MimoI18n ? window.MimoI18n.L(es, en, zh) : es; }
-  var claveAcceso = ""; /* solo memoria/sesión: la contraseña WebDAV no va a localStorage */
+  /* La contraseña de aplicación de WebDAV se guarda en este equipo, cifrada con la
+     misma clave derivada que protege la copia (AES-GCM). No es un secreto frente a
+     quien pueda leer el almacenamiento de la app, pero evita pedirla en cada arranque.
+     «Desconectar» la borra. */
+  var claveAcceso = "";
   try { claveAcceso = sessionStorage.getItem("mimo.sync.clave.sesion") || ""; } catch (e) {}
   var meta = cargarMeta();
   var cola = cargarCola();
@@ -335,6 +340,33 @@
       });
     } catch (e) {}
   }
+  async function guardarAcceso() {
+    if (!claveAcceso) return false;
+    try {
+      if (!meta.cifrado.sal) return false; /* sin clave de cifrado no hay con qué envolverla */
+      var envuelta = await cifrar(claveAcceso);
+      localStorage.setItem(CLAVE_ACCESO, envuelta);
+      return true;
+    } catch (e) { return false; }
+  }
+  async function recuperarAcceso() {
+    var guardada = "";
+    try { guardada = localStorage.getItem(CLAVE_ACCESO) || ""; } catch (e) {}
+    if (!guardada) return false;
+    try {
+      var plano = await descifrar(guardada);
+      if (!plano) return false;
+      claveAcceso = plano;
+      try { sessionStorage.setItem("mimo.sync.clave.sesion", claveAcceso); } catch (e) {}
+      var campo = $("#sync-webdav-clave-acceso");
+      if (campo && !campo.value) campo.value = plano;
+      return true;
+    } catch (e) { return false; }
+  }
+  function borrarAcceso() {
+    try { localStorage.removeItem(CLAVE_ACCESO); } catch (e) {}
+  }
+
   async function obtenerCarpeta(pedir) {
     if (proveedorPrueba) return proveedorPrueba;
     if (esTauri()) {
@@ -642,7 +674,7 @@
     if (!p) return;
     var tiene = !!meta.cifrado.activo;
     p.textContent = tiene
-      ? L("Cifrado activo en este equipo (AES-GCM). La contraseña no se guarda: solo la clave derivada.", "Encryption active on this device (AES-GCM). The password is not saved: only the derived key.", "此设备已启用加密（AES-GCM）。密码不保存，只保存派生密钥。")
+      ? L("Cifrado activo en este equipo (AES-GCM). La contraseña de cifrado no se guarda: solo la clave derivada, que también protege la contraseña de aplicación.", "Encryption active on this device (AES-GCM). The encryption password is not saved: only the derived key, which also protects the app password.", "此设备已启用加密（AES-GCM）。加密密码不保存，只保存派生密钥，它同时保护应用密码。")
       : L("Sin clave en este equipo. Escríbela antes de sincronizar; sin ella no se sube nada.", "No key on this device. Enter it before syncing; nothing is uploaded without it.", "此设备没有密钥。同步前请输入；没有它不会上传任何内容。");
     p.className = "muted" + (tiene ? " ok" : "");
   }
@@ -804,6 +836,7 @@
     meta.lastRemoteVersion = version;
     meta.lastLocalHash = localHash;
     meta.lastSyncAt = ahora(); meta.ultimoCambio = "";
+    guardarAcceso();
     anotarPrueba({ fecha: meta.lastSyncAt, peso: tamano(texto), sentido: "subida", version: version, cuentas: cuentasDe(local), clientId: meta.clientId && meta.clientId.slice ? meta.clientId.slice(0, 8) : "" });
     guardarMeta(); cambios = false; ultimoError = ""; limpiarCola();
     limpiarCampoClave();
@@ -947,6 +980,7 @@
     meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
     meta.webdav.clave = "";
     claveAcceso = "";
+    borrarAcceso();
     try { sessionStorage.removeItem("mimo.sync.clave.sesion"); } catch (e) {}
     carpetaHandle = null; handleLeido = true; borrarHandle();
     carpetaTauri = null;
@@ -1016,6 +1050,7 @@
       claveMemo = k; claveSal = sal;
       meta.cifrado.sal = sal; meta.cifrado.activo = true;
       guardarMeta();
+      guardarAcceso();
       ultimoError = "";
       avisar(L("Clave de cifrado guardada en este equipo. No se puede recuperar: anótala.", "Encryption key saved on this device. It cannot be recovered: write it down.", "加密密钥已保存在此设备。无法恢复：请记下它。"));
       pintarUI();
@@ -1029,6 +1064,7 @@
   }
   async function olvidarClave() {
     await borrarClaves();
+    borrarAcceso(); claveAcceso = "";
     claveMemo = null; claveSal = "";
     limpiarCampoClave();
     meta.cifrado.activo = false; guardarMeta();
@@ -1054,6 +1090,7 @@
     if (acceso) acceso.addEventListener("input", function () {
       claveAcceso = acceso.value;
       try { sessionStorage.setItem("mimo.sync.clave.sesion", claveAcceso); } catch (e) {}
+      guardarAcceso();
     });
     unir("#sync-webdav-carpeta", "carpeta");
   }
@@ -1112,6 +1149,7 @@
     setTimeout(function () {
       if (esNube()) leerClave(meta.cifrado.sal).then(function (k) {
         if (!k && meta.cifrado.activo) { meta.cifrado.activo = false; guardarMeta(); pintarUI(); }
+        if (esWebDAV()) recuperarAcceso();
       });
     }, 200);
     if (esNube() && cola.pendiente && cola.reintentar && navigator.onLine) programarReintento(2500);

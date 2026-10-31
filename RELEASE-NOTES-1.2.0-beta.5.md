@@ -27,6 +27,24 @@ de servidor para funcionar.
 
 La firma del RPM entra en esta misma beta.
 
+## Sincronización
+
+- **El pie dice cuándo.** Deja de ser un adorno: muestra el destino y la hora —«Local · 12:03»,
+  «Nube · 12:04», «Sin subir · 12:05», «Sincronizando…», «Conflicto»— con un punto de color. El
+  título del botón da el detalle (último cambio guardado, última sincronización, destino y último
+  error) y un clic abre la tarjeta de sincronización.
+- **Comprobante de cada sincronización.** Después de sincronizar se ve qué se movió, cuándo, cuánto
+  pesa, cuántas cosas lleva y el identificador del equipo. El botón **«Ver la copia»** lee el
+  destino y enseña lo que hay allí: es la respuesta a «¿esto se subió de verdad?».
+- **La contraseña de aplicación ya no se pierde.** Se guarda en el equipo cifrada con la misma clave
+  que protege la copia, para no tener que escribirla en cada arranque. No es un secreto frente a
+  quien pueda leer los datos de la app en el disco; «Desconectar» y «Olvidar clave» la borran. La
+  contraseña de cifrado sigue sin guardarse.
+- **Los errores dicen qué hacer.** Un 401 explica que la contraseña de aplicación no vale y dónde
+  crear una; un 404, cómo termina la dirección de Nextcloud; un 405 o un 507, qué revisar.
+- **La tarjeta empieza por la pregunta buena:** «¿Dónde guardar tu copia?», con una pista que
+  explica que Dropbox, Google Drive, OneDrive e iCloud se usan eligiendo una carpeta, sin cuentas.
+
 ## Instalación
 
 | Sistema | Archivo |

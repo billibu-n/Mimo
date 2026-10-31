@@ -148,6 +148,25 @@ def main() -> int:
         exigir(texto.startswith("Not uploaded") or texto.startswith("Cloud"), f"en inglés el pie se traduce: «{texto}»", fallas)
         exigir("Nube" not in texto and "Sin subir" not in texto, "en inglés no queda español en el pie", fallas)
 
+        # 8. la contraseña de aplicación sobrevive al reinicio, cifrada
+        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.wait_for_timeout(200)
+        page.locator("#sync-webdav-clave").fill("clave-de-prueba-2026")
+        page.locator("#sync-webdav-guardar-clave").click()
+        page.wait_for_timeout(500)
+        page.locator("#sync-webdav-clave-acceso").fill("app-password-secreta")
+        page.wait_for_timeout(500)
+        blob = page.evaluate("localStorage.getItem('mimo.sync.acceso.v1')")
+        exigir(bool(blob) and "app-password-secreta" not in (blob or ""), "la contraseña de aplicación se guarda cifrada", fallas)
+        cargar(page)
+        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.wait_for_timeout(300)
+        valor = page.locator("#sync-webdav-clave-acceso").input_value()
+        exigir(valor == "app-password-secreta", f"tras reiniciar la contraseña sigue puesta (leída «{valor[:4]}…»)", fallas)
+        page.locator("#sync-desconectar").click()
+        page.wait_for_timeout(400)
+        exigir(not page.evaluate("localStorage.getItem('mimo.sync.acceso.v1')"), "«Desconectar» borra la contraseña guardada", fallas)
+
         exigir(not errores, f"sin errores de consola ({len(errores)}): {errores[:3]}", fallas)
         ctx.close()
 

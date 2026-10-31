@@ -36,8 +36,9 @@ puente `http_pedir` en `escritorio/src-tauri/src/main.rs`, los gates `gate-sync.
 
 **Hecho ya en esta rama:** la señal del pie con la hora del último cambio y de la última
 sincronización, el comprobante de cada sincronización, el botón «ver la copia», los mensajes de
-error traducidos a acciones y la tarjeta que empieza preguntando dónde guardar. Todo medido con
-`gate-senal.py` y los 20 gates en verde.
+error traducidos a acciones, la tarjeta que empieza preguntando dónde guardar y la contraseña de
+aplicación que sobrevive al reinicio, guardada cifrada. Todo medido con `gate-senal.py` y los
+veinte gates en verde.
 
 **Recomendación en una frase:** tres destinos para el usuario —«una carpeta», «tu nube» y «otro
 servidor»—, con el motor actual detrás y tres arreglos previos; los proveedores con OAuth entran
@@ -64,8 +65,11 @@ localStorage (mimo.shell.v1)  ──snapshot──►  sobre "mimo-sync"  ──
 - **WebDAV** con Basic auth, `MKCOL` de la carpeta, `If-None-Match: *` al crear y `If-Match` al
   actualizar; si el servidor no da ETag, relee y compara el hash antes de escribir.
 - **Cifrado obligatorio** en WebDAV: PBKDF2-SHA-256 (250.000 iteraciones) + AES-GCM-256. La clave
-  derivada se guarda en IndexedDB; la contraseña no se guarda. El remoto es `mimo-sync.json.enc`;
-  si alguien deja un `mimo-sync.json` en claro, Mimo se niega a aplicarlo.
+  derivada se guarda en IndexedDB; la contraseña de cifrado no se guarda. El remoto es
+  `mimo-sync.json.enc`; si alguien deja un `mimo-sync.json` en claro, Mimo se niega a aplicarlo.
+- **Contraseña de aplicación**: desde R80 se guarda en el equipo **cifrada con esa misma clave
+  derivada**, para no pedirla en cada arranque. No es un secreto frente a quien pueda leer los datos
+  de la app en el disco; es una comodidad, y se borra al desconectar o al olvidar la clave.
 - **Cola persistente** (`mimo.sync.cola.v1`) con reintento creciente (5 s, 15 s, 1 min, 3 min,
   5 min) y sincronización al volver la red, aunque el modo sea manual.
 - **Conflicto**: diálogo local/remoto con fechas y cuentas, «Usar local» o «Usar remoto», respaldo
@@ -113,7 +117,7 @@ que haya cambiado nada.
 | # | Problema | Síntoma que ve el usuario | Dónde nace |
 |---|---|---|---|
 | P1 | La dirección es una URL de WebDAV construida a mano | «El servidor rechazó las credenciales (HTTP 401)» o un 404 sin relación | `meta.webdav.url` se usa tal cual |
-| P2 | La contraseña de aplicación no se guarda | Después de reiniciar, la sync falla hasta reescribirla | `claveAcceso` en `sessionStorage` |
+| P2 | La contraseña de aplicación se perdía | Después de reiniciar, la sync fallaba hasta reescribirla | `claveAcceso` en `sessionStorage` — **resuelto en R80**: se guarda cifrada |
 | P3 | Cifrado obligatorio, sin recuperación | «Contraseña de cifrado incorrecta» y el remoto queda ilegible para siempre | `necesitaClave()` / `derivarClave()` |
 | P4 | Conflicto de todo o nada | Dos cambios en campos distintos obligan a tirar uno de los dos lados | `procesarRemoto()` compara hashes globales |
 | P5 | Solo hay servidor propio | Quien no tiene Nextcloud no tiene nube | un solo proveedor |
@@ -521,7 +525,7 @@ snapshot, la misma cola y el mismo cifrado.
 |---|---|---|---|
 | A1 | Tarjeta con las cuatro opciones y los campos técnicos plegados | Pequeño | Un usuario nuevo llega a «Conectar» sin leer una URL |
 | A2 | Conector Nextcloud con **Login Flow v2**: dirección del servidor → navegador → usuario y contraseña de aplicación automáticos → raíz DAV derivada (OCS `/cloud/user` para el identificador) | Medio | Con una cuenta real: 3 acciones, cero campos técnicos |
-| A3 | Credenciales en el **llavero del sistema** | Pequeño | Cerrar y abrir la app: sigue sincronizando sin reescribir nada |
+| A3 | Credenciales guardadas **cifradas** con la clave derivada (el llavero del sistema queda como mejora) | Pequeño | Cerrar y abrir la app: sigue sincronizando sin reescribir nada |
 | A4 | **Cifrado opcional** con frase de recuperación de 12 palabras, mostrada una vez y verificada | Medio | Sin frase no se activa; con frase se recupera en otro equipo |
 | A5 | **Comprobante** tras sincronizar y botón «ver qué hay en la nube» | Pequeño | El usuario puede responder «sí, está subido» sin dudar |
 | A6 | Errores traducidos a acciones | Pequeño | Ningún mensaje con «HTTP» en la ruta normal |
