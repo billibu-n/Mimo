@@ -303,6 +303,62 @@ fn sonda_informe(payload: String) {
     std::process::exit(0);
 }
 
+/// Abre una URL en el navegador del sistema. Sin plugin y sin shell: se lanza el
+/// abridor del escritorio. Solo http y https.
+#[tauri::command]
+fn abrir_navegador(url: String) -> Result<(), String> {
+    if !(url.starts_with("http://") || url.starts_with("https://")) {
+        return Err("Solo se permite http o https.".into());
+    }
+    #[cfg(target_os = "linux")]
+    let (programa, args) = ("xdg-open", vec![url.clone()]);
+    #[cfg(target_os = "macos")]
+    let (programa, args) = ("open", vec![url.clone()]);
+    #[cfg(target_os = "windows")]
+    let (programa, args) = ("cmd", vec!["/C".to_string(), "start".to_string(), String::new(), url.clone()]);
+    std::process::Command::new(programa)
+        .args(args)
+        .spawn()
+        .map(|_| ())
+        .map_err(|e| format!("no se pudo abrir el navegador: {e}"))
+}
+
+/// Llavero del sistema. La contraseña de aplicación de WebDAV se guarda aquí cuando
+/// el sistema lo ofrece; si no, la pagina usa el respaldo cifrado.
+const LLAVERO_SERVICIO: &str = "cl.mimo.escritorio";
+const LLAVERO_CUENTA: &str = "webdav";
+
+#[tauri::command]
+fn llavero_guardar(clave: String) -> Result<(), String> {
+    let entrada = keyring::Entry::new(LLAVERO_SERVICIO, LLAVERO_CUENTA)
+        .map_err(|e| format!("llavero: {e}"))?;
+    entrada
+        .set_password(&clave)
+        .map_err(|e| format!("llavero: {e}"))
+}
+
+#[tauri::command]
+fn llavero_leer() -> Result<Option<String>, String> {
+    let entrada = keyring::Entry::new(LLAVERO_SERVICIO, LLAVERO_CUENTA)
+        .map_err(|e| format!("llavero: {e}"))?;
+    match entrada.get_password() {
+        Ok(clave) => Ok(Some(clave)),
+        Err(keyring::Error::NoEntry) => Ok(None),
+        Err(e) => Err(format!("llavero: {e}")),
+    }
+}
+
+#[tauri::command]
+fn llavero_borrar() -> Result<(), String> {
+    let entrada = keyring::Entry::new(LLAVERO_SERVICIO, LLAVERO_CUENTA)
+        .map_err(|e| format!("llavero: {e}"))?;
+    match entrada.delete_credential() {
+        Ok(()) => Ok(()),
+        Err(keyring::Error::NoEntry) => Ok(()),
+        Err(e) => Err(format!("llavero: {e}")),
+    }
+}
+
 /// Puente HTTP nativo para WebDAV. Evita el CORS del WebView: la peticion la hace Rust.
 /// Solo admite http/https y devuelve estado, cabeceras y cuerpo como texto.
 #[tauri::command]
@@ -563,6 +619,10 @@ fn main() {
             leer_carpeta,
             escribir_carpeta,
             olvidar_carpeta,
+            abrir_navegador,
+            llavero_guardar,
+            llavero_leer,
+            llavero_borrar,
             guardar_json,
             almacen::estado_guardar,
             almacen::estado_leer,

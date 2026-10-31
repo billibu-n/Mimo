@@ -37,9 +37,11 @@ puente `http_pedir` en `escritorio/src-tauri/src/main.rs`, los gates `gate-sync.
 **Hecho ya en esta rama:** la señal del pie con la hora del último cambio y de la última
 sincronización, el comprobante de cada sincronización, el botón «ver la copia», los mensajes de
 error traducidos a acciones, la tarjeta que empieza preguntando dónde guardar, la contraseña de
-aplicación que sobrevive al reinicio guardada cifrada y el **conector de Nextcloud que se queda con
-la dirección del servidor** y arma solo la ruta WebDAV. Todo medido con `gate-senal.py`,
-`gate-webdav.py` y los veinte gates en verde.
+aplicación que sobrevive al reinicio —llavero del sistema o cifrada—, el **conector de Nextcloud
+que se queda con la dirección del servidor** y arma solo la ruta WebDAV, y la **autorización desde
+el navegador (Login Flow v2)**. Todo medido con `gate-senal.py`, `gate-webdav.py` y los veinte
+gates en verde; el caparazón compila (`cargo check`), pero `gate-tauri` no se ejecutó en esta
+sesión.
 
 **Recomendación en una frase:** tres destinos para el usuario —«una carpeta», «tu nube» y «otro
 servidor»—, con el motor actual detrás y tres arreglos previos; los proveedores con OAuth entran
@@ -525,8 +527,8 @@ snapshot, la misma cola y el mismo cifrado.
 | Paso | Qué | Tamaño | Criterio de cierre |
 |---|---|---|---|
 | A1 | Tarjeta con las cuatro opciones y los campos técnicos plegados | Pequeño | Un usuario nuevo llega a «Conectar» sin leer una URL |
-| A2 | Conector Nextcloud: **dirección del servidor** → comprueba `status.php` → lee el perfil por OCS → arma `/remote.php/dav/files/<id>/`. Hecho (R82). **Falta** el Login Flow v2, que además evita teclear usuario y contraseña: necesita abrir el navegador del sistema y `tauri-plugin-opener` | Medio | Con una cuenta real: 3 campos y cero URLs técnicas; después, 1 clic |
-| A3 | Credenciales guardadas **cifradas** con la clave derivada (el llavero del sistema queda como mejora) | Pequeño | Cerrar y abrir la app: sigue sincronizando sin reescribir nada |
+| A2 | Conector Nextcloud: **dirección del servidor** → comprueba `status.php` → lee el perfil por OCS → arma `/remote.php/dav/files/<id>/` (R82) y **Login Flow v2**: Mimo abre el navegador del sistema, espera la autorización y recibe servidor, usuario y contraseña de aplicación solos (R83) | Medio | Con una cuenta real: una dirección y un botón |
+| A3 | Credenciales en el **llavero del sistema** (comandos nativos), con respaldo cifrado con la clave derivada cuando no hay llavero | Pequeño | Cerrar y abrir la app: sigue sincronizando sin reescribir nada |
 | A4 | **Cifrado opcional** con frase de recuperación de 12 palabras, mostrada una vez y verificada | Medio | Sin frase no se activa; con frase se recupera en otro equipo |
 | A5 | **Comprobante** tras sincronizar y botón «ver qué hay en la nube» | Pequeño | El usuario puede responder «sí, está subido» sin dudar |
 | A6 | Errores traducidos a acciones | Pequeño | Ningún mensaje con «HTTP» en la ruta normal |

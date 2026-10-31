@@ -47,6 +47,11 @@ La firma del RPM entra en esta misma beta.
 - **«En mi Nextcloud» se configura con la dirección del servidor.** Mimo comprueba que hay un
   Nextcloud, pregunta el perfil y arma la ruta WebDAV (`/remote.php/dav/files/<usuario>/`). Ya no
   hay que saber dónde termina la dirección ni pegar rutas a mano.
+- **«Autorizar en el navegador».** Con el Login Flow v2 de Nextcloud, Mimo abre tu navegador, espera
+  a que concedas el acceso y recibe el usuario y la contraseña de aplicación sin que los escribas.
+  Los campos manuales siguen ahí para servidores que no lo admitan.
+- **La contraseña de aplicación va al llavero del sistema** (Secret Service, Credential Manager o
+  Llavero) cuando está disponible; si no, al respaldo cifrado de siempre.
 
 ## Instalación
 

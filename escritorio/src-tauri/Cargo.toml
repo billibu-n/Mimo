@@ -20,6 +20,9 @@ tauri-plugin-dialog = "2"
 tauri-plugin-updater = { version = "2.14.1", default-features = false, features = ["native-tls", "zip"] }
 sha2 = "0.10"
 url = "2"
+# Llavero del sistema: Secret Service en Linux, Credential Manager en Windows y
+# Llavero en macOS. Si no hay servicio disponible, la app cae al guardado cifrado.
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 # Solo Linux: permite desactivar el limite interno de WebKitGTK que acerca la pagina a 60 fps.

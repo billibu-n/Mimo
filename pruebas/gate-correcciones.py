@@ -12,8 +12,8 @@ Mide sobre app/index.html:
   6. Ajustes queda en tres grupos y con los selectores de pareja;
   7. Notas renderiza Markdown GFM (títulos, tabla, subrayado, tareas, código),
      sanea el HTML peligroso y conserva $...$ / $$...$$ con KaTeX;
-  8. la tarjeta de sincronización tiene aire (padding, columnas y campos), ofrece
-     el registro de Nextcloud y no desborda en móvil;
+  8. la tarjeta de sincronización tiene aire (padding y campos), separa la conexión del
+     cifrado en paneles, ofrece el registro de Nextcloud y no desborda en móvil;
   9. el botón de desarrollador «Guardar tutorial» ya no está y Restablecer de fábrica deja
      la app vacía.
 
@@ -166,7 +166,9 @@ def main() -> int:
                    f"sync: espaciado con aire — {aire}", fallas)
             columnas_sync = page.locator("#sync-webdav .sync-columnas").evaluate(
                 "e => getComputedStyle(e).gridTemplateColumns.split(' ').length")
-            exigir(columnas_sync == 2, f"sync: conexión y cifrado en dos columnas — {columnas_sync}", fallas)
+            exigir(columnas_sync == 1, f"sync: el panel de WebDAV lleva solo la conexión — {columnas_sync}", fallas)
+            exigir(page.locator("#sync-cifrado .sync-bloque--cifrado").count() == 1,
+                   "sync: el cifrado vive en su propio panel", fallas)
 
             page.locator("[data-editar-periodo]").first.click(); page.wait_for_timeout(150)
             page.locator("#periodo-nombre").fill("Primavera 2026 bis")

@@ -200,11 +200,17 @@
             <div class="sync-columnas sync-columnas--una">
               <section class="sync-bloque" aria-labelledby="sync-nc-tit">
                 <h3 id="sync-nc-tit" data-l10n-es="Tu Nextcloud" data-l10n-en="Your Nextcloud" data-l10n-zh="你的 Nextcloud">Tu Nextcloud</h3>
-                <p class="sync-nota" data-l10n-es="La dirección del servidor, no la de una carpeta: Mimo encuentra la carpeta y el nombre de usuario." data-l10n-en="The server address, not a folder: Mimo works out the folder and the user name." data-l10n-zh="服务器地址，不是文件夹：Mimo 会找出文件夹和用户名。">La dirección del servidor, no la de una carpeta: Mimo encuentra la carpeta y el nombre de usuario.</p>
+                <p class="sync-nota" data-l10n-es="Escribe la dirección de tu servidor y pulsa «Autorizar en el navegador»: Mimo abre tu Nextcloud, espera a que le des permiso y se queda con las credenciales solas." data-l10n-en="Type your server address and press “Authorise in the browser”: Mimo opens your Nextcloud, waits for your permission and keeps the credentials by itself." data-l10n-zh="输入服务器地址并按“在浏览器中授权”：Mimo 会打开你的 Nextcloud，等你允许后自行保存凭据。">Escribe la dirección de tu servidor y pulsa «Autorizar en el navegador»: Mimo abre tu Nextcloud, espera a que le des permiso y se queda con las credenciales solas.</p>
                 <label class="sync-campo"><span data-l10n-es="Dirección" data-l10n-en="Address" data-l10n-zh="地址">Dirección</span>
                   <input class="entrada" id="sync-nc-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://nube.ejemplo.cl">
                   <span class="sync-pista" data-l10n-es="Como la escribes en el navegador. Mimo añade https:// si falta." data-l10n-en="As you type it in the browser. Mimo adds https:// if missing." data-l10n-zh="和你浏览器里的一样。缺少时 Mimo 会加上 https://。">Como la escribes en el navegador. Mimo añade https:// si falta.</span>
                 </label>
+                <div class="sync-fila">
+                  <button class="btn btn-primario" id="sync-nc-navegador" type="button" data-l10n-es="Autorizar en el navegador" data-l10n-en="Authorise in the browser" data-l10n-zh="在浏览器中授权">Autorizar en el navegador</button>
+                  <button class="btn" id="sync-nc-cancelar" type="button" hidden data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button>
+                  <a id="sync-nc-enlace" class="sync-nota" href="#" target="_blank" rel="noopener noreferrer" hidden data-l10n-es="Abrir la página de autorización" data-l10n-en="Open the authorisation page" data-l10n-zh="打开授权页面">Abrir la página de autorización</a>
+                </div>
+                <p class="sync-nota" data-l10n-es="O escribe los datos a mano:" data-l10n-en="Or type the details yourself:" data-l10n-zh="或者手动输入：">O escribe los datos a mano:</p>
                 <div class="sync-dos">
                   <label class="sync-campo"><span data-l10n-es="Usuario" data-l10n-en="User" data-l10n-zh="用户">Usuario</span>
                     <input class="entrada" id="sync-nc-usuario" type="text" autocomplete="username" spellcheck="false">
@@ -223,7 +229,7 @@
           </div>
 
           <div id="sync-webdav" hidden>
-            <div class="sync-columnas">
+            <div class="sync-columnas sync-columnas--una">
               <section class="sync-bloque" id="sync-webdav-conexion" aria-labelledby="sync-conexion-tit">
                 <h3 id="sync-conexion-tit" data-l10n-es="Conexión" data-l10n-en="Connection" data-l10n-zh="连接">Conexión</h3>
                 <p class="sync-nota" data-l10n-es="La cuenta la entrega tu proveedor de nube, por ejemplo Nextcloud." data-l10n-en="Your cloud provider gives you the account, for example Nextcloud." data-l10n-zh="账户由你的云服务商提供，例如 Nextcloud。">La cuenta la entrega tu proveedor de nube, por ejemplo Nextcloud.</p>
@@ -254,7 +260,11 @@
 
                 <p class="sync-nota sync-nota--final" data-l10n-es="Usa una contraseña de aplicación, no la de tu cuenta. Mimo la guarda en este equipo cifrada con tu contraseña de cifrado, para no pedirla en cada arranque; «Desconectar» la borra. Si la conexión falla, prueba con «una carpeta de este equipo»." data-l10n-en="Use an app password, not your account password. Mimo stores it on this device encrypted with your encryption password, so you do not retype it on every start; “Disconnect” erases it. If the connection fails, try “a folder on this device”." data-l10n-zh="请使用应用密码，而不是账户密码。Mimo 会用你的加密密码加密并在本设备保存它，以免每次启动都要重新输入；“断开连接”会删除它。如果连接失败，请尝试“本设备的一个文件夹”。">Usa una contraseña de aplicación, no la de tu cuenta. Mimo la guarda en este equipo cifrada con tu contraseña de cifrado, para no pedirla en cada arranque; «Desconectar» la borra. Si la conexión falla, prueba con «una carpeta de este equipo».</p>
               </section>
+            </div>
+          </div>
 
+          <div id="sync-cifrado" hidden>
+            <div class="sync-columnas sync-columnas--una">
               <section class="sync-bloque sync-bloque--cifrado" aria-labelledby="sync-cifrado-tit">
                 <h3 id="sync-cifrado-tit" data-l10n-es="Cifrado" data-l10n-en="Encryption" data-l10n-zh="加密">Cifrado</h3>
                 <p class="sync-nota"><b data-l10n-es="Obligatorio antes de subir." data-l10n-en="Required before uploading." data-l10n-zh="上传前必填。">Obligatorio antes de subir.</b> <span data-l10n-es="La copia se cifra en este equipo con tu contraseña. No guardamos esa contraseña: sin ella nadie puede abrir la copia, ni siquiera tú. Anótala." data-l10n-en="The copy is encrypted on this device with your password. We do not store that password: without it nobody can open the copy, not even you. Write it down." data-l10n-zh="副本在此设备上用你的密码加密。我们不保存该密码：没有它，任何人都无法打开副本，包括你。请记下它。">La copia se cifra en este equipo con tu contraseña. No guardamos esa contraseña: sin ella nadie puede abrir la copia, ni siquiera tú. Anótala.</span></p>

@@ -284,7 +284,36 @@ def main() -> int:
                 finally:
                     ctx_n.close()
 
-                exigir(not err_a and not err_b and not err_c and not err_d and not err_n,
+                # Autorización desde el navegador (Login Flow v2): sin teclear credenciales.
+                ctx_l, l, err_l = abrir_contexto(nav)
+                try:
+                    nota(l, "Nota Autorizada", "por login flow")
+                    l.locator('#tabs [data-ir="ajustes"]').click()
+                    l.wait_for_timeout(150)
+                    l.locator("#sync-proveedor").select_option("nextcloud")
+                    l.locator("#sync-nc-url").fill(srv.url)
+                    l.locator("#sync-nc-navegador").click()
+                    autorizado = esperar(l, lambda: "Autorizado como" in l.locator("#sync-nc-estado").inner_text(), 25)
+                    exigir(autorizado, f"login flow: autoriza desde el navegador — {l.locator('#sync-nc-estado').inner_text()}", fallas)
+                    meta_l = l.evaluate("JSON.parse(localStorage.getItem('mimo.sync.v1') || '{}')")
+                    exigir((meta_l.get("webdav") or {}).get("url") == srv.url + "/remote.php/dav/files/mimo",
+                           f"login flow: arma la ruta DAV con el servidor autorizado — {(meta_l.get('webdav') or {}).get('url')}", fallas)
+                    exigir(any(p[0] == "POST" and p[1] == "/login/v2/poll" for p in srv.peticiones),
+                           "login flow: sondea hasta que el usuario concede el acceso", fallas)
+                    l.locator("#sync-webdav-clave").fill(CLAVE)
+                    l.locator("#sync-webdav-guardar-clave").click()
+                    l.wait_for_timeout(400)
+                    sincronizar(l)
+                    l.wait_for_timeout(1500)
+                    if l.locator("#modal-sync-conflict").evaluate("e => e.classList.contains('on')"):
+                        l.locator("#sync-conf-local").click()
+                        l.wait_for_timeout(1200)
+                    exigir(esperar(l, lambda: "Sincronizado" in l.locator("#sync-estado").inner_text()),
+                           f"login flow: sincroniza sin escribir credenciales — {l.locator('#sync-estado').inner_text()}", fallas)
+                finally:
+                    ctx_l.close()
+
+                exigir(not err_a and not err_b and not err_c and not err_d and not err_n and not err_l,
                        f"webdav: sin pageerror — {err_a[:1]}{err_b[:1]}{err_c[:1]}{err_d[:1]}", fallas)
             finally:
                 ctx_a.close()
