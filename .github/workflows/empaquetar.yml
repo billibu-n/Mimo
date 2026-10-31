@@ -86,6 +86,7 @@ jobs:
           rpmkeys --dbpath "$GNUPGHOME/rpmdb" --import "$GNUPGHOME/pub.asc"
 
           for rpm in escritorio/src-tauri/target/release/bundle/rpm/*.rpm; do
+            rm -f "$rpm.sig"
             rpmsign --addsign -D "__gpg $WRAP" -D "_gpg_name $FPR" -D "_gpg_path $GNUPGHOME" "$rpm"
             rpm --dbpath "$GNUPGHOME/rpmdb" --checksig -v "$rpm"
             rpm --dbpath "$GNUPGHOME/rpmdb" --checksig "$rpm" | grep -q ': OK'
