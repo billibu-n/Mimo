@@ -1,21 +1,25 @@
-# Mimo 1.2.0-beta.4
+# Mimo 1.2.0-beta.5
 
 Mimo es un organizador personal de escritorio que funciona sin conexión: calendario, tareas,
 notas, malla, calificaciones, estudio y tiempo. No hay cuenta ni registro, y tus datos viven en
 tu equipo.
 
-Esta beta incorpora el **actualizador dentro de la app** y un **respaldo nativo verificable**.
-También avisa si el almacenamiento local se llena, rechaza respaldos de versiones futuras y
-deja de guardar la contraseña WebDAV en el navegador.
+Esta beta trabaja la **sincronización**: el pie dice cuándo se guardó y cuándo se sincronizó, cada
+sincronización deja un comprobante, «En mi Nextcloud» se configura con la dirección del servidor y
+se puede autorizar desde el navegador. Además, tamaño de letra en Ajustes, la hora de Alarmas ya
+corre y cada bloque tiene su código.
+
+**Si beta.4 te falló al instalar en Fedora, este RPM lo corrige**: la dependencia de glibc estaba
+declarada con un nombre que ningún sistema provee.
 
 ## Qué descargar
 
 | Sistema | Archivo |
 |---|---|
-| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.4-1.x86_64.rpm` |
-| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.4_amd64.deb` |
-| Arch Linux x86_64 | `mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst` |
-| Windows 10/11 x64 | `Mimo_1.2.0-beta.4_x64-setup.exe` |
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.5-1.x86_64.rpm` |
+| Debian / Ubuntu amd64 | `Mimo_1.2.0-beta.5_amd64.deb` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst` |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.5_x64-setup.exe` |
 
 También se incluyen `tutorial.json`, `LICENSE`, `SHA256SUMS`, las firmas `.sig` de los paquetes
 que usa el actualizador y `beta.json` como referencia del manifiesto.
@@ -25,14 +29,14 @@ que usa el actualizador y `beta.json` como referencia del manifiesto.
 ### Fedora 40+ / RHEL 10+
 
 ```bash
-sudo dnf install ./Mimo-1.2.0-beta.4-1.x86_64.rpm
+sudo dnf install ./Mimo-1.2.0-beta.5-1.x86_64.rpm
 mimo
 ```
 
 ### Debian / Ubuntu
 
 ```bash
-sudo apt install ./Mimo_1.2.0-beta.4_amd64.deb
+sudo apt install ./Mimo_1.2.0-beta.5_amd64.deb
 mimo
 ```
 
@@ -41,13 +45,13 @@ En Debian 13 o Ubuntu 24.04 en adelante. `apt` resuelve las dependencias.
 ### Arch Linux
 
 ```bash
-sudo pacman -U ./mimo-1.2.0beta.4-1-x86_64.pkg.tar.zst
+sudo pacman -U ./mimo-1.2.0beta.5-1-x86_64.pkg.tar.zst
 mimo
 ```
 
 ### Windows 10/11 x64
 
-Ejecuta `Mimo_1.2.0-beta.4_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
+Ejecuta `Mimo_1.2.0-beta.5_x64-setup.exe` y sigue el asistente. Se instala para tu usuario y no
 pide administrador. Si Windows no tiene WebView2, el instalador lo descarga y pide conexión una
 vez.
 
