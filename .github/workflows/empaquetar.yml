@@ -63,8 +63,7 @@ jobs:
 
           PASSFILE=$(mktemp)
           WRAP=$(mktemp)
-          LOG=$(mktemp)
-          trap 'cat "$LOG" 2>/dev/null || true; rm -f "$PASSFILE" "$WRAP" "$LOG"' EXIT
+          trap 'rm -f "$PASSFILE" "$WRAP"' EXIT
 
           printf '%s\n' "$RPM_GPG_PRIVATE_KEY" | gpg --batch --import
           printf '%s' "${RPM_GPG_PASSPHRASE%$'\n'}" > "$PASSFILE"
@@ -72,7 +71,6 @@ jobs:
 
           {
             echo '#!/bin/sh'
-            printf 'echo "gpg-args: $*" >> %s\n' "$LOG"
             printf 'exec /usr/bin/gpg --batch --yes --pinentry-mode loopback --passphrase-file %s "$@"\n' "$PASSFILE"
           } > "$WRAP"
           chmod +x "$WRAP"
@@ -89,7 +87,7 @@ jobs:
             rm -f "$rpm.sig"
             rpmsign --addsign -D "__gpg $WRAP" -D "_gpg_name $FPR" -D "_gpg_path $GNUPGHOME" "$rpm"
             rpm --dbpath "$GNUPGHOME/rpmdb" --checksig -v "$rpm"
-            rpm --dbpath "$GNUPGHOME/rpmdb" --checksig "$rpm" | grep -q ': OK'
+            rpm --dbpath "$GNUPGHOME/rpmdb" --checksig "$rpm" > /dev/null
           done
 
       - name: Regenerar firma del actualizador
