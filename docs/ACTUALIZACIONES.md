@@ -16,15 +16,33 @@ pre-release y GitHub devuelve 404 en ese atajo.
 
 ## Claves
 
-Hay dos firmas distintas:
+Hay dos firmas distintas y no se sustituyen:
 
 1. **minisign de Tauri** para el updater. La clave privada se genera con
    `cargo tauri signer generate -w ~/.config/mimo/updater.key` y **no** se versiona.
    La pública va en `plugins.updater.pubkey`.
-2. **GPG opcional** para los assets y `SHA256SUMS`. Es independiente de la anterior; beta.4 no lo usa.
+2. **GPG** para el RPM. Identidad `Mimo Releases <billibu@billibu-web.cl>`, huella
+   `5A25 CB80 9B69 735F 6073 8837 DBAC 7846 2D0B F92A`, caduca el 2028-10-30.
+   La pública está en `packaging/rpm/RPM-GPG-KEY-mimo`. Desde beta.5 el CI firma el
+   RPM con ella.
 
 Si se pierde la clave minisign, no se pueden publicar actualizaciones para las versiones
-instaladas. Hay que guardar una copia offline y la contraseña en un gestor.
+instaladas. Si se pierde la GPG, los usuarios tienen que importar una clave nueva. Ambas
+van con copia offline; la GPG además con certificado de revocación.
+
+## Orden de firma del RPM
+
+`rpmsign` escribe la firma GPG en `<paquete>.rpm.sig`, el mismo nombre que usa Tauri para
+la firma minisign. Por eso el orden no es opcional:
+
+1. `tauri build` genera el `.rpm` y su `.rpm.sig` minisign.
+2. Se borra ese `.sig` y `rpmsign --addsign` inserta la firma GPG en la cabecera.
+3. `tauri signer sign --app-version <versión>` regenera el `.sig` minisign sobre el RPM
+   ya firmado.
+
+Omitir el paso 3 deja un `.sig` que no corresponde al paquete: el updater rechaza la
+actualización. Omitir `--app-version` también la rechaza, porque `requireSignedVersion`
+compara la versión firmada con la del manifiesto.
 
 ## Publicar
 
@@ -50,14 +68,18 @@ es mejor que el updater no encuentre target a que entregue un paquete equivocado
 
 ## Firmar en CI
 
-Secretos necesarios:
+El job `linux` declara `environment: release`, con revisión obligatoria: los secretos del
+entorno solo se exponen después de aprobar el deployment.
 
-- `TAURI_SIGNING_PRIVATE_KEY` (ruta o contenido de la clave minisign)
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
-- `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE` (opcional, para los assets)
+Secretos:
 
-`tauri build` firma los `.deb`, `.rpm` y `.exe` cuando `createUpdaterArtifacts` está activo.
-El workflow sube también los `.sig`.
+- `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (nivel repo).
+- `RPM_GPG_PRIVATE_KEY` y `RPM_GPG_PASSPHRASE` (entorno `release`).
+
+El paso de GPG importa la clave en un `GNUPGHOME` temporal, escribe la passphrase en un
+archivo con permisos `600` y ejecuta `rpmsign` a través de un envoltorio de `gpg` con
+`--pinentry-mode loopback --passphrase-file`. No depende de `gpg-agent`, que en el runner
+no recibía la passphrase.
 
 ## Verificar
 
@@ -65,13 +87,19 @@ El workflow sube también los `.sig`.
 # Estructura del manifiesto y firmas de los paquetes
 python3 pruebas/gate-release.py
 
-# Firma minisign del paquete (la valida el updater al instalar)
-# La comprobación criptográfica real se hace en gate-tauri con un manifiesto local
-# y en la prueba manual de una versión anterior.
+# Firma GPG del RPM
+rpmkeys --dbpath /tmp/db --import packaging/rpm/RPM-GPG-KEY-mimo
+rpm --dbpath /tmp/db --checksig -v Mimo-*.rpm
 
-# Firma GPG opcional de los assets (si existe SHA256SUMS.asc)
-gpg --verify SHA256SUMS.asc SHA256SUMS
-sha256sum -c SHA256SUMS
+# Versión dentro de la firma minisign
+base64 -d Mimo-*.rpm.sig | head -3
+```
+
+Para el usuario:
+
+```bash
+sudo rpm --import https://raw.githubusercontent.com/billibu-n/Mimo/main/packaging/rpm/RPM-GPG-KEY-mimo
+sudo dnf install ./Mimo-*.rpm
 ```
 
 ## Límites
