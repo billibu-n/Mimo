@@ -61,30 +61,30 @@ jobs:
           export GNUPGHOME="$(mktemp -d)"
           chmod 700 "$GNUPGHOME"
 
+          PASSFILE=$(mktemp)
+          WRAP=$(mktemp)
+          trap 'rm -f "$PASSFILE" "$WRAP"' EXIT
+
           printf '%s\n' "$RPM_GPG_PRIVATE_KEY" | gpg --batch --import
+          printf '%s' "${RPM_GPG_PASSPHRASE%$'\n'}" > "$PASSFILE"
+          chmod 600 "$PASSFILE"
+
+          {
+            echo '#!/bin/sh'
+            printf 'exec /usr/bin/gpg --batch --pinentry-mode loopback --passphrase-file %s "$@"\n' "$PASSFILE"
+          } > "$WRAP"
+          chmod +x "$WRAP"
 
           FPR=$(gpg --with-colons --list-secret-keys | awk -F: '/^fpr:/{print $10; exit}')
-          GRIP=$(gpg --with-colons --with-keygrip --list-secret-keys | awk -F: '/^grp:/{print $10; exit}')
           test -n "$FPR"
-          test -n "$GRIP"
           echo "Firmando con $FPR"
-
-          echo "allow-preset-passphrase" > "$GNUPGHOME/gpg-agent.conf"
-          gpgconf --kill gpg-agent || true
-          gpgconf --launch gpg-agent
-
-          PRESET=$(command -v gpg-preset-passphrase || true)
-          if [ -z "$PRESET" ]; then
-            PRESET=/usr/lib/gnupg/gpg-preset-passphrase
-          fi
-          printf '%s' "$RPM_GPG_PASSPHRASE" | "$PRESET" --preset "$GRIP"
 
           mkdir -p "$GNUPGHOME/rpmdb"
           gpg --armor --export "$FPR" > "$GNUPGHOME/pub.asc"
           rpmkeys --dbpath "$GNUPGHOME/rpmdb" --import "$GNUPGHOME/pub.asc"
 
           for rpm in escritorio/src-tauri/target/release/bundle/rpm/*.rpm; do
-            rpmsign --addsign -D "_gpg_name $FPR" -D "_gpg_path $GNUPGHOME" "$rpm"
+            rpmsign --addsign -D "__gpg $WRAP" -D "_gpg_name $FPR" -D "_gpg_path $GNUPGHOME" "$rpm"
             rpm --dbpath "$GNUPGHOME/rpmdb" --checksig -v "$rpm"
             rpm --dbpath "$GNUPGHOME/rpmdb" --checksig "$rpm" | grep -q ': OK'
           done
