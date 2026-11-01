@@ -55,7 +55,7 @@ def main() -> int:
         page.locator("#btn-nuevo-evento").click()
         page.wait_for_timeout(200)
         page.locator("#evento-titulo").fill("Control de prueba")
-        page.locator('#evento-form button[type="submit"]').click()
+        page.locator("#modal-guardar").click()
         page.wait_for_timeout(500)
         page.locator('#cal-grid [data-evento]').first.click()
         page.wait_for_timeout(500)

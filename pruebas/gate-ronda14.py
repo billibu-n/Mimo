@@ -133,7 +133,7 @@ def main() -> int:
             page.locator("#btn-nuevo-evento").click(); page.wait_for_timeout(150)
             exigir(page.locator("#evento-titulo").get_attribute("placeholder") == "事件标题",
                    f"idioma: placeholder del evento en chino — {page.locator('#evento-titulo').get_attribute('placeholder')}", fallas)
-            page.locator("#evento-cancelar").click(); page.wait_for_timeout(100)
+            page.locator("#modal-cancelar").click(); page.wait_for_timeout(100)
 
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
             page.locator("#pref-idioma").select_option("en"); page.wait_for_timeout(250)
@@ -227,7 +227,7 @@ def main() -> int:
             page.locator('#tabs [data-ir="tareas"]').click(); page.wait_for_timeout(120)
             page.locator("#btn-nueva-tarea").click()
             page.locator("#tarea-titulo").fill("Tarea enlazada")
-            page.locator("#tarea-form button[type=submit]").click(); page.wait_for_timeout(200)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(200)
             page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(120)
             page.locator("#btn-nueva-nota").click()
             page.locator("#nota-titulo").fill("Nota enlazada"); page.wait_for_timeout(150)

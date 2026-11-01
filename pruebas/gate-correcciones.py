@@ -242,20 +242,21 @@ def main() -> int:
             exigir(vals == ["00", "02", "00"], f"reloj: queda en 00:02:00 — {vals}", fallas)
 
             page.locator('[data-hijo="alarmas"]').click(); page.wait_for_timeout(180)
+            page.locator("#btn-nueva-alarma").click(); page.wait_for_timeout(150)
             page.locator("#alarma-hora").fill("07:30")
             page.locator("#alarma-texto").fill("Desayuno")
-            page.locator("#alarma-form button[type=submit]").click(); page.wait_for_timeout(180)
-            page.locator("[data-alarma-editar]").first.click(); page.wait_for_timeout(120)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(180)
+            page.locator("[data-alarma-editar]").first.click(); page.wait_for_timeout(180)
             page.locator("#alarma-hora").fill("08:00")
             page.locator("#alarma-texto").fill("Desayuno largo")
-            page.locator("#alarma-form button[type=submit]").click(); page.wait_for_timeout(180)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(180)
             d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
             exigir(d["alarmas"][0]["hora"] == "08:00" and d["alarmas"][0]["texto"] == "Desayuno largo",
                    f"alarma: editada a 08:00 — {d['alarmas'][0]}", fallas)
 
             page.locator("[data-editar-sesion]").first.click(); page.wait_for_timeout(150)
             page.locator("#sesion-duracion").fill("1:30")
-            page.locator("#sesion-form button[type=submit]").click(); page.wait_for_timeout(150)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(150)
             d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
             exigir(abs(d["sesiones"][0]["minutos"] - 90) < 0.01,
                    f"sesión: corregida a 90 min — {d['sesiones'][0]['minutos']}", fallas)
@@ -267,8 +268,9 @@ def main() -> int:
             page.keyboard.press("Escape")
 
             page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(180)
+            page.locator("#btn-registrar-sesion").click(); page.wait_for_timeout(150)
             page.locator("#est-minutos").fill("2:30:21")
-            page.locator("#est-form button[type=submit]").click(); page.wait_for_timeout(180)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(180)
             d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
             exigir(abs(d["sesiones"][-1]["minutos"] - 150.35) < 0.01,
                    f"estudio: 2:30:21 son 150,35 min — {d['sesiones'][-1]['minutos']}", fallas)

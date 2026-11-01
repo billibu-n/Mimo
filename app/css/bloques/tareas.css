@@ -1,6 +1,4 @@
 /* tareas.css — estilos del bloque Tareas. */
-.tarea-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-.tarea-form .entrada{flex:1;min-width:200px}
 .tareas-lista{display:flex;flex-direction:column;gap:var(--sp-1)}
 .tarea-fila{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;gap:var(--sp-2);align-items:center;padding:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup)}
 .tarea-fila:hover{border-color:var(--line)}
@@ -10,7 +8,6 @@
 .tarea-nom{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tarea-nom.hecha{text-decoration:line-through;color:var(--muted)}
 .tarea-meta{font-size:var(--fs-xs);color:var(--muted);white-space:nowrap}
-.tarea-form .entrada{flex:1 1 140px;min-width:120px}
 .tarea-fila{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);padding-left:calc(var(--sp-2) + (var(--nivel,0) * 14px));border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup)}
 .tarea-fila .tarea-nom{flex:1;min-width:0}
 .tarea-fila .tarea-meta{width:64px;text-align:right}

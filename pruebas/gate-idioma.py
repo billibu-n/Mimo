@@ -124,7 +124,7 @@ def main() -> int:
                    "zh/tareas: placeholder de tarea", fallas)
             exigir(page.locator("#tarea-tipo option").nth(0).inner_text() == "任务",
                    "zh/tareas: opción Tarea", fallas)
-            page.locator("#tarea-cancelar").click()
+            page.locator("#modal-cancelar").click()
 
             page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(120)
             page.locator("#btn-nueva-nota").click(); page.wait_for_timeout(100)

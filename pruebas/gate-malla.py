@@ -53,7 +53,7 @@ def main() -> int:
             page.locator("#ramo-nombre").fill("Cálculo I")
             page.locator("#ramo-creditos").fill("6")
             page.locator("#ramo-nivel").fill("1")
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
             exigir(page.locator(".ramo-card").count() == 1, "malla: crear el primer ramo", fallas)
             exigir(page.locator("#malla-k-creditos").inner_text().strip() == "0 / 6",
@@ -65,7 +65,7 @@ def main() -> int:
             page.locator("#ramo-creditos").fill("7")
             page.locator("#ramo-nivel").fill("2")
             page.locator("#ramo-requisitos").fill("MA1001")
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
             exigir(page.locator(".ramo-card").count() == 2, "malla: crear un ramo con prerrequisito", fallas)
             exigir("bloqueado" in page.locator('.ramo-card[data-ramo="MA2001"]').inner_text().lower(),
@@ -107,7 +107,7 @@ def main() -> int:
             page.locator('#menu-ctx [data-accion="ramo-editar"]').click()
             page.wait_for_timeout(80)
             page.locator("#ramo-creditos").fill("8")
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
             exigir(page.locator("#malla-k-creditos").inner_text().strip() == "6 / 14",
                    "malla: editar créditos recalcula", fallas)

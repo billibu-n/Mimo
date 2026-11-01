@@ -41,7 +41,7 @@ def crear_ramo(page, codigo="MA1001", nombre="Cálculo I", creditos="6") -> None
     page.locator("#ramo-nombre").fill(nombre)
     page.locator("#ramo-creditos").fill(creditos)
     page.locator("#ramo-curso").check()
-    page.locator('#ramo-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(150)
 
 
@@ -64,12 +64,14 @@ def main() -> int:
             exigir(page.locator("#calif-vacio").is_visible(), "calif: sin ramos muestra el vacío", fallas)
             page.locator("#calif-crear-ramo").click()
             page.wait_for_timeout(100)
-            exigir(page.locator("#ramo-form").is_visible(), "calif: el vacío lleva a crear el ramo", fallas)
+            exigir(page.locator("#modal-editor").is_visible() and
+                   page.locator("#modal-editor").get_attribute("data-editor") == "ramo",
+                   "calif: el vacío lleva a crear el ramo", fallas)
             page.locator("#ramo-codigo").fill("MA1001")
             page.locator("#ramo-nombre").fill("Cálculo I")
             page.locator("#ramo-creditos").fill("6")
             page.locator("#ramo-curso").check()
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(150)
 
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()

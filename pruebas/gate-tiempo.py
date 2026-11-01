@@ -46,7 +46,7 @@ def crear_ramo(page) -> None:
     page.locator("#ramo-codigo").fill("MA1001")
     page.locator("#ramo-nombre").fill("Cálculo I")
     page.locator("#ramo-curso").check()
-    page.locator('#ramo-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(120)
 
 
@@ -115,9 +115,10 @@ def main() -> int:
             exigir(primera != segunda,
                    f"tiempo: la hora de Alarmas sigue corriendo — «{primera}» → «{segunda}»", fallas)
             hora = datetime.datetime.now().strftime("%H:%M")
+            page.locator("#btn-nueva-alarma").click(); page.wait_for_timeout(150)
             page.locator("#alarma-hora").fill(hora)
             page.locator("#alarma-texto").fill("Prueba")
-            page.locator('#alarma-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(1800)
             exigir("Prueba" in page.locator("#alarma-lista").inner_text(),
                    "tiempo: la alarma queda en la lista", fallas)

@@ -41,7 +41,7 @@ def crear_ramo(page, codigo: str, nombre: str) -> None:
     page.locator("#ramo-codigo").fill(codigo)
     page.locator("#ramo-nombre").fill(nombre)
     page.locator("#ramo-curso").check()
-    page.locator('#ramo-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(100)
 
 
@@ -57,10 +57,12 @@ def crear_periodo(page) -> None:
 
 
 def registrar(page, ramo: str, fecha: str, minutos: str) -> None:
+    page.locator("#btn-registrar-sesion").click()
+    page.wait_for_timeout(120)
     page.locator("#est-ramo").select_option(ramo)
     page.locator("#est-fecha").fill(fecha)
     page.locator("#est-minutos").fill(minutos)
-    page.locator('#est-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(280)
 
 
@@ -141,8 +143,12 @@ def main() -> int:
             page.wait_for_timeout(250)
             page.locator('#tabs .tab[data-ir="estudio"]').click()
             page.wait_for_timeout(200)
+            page.locator("#btn-registrar-sesion").click()
+            page.wait_for_timeout(150)
             exigir("FI1001" not in page.locator("#est-ramo").inner_text(),
                    "estudio: el ramo cerrado no se ofrece", fallas)
+            page.locator("#modal-cancelar").click()
+            page.wait_for_timeout(120)
             exigir("FI1001" not in page.locator("#est-tabla").inner_text(),
                    "estudio: el ramo cerrado no aparece en la tabla", fallas)
             page.locator('#tabs .tab[data-ir="tiempo"]').click()

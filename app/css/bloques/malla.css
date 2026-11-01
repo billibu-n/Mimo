@@ -1,16 +1,11 @@
 /* malla.css — estilos del bloque Malla. */
 
-.ramo-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-.ramo-form .entrada{flex:1 1 130px;min-width:110px}
-.ramo-form .check{flex:none}
 .ramo-color{display:inline-flex;align-items:center;gap:var(--sp-2);border:1px solid var(--line);border-radius:var(--r-sm);background:var(--sup);color:var(--muted);font-size:var(--fs-sm);padding:0 var(--sp-2);flex:none}
 .ramo-color input[type=color]{width:34px;height:26px;border:0;background:transparent;padding:0;cursor:pointer}
 .malla-ficha{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);border:1px solid var(--line2);border-radius:var(--r-md);background:var(--sup);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3)}
 .malla-ficha__texto{display:flex;flex-direction:column;gap:2px;min-width:0}
 .malla-ficha__texto b{font-size:var(--fs-lg);line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .malla-ficha__texto span{color:var(--muted);font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.carrera-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-.carrera-form .entrada{flex:1 1 180px;min-width:140px}
 .malla-kpis .kpi{position:relative;overflow:hidden;border-top:3px solid var(--line)}
 .malla-kpis .kpi--ok{border-top-color:var(--ok)}
 .malla-kpis .kpi--ac{border-top-color:var(--ac)}
@@ -97,4 +92,4 @@
 .malla-chips>div{min-width:0}
 .malla-falta{margin:var(--sp-2) 0 0;color:var(--bad);font-size:var(--fs-xs)}
 @media (max-width:900px){.malla-col{width:178px;flex-basis:178px}.malla-cols{gap:34px}.malla-chips{grid-template-columns:1fr}.malla-intro{flex-direction:column}}
-@media (max-width:520px){.ramo-form .entrada,.carrera-form .entrada{flex:1 1 100%}.malla-col{width:168px;flex-basis:168px}.malla-barra #malla-quitar-sel{flex:1 1 100%}.malla-ficha{flex-direction:column;align-items:flex-start}}
+@media (max-width:520px){.malla-col{width:168px;flex-basis:168px}.malla-barra #malla-quitar-sel{flex:1 1 100%}.malla-ficha{flex-direction:column;align-items:flex-start}}

@@ -105,14 +105,17 @@ def main() -> int:
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
             page.wait_for_timeout(150)
             exigir(page.locator("#calif-vacio").is_visible(), "calif sola: muestra el vacío", fallas)
-            exigir(page.locator("#calif-curso-form").is_visible(),
+            exigir(page.locator("#btn-calif-curso").is_visible(),
                    "calif sola: ofrece crear un curso sin Malla", fallas)
             exigir(not page.locator("#btn-calif-malla").is_visible(),
                    "calif sola: no ofrece un enlace a Malla inexistente", fallas)
 
+            page.locator("#btn-calif-curso").click()
+            page.wait_for_timeout(120)
+            exigir(page.locator("#modal-editor").is_visible(), "calif sola: el curso se crea en la ventana", fallas)
             page.locator("#calif-curso-codigo").fill("MA1001")
             page.locator("#calif-curso-nombre").fill("Cálculo I")
-            page.locator('#calif-curso-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(200)
             exigir(page.locator(".calif-item").count() == 1,
                    "calif sola: el curso creado aparece en la lista", fallas)
@@ -137,8 +140,8 @@ def main() -> int:
             page.wait_for_timeout(150)
             exigir(page.locator(".calif-item").count() == 1,
                    "quitar Malla: Calificaciones conserva el curso", fallas)
-            exigir(not page.locator("#calif-curso-form").is_visible(),
-                   "quitar Malla: con cursos no muestra el formulario vacío", fallas)
+            exigir(not page.locator("#btn-calif-curso").is_visible(),
+                   "quitar Malla: con cursos no muestra el botón de crear", fallas)
             instalar(page, "malla")
             page.locator('#tabs .tab[data-ir="malla"]').click()
             page.wait_for_timeout(180)
@@ -170,10 +173,12 @@ def main() -> int:
             instalar(page, "estudio")
             page.locator('#tabs .tab[data-ir="estudio"]').click()
             page.wait_for_timeout(180)
-            exigir(page.locator("#est-form").is_visible(),
+            exigir(page.locator("#btn-registrar-sesion").is_visible(),
                    "estudio solo: ofrece registrar una sesión manual", fallas)
+            page.locator("#btn-registrar-sesion").click()
+            page.wait_for_timeout(120)
             page.locator("#est-minutos").fill("0:30")
-            page.locator('#est-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(220)
             exigir(page.locator(".est-sesion").count() >= 1,
                    "estudio solo: la sesión manual entra", fallas)
@@ -191,7 +196,7 @@ def main() -> int:
             page.locator("#btn-nuevo-ramo").click()
             page.locator("#ramo-codigo").fill("MA1001")
             page.locator("#ramo-nombre").fill("Cálculo I")
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(200)
             exigir(page.locator('[data-abrir-calif]').count() == 0,
                    "malla sola: no ofrece Calificaciones si no está", fallas)

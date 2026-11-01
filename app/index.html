@@ -404,6 +404,19 @@
   </div>
 </div>
 
+<!-- La única ventana de edición (js/nucleo/modal.js la llena y la gobierna).
+     Todos los editores de la app —evento, tarea, ramo, carrera, curso, sesión,
+     alarma— abren aquí; ninguna sección lleva ya su propio formulario. -->
+<div class="modal" id="modal-editor" role="dialog" aria-modal="true" aria-labelledby="modal-editor-tit">
+  <div class="modal__caja modal-editor-caja">
+    <header class="modal__cab"><div><h2 id="modal-editor-tit"></h2><p class="muted" id="modal-editor-sub"></p></div><button class="icono-btn" id="modal-editor-x" type="button" title="Cerrar" aria-label="Cerrar" data-l10n-title="acc.cerrar" data-l10n-aria="acc.cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
+    <form id="modal-form" novalidate>
+      <div class="modal-campos" id="modal-campos"></div>
+      <div class="fila modal-pie"><button class="btn btn-primario" id="modal-guardar" type="submit">Guardar</button><button class="btn" id="modal-cancelar" type="button" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button><button class="btn btn-peligro" id="modal-borrar" type="button" hidden>Borrar</button></div>
+    </form>
+  </div>
+</div>
+
 <div class="modal" id="modal-periodo" role="dialog" aria-modal="true" aria-labelledby="periodo-tit">
   <div class="modal__caja">
     <header class="modal__cab"><div><h2 id="periodo-tit" data-l10n-es="Nuevo periodo" data-l10n-en="New term" data-l10n-zh="新建学期">Nuevo periodo</h2><p class="muted" data-l10n-es="Define el arco completo: clases, receso y exámenes." data-l10n-en="Define the whole arc: classes, break and exams." data-l10n-zh="定义完整周期：课程、假期和考试。">Define el arco completo: clases, receso y exámenes.</p></div><button class="icono-btn" id="periodo-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
@@ -419,20 +432,6 @@
     </form>
     <h3 data-l10n-es="Periodos" data-l10n-en="Terms" data-l10n-zh="学期">Periodos</h3>
     <div id="periodos-lista"></div>
-  </div>
-</div>
-
-<div class="modal" id="modal-sesion" role="dialog" aria-modal="true" aria-labelledby="sesion-tit">
-  <div class="modal__caja">
-    <header class="modal__cab"><div><h2 id="sesion-tit" data-l10n-es="Editar sesión de estudio" data-l10n-en="Edit study session" data-l10n-zh="编辑学习会话">Editar sesión de estudio</h2><p class="muted" data-l10n-es="Corrige lo que registró Tiempo o una sesión manual." data-l10n-en="Fix what Time or a manual session logged." data-l10n-zh="修正时间或手动记录的会话。">Corrige lo que registró Tiempo o una sesión manual.</p></div><button class="icono-btn" id="sesion-x" type="button" title="Cerrar" aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></header>
-    <form id="sesion-form">
-      <input type="hidden" id="sesion-id">
-      <label class="campo"><span data-l10n-es="Fecha" data-l10n-en="Date" data-l10n-zh="日期">Fecha</span> <input class="entrada" id="sesion-fecha" type="date"></label>
-      <label class="campo"><span data-l10n-es="Duración" data-l10n-en="Duration" data-l10n-zh="时长">Duración</span> <input class="entrada" id="sesion-duracion" type="text" inputmode="decimal" placeholder="2:30:21"></label>
-      <label class="campo"><span data-l10n-es="Ramo" data-l10n-en="Course" data-l10n-zh="课程">Ramo</span> <select class="entrada" id="sesion-ramo"></select></label>
-      <label class="campo"><span data-l10n-es="Hora" data-l10n-en="Time" data-l10n-zh="时间">Hora</span> <input class="entrada" id="sesion-hora" type="time"></label>
-      <div class="fila"><button class="btn btn-primario" type="submit" data-l10n-es="Guardar" data-l10n-en="Save" data-l10n-zh="保存">Guardar</button><button class="btn" type="button" id="sesion-cancelar" data-l10n-es="Cancelar" data-l10n-en="Cancel" data-l10n-zh="取消">Cancelar</button><button class="btn btn-peligro" type="button" id="sesion-borrar" data-l10n-es="Borrar" data-l10n-en="Delete" data-l10n-zh="删除">Borrar</button></div>
-    </form>
   </div>
 </div>
 
@@ -504,6 +503,7 @@
 <script src="js/nucleo/eventos.js"></script>
 <script src="js/nucleo/i18n.js"></script>
 <script src="js/nucleo/registro.js"></script>
+<script src="js/nucleo/modal.js"></script>
 <script src="js/dominio/cursos.js"></script>
 <script src="js/dominio/sesiones.js"></script>
 <script src="js/bloques/calendario/vista.js"></script>
