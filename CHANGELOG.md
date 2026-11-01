@@ -25,6 +25,11 @@
 - Cambiar el **código** de un ramo ahora arrastra sus sesiones, sus metas y los contextos de
   eventos y tareas. Antes las horas desaparecían de Estudio y Tiempo.
 
+### Calificaciones
+
+- Las categorías y los componentes que crea la app nacen con el nombre en el idioma activo; antes
+  aparecían en español aunque la interfaz estuviera en inglés o chino.
+
 ### Tiempo
 
 - El cronómetro, el temporizador y el pomodoro **miden con la hora del equipo**, no contando

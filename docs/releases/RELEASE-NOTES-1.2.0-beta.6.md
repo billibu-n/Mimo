@@ -18,6 +18,8 @@ se abren tal cual.
 - **Calendario.** Los eventos sueltos llevan **categorías** propias, sin depender de un ramo. Se
   crean desde la ventana del evento o desde el carril y se ven en el chip del mes, en la semana, en
   la agenda, en el detalle y en la lista del carril.
+- **Calificaciones.** Las categorías y los componentes nuevos se crean con el nombre en el idioma
+  activo, no en español.
 
 ## Lo que ya venía en este corte
 

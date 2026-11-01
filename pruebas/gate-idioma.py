@@ -21,7 +21,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
 
 SECCIONES = ("calendario", "tareas", "notas", "tiempo", "malla", "calificaciones", "estudio", "ajustes")
 PROHIBIDO = re.compile(
@@ -169,6 +169,34 @@ def main() -> int:
             despues = page.evaluate("document.querySelector('#temas .tema-nombre').textContent")
             exigir(antes != despues and despues == "经典",
                    f"temas: repintado en caliente — {antes} -> {despues}", fallas)
+
+            # R106b: las categorías y componentes que crea la app no nacen en
+            # español cuando la interfaz está en chino.
+            page.evaluate("""() => {
+              const k = 'mimo.shell.v1';
+              const d = JSON.parse(localStorage.getItem(k));
+              d.cursos = [{codigo:'MA1001', nombre:'Curso', creditos:6, nivel:1,
+                           enCurso:true, cerrado:false, requisitos:[], requisitos_o:[]}];
+              d.califs = {MA1001:{categorias:[{nombre:'General',peso:100}], componentes:[],
+                         examen:{activo:true,peso:40,nota:null,reemplaza:null},
+                         eximicion:{activa:false,modo:'todas',condiciones:[]}, notaMin:4, meta:5}};
+              localStorage.setItem(k, JSON.stringify(d));
+            }""")
+            page.goto(APP.as_uri(), wait_until="load")
+            page.wait_for_timeout(350)
+            page.locator('#tabs [data-ir="calificaciones"]').click()
+            page.wait_for_timeout(250)
+            page.locator('[data-accion-calif="cat-add"]').click()
+            page.wait_for_timeout(200)
+            categorias = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).califs.MA1001.categorias")
+            exigir(categorias[-1]["nombre"].startswith("分类"),
+                   f"zh/calificaciones: la categoría nueva nace traducida — {categorias[-1]['nombre']!r}", fallas)
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
+            page.locator('[data-accion-calif="comp-add"]').click()
+            page.wait_for_timeout(200)
+            componentes = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).califs.MA1001.componentes")
+            exigir(componentes[-1]["nombre"].startswith("评分项"),
+                   f"zh/calificaciones: el componente nuevo nace traducido — {componentes[-1]['nombre']!r}", fallas)
 
             exigir(not [e for e in errores if e.startswith("pageerror")],
                    f"idioma: sin pageerror — {errores[:2]}", fallas)

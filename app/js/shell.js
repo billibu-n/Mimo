@@ -2118,7 +2118,7 @@
   var califSel = null;
   function califPorDefecto() {
     return {
-      categorias: [{ nombre: "General", peso: 100 }], componentes: [],
+      categorias: [{ nombre: L("General", "General", "常规"), peso: 100 }], componentes: [],
       examen: { activo: true, peso: 40, nota: null, reemplaza: null },
       eximicion: { activa: false, modo: "todas", condiciones: [] },
       notaMin: 4, meta: 5
@@ -2204,12 +2204,12 @@
       var ex = exam[cod] || viejo.examen || {};
       var exi = exim[cod] || viejo.eximicion || {};
       q.categorias = (Array.isArray(listaCat) ? listaCat : []).map(function (cat) {
-        return { nombre: String(cat.nombre || "General"), peso: Math.max(0, Number(cat.peso) || 0) };
+        return { nombre: String(cat.nombre || L("General", "General", "常规")), peso: Math.max(0, Number(cat.peso) || 0) };
       });
-      if (!q.categorias.length) q.categorias = [{ nombre: "General", peso: 100 }];
+      if (!q.categorias.length) q.categorias = [{ nombre: L("General", "General", "常规"), peso: 100 }];
       q.componentes = (Array.isArray(listaComp) ? listaComp : []).map(function (c, i) {
         return {
-          nombre: String(c.nombre || ("Componente " + (i + 1))),
+          nombre: String(c.nombre || (L("Componente ", "Component ", "评分项 ") + (i + 1))),
           categoria: String(c.categoria || q.categorias[0].nombre),
           nota: notaNum(c.nota), fecha: String(c.fecha || ""), peso: Math.max(0.1, Number(c.peso) || 1)
         };
@@ -2294,9 +2294,9 @@
     estado.cursos.forEach(function (cur) {
       var q = estado.califs[cur.codigo];
       if (!q || typeof q !== "object") return;
-      if (!Array.isArray(q.categorias) || !q.categorias.length) q.categorias = [{ nombre: "General", peso: 100 }];
+      if (!Array.isArray(q.categorias) || !q.categorias.length) q.categorias = [{ nombre: L("General", "General", "常规"), peso: 100 }];
       q.categorias = q.categorias.map(function (cat, i) {
-        return conservar({ nombre: String(cat.nombre || "Categoría " + (i + 1)), peso: Math.max(0, Number(cat.peso) || 0) }, cat);
+        return conservar({ nombre: String(cat.nombre || L("Categoría ", "Category ", "分类 ") + (i + 1)), peso: Math.max(0, Number(cat.peso) || 0) }, cat);
       });
       var sumaCat = q.categorias.reduce(function (a, c) { return a + c.peso; }, 0);
       if (sumaCat > 0 && sumaCat <= 1.5) q.categorias.forEach(function (c) { c.peso = Math.round(c.peso * 100 / sumaCat * 100) / 100; });
@@ -2308,7 +2308,7 @@
       });
       q.componentes = (Array.isArray(q.componentes) ? q.componentes : []).map(function (x, i) {
         return conservar({
-          nombre: String(x.nombre || "Componente " + (i + 1)),
+          nombre: String(x.nombre || L("Componente ", "Component ", "评分项 ") + (i + 1)),
           categoria: String(x.categoria || q.categorias[0].nombre),
           nota: notaNum(x.nota), fecha: String(x.fecha || ""), peso: Math.max(0.1, Number(x.peso) || 1)
         }, x);
@@ -2761,8 +2761,8 @@
       aviso(L("Componente pasado al calendario.", "Component sent to the calendar.", "评分项已发送到日历。"));
       return;
     }
-    if (accion === "cat-add") q.categorias.push({ nombre: "Categoría " + (q.categorias.length + 1), peso: 0 });
-    else if (accion === "comp-add") q.componentes.push({ nombre: "Componente " + (q.componentes.length + 1), categoria: q.categorias[0].nombre, nota: null, fecha: "", peso: 1 });
+    if (accion === "cat-add") q.categorias.push({ nombre: L("Categoría ", "Category ", "分类 ") + (q.categorias.length + 1), peso: 0 });
+    else if (accion === "comp-add") q.componentes.push({ nombre: L("Componente ", "Component ", "评分项 ") + (q.componentes.length + 1), categoria: q.categorias[0].nombre, nota: null, fecha: "", peso: 1 });
     else if (accion === "cond-add") q.eximicion.condiciones.push({ tipo: "presentacion", ref: "", op: ">=", valor: 5 });
     else if (accion === "cat-quitar") {
       if (q.categorias.length <= 1) { aviso(L("Debe quedar al menos una categoría.", "At least one category must remain.", "至少保留一个分类。")); return; }
