@@ -1,5 +1,45 @@
 # Cambios
 
+## 1.2.0-beta.6 — 2026-11-01
+
+### Pruebas antes de publicar
+
+- Cacería adversarial sobre las ocho secciones, el panel, la vista dividida, los plegables, la
+  ventana única, la importación y la persistencia. Cada corrección entra con su compuerta.
+- **27 compuertas web** en verde: las 26 anteriores más `gate-categorias.py`; `gate-tiempo` usa
+  reloj falso para medir segundos exactos y `gate-malla`/`gate-estudio` cubren el cierre y el
+  renombre de un ramo.
+
+### Calendario
+
+- **Categorías de evento.** Un evento suelto puede llevar una etiqueta propia, sin ramo: se crea
+  desde su ventana o desde el carril, y se ve en el chip del mes, en la semana, en la agenda, en
+  el detalle y en la lista de categorías. Es el «tipo» de Mimo Académics, con el color estable de
+  la identidad del ramo.
+
+### Malla
+
+- La ficha de un ramo aprobado ofrece **Cambiar color e icono** sin tener que reabrirlo. Si se
+  reabre para elegirlo, se puede volver a cerrar desde Calificaciones: sin notas, pide confirmación
+  y lo cierra como aprobado, igual que desde Malla.
+- Cambiar el **código** de un ramo ahora arrastra sus sesiones, sus metas y los contextos de
+  eventos y tareas. Antes las horas desaparecían de Estudio y Tiempo.
+
+### Tiempo
+
+- El cronómetro, el temporizador y el pomodoro **miden con la hora del equipo**, no contando
+  ticks. Pausar y reanudar conserva lo medido y una pestaña dormida no regala ni roba segundos.
+- Cambiar de modo con la cuenta corriendo registra la sesión en vez de perderla.
+
+### Interfaz
+
+- Vuelve el recuadro de fondo de Mimo Académics en todas las secciones, con el lienzo del tema
+  (`R99`).
+- Una sola ventana de edición (`#modal-editor`) para los siete formularios (`R100`).
+- Categorías plegables en Calificaciones, Estudio y Tiempo (`R101`).
+- Color e icono por ramo desde `identidad.js`, con 121 iconos de Lucide y buscador (`R102`,
+  `R103`, `R103b`).
+
 ## 1.2.0-beta.5 — 2026-10-31
 
 ### Sincronización
