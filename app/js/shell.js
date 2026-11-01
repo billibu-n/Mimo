@@ -203,7 +203,7 @@
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: true, navPlegada: false, navOculta: false,
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: false, navPlegada: false, navOculta: false,
         temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
@@ -444,6 +444,9 @@
     }
     if (salida) salida.textContent = texto;
     if (punto) punto.className = "footer__punto footer__punto--" + clase;
+    // Sin nube el pie no se muestra: el mismo estado vive en el botón de la barra,
+    // con su color y su detalle.
+    document.body.classList.toggle("sin-pie", !hayDestino);
     var detalle = [
       L("Último cambio guardado: ", "Last change saved: ", "上次更改已保存：") + (ultimoGuardado ? fechaHora(ultimoGuardado) : L("sin cambios", "no changes", "没有更改")),
       L("Última sincronización: ", "Last sync: ", "上次同步：") + (meta && meta.lastSyncAt ? fechaHora(new Date(meta.lastSyncAt).getTime()) : L("nunca", "never", "从未")),
@@ -453,6 +456,13 @@
     if (st && st.cola && st.cola.ultimoError) detalle.push(L("Último error: ", "Last error: ", "上次错误：") + st.cola.ultimoError);
     b.title = detalle.join("\n");
     b.setAttribute("aria-label", texto + ". " + detalle[0] + ". " + detalle[1] + ".");
+    var bs = $("#btn-sync");
+    if (bs) {
+      bs.className = "icono-btn sync sync--" + clase;
+      bs.setAttribute("data-estado", texto);
+      bs.title = detalle.join("\n");
+      bs.setAttribute("aria-label", texto + ". " + detalle[0] + ". " + detalle[1] + ".");
+    }
   }
   function abrirEnSync() {
     try { ir("ajustes"); } catch (e) {}
@@ -508,7 +518,7 @@
     estado.panel.tareas = "detalle";
     guardar();
     if (pantalla !== "tareas") ir("tareas"); else { pintarTareas(); pintarPanel(); }
-    if (window.innerWidth <= 1255) abrirPanel();
+    abrirPanel();
   }
   function abrirEventoDetalle(id) {
     if (!eventoPorId(id)) return;
@@ -516,7 +526,7 @@
     estado.panel.calendario = "detalle";
     guardar();
     if (pantalla !== "calendario") ir("calendario"); else { pintarCalendario(); pintarPanel(); }
-    if (window.innerWidth <= 1255) abrirPanel();
+    abrirPanel();
   }
   function alternarTarea(id) {
     var x = tareaPorId(id); if (!x) return;
@@ -619,7 +629,7 @@
         { accion: "ramo-abrir", texto: L("Abrir ficha", "Open details", "打开详情"), run: function () {
           estado.ramoSel = r.codigo; estado.panel.malla = "detalle";
           guardar(); pintarMalla(); pintarPanel();
-          if (window.innerWidth <= 1255) abrirPanel();
+          abrirPanel();
         } },
         { accion: "ramo-editar", texto: "Editar", run: function () { abrirFormularioRamo(r); } },
         { accion: "ramo-estado", texto: r.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程"), run: function () { alternarRamo(r.codigo); } },
@@ -1172,6 +1182,8 @@
     var total = eventosTodos().length;
     $("#kpi-eventos").textContent = String(total);
     $("#kpi-tareas").textContent = String(estado.tareas.filter(function (t) { return t.fecha; }).length);
+    var minReg = (estado.sesiones || []).reduce(function (a, s) { return a + (Number(s.minutos) || 0); }, 0);
+    if ($("#kpi-horas")) $("#kpi-horas").textContent = fmtHoras(minReg);
     $$("#vista-calendario button").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-cal-vista") === vistaCalendario);
     });
@@ -1254,7 +1266,7 @@
         var ctx = ctxDe(b);
         estado.panel[ctx] = "detalle";
         guardar(); pintarPanelDe(ctx); pintarCalendario();
-        if (window.innerWidth <= 1255) abrirPanel();
+        abrirPanel();
       });
     });
   }
@@ -1367,7 +1379,7 @@
         var ctx = ctxDe(fila);
         estado.panel[ctx] = "detalle";
         guardar(); pintarTareas(); pintarPanelDe(ctx);
-        if (window.innerWidth <= 1255) abrirPanel();
+        abrirPanel();
       });
       fila.addEventListener("keydown", function (ev) {
         if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); fila.click(); }
@@ -1670,7 +1682,7 @@
         estado.ramoSel = estado.ramoSel === cod ? null : cod;
         estado.panel.malla = "detalle";
         guardar(); pintarMalla(); pintarPanel();
-        if (window.innerWidth <= 1255 && estado.ramoSel) abrirPanel();
+        if (estado.ramoSel) abrirPanel();
       });
     });
     if (detalle) detalle.innerHTML = detalleMallaHTML();
@@ -3139,7 +3151,7 @@
         califSel = b.getAttribute("data-abrir-calif"); estado.califSel = califSel;
         if (!estado.califs[califSel]) estado.califs[califSel] = califPorDefecto();
         guardar(); ir("calificaciones"); pintarCalificaciones();
-        if (window.innerWidth <= 1255) abrirPanel();
+        abrirPanel();
       });
     });
     $$("#panel-cuerpo [data-editar-ramo]").forEach(function (b) {
@@ -3852,7 +3864,7 @@
     splitOn = true;
     document.body.classList.add("split");
     $("#contenido-b").hidden = false;
-    $("#btn-split").setAttribute("aria-pressed", "true");
+    if ($("#btn-split")) $("#btn-split").setAttribute("aria-pressed", "true");
     var lab = $("#lab-split"); if (lab) lab.checked = true;
     pintarSplit();
     moverSeccionSplit(estado.splitSeccion);
@@ -3863,7 +3875,7 @@
     splitOn = false;
     document.body.classList.remove("split");
     $("#contenido-b").hidden = true;
-    $("#btn-split").setAttribute("aria-pressed", "false");
+    if ($("#btn-split")) $("#btn-split").setAttribute("aria-pressed", "false");
     var lab = $("#lab-split"); if (lab) lab.checked = false;
     mostrarPaneles();
   }
@@ -3988,7 +4000,7 @@
       if (!original) estado.cursos.push(c);
       notificarCurso(c);
       estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
-      guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel();
+      guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel(); abrirPanel();
       aviso(original ? "Ramo guardado." : "Ramo creado.");
     });
 
@@ -4019,7 +4031,7 @@
       califSel = b.getAttribute("data-calif"); estado.califSel = califSel;
       estado.ramoSel = califSel; estado.panel.calificaciones = "detalle";
       guardar(); pintarCalificaciones(); pintarPanel();
-      if (window.innerWidth <= 1255) abrirPanel();
+      abrirPanel();
     });
     $("#calif-detalle").addEventListener("change", cambioCalif);
     $("#calif-detalle").addEventListener("click", accionCalif);
@@ -4106,6 +4118,9 @@
     secciones().forEach(montarHost);
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
+    // El panel arranca cerrado: se abre cuando el dueño pide ver algo (o lo deja abierto
+    // en Ajustes y entonces se respeta).
+    if (estado.prefs.panelAbierto === false) cerrarPanel();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTemas();
     historial = [JSON.stringify(estado)]; historialPos = 0; pintarHistorial();
@@ -4134,7 +4149,6 @@
     $("#btn-panel").addEventListener("click", alternarPanel);
     $("#btn-panel-cerrar").addEventListener("click", cerrarPanel);
     $("#velo").addEventListener("click", cerrarPanel);
-    $("#btn-split").addEventListener("click", alternarSplit);
     $("#btn-cerrar-split").addEventListener("click", cerrarSplit);
     $("#split-x").addEventListener("click", cerrarSplitModal);
     $("#split-cancelar").addEventListener("click", cerrarSplitModal);

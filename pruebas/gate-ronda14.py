@@ -153,7 +153,8 @@ def main() -> int:
                    f"idioma: bandera genérica de Sudamérica — {bandera}", fallas)
 
             # Dos secciones y arrastre.
-            page.locator("#btn-split").click(); page.wait_for_timeout(150)
+            # El split ya no vive en la barra: se abre desde Ajustes (R3).
+            page.evaluate("document.querySelector('#lab-split').click()"); page.wait_for_timeout(200)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
                    "split: abre el diálogo de dos secciones", fallas)
             page.locator("#split-izq").select_option("tareas")

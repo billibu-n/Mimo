@@ -119,6 +119,11 @@ def main() -> int:
             page.wait_for_timeout(600)
             return page.evaluate("window.__m")
 
+        # El panel arranca cerrado (R3): se abre antes de medir el cierre.
+        if page.evaluate("document.querySelector('#panel').getBoundingClientRect().width") < 100:
+            page.locator("#btn-panel").click()
+            page.wait_for_timeout(400)
+
         # El panel se recoge con animación y sin scroll de ventana.
         m = muestrear("#btn-panel")
         intermedios = [x for x in m if 0 < x["panel"] < 320]

@@ -226,10 +226,12 @@ def main() -> int:
             page.locator("#pref-nav").select_option("arriba")
             page.locator("#pref-idioma").select_option("es")
             page.wait_for_timeout(80)
-            page.locator("#btn-split").click()
-            page.wait_for_timeout(80)
+            # La casilla vive en Ajustes; el clic directo evita que el deslizamiento del
+            # panel la deje «inestable» para Playwright.
+            page.evaluate("document.querySelector('#lab-split').click()")
+            page.wait_for_timeout(150)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
-                   "split: el diálogo de dos secciones se abre", fallas)
+                   "split: el diálogo de dos secciones se abre desde Ajustes", fallas)
             page.locator("#split-izq").select_option("notas")
             page.locator("#split-der").select_option("tareas")
             page.locator("#split-abrir").click()
@@ -252,14 +254,18 @@ def main() -> int:
                    "split: la interacción de la derecha abre su detalle", fallas)
             page.locator("#btn-cerrar-split").click()
             page.wait_for_timeout(60)
-            exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)
+            exigir(not page.locator(".footer").is_visible(), "geometría: sin nube el pie no se muestra", fallas)
+            antes_ancho = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
             page.locator("#btn-panel").click()
             page.wait_for_timeout(300)   # el panel se desliza (180 ms)
-            exigir(not page.locator(".panel").is_visible(), "geometría: el panel se oculta sin mover el pie", fallas)
+            tras_ancho = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
+            exigir((antes_ancho <= 1) != (tras_ancho <= 1),
+                   f"panel: el botón lo alterna — {antes_ancho:.0f} → {tras_ancho:.0f} px", fallas)
             page.locator("#btn-panel").click()
             page.wait_for_timeout(300)
-            exigir(page.locator(".panel").is_visible(), "geometría: el panel vuelve", fallas)
-            exigir(page.locator(".footer").is_visible(), "geometría: el pie sigue visible", fallas)
+            vuelta = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
+            exigir(abs(vuelta - antes_ancho) <= 1,
+                   f"panel: el botón lo devuelve — {vuelta:.0f} px", fallas)
 
             # Lo que se añade también se quita: evento, tarea y periodo.
             page.locator('#tabs .tab[data-ir="calendario"]').click()
