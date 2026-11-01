@@ -199,7 +199,7 @@
     cont.innerHTML = vis.map(function (n) {
       return '<button class="nota-item' + (n.id === E().notaSel ? " on" : "") + '" type="button" data-nota="' + n.id + '" title="' + C.esc(t("cal.clicDerecho")) + '"><b>' +
         (n.fijada ? "★ " : "") + C.esc(!n.titulo || n.titulo === "Sin título" ? L("Sin título", "Untitled", "无标题") : n.titulo) + "</b><small>" +
-        C.esc((n.cuerpo || "").slice(0, 70) || L("Vacía", "Empty", "空白")) + (n.contexto ? " · " + C.esc(n.contexto) : "") + "</small></button>";
+        C.esc((n.cuerpo || "").slice(0, 70) || L("Vacía", "Empty", "空白")) + (n.contexto ? " · " + (C.marcaContexto ? C.marcaContexto(n.contexto) : "") + C.esc(n.contexto) : "") + "</small></button>";
     }).join("");
     if (conClick) {
       qq(destino + " [data-nota]").forEach(function (b) {

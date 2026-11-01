@@ -949,6 +949,8 @@
       normalizarEstudio: normalizarEstudio, normalizarNotas: function () { return normalizarNotas(); },
       eventoPorId: eventoPorId, eventosTodos: eventosTodos, eventosDe: eventosDe,
       tareaPorId: tareaPorId, ramoPorCodigo: ramoPorCodigo, califDe: califDe,
+      colorDeContexto: colorDeContexto, marcaContexto: marcaContexto, iconoContexto: iconoContexto,
+      iconoRamo: iconoRamoHTML, marcaRamo: marcaRamo, identidad: function () { return window.MimoIdentidad || null; },
       abrirNota: function (id) { return abrirNota(id); },
       abrirTarea: function (id) { return abrirTarea(id); },
       abrirEventoDetalle: function (id) { return abrirEventoDetalle(id); },
@@ -1196,7 +1198,7 @@
       agenda.innerHTML = orden.length ? orden.map(function (e) {
         var col = colorDeContexto(e.contexto);
         var estilo = col ? ' style="box-shadow:inset 4px 0 0 ' + col + '"' : "";
-        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
+        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span class="cal-agenda__cuerpo"><span class="cal-agenda__tit">' + iconoContexto(e.contexto) + "<b>" + esc(e.titulo) + "</b></span><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + '</small></span><span class="pill">' + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
       }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
     } else if (vistaCalendario === "semana") {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
@@ -1394,7 +1396,7 @@
   function tarjetaTablero(t) {
     var p = progreso(t);
     return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="' + esc(tr("cal.clicDerecho")) + '">' +
-      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + marcaContexto(t.contexto) + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
       (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
   }
   function bindTareas() {
@@ -1545,9 +1547,11 @@
   function normalizarCursos() {
     if (window.MimoDominioCursos) {
       estado.cursos = MimoDominioCursos.normalizar(estado.cursos);
-      return;
+    } else {
+      estado.cursos = estado.cursos || [];
     }
-    estado.cursos = estado.cursos || [];
+    // La identidad se valida aquí: color #rrggbb e icono del catálogo, o nada.
+    if (window.MimoIdentidad) estado.cursos.forEach(MimoIdentidad.normalizar);
   }
   function ramoPorCodigo(cod) {
     if (window.MimoDominioCursos) return MimoDominioCursos.obtener(estado.cursos, cod);
@@ -1740,7 +1744,7 @@
           var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
           var titulo = c.nombre + (req ? " · " + L("requiere ", "requires ", "需要 ") + req : "") + (faltan.length ? " · " + L("faltan: ", "missing: ", "缺少：") + faltan.join(", ") : "");
           return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
-            '<span class="ramo-card__top"><b>' + (hexColor(c.color) ? '<i class="ramo-card__color" style="background:' + esc(c.color) + '"></i>' : "") + esc(c.codigo) + '</b><span class="ramo-card__ico">' + icono(iconoEstado(e)) + "</span></span>" +
+            '<span class="ramo-card__top"><b>' + marcaRamo(c) + esc(c.codigo) + '</b><span class="ramo-card__ico">' + iconoRamoHTML(c) + "</span></span>" +
             '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
             '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
             '<span class="ramo-card__est">' + esc(etiquetaEstado(e)) + "</span></button>";
@@ -1859,7 +1863,7 @@
         { id: "ramo-nombre", etiqueta: L("Nombre", "Name", "名称"), valor: c ? c.nombre : "", ph: L("Nombre del ramo", "Course name", "课程名称") },
         { id: "ramo-creditos", etiqueta: L("Créditos", "Credits", "学分"), tipo: "number", min: 0, max: 40, paso: 1, valor: c ? c.creditos : 6 },
         { id: "ramo-nivel", etiqueta: L("Nivel", "Level", "层级"), tipo: "number", min: 1, max: 99, paso: 1, valor: c ? c.nivel : 1 },
-        { id: "ramo-color", etiqueta: L("Color", "Color", "颜色"), tipo: "color", valor: c ? colorDeRamo(c) : PALETA_ESTUDIO[estado.cursos.length % PALETA_ESTUDIO.length] },
+        { id: "ramo-color", etiqueta: L("Color", "Color", "颜色"), tipo: "color", valor: c ? colorDeRamo(c) : MimoIdentidad.colorAuto("nuevo") },
         { id: "ramo-requisitos", etiqueta: L("Requisitos", "Prerequisites", "先修要求"), valor: c ? (c.requisitos || []).join(", ") : "", ph: L("Requisitos: MA1001, FI2001", "Prerequisites: MA1001, FI2001", "先修：MA1001, FI2001") },
         { id: "ramo-aprobado", tipo: "check", etiqueta: L("Aprobado (cierra)", "Passed (closes)", "已通过（关闭）"), valor: !!(c && c.cerrado && c.aprobado) },
         { id: "ramo-curso", tipo: "check", etiqueta: L("En curso", "In progress", "进行中"), valor: !!(c && !c.cerrado && c.enCurso) }
@@ -2357,9 +2361,14 @@
         '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">' + esc(L("Reabrir curso", "Reopen course", "重新打开课程")) + '</button></div>'
       : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div>';
     return '<div class="card calif-card">' +
-      '<div class="calif-cab"><div><h2>' + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
+      '<div class="calif-cab"><div class="calif-cab__izq">' + iconoRamoHTML(cur, "ramo-ico--lg") +
+        "<div><h2>" + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
         '<p class="muted">' + creditosDe(cur) + " " + esc(L("créditos", "credits", "学分")) + " · " + esc(etiquetaNivel(cur.nivel)) + " · " + esc(L("meta ", "goal ", "目标 ")) + fmtNota(q.meta) + "</p></div>" +
-        '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div>" +
+        '</div>' +
+        '<div class="calif-cab__der"><button class="btn btn--chico calif-ident" type="button" data-accion-calif="identidad" title="' +
+          esc(t("ident.abrir")) + '" aria-label="' + esc(t("ident.abrir")) + '">' +
+          iconoRamoHTML(cur) + '<span>' + esc(L("Identidad", "Identity", "标识")) + '</span></button>' +
+        '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div></div>" +
       '<div class="calif-resumen">' +
         '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>" + esc(L("Presentación", "Presentation", "平时成绩")) + "</span></div>" +
         '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
@@ -2408,6 +2417,68 @@
         '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p>" }) +
       "</div>";
   }
+  /* Identidad del ramo: color e icono, en la ventana única. El color se elige con
+     el selector RGB o con la paleta del tema; el icono, del catálogo del proyecto.
+     Se guarda el id del icono y el hex; nada de HTML por vista. */
+  function abrirIdentidadCalif(cod) {
+    var cur = ramoPorCodigo(cod); if (!cur) return;
+    var color = colorDeRamo(cur), icono = iconoDeRamo(cur);
+    var vista = function () { return { codigo: cur.codigo, color: $("#ident-color").value, icono: icono }; };
+    var paleta = MimoIdentidad.PALETA.map(function (h) {
+      return '<button class="ident-color" type="button" data-ident-color="' + esc(h) + '" style="--sw:' + esc(h) +
+        '" aria-label="' + esc(h) + '" aria-pressed="' + (h.toLowerCase() === String(color).toLowerCase()) + '"></button>';
+    }).join("");
+    var iconos = MimoIdentidad.ICONOS.map(function (id) {
+      return '<button class="ident-ico" type="button" data-ident-icono="' + esc(id) + '" aria-pressed="' + (id === icono) +
+        '" aria-label="' + esc(t("ico." + id)) + '" title="' + esc(t("ico." + id)) + '">' + iconoRamoHTML({ codigo: cur.codigo, color: color, icono: id }) + "</button>";
+    }).join("");
+    MimoModal.abrir({
+      id: "identidad",
+      titulo: t("ident.titulo"),
+      sub: t("ident.sub"),
+      html: '<div class="ident-preview" id="ident-preview">' + iconoRamoHTML(cur, "ramo-ico--lg") +
+          '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div></div>" +
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.color")) + "</span>" +
+          '<input class="entrada ident-rgb" id="ident-color" type="color" value="' + esc(color) + '" aria-label="' + esc(t("ident.color")) + '"></div>' +
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.paleta")) + '</span><div class="ident-paleta" role="group" aria-label="' + esc(t("ident.paleta")) + '">' + paleta + "</div></div>" +
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.iconos")) + '</span><div class="ident-iconos" role="group" aria-label="' + esc(t("ico.aria")) + '">' + iconos + "</div></div>",
+      guardar: L("Guardar", "Save", "保存"),
+      despues: function (form) {
+        var pintarVista = function () {
+          var v = vista();
+          $("#ident-preview").innerHTML = iconoRamoHTML(v, "ramo-ico--lg") +
+            '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div>";
+        };
+        $$("#modal-campos [data-ident-color]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            $("#ident-color").value = b.getAttribute("data-ident-color");
+            $$("#modal-campos [data-ident-color]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            pintarVista();
+          });
+        });
+        $$("#modal-campos [data-ident-icono]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            icono = b.getAttribute("data-ident-icono");
+            $$("#modal-campos [data-ident-icono]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            pintarVista();
+          });
+        });
+        $("#ident-color").addEventListener("input", pintarVista);
+      },
+      onGuardar: function () {
+        var hex = $("#ident-color").value;
+        if (!MimoIdentidad.esColor(hex)) return false;
+        cur.color = MimoIdentidad.esColor(hex) ? hex.toLowerCase() : "";
+        cur.icono = MimoIdentidad.esIcono(icono) ? icono : "";
+        notificarCurso(cur);
+        guardar();
+        pintarCalificaciones(); pintarMalla(); pintarEstudio(); pintarTiempo(); pintarCalendario(); pintarTareas(); pintarPanel();
+        aviso(t("ident.guardada"));
+        return true;
+      }
+    });
+  }
+
   function pintarCalificaciones() {
     var lista = $("#calif-lista"), det = $("#calif-detalle");
     if (!lista || !det) return;
@@ -2432,7 +2503,7 @@
     lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
       var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
       return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
-        '<span class="calif-item__nom"><b>' + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
+        '<span class="calif-item__nom">' + iconoRamoHTML(cur) + "<b>" + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
         '<small>' + esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(notaFinalDe(q)) + "</small>" +
         '<em class="pill ' + est.clase + '">' + esc(est.texto) + "</em></button>";
     }).join("");
@@ -2497,6 +2568,7 @@
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
     var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "identidad") { abrirIdentidadCalif(califSel); return; }
     if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
     if (accion === "comp-cal") {
@@ -2537,25 +2609,41 @@
   function hexColor(v) {
     return /^#[0-9a-f]{6}$/i.test(String(v || "")) ? String(v) : "";
   }
+  /* El color y el icono del ramo salen de un solo sitio (js/dominio/identidad.js):
+     el usuario manda; si no eligió, el hash del código decide, siempre igual. */
   function colorAutoDe(cod) {
-    var i = estado.cursos.map(function (c) { return c.codigo; }).indexOf(cod);
-    return i < 0 ? PALETA_ESTUDIO[0] : PALETA_ESTUDIO[i % PALETA_ESTUDIO.length];
+    return window.MimoIdentidad ? MimoIdentidad.colorAuto(cod) : PALETA_ESTUDIO[0];
   }
   function colorDeRamo(c) {
     if (!c) return "";
-    return hexColor(c.color) || colorAutoDe(c.codigo);
+    return window.MimoIdentidad ? MimoIdentidad.colorDe(c) : (hexColor(c.color) || colorAutoDe(c.codigo));
+  }
+  function iconoDeRamo(c) {
+    return window.MimoIdentidad ? MimoIdentidad.iconoDe(c) : "i-libro";
+  }
+  function marcaRamo(c) {
+    return window.MimoIdentidad ? MimoIdentidad.puntoHTML(c) : "";
+  }
+  function iconoRamoHTML(c, clase) {
+    return window.MimoIdentidad ? MimoIdentidad.iconoHTML(c, clase) : "";
   }
   function colorEstudio(cod) {
     var c = ramoPorCodigo(cod);
     return c ? colorDeRamo(c) : "var(--muted)";
   }
-  function colorDeContexto(ctx) {
+  function cursoDeContexto(ctx) {
     var q = String(ctx || "").trim();
-    if (!q) return "";
+    if (!q) return null;
     var c = ramoPorCodigo(q);
     if (!c) c = (estado.cursos || []).filter(function (x) { return String(x.nombre || "").toLowerCase() === q.toLowerCase(); })[0];
-    return c ? hexColor(c.color) : "";
+    return c || null;
   }
+  function colorDeContexto(ctx) {
+    var c = cursoDeContexto(ctx);
+    return c ? colorDeRamo(c) : "";
+  }
+  function marcaContexto(ctx) { var c = cursoDeContexto(ctx); return c ? marcaRamo(c) : ""; }
+  function iconoContexto(ctx) { var c = cursoDeContexto(ctx); return c ? iconoRamoHTML(c) : ""; }
   function textoSobre(hex) {
     var h = String(hex || "").replace("#", "");
     if (h.length === 3) h = h.split("").map(function (x) { return x + x; }).join("");
@@ -2711,7 +2799,7 @@
         fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
       : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
     var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
-      return '<span><i style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
+      return '<span>' + marcaRamo(c) + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
     });
     if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>' + esc(L("Sin ramo ", "No course ", "无课程 ")) + fmtHoras(totalRamo._) + "</span>");
     $("#est-leyenda").innerHTML = leyenda.join("");
@@ -2724,7 +2812,7 @@
     var filas = cursos.map(function (c) {
       var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
       var pct = m ? Math.min(100, Math.round(h / (m * 60 * Math.max(1, semanas.length)) * 100)) : 0;
-      return '<tr><td><i class="est-punto" style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " — " + esc(c.nombre) + "</td>" +
+      return '<tr><td><span class="est-ramo">' + iconoRamoHTML(c) + esc(c.codigo) + " — " + esc(c.nombre) + "</span></td>" +
         '<td class="num">' + fmtHoras(h) + "</td>" +
         '<td class="num"><input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-ramo="' + esc(c.codigo) + '" value="' + m + '"> h</td>' +
         '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + (m * semanas.length) + " h" : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
@@ -2744,6 +2832,7 @@
       return MimoPlegable.html({
         id: "estudio:sesion:" + (g.ramo || "_"),
         titulo: tituloDeRamo(g.ramo),
+        icono: g.ramo ? iconoRamoHTML(ramoPorCodigo(g.ramo)) : "",
         cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
         cuerpo: items
       });
@@ -2954,6 +3043,7 @@
         return MimoPlegable.html({
           id: "tiempo:sesion:" + (g.ramo || "_"),
           titulo: tituloDeRamo(g.ramo),
+          icono: g.ramo ? iconoRamoHTML(ramoPorCodigo(g.ramo)) : "",
           cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
           cuerpo: items
         });
@@ -3155,7 +3245,7 @@
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Abrir", "Open", "打开")) + '</button></div>';
       } else if (pantalla === "malla" && ramo) {
         var estR = estadoDeRamo(ramo), faltanR = faltantesDe(ramo), reqR = requisitosTexto(ramo);
-        html = "<h2>" + esc(L("Ramo", "Course", "课程")) + "</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
+        html = "<h2>" + esc(L("Ramo", "Course", "课程")) + "</h2><h3>" + iconoRamoHTML(ramo) + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(L("Estado", "Status", "状态")) + '</span><small>' + esc(etiquetaEstado(estR)) + "</small></div>" +
           '<div class="panel__bloque"><span>' + esc(L("Créditos", "Credits", "学分")) + '</span><small>' + creditosDe(ramo) + "</small></div>" +
           '<div class="panel__bloque"><span>' + esc(L("Nivel", "Level", "层级")) + '</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +

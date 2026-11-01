@@ -113,7 +113,8 @@ body.split #contenido-b{display:block}
 .plegable__cab:hover{background:var(--sup2)}
 .plegable.on > .plegable__cab{background:var(--info-bg);color:var(--ac);font-weight:600;border-bottom:1px solid var(--line2)}
 .plegable__cab:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
-.plegable__tit{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plegable__tit{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:var(--sp-2);overflow:hidden}
+.plegable__tit>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plegable__cuenta{flex:none;font-size:var(--fs-xs);font-weight:400;color:var(--muted)}
 .plegable__flecha{flex:none;color:var(--muted);font-size:var(--fs-sm);transform:scaleX(-1);
   transition:transform var(--t) var(--curva)}
@@ -126,6 +127,32 @@ body.split #contenido-b{display:block}
   .plegable,.plegable__cab,.plegable__cuerpo,.plegable__flecha{transition:none}
 }
 .modal-pie .btn{margin-left:0}
+
+/* ---- identidad del ramo: color e icono ---------------------------------------
+   El color llega como --ramo (lo pone js/dominio/identidad.js); aquí solo se pinta.
+   El icono va en la lista, en la cabecera y en el selector, siempre igual. */
+.ramo-punto{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none;background:var(--ramo,var(--muted))}
+.ramo-ico{color:var(--ramo,var(--muted));flex:none}
+.ramo-ico--lg{width:26px;height:26px}
+.calif-cab__izq{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
+.calif-cab__der{display:flex;align-items:center;gap:var(--sp-2)}
+.calif-ident{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.calif-ident .ramo-ico{width:14px;height:14px}
+.ident-preview{display:flex;align-items:center;gap:var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3);background:var(--sup)}
+.ident-preview b{display:block;font-size:var(--fs-md)}
+.ident-preview small{display:block;font-size:var(--fs-xs);color:var(--muted)}
+.ident-grupo{display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
+.ident-etq{font-size:var(--fs-sm);color:var(--muted)}
+.ident-rgb{width:var(--sp-8);height:var(--sp-7);padding:2px}
+.ident-paleta{display:flex;flex-wrap:wrap;gap:var(--sp-1)}
+.ident-color{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--sw);cursor:pointer;padding:0}
+.ident-color[aria-pressed="true"]{border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 35%,transparent)}
+.ident-color:focus-visible,.ident-ico:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.ident-iconos{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:var(--sp-1)}
+.ident-ico{display:flex;align-items:center;justify-content:center;min-height:40px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--sup);color:var(--fg);cursor:pointer;padding:0}
+.ident-ico .ramo-ico{width:20px;height:20px;color:var(--fg)}
+.ident-ico[aria-pressed="true"]{border-color:var(--ac);background:var(--info-bg)}
+.ident-ico[aria-pressed="true"] .ramo-ico{color:var(--ac)}
 .modal-historial-caja{width:min(560px,100%)}
 .historial-acciones{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:var(--sp-3) 0}
 .historial-acciones .btn{justify-content:space-between;min-height:var(--sp-8)}

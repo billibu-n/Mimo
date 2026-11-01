@@ -58,7 +58,7 @@
     return '<div class="plegable' + (abierto ? " on" : "") + '" data-plegable="' + esc(id) + '">' +
       '<button class="plegable__cab" type="button" aria-expanded="' + (abierto ? "true" : "false") +
         '" aria-controls="' + control + '">' +
-        '<span class="plegable__tit">' + esc(conf.titulo || "") + "</span>" + cuenta +
+        '<span class="plegable__tit">' + (conf.icono || "") + "<span>" + esc(conf.titulo || "") + "</span></span>" + cuenta +
         '<svg class="icono plegable__flecha" aria-hidden="true"><use href="#i-chevron"/></svg>' +
       "</button>" +
       '<div class="plegable__cuerpo" id="' + control + '" aria-hidden="' + (abierto ? "false" : "true") + '"' +

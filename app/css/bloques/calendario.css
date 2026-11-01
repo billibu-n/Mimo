@@ -29,7 +29,10 @@
 .cal-agenda{display:flex;flex-direction:column;gap:var(--sp-1)}
 .cal-agenda__item{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;text-align:left;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);font:inherit;color:var(--fg);cursor:pointer}
 .cal-agenda__item:hover{border-color:var(--ac)}
-.cal-agenda__item b{display:block;font-size:var(--fs-sm)}
+.cal-agenda__cuerpo{min-width:0}
+.cal-agenda__tit{display:flex;align-items:center;gap:var(--sp-1);min-width:0}
+.cal-agenda__tit .ramo-ico{width:14px;height:14px}
+.cal-agenda__item b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cal-agenda__item small{color:var(--muted);font-size:var(--fs-xs)}
 @media (max-width:520px){.cal-grid--semana{grid-template-columns:1fr}.cal-semana-dia{min-height:0}}
 body.split .cal-layout{grid-template-columns:1fr}
