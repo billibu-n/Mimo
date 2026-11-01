@@ -198,7 +198,7 @@
 
   function porDefecto() {
     return {
-      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
+      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], eventoTipos: [], cursos: [], califs: {},
       carrera: { titulo: "", universidad: "", pais: "" },
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
@@ -223,6 +223,7 @@
           d.instalados = d.instalados.filter(function (x) { return x !== "evaluaciones"; });
           if (!Array.isArray(d.tareas)) d.tareas = [];
           if (!Array.isArray(d.notas)) d.notas = [];
+          if (!Array.isArray(d.eventoTipos)) d.eventoTipos = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
           if (!d.califs || typeof d.califs !== "object") d.califs = {};
           if (!d.carrera || typeof d.carrera !== "object") d.carrera = { titulo: "", universidad: "", pais: "" };
@@ -1111,16 +1112,77 @@
     }
   }
 
+  /* ---- categorías (etiquetas) de los eventos ----
+     Un evento puede llevar una categoría propia aunque no tenga ramo: es el
+     «tipo» de Mimo Académics, que se pintaba en cada chip del calendario. La
+     categoría se crea desde la ventana del evento o desde el carril, y se
+     guarda como {id, nombre}; el nombre es del usuario, no se traduce. */
+  function tiposEvento() {
+    if (!Array.isArray(estado.eventoTipos)) estado.eventoTipos = [];
+    return estado.eventoTipos;
+  }
+  function tipoEvento(id) {
+    var v = String(id || "");
+    if (!v) return null;
+    return tiposEvento().filter(function (t) { return t.id === v; })[0] || null;
+  }
+  function nombreTipoEvento(id) {
+    var t = tipoEvento(id);
+    return t ? t.nombre : "";
+  }
+  function colorTipoEvento(id) {
+    return window.MimoIdentidad ? MimoIdentidad.colorAuto("categoria:" + String(id || "")) : "var(--muted)";
+  }
+  function slugTipoEvento(nombre) {
+    var base = String(nombre || "").toLowerCase().normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "").slice(0, 40);
+    if (!base) base = "cat-" + (window.MimoIdentidad ? MimoIdentidad.hash(nombre) : Date.now());
+    return base;
+  }
+  function crearTipoEvento(nombre) {
+    var limpio = String(nombre || "").trim();
+    if (!limpio) return "";
+    var mismo = tiposEvento().filter(function (t) {
+      return t.nombre.toLowerCase() === limpio.toLowerCase();
+    })[0];
+    if (mismo) return mismo.id;
+    var base = slugTipoEvento(limpio), id = base, n = 2;
+    while (tipoEvento(id)) { id = base + "-" + n; n++; }
+    tiposEvento().push({ id: id, nombre: limpio });
+    return id;
+  }
+  function normalizarTiposEvento() {
+    var vistos = {}, out = [];
+    (Array.isArray(estado.eventoTipos) ? estado.eventoTipos : []).forEach(function (t, i) {
+      var nombre = String(t && t.nombre || "").trim();
+      if (!nombre) return;
+      var id = String(t.id || "").trim() || slugTipoEvento(nombre);
+      while (vistos[id]) id += "-" + (i + 1);
+      vistos[id] = 1;
+      out.push({ id: id, nombre: nombre });
+    });
+    estado.eventoTipos = out;
+  }
   function normalizarEventos() {
+    normalizarTiposEvento();
     estado.eventos = (estado.eventos || []).map(function (e, i) {
-      return conservar({
+      var tipo = String(e.tipo || "").trim();
+      if (tipo && !tipoEvento(tipo)) {
+        var id = crearTipoEvento(tipo);
+        tipo = id || tipo;
+      }
+      var ev = conservar({
         id: e.id || "e" + i,
         titulo: e.titulo || "Sin título",
         fecha: e.fecha || hoyISO(),
         hora: e.hora || "",
         contexto: e.contexto || "",
+        tipo: "",
         nota: e.nota || ""
       }, e);
+      ev.tipo = tipo;
+      return ev;
     });
   }
   var calendarioFuentes = {};
@@ -1170,8 +1232,21 @@
   function chipEvento(e) {
     var col = colorDeContexto(e.contexto);
     var estilo = col ? ' style="background:' + col + ';color:' + textoSobre(col) + '"' : "";
-    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
-      (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b> " : "") + esc(e.titulo) + "</button>";
+    var tipo = tipoEvento(e.tipo);
+    var etiqueta = tipo ? '<span class="evento-chip__tag" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
+    return '<button class="evento-chip" type="button" data-evento="' + esc(e.id) + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
+      (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b>" : "") +
+      '<span class="evento-chip__tit">' + esc(e.titulo) + "</span>" + etiqueta + "</button>";
+  }
+  function pintarTiposCalendario() {
+    var caja = $("#cal-tipos"); if (!caja) return;
+    var cuenta = {};
+    eventosTodos().forEach(function (e) { if (e.tipo) cuenta[e.tipo] = (cuenta[e.tipo] || 0) + 1; });
+    var tipos = tiposEvento();
+    caja.innerHTML = tipos.length ? tipos.map(function (t) {
+      return '<span class="cal-tipo" style="--tag:' + colorTipoEvento(t.id) + '"><i aria-hidden="true"></i>' +
+        esc(t.nombre) + '<b>' + (cuenta[t.id] || 0) + "</b></span>";
+    }).join("") : '<p class="muted">' + esc(t("cal.sinCategorias")) + "</p>";
   }
   function pintarContextosCursos() {
     var dl = $("#contextos-ramos"); if (!dl) return;
@@ -1181,6 +1256,7 @@
   function pintarCalendario() {
     normalizarEventos();
     pintarContextosCursos();
+    pintarTiposCalendario();
     var hoy = new Date(), y = calCursor.getFullYear(), m = calCursor.getMonth();
     var total = eventosTodos().length;
     $("#kpi-eventos").textContent = String(total);
@@ -1203,7 +1279,9 @@
       agenda.innerHTML = orden.length ? orden.map(function (e) {
         var col = colorDeContexto(e.contexto);
         var estilo = col ? ' style="box-shadow:inset 4px 0 0 ' + col + '"' : "";
-        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span class="cal-agenda__cuerpo"><span class="cal-agenda__tit">' + iconoContexto(e.contexto) + "<b>" + esc(e.titulo) + "</b></span><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + '</small></span><span class="pill">' + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
+        var tipoAgenda = tipoEvento(e.tipo);
+        var tagAgenda = tipoAgenda ? '<span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoAgenda.id) + '">' + esc(tipoAgenda.nombre) + "</span>" : "";
+        return '<button class="cal-agenda__item" type="button" data-evento="' + esc(e.id) + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span class="cal-agenda__cuerpo"><span class="cal-agenda__tit">' + iconoContexto(e.contexto) + "<b>" + esc(e.titulo) + "</b>" + tagAgenda + '</span><small>' + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + '</small></span><span class="pill">' + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
       }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
     } else if (vistaCalendario === "semana") {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
@@ -1278,6 +1356,9 @@
   function abrirEvento(ev, fecha) {
     normalizarEventos();
     formEventoId = ev ? ev.id : null;
+    var opcionesTipo = [{ v: "", t: L("Sin categoría", "No category", "无分类") }];
+    tiposEvento().forEach(function (tp) { opcionesTipo.push({ v: tp.id, t: tp.nombre }); });
+    if (ev && ev.tipo && !tipoEvento(ev.tipo)) opcionesTipo.push({ v: ev.tipo, t: ev.tipo });
     MimoModal.abrir({
       id: "evento",
       titulo: ev ? L("Editar evento", "Edit event", "编辑事件") : L("Nuevo evento", "New event", "新建事件"),
@@ -1287,10 +1368,31 @@
         { id: "evento-titulo", etiqueta: L("Título", "Title", "标题"), valor: ev ? ev.titulo : "", ph: L("Título del evento", "Event title", "事件标题") },
         { id: "evento-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: ev ? ev.fecha : (fecha || hoyISO()) },
         { id: "evento-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: ev ? ev.hora : "" },
+        { id: "evento-tipo", etiqueta: L("Categoría", "Category", "分类"), tipo: "select", valor: ev ? ev.tipo : "", opciones: opcionesTipo },
+        { id: "evento-tipo-nuevo", etiqueta: L("Nueva categoría (opcional)", "New category (optional)", "新分类（可选）"), valor: "", ph: L("Ej.: Laboratorio, Cumpleaños", "E.g.: Lab, Birthday", "例如：实验室、生日"), ayuda: L("Se crea y se asigna a este evento.", "It is created and assigned to this event.", "将创建并分配给此事件。") },
         { id: "evento-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: ev ? ev.contexto : "", lista: "contextos-ramos", ph: L("Ramo o lugar", "Course or place", "课程或地点") }
       ],
       guardar: ev ? L("Guardar", "Save", "保存") : L("Crear evento", "Create event", "创建事件"),
       onGuardar: guardarEventoDesdeVentana
+    });
+  }
+  function abrirCategoriaEvento() {
+    MimoModal.abrir({
+      id: "categoria",
+      titulo: L("Nueva categoría", "New category", "新分类"),
+      sub: L("Agrupa eventos sueltos sin depender de un ramo. Después se elige en cada evento.", "Groups standalone events without a course. Then pick it in each event.", "无需课程即可归类独立事件。之后可在每个事件中选择。"),
+      campos: [
+        { id: "categoria-nombre", etiqueta: L("Nombre", "Name", "名称"), valor: "", ph: L("Ej.: Laboratorio, Cumpleaños", "E.g.: Lab, Birthday", "例如：实验室、生日") }
+      ],
+      guardar: L("Crear categoría", "Create category", "创建分类"),
+      onGuardar: function () {
+        var nombre = $("#categoria-nombre").value.trim();
+        if (!nombre) { $("#categoria-nombre").focus(); return false; }
+        crearTipoEvento(nombre);
+        guardar(); pintarCalendario();
+        aviso(L("Categoría creada.", "Category created.", "分类已创建。"));
+        return true;
+      }
     });
   }
   function guardarEventoDesdeVentana() {
@@ -1304,6 +1406,8 @@
     ev.titulo = titulo;
     ev.fecha = $("#evento-fecha").value || hoyISO();
     ev.hora = $("#evento-hora").value;
+    var nuevaCat = $("#evento-tipo-nuevo").value.trim();
+    ev.tipo = nuevaCat ? crearTipoEvento(nuevaCat) : $("#evento-tipo").value;
     ev.contexto = $("#evento-contexto").value.trim();
     ev.nota = ev.nota || "";
     estado.eventoSel = ev.id;
@@ -3391,9 +3495,11 @@
             '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ev.codigo || "") + '">' + esc(L("Abrir Calificaciones", "Open Grades", "打开成绩")) + "</button></div>"
           : '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">' + esc(t("acc.editar")) + '</button>' +
             '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">' + esc(t("acc.borrar")) + "</button></div>";
+        var tipoEv = tipoEvento(ev.tipo);
         html = "<h2>" + esc(t("panel.evento")) + "</h2><h3>" + esc(ev.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(ev.fecha) + "</small></div>" +
           (ev.hora ? '<div class="panel__bloque"><span>' + esc(t("panel.hora")) + '</span><small>' + esc(ev.hora) + "</small></div>" : "") +
+          (tipoEv ? '<div class="panel__bloque"><span>' + esc(t("cal.categoria")) + '</span><small><span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoEv.id) + '">' + esc(tipoEv.nombre) + "</span></small></div>" : "") +
           (ev.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
           (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
@@ -4818,6 +4924,7 @@
     });
     $("#btn-nuevo").addEventListener("click", abrirPeriodo);
     $("#btn-nuevo-evento").addEventListener("click", function () { abrirEvento(null); });
+    if ($("#btn-nueva-categoria")) $("#btn-nueva-categoria").addEventListener("click", abrirCategoriaEvento);
     $$("#vista-calendario button").forEach(function (b) {
       b.addEventListener("click", function () {
         vistaCalendario = b.getAttribute("data-cal-vista");

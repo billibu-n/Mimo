@@ -41,3 +41,21 @@ body.split .cal-layout .rail{display:none}
 .cal-sem-col{font:inherit;cursor:pointer;padding:0}
 .cal-sem-col.tipo-receso{color:var(--warn);border-color:var(--warn)}
 .cal-sem-col.tipo-examenes{color:var(--bad);border-color:var(--bad)}
+
+/* Categorías de evento: el «tipo» de Mimo Académics, visible en el carril y en
+   cada chip. El color sale de la identidad del ramo (hash estable del id), así
+   que no hay hex por vista. */
+.cal-tipos{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-bottom:var(--sp-2)}
+.cal-tipo{display:inline-flex;align-items:center;gap:4px;max-width:100%;border:1px solid var(--line2);border-radius:999px;padding:2px 8px;font-size:var(--fs-xs);background:var(--sup);overflow:hidden}
+.cal-tipo i{width:8px;height:8px;border-radius:50%;background:var(--tag,var(--muted));flex:0 0 auto}
+.cal-tipo b{font-weight:600;color:var(--muted);margin-left:2px}
+.cal-agenda__tag{display:inline-flex;align-items:center;flex:0 0 auto;max-width:9em;border:1px solid color-mix(in srgb,var(--tag,var(--line2)) 55%,transparent);background:color-mix(in srgb,var(--tag,var(--line2)) 14%,transparent);border-radius:999px;padding:0 6px;font-size:var(--fs-xs);font-weight:600;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evento-chip{display:flex;align-items:center;gap:3px}
+.evento-chip b,.evento-chip__tag{flex:0 0 auto}
+.evento-chip__tag{display:inline-block;max-width:4.5em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:999px;padding:0 4px;font-size:calc(var(--fs-xs) * .82);font-weight:700;letter-spacing:.03em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--tag,currentColor) 55%,transparent);background:color-mix(in srgb,var(--tag,currentColor) 18%,transparent)}
+.evento-chip__tit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* En la grilla del mes el chip es estrecho: el título ocupa su línea y la
+   etiqueta va debajo, entera, en vez de partir las dos palabras. */
+.cal-grid--mes .evento-chip{flex-wrap:wrap;row-gap:0}
+.cal-grid--mes .evento-chip__tit{flex:1 1 100%}
+.cal-grid--mes .evento-chip__tag{max-width:100%;margin-top:1px}
