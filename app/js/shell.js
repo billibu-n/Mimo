@@ -260,6 +260,11 @@
   var formPeriodoId = null;
   var mapaPeriodo = null;
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
+  /* El reloj no cuenta ticks: mide con la hora del equipo. Así un tick que llega
+     tarde (pestaña dormida, repintado pesado) no regala ni roba segundos, y
+     pausar/reanudar no reinicia la cuenta. `relojBase` es lo ya transcurrido en
+     la fase actual; `relojInicio` el instante en que se reanudó. */
+  var relojInicio = 0, relojBase = 0;
   var splitOn = false;
   var tabArrastrada = null;
   var splitNavHasta = 0;
@@ -2964,6 +2969,7 @@
     });
     var seg = vals[0] * 3600 + vals[1] * 60 + vals[2];
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    relojBase = 0; relojInicio = 0;
     if (estado.tiempoModo === "crono") tiempoSeg = seg;
     else if (estado.tiempoModo === "temporizador") { tempSeg = seg; tempInicial = seg; }
     else if (estado.tiempoModo === "pomodoro") { pomoSeg = seg; pomoInicial = seg; }
@@ -3157,61 +3163,107 @@
       setTimeout(function () { o.stop(); ac.close(); }, 700);
     } catch (e) {}
   }
-  function tickTiempo() {
+  function segundosReloj() {
     var modo = estado.tiempoModo || "crono";
-    if (modo === "crono") tiempoSeg++;
-    else if (modo === "temporizador") {
-      tempSeg--;
-      if (tempSeg <= 0) {
-        tempSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
-        registrarSesion(tempInicial / 60, "temporizador");
-        aviso(L("Temporizador terminado. Sesión registrada.", "Timer finished. Session logged.", "计时结束。会话已记录。")); pitido(); pintarTiempo(); return;
-      }
-    } else if (modo === "pomodoro") {
-      pomoSeg--;
-      if (pomoSeg <= 0) {
-        pomoSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
-        if (estado.pomo.fase === "trabajo") {
-          registrarSesion(pomoInicial / 60, "pomodoro");
-          estado.pomo.trabajos = (estado.pomo.trabajos || 0) + 1;
-          estado.pomo.fase = estado.pomo.trabajos % (estado.pomo.cada || 4) === 0 ? "largo" : "corto";
-          aviso(L("Pomodoro completado. Descansa: ", "Pomodoro complete. Rest: ", "番茄钟完成。休息：") + (estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息")) + ".");
-        } else {
-          estado.pomo.fase = "trabajo";
-          aviso(L("Pausa terminada. Vuelve al trabajo.", "Break over. Back to work.", "休息结束。回到工作。"));
-        }
-        guardar(); pitido(); pintarTiempo(); return;
-      }
+    if (modo === "crono") return Math.max(0, tiempoSeg);
+    if (modo === "temporizador") return Math.max(0, tempInicial - tempSeg);
+    if (modo === "pomodoro") return Math.max(0, pomoInicial - pomoSeg);
+    return 0;
+  }
+  /* Lleva el reloj al instante actual. Devuelve true si la cuenta llegó a cero
+     (y ya registró la sesión), false si sigue corriendo. */
+  function actualizarReloj() {
+    if (!tiempoInt) return false;
+    var modo = estado.tiempoModo || "crono";
+    var total = relojBase + Math.max(0, (Date.now() - relojInicio) / 1000);
+    if (modo === "crono") {
+      tiempoSeg = total;
+      return false;
     }
+    if (modo === "temporizador") {
+      tempSeg = Math.max(0, tempInicial - total);
+      if (tempSeg > 0) return false;
+      tempSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
+      var hecho = tempInicial;
+      tempInicial = 0;
+      registrarSesion(hecho / 60, "temporizador");
+      aviso(L("Temporizador terminado. Sesión registrada.", "Timer finished. Session logged.", "计时结束。会话已记录。"));
+      pitido(); pintarTiempo();
+      return true;
+    }
+    if (modo === "pomodoro") {
+      pomoSeg = Math.max(0, pomoInicial - total);
+      if (pomoSeg > 0) return false;
+      pomoSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
+      var trabajo = pomoInicial;
+      pomoInicial = 0;
+      if (estado.pomo.fase === "trabajo") {
+        registrarSesion(trabajo / 60, "pomodoro");
+        estado.pomo.trabajos = (estado.pomo.trabajos || 0) + 1;
+        estado.pomo.fase = estado.pomo.trabajos % (estado.pomo.cada || 4) === 0 ? "largo" : "corto";
+        aviso(L("Pomodoro completado. Descansa: ", "Pomodoro complete. Rest: ", "番茄钟完成。休息：") + (estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息")) + ".");
+      } else {
+        estado.pomo.fase = "trabajo";
+        aviso(L("Pausa terminada. Vuelve al trabajo.", "Break over. Back to work.", "休息结束。回到工作。"));
+      }
+      guardar(); pitido(); pintarTiempo();
+      return true;
+    }
+    return false;
+  }
+  function tickTiempo() {
+    if (actualizarReloj()) return;
     pintaReloj(); pintarEstadoTiempo();
   }
   function empezarTiempo() {
     if (tiempoInt || estado.tiempoModo === "alarmas") return;
-    if (estado.tiempoModo === "temporizador" && tempSeg <= 0) tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
-    if (estado.tiempoModo === "temporizador") tempInicial = tempSeg;
-    if (estado.tiempoModo === "pomodoro" && pomoSeg <= 0) pomoSeg = Math.round(duracionPomo() * 60);
-    if (estado.tiempoModo === "pomodoro") pomoInicial = pomoSeg;
+    if (estado.tiempoModo === "temporizador" && tempSeg <= 0) {
+      tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
+      tempInicial = tempSeg;
+    }
+    if (estado.tiempoModo === "pomodoro" && pomoSeg <= 0) {
+      pomoSeg = Math.round(duracionPomo() * 60);
+      pomoInicial = pomoSeg;
+    }
+    /* Se reanuda desde lo ya medido, sin reemplazar el total de la fase. */
+    relojBase = segundosReloj();
+    relojInicio = Date.now();
     tiempoInt = setInterval(tickTiempo, 1000);
     $("#btn-empezar").disabled = true; $("#btn-pausar").disabled = false; $("#btn-parar").disabled = false;
+    tickTiempo();
     pintarEstadoTiempo();
   }
   function pausarTiempo() {
-    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    if (tiempoInt) {
+      var completo = actualizarReloj();
+      if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+      if (completo) return;
+      relojBase = segundosReloj();
+    }
     $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true;
-    pintarEstadoTiempo();
+    pintaReloj(); pintarEstadoTiempo();
   }
   function pararTiempo() {
-    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
-    if (estado.tiempoModo === "crono" && tiempoSeg > 0) registrarSesion(tiempoSeg / 60, "crono");
-    else if (estado.tiempoModo === "temporizador" && tempInicial > tempSeg) registrarSesion((tempInicial - tempSeg) / 60, "temporizador");
-    else if (estado.tiempoModo === "pomodoro" && estado.pomo.fase === "trabajo" && pomoInicial > pomoSeg) registrarSesion((pomoInicial - pomoSeg) / 60, "pomodoro");
+    var modo = estado.tiempoModo || "crono";
+    if (tiempoInt) {
+      actualizarReloj();
+      if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    }
+    var seg = segundosReloj();
+    if (seg > 0) {
+      if (modo === "crono") registrarSesion(seg / 60, "crono");
+      else if (modo === "temporizador") registrarSesion(seg / 60, "temporizador");
+      else if (modo === "pomodoro" && estado.pomo.fase === "trabajo") registrarSesion(seg / 60, "pomodoro");
+    }
     tiempoSeg = 0; tempSeg = 0; pomoSeg = 0; tempInicial = 0; pomoInicial = 0;
+    relojBase = 0; relojInicio = 0;
     $("#btn-empezar").disabled = estado.tiempoModo === "alarmas"; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
     pintaReloj(); pintarEstadoTiempo();
   }
   function reiniciarTiempo() {
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
     tiempoSeg = 0; tempSeg = 0; pomoSeg = 0; tempInicial = 0; pomoInicial = 0;
+    relojBase = 0; relojInicio = 0;
     $("#btn-empezar").disabled = estado.tiempoModo === "alarmas"; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
     pintarTiempo();
   }
@@ -3248,7 +3300,9 @@
 
   function cambiarModoTiempo(id) {
     if (estado.tiempoHijos.indexOf(id) === -1) return;
-    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    /* Cambiar de modo con la cuenta corriendo no puede borrar lo medido: se
+       registra la sesión como si se hubiera pulsado Parar. */
+    if (tiempoInt) pararTiempo();
     estado.tiempoModo = id;
     if (id === "temporizador") { tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60); tempInicial = tempSeg; }
     if (id === "pomodoro") { pomoSeg = Math.round(duracionPomo() * 60); pomoInicial = pomoSeg; }
