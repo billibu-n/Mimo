@@ -36,3 +36,7 @@
 .est-metas-semana{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--line2)}
 .est-meta-sem{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
 .est-meta-sem .entrada{width:58px;min-height:28px;font-size:var(--fs-xs)}
+
+/* El ramo en la tabla: icono, código y nombre en una línea, con aire. */
+.est-ramo{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0}
+.est-ramo .ramo-ico{width:16px;height:16px}

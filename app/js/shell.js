@@ -2441,7 +2441,9 @@
 
     var cuerpoIconos = function (i) {
       return '<button class="ident-ico" type="button" data-ident-icono="' + esc(i.id) + '" aria-pressed="' + (i.id === icono) +
-        '" aria-label="' + esc(nombreDe(i)) + '" title="' + esc(nombreDe(i)) + '">' + iconoRamoHTML({ codigo: cur.codigo, color: $("#ident-color") ? $("#ident-color").value : color, icono: i.id }) + "</button>";
+        '" aria-label="' + esc(nombreDe(i)) + '" title="' + esc(nombreDe(i)) + '">' +
+        iconoRamoHTML({ codigo: cur.codigo, color: $("#ident-color") ? $("#ident-color").value : color, icono: i.id }) +
+        '<span class="ident-ico__nom">' + esc(nombreDe(i)) + "</span></button>";
     };
 
     MimoModal.abrir({

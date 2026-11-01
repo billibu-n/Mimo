@@ -5,7 +5,10 @@
 .calif-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--sp-2);width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);font:inherit;padding:var(--sp-2);margin-bottom:2px;cursor:pointer}
 .calif-item:hover{background:var(--sup2)}
 .calif-item.on{background:var(--sup2);border-color:var(--line)}
-.calif-item__nom{grid-column:1/-1;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calif-item__nom{grid-column:1/-1;display:flex;align-items:center;gap:var(--sp-1);min-width:0;
+  font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calif-item__nom .ramo-ico{width:15px;height:15px}
+.calif-item__nom b{flex:none}
 .calif-item__nom b{letter-spacing:.02em}
 .calif-item small{color:var(--muted);font-size:var(--fs-xs);margin-top:2px}
 .calif-item .pill{align-self:center;font-size:var(--fs-xs)}

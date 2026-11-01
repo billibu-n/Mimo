@@ -67,6 +67,44 @@ def identidad(page, codigo):
     }""", codigo)
 
 
+def celdas(page):
+    """Mide la grilla: alto de cada celda, dónde cae el icono y dónde la etiqueta."""
+    return page.evaluate("""() => [...document.querySelectorAll('.ident-ico')].map(c => {
+        const svg = c.querySelector('.ramo-ico'), nom = c.querySelector('.ident-ico__nom');
+        if (!svg || !nom) return {sin: true};
+        const rc = c.getBoundingClientRect(), rs = svg.getBoundingClientRect(), rn = nom.getBoundingClientRect();
+        const r = document.createRange(); r.selectNodeContents(nom);
+        return {h: +rc.height.toFixed(1), topIco: +(rs.top - rc.top).toFixed(1),
+                topNom: +(rn.top - rc.top).toFixed(1), hueco: +(rn.top - rs.bottom).toFixed(1),
+                lineas: r.getClientRects().length, texto: nom.textContent.trim(),
+                corta: nom.scrollHeight > nom.clientHeight + 1,
+                ancho: nom.scrollWidth > nom.clientWidth + 1,
+                fuera: rn.bottom > rc.bottom + 0.5 || rn.right > rc.right + 0.5};
+    })""")
+
+
+def exigir_grilla_pareja(page, etiqueta, fallas, dos_lineas=False):
+    """Todas las celdas iguales: mismo alto, icono y etiqueta a la misma altura."""
+    filas = celdas(page)
+    if any(f.get("sin") for f in filas):
+        exigir(False, f"{etiqueta}: cada celda lleva icono y etiqueta", fallas)
+        return
+    altos = {f["h"] for f in filas}
+    arribaIco = {f["topIco"] for f in filas}
+    arribaNom = {f["topNom"] for f in filas}
+    huecos = {f["hueco"] for f in filas}
+    exigir(len(altos) == 1, f"{etiqueta}: todas las celdas miden lo mismo — {sorted(altos)[:4]}", fallas)
+    exigir(len(arribaIco) == 1, f"{etiqueta}: el icono cae a la misma altura — {sorted(arribaIco)[:4]}", fallas)
+    exigir(len(arribaNom) == 1, f"{etiqueta}: la etiqueta cae a la misma altura — {sorted(arribaNom)[:4]}", fallas)
+    exigir(min(huecos) >= 2, f"{etiqueta}: hay aire entre icono y etiqueta — {sorted(huecos)[:4]}", fallas)
+    exigir(all(f["texto"] for f in filas), f"{etiqueta}: ninguna celda sin nombre", fallas)
+    malas = [f["texto"] for f in filas if f["corta"] or f["ancho"] or f["fuera"]]
+    exigir(not malas, f"{etiqueta}: ninguna etiqueta se sale — {malas[:4]}", fallas)
+    if dos_lineas:
+        exigir(any(f["lineas"] >= 2 for f in filas),
+               f"{etiqueta}: hay etiquetas de dos líneas y la fila no se descuadra", fallas)
+
+
 def ver_en(page, pestana, selector, icono):
     page.locator(f'#tabs [data-ir="{pestana}"]').click()
     page.wait_for_timeout(320)
@@ -134,6 +172,37 @@ def main() -> int:
             page.locator("#ident-buscar").fill("")
             page.wait_for_timeout(250)
 
+            # 2c) la grilla, pareja en los tres idiomas y en los diez temas
+            exigir_grilla_pareja(page, "grilla es", fallas, dos_lineas=True)
+            for tema in ("clasico", "deepsea", "medianoche", "negro", "vino", "bosque", "sepia",
+                         "pinky", "alto-contraste", "alto-contraste-claro"):
+                page.evaluate("t => document.body.setAttribute('data-tema', t)", tema)
+                page.wait_for_timeout(50)
+                exigir_grilla_pareja(page, f"grilla {tema}", fallas)
+            page.evaluate("() => document.body.setAttribute('data-tema', 'clasico')")
+            for idioma, nombre in (("en", "grilla en"), ("zh", "grilla zh")):
+                page.locator("#modal-cancelar").click()
+                page.wait_for_timeout(150)
+                page.locator('#tabs [data-ir="ajustes"]').click()
+                page.wait_for_timeout(250)
+                page.locator("#pref-idioma").select_option(idioma)
+                page.wait_for_timeout(350)
+                page.locator('#tabs [data-ir="calificaciones"]').click()
+                page.wait_for_timeout(300)
+                page.locator('[data-accion-calif="identidad"]').click()
+                page.wait_for_timeout(350)
+                exigir_grilla_pareja(page, nombre, fallas)
+            page.locator("#modal-cancelar").click()
+            page.wait_for_timeout(150)
+            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.wait_for_timeout(250)
+            page.locator("#pref-idioma").select_option("es")
+            page.wait_for_timeout(300)
+            page.locator('#tabs [data-ir="calificaciones"]').click()
+            page.wait_for_timeout(250)
+            page.locator('[data-accion-calif="identidad"]').click()
+            page.wait_for_timeout(300)
+
             # 6) teclado: un color de la paleta y un icono con Enter
             muestra = page.locator('[data-ident-color="#dc2626"]')
             muestra.focus()
@@ -163,6 +232,19 @@ def main() -> int:
                    "calificaciones: el ramo lleva su icono en la lista", fallas)
             exigir(page.locator('#calif-detalle .calif-cab__izq .ramo-ico use[href="#i-ramo-libro"]').count() == 1,
                    "calificaciones: la cabecera lleva su icono", fallas)
+            # 2d) el icono al lado del texto no se pega y queda centrado con él
+            marcas = page.evaluate("""() => [...document.querySelectorAll('.calif-item__nom')].map(f => {
+                const svg = f.querySelector('.ramo-ico'), b = f.querySelector('b');
+                if (!svg || !b) return null;
+                const rs = svg.getBoundingClientRect(), rb = b.getBoundingClientRect();
+                return {hueco: +(rb.left - rs.right).toFixed(1),
+                        centros: +Math.abs((rs.top + rs.bottom) / 2 - (rb.top + rb.bottom) / 2).toFixed(1)};
+            }).filter(Boolean)""")
+            exigir(len(marcas) >= 2, "lista: cada ramo lleva su icono", fallas)
+            exigir(all(m["hueco"] >= 3 for m in marcas),
+                   f"lista: el icono no se pega al código — {[m['hueco'] for m in marcas][:4]}", fallas)
+            exigir(all(m["centros"] <= 2 for m in marcas),
+                   f"lista: icono y código comparten centro — {[m['centros'] for m in marcas][:4]}", fallas)
             exigir(ver_en(page, "estudio", '#est-tabla .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
                    "estudio: la fila del ramo lleva su icono", fallas)
             exigir(ver_en(page, "malla", '.ramo-card .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
