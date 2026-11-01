@@ -23,7 +23,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, desborde, exigir, salir  # noqa: E402
 
 
 def instalar_academics(page) -> None:
@@ -80,6 +80,7 @@ def main() -> int:
             exigir("en curso" in page.locator(".calif-resumen").inner_text(),
                    "calif: sin notas el curso sigue en curso", fallas)
 
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-comp-nombre="0"]', "Control 1")
@@ -92,6 +93,7 @@ def main() -> int:
             cambiar(page, '[data-cat-nombre="1"]', "Tareas")
             cambiar(page, '[data-cat-peso="0"]', "50")
             cambiar(page, '[data-cat-peso="1"]', "50")
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-comp-nombre="1"]', "Tarea 1")
@@ -103,6 +105,7 @@ def main() -> int:
             exigir("en curso" in page.locator(".calif-resumen").inner_text(),
                    "calif: con examen pendiente el curso sigue en curso", fallas)
 
+            abrir_plegable(page, "[data-exam-nota]")
             cambiar(page, "[data-exam-nota]", "6.0")
             exigir("5.7" in page.locator(".calif-resumen").inner_text(),
                    "calif: final 5.7 con examen al 40 %", fallas)
@@ -110,6 +113,7 @@ def main() -> int:
             exigir("5.8" in page.locator(".calif-resumen").inner_text(),
                    "calif: final 5.8 con examen al 50 %", fallas)
 
+            abrir_plegable(page, "[data-exim-activa]")
             page.locator("[data-exim-activa]").check()
             page.wait_for_timeout(200)
             page.locator('[data-accion-calif="cond-add"]').click()
@@ -170,6 +174,7 @@ def main() -> int:
             crear_ramo(page)
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
             page.wait_for_timeout(200)
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-comp-nota="0"]', "5.0")

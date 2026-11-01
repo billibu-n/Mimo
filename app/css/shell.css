@@ -95,6 +95,36 @@ body.split #contenido-b{display:block}
 .modal-campos .campo>input[type="color"]{width:var(--sp-8);height:var(--sp-7);padding:2px}
 .modal-pie{margin-top:var(--sp-4)}
 .alarma-acciones{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-2)}
+
+/* ---- el plegable: una barra por categoría ------------------------------------
+   Copia medida de la app anterior (`.barra-extraible`): barra con borde y fondo
+   de superficie, cabecera que se tiñe al pasar el ratón, y al abrir toma el
+   acento del tema, la flecha gira 90° y el cuerpo se despliega deslizándose.
+   Aquí el estado lo pone `on` (no el atributo `open` de <details>), para poder
+   animar también el cierre; cerrado, el cuerpo queda `inert` (no se tabula). */
+.plegable{border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup);overflow:hidden;
+  transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+.plegable + .plegable{margin-top:var(--sp-2)}
+.plegable.on{border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 12%,transparent)}
+.plegable__cab{display:flex;align-items:center;gap:var(--sp-2);width:100%;margin:0;border:0;
+  padding:var(--sp-2) var(--sp-3);background:none;color:var(--fg);font:inherit;font-size:var(--fs-md);
+  text-align:left;cursor:pointer;
+  transition:background var(--t) var(--curva),color var(--t) var(--curva),border-color var(--t) var(--curva)}
+.plegable__cab:hover{background:var(--sup2)}
+.plegable.on > .plegable__cab{background:var(--info-bg);color:var(--ac);font-weight:600;border-bottom:1px solid var(--line2)}
+.plegable__cab:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.plegable__tit{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plegable__cuenta{flex:none;font-size:var(--fs-xs);font-weight:400;color:var(--muted)}
+.plegable__flecha{flex:none;color:var(--muted);font-size:var(--fs-sm);transform:scaleX(-1);
+  transition:transform var(--t) var(--curva)}
+.plegable.on .plegable__flecha{transform:rotate(90deg)}
+.plegable__cuerpo{display:grid;grid-template-rows:0fr;transition:grid-template-rows .18s var(--curva)}
+.plegable.on .plegable__cuerpo{grid-template-rows:1fr}
+.plegable__dentro{overflow:hidden;min-height:0}
+.plegable__relleno{padding:var(--sp-3)}
+@media (prefers-reduced-motion:reduce){
+  .plegable,.plegable__cab,.plegable__cuerpo,.plegable__flecha{transition:none}
+}
 .modal-pie .btn{margin-left:0}
 .modal-historial-caja{width:min(560px,100%)}
 .historial-acciones{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:var(--sp-3) 0}

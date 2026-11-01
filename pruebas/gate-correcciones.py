@@ -34,7 +34,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
 
 
 def respaldo_viejo() -> Path:
@@ -254,6 +254,7 @@ def main() -> int:
             exigir(d["alarmas"][0]["hora"] == "08:00" and d["alarmas"][0]["texto"] == "Desayuno largo",
                    f"alarma: editada a 08:00 — {d['alarmas'][0]}", fallas)
 
+            abrir_plegable(page, "#tiempo-lista-sesiones [data-editar-sesion]")
             page.locator("[data-editar-sesion]").first.click(); page.wait_for_timeout(150)
             page.locator("#sesion-duracion").fill("1:30")
             page.locator("#modal-guardar").click(); page.wait_for_timeout(150)

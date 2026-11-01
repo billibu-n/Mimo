@@ -58,6 +58,20 @@ def desborde(page) -> int:
     ))
 
 
+def abrir_plegable(page, selector: str) -> None:
+    """Deja ABIERTO el plegable que contiene `selector` (si no lo está ya).
+
+    Los items viven dentro de una barra que nace cerrada; abrirla a ciegas la
+    cerraría cuando el flujo ya la había abierto.
+    """
+    page.evaluate("""sel => {
+        const item = document.querySelector(sel);
+        const caja = item && item.closest ? item.closest('.plegable') : null;
+        if (caja && !caja.classList.contains('on')) caja.querySelector('.plegable__cab').click();
+    }""", selector)
+    page.wait_for_timeout(220)
+
+
 def texto_tabs(page):
     out = []
     for t in page.locator("#tabs .tab").all():

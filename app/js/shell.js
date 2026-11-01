@@ -205,6 +205,7 @@
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: false, navPlegada: false, navOculta: false,
         temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
+      plegables: {},
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -2273,6 +2274,23 @@
     if (Math.abs(f1 - f0) < 1e-9) return null;
     return (objetivo - f0) / (f1 - f0);
   }
+  /* Agrupa sesiones por ramo para el plegable: cada ramo es una categoría con su
+     cuenta y sus horas. El orden es el de la lista (la más reciente primero). */
+  function agruparPorRamo(sesiones) {
+    var orden = [], mapa = {};
+    (sesiones || []).forEach(function (s) {
+      var k = s.ramo || "_";
+      if (!mapa[k]) { mapa[k] = { ramo: s.ramo || "", items: [], minutos: 0 }; orden.push(k); }
+      mapa[k].items.push(s);
+      mapa[k].minutos += Number(s.minutos || 0);
+    });
+    return orden.map(function (k) { return mapa[k]; });
+  }
+  function tituloDeRamo(codigo) {
+    var r = codigo ? ramoPorCodigo(codigo) : null;
+    return r ? r.codigo + " — " + r.nombre : L("Sin ramo", "No course", "无课程");
+  }
+
   function htmlDetalleCalif(cur, q) {
     if (!cur) return '<p class="muted">' + esc(L("Selecciona un ramo.", "Select a course.", "选择一门课程。")) + '</p>';
     var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q, cur), ex = estadoEximicion(q);
@@ -2353,28 +2371,41 @@
         '<label class="campo">' + esc(L("Meta", "Goal", "目标")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
         '<span class="muted">' + esc(L("Examen para la meta: ", "Exam for the goal: ", "达成目标的考试：")) + (q.examen.activo ? textoNecesario(necMeta) : L("sin examen", "no exam", "无考试")) + "</span>" +
       "</div>" +
-      '<section class="calif-bloque"><h3>' + esc(L("Categorías", "Categories", "分类")) + ' <span>' + esc(L("peso sobre la presentación", "weight over the presentation grade", "占平时成绩比重")) + '</span></h3>' +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":cats", abierto: true,
+        titulo: L("Categorías", "Categories", "分类"),
+        cuenta: q.categorias.length + " " + L("categorías", "categories", "分类"),
+        cuerpo:
+        '<p class="muted calif-nota">' + esc(L("Cada categoría pesa sobre la presentación.", "Each category weighs over the presentation grade.", "每个分类占平时成绩的比重。")) + '</p>' +
         '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>' + esc(L("Categoría", "Category", "分类")) + '</th><th class="num">' + esc(L("Peso %", "Weight %", "权重 %")) + '</th><th class="num">' + esc(L("Promedio", "Average", "平均")) + '</th><th></th></tr></thead><tbody>' +
         (filasCat || '<tr><td colspan="4" class="muted">' + esc(L("Sin categorías.", "No categories.", "没有分类。")) + '</td></tr>') + "</tbody></table></div>" +
-        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">' + esc(L("+ Categoría", "+ Category", "+ 分类")) + '</button></section>' +
-      '<section class="calif-bloque"><h3>' + esc(L("Componentes y notas", "Components and grades", "评分项与成绩")) + '</h3>' +
+        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">' + esc(L("+ Categoría", "+ Category", "+ 分类")) + '</button>' }) +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":comps",
+        titulo: L("Componentes y notas", "Components and grades", "评分项与成绩"),
+        cuenta: q.componentes.length + " " + L("componentes", "components", "评分项"),
+        cuerpo:
         '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>' + esc(L("Componente", "Component", "评分项")) + '</th><th>' + esc(L("Categoría", "Category", "分类")) + '</th><th class="num">' + esc(L("Nota", "Grade", "成绩")) + '</th><th>' + esc(L("Fecha", "Date", "日期")) + '</th><th></th></tr></thead><tbody>' +
         (filasComp || '<tr><td colspan="5" class="muted">' + esc(L("Sin componentes todavía.", "No components yet.", "还没有评分项。")) + '</td></tr>') + "</tbody></table></div>" +
-        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">' + esc(L("+ Componente", "+ Component", "+ 评分项")) + '</button></section>' +
-      '<section class="calif-bloque"><h3>' + esc(L("Examen", "Exam", "考试")) + '</h3><div class="calif-examen">' +
+        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">' + esc(L("+ Componente", "+ Component", "+ 评分项")) + '</button>' }) +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":examen",
+        titulo: L("Examen", "Exam", "考试"),
+        cuenta: q.examen.activo ? L("activo", "on", "启用") : L("apagado", "off", "关闭"),
+        cuerpo: '<div class="calif-examen">' +
         '<label class="check"><input type="checkbox" data-exam-activo' + (q.examen.activo ? " checked" : "") + "> " + esc(L("Activo", "Active", "启用")) + "</label>" +
         '<label class="campo">' + esc(L("Peso %", "Weight %", "权重 %")) + ' <input class="entrada calif-num" type="number" min="0" max="100" step="5" data-exam-peso value="' + q.examen.peso + '"></label>' +
         '<label class="campo">' + esc(L("Nota", "Grade", "成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-exam-nota value="' + (q.examen.nota === null ? "" : q.examen.nota) + '"></label>' +
         '<label class="campo">' + esc(L("Reemplaza", "Replaces", "替代")) + ' <select class="entrada calif-entrada" data-exam-reemplaza><option value="">—</option>' + opcionesComp + "</select></label>" +
-      "</div></section>" +
-      '<section class="calif-bloque"><h3>' + esc(L("Eximición", "Exemption", "免考")) + '</h3>' +
+      "</div>" }) +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":exim",
+        titulo: L("Eximición", "Exemption", "免考"),
+        cuenta: q.eximicion.activa ? q.eximicion.condiciones.length + " " + L("condiciones", "conditions", "条件") : L("apagada", "off", "关闭"),
+        cuerpo:
         '<label class="check"><input type="checkbox" data-exim-activa' + (q.eximicion.activa ? " checked" : "") + "> " + esc(L("El ramo se puede eximir", "The course can be exempted", "课程可以免考")) + "</label>" +
         '<label class="campo">' + esc(L("Deben cumplirse", "Must meet", "须满足")) + ' <select class="entrada" data-exim-modo>' +
           '<option value="todas"' + (q.eximicion.modo === "todas" ? " selected" : "") + ">" + esc(L("Todas", "All", "全部")) + "</option>" +
           '<option value="alguna"' + (q.eximicion.modo === "alguna" ? " selected" : "") + ">" + esc(L("Al menos una", "At least one", "至少一项")) + "</option></select></label>" +
         (filasCond || '<p class="muted">' + esc(L("Sin condiciones: mientras no haya ninguna, el ramo no se exime.", "No conditions: while there are none, the course is not exempted.", "没有条件：在添加条件前，课程不能免考。")) + '</p>') +
         '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">' + esc(L("+ Condición", "+ Condition", "+ 条件")) + '</button>' +
-        '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p></section>" +
+        '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p>" }) +
       "</div>";
   }
   function pintarCalificaciones() {
@@ -2702,12 +2733,20 @@
       fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
     $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">' + esc(L("Sin ramos. Crea uno en Malla.", "No courses. Create one in the plan.", "没有课程。请在课程规划中创建。")) + '</td></tr>';
     var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
-    $("#est-sesiones").innerHTML = recientes.length ? recientes.map(function (x) {
-      var c = x.s.ramo ? ramoPorCodigo(x.s.ramo) : null;
-      return '<div class="est-sesion" data-sesion="' + esc(x.s.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' + esc(c ? c.codigo : L("Sin ramo", "No course", "无课程")) + "</b> " + esc(c ? c.nombre : "") +
-        "</span><small>" + esc(x.s.fecha) + " · " + esc(fmtDuracion(x.s.minutos)) + '</small>' +
-        '<button class="calif-x" type="button" data-editar-estudio="' + esc(x.s.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
-        '<button class="calif-x" type="button" data-borrar-estudio="' + esc(x.s.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+    var grupos = agruparPorRamo(recientes.map(function (x) { return x.s; }));
+    $("#est-sesiones").innerHTML = grupos.length ? grupos.map(function (g) {
+      var items = g.items.map(function (s) {
+        return '<div class="est-sesion" data-sesion="' + esc(s.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '">' +
+          '<span><b>' + esc(fechaCorta(s.fecha)) + "</b></span><small>" + esc(fmtDuracion(s.minutos)) + "</small>" +
+          '<button class="calif-x" type="button" data-editar-estudio="' + esc(s.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+          '<button class="calif-x" type="button" data-borrar-estudio="' + esc(s.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+      }).join("");
+      return MimoPlegable.html({
+        id: "estudio:sesion:" + (g.ramo || "_"),
+        titulo: tituloDeRamo(g.ramo),
+        cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
+        cuerpo: items
+      });
     }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + '</p>';
     if (pantalla === "estudio") pintarPanel();
   }
@@ -2902,15 +2941,23 @@
     if ($("#tiempo-horas")) $("#tiempo-horas").textContent = fmtHoras(min);
     var listaSes = $("#tiempo-lista-sesiones");
     if (listaSes) {
-      listaSes.innerHTML = ses.length ? ses.map(function (x) {
-        var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
-        var ram = x.ramo ? ramoPorCodigo(x.ramo) : null;
-        return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' +
-          esc(fechaCorta(x.fecha)) + "</b>" + (ram ? " · " + esc(ram.codigo) : "") + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
-          esc(fmtDuracion(x.minutos)) + "</small>" +
-          '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
-          '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
-      }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + '</p>';
+      var gruposSes = agruparPorRamo(ses);
+      listaSes.innerHTML = gruposSes.length ? gruposSes.map(function (g) {
+        var items = g.items.map(function (x) {
+          var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
+          return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' +
+            esc(fechaCorta(x.fecha)) + "</b>" + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
+            esc(fmtDuracion(x.minutos)) + "</small>" +
+            '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+            '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+        }).join("");
+        return MimoPlegable.html({
+          id: "tiempo:sesion:" + (g.ramo || "_"),
+          titulo: tituloDeRamo(g.ramo),
+          cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
+          cuerpo: items
+        });
+      }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + "</p>";
       $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
         b.addEventListener("click", function () { borrarSesion(b.getAttribute("data-borrar-sesion")); });
       });
@@ -4204,6 +4251,14 @@
 
   async function init() {
     registrarFuenteCalendario("calificaciones", fuenteCalificaciones);
+    // El plegable guarda su estado en el mismo estado de la app: sobrevive a
+    // cambiar de sección y a recargar (y viaja en el respaldo como un campo más).
+    if (window.MimoPlegable) {
+      MimoPlegable.configurar({
+        leer: function () { return estado.plegables || {}; },
+        guardar: function (m) { estado.plegables = m; guardar(); }
+      });
+    }
     // Si localStorage desapareció o está corrupto, el espejo nativo es la recuperación.
     if (arranqueLimpio && !RESET && window.MimoAlmacen && MimoAlmacen.esTauri()) {
       try {

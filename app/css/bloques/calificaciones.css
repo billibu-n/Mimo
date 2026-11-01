@@ -20,9 +20,7 @@
 .calif-ajustes{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3)}
 .calif-ajustes .campo{display:flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
 .calif-ajustes .calif-num{width:72px}
-.calif-bloque{border-top:1px solid var(--line2);padding-top:var(--sp-3);margin-top:var(--sp-3)}
-.calif-bloque h3{margin:0 0 var(--sp-2);font-size:var(--fs-sm);display:flex;align-items:baseline;gap:var(--sp-2)}
-.calif-bloque h3 span{font-weight:400;font-size:var(--fs-xs);color:var(--muted)}
+.calif-nota{margin:0 0 var(--sp-2);font-size:var(--fs-xs)}
 .calif-tabla-wrap{overflow-x:auto;margin-bottom:var(--sp-2)}
 .calif-tabla{width:100%;border-collapse:collapse;min-width:520px}
 .calif-tabla th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:2px var(--sp-1);border-bottom:1px solid var(--line2)}

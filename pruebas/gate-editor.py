@@ -28,7 +28,7 @@ APP = RAIZ / "app" / "index.html"
 VISTAS = sorted((RAIZ / "app" / "js" / "bloques").glob("*/vista.js"))
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
 
 VIEJOS = ["#evento-form", "#tarea-form", "#ramo-form", "#carrera-form",
           "#calif-curso-form", "#est-form", "#alarma-form", "#modal-sesion"]
@@ -155,6 +155,7 @@ def main() -> int:
             page.locator("#modal-guardar").click()
             page.wait_for_timeout(250)
             exigir(len(datos(page).get("sesiones") or []) == 1, "sesión: queda registrada", fallas)
+            abrir_plegable(page, "[data-editar-estudio]")
             page.locator("[data-editar-estudio]").first.click()
             page.wait_for_timeout(200)
             exigir(ventana(page, "sesion"), "sesión: se corrige en la ventana", fallas)

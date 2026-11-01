@@ -32,7 +32,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
 
 DRAG = """([srcSel, dstSel]) => {
   const src = document.querySelector(srcSel), dst = document.querySelector(dstSel);
@@ -205,6 +205,7 @@ def main() -> int:
             }""", viernes)
             page.locator('#tabs [data-ir="calificaciones"]').click(); page.wait_for_timeout(250)
             page.locator('[data-calif="T1"]').click(); page.wait_for_timeout(150)
+            abrir_plegable(page, '[data-accion-calif="comp-cal"]')
             page.locator('[data-accion-calif="comp-cal"]').click(); page.wait_for_timeout(250)
             evs = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).eventos")
             exigir(not any(e.get("id") == "calif-T1-0" for e in evs),

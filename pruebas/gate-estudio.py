@@ -22,7 +22,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, desborde, exigir, salir  # noqa: E402
 
 
 def instalar_academics(page) -> None:
@@ -115,6 +115,7 @@ def main() -> int:
             exigir("25 %" in page.locator("#est-tabla").inner_text(),
                    "estudio: avance del ramo contra su meta", fallas)
 
+            abrir_plegable(page, "#est-sesiones [data-borrar-estudio]")
             page.locator("[data-borrar-estudio]").first.click()
             page.wait_for_timeout(250)
             exigir(page.locator("#est-k-sesiones").inner_text().strip() == "1",

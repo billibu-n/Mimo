@@ -24,7 +24,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, desborde, exigir, salir  # noqa: E402
 
 
 def main() -> int:
@@ -313,6 +313,7 @@ def main() -> int:
             page.wait_for_timeout(120)
             exigir(page.locator(".sesion-item").count() == 1,
                    "tiempo: la sesión registrada se lista y se puede quitar", fallas)
+            abrir_plegable(page, ".sesion-item")
             page.locator(".sesion-item").first.click(button="right")
             page.wait_for_timeout(80)
             page.once("dialog", lambda d: d.accept())
