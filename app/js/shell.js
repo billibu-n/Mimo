@@ -198,13 +198,14 @@
 
   function porDefecto() {
     return {
-      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], cursos: [], califs: {},
+      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], eventoTipos: [], cursos: [], califs: {},
       carrera: { titulo: "", universidad: "", pais: "" },
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: true,
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: false, navPlegada: false, navOculta: false,
         temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
+      plegables: {},
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -222,6 +223,7 @@
           d.instalados = d.instalados.filter(function (x) { return x !== "evaluaciones"; });
           if (!Array.isArray(d.tareas)) d.tareas = [];
           if (!Array.isArray(d.notas)) d.notas = [];
+          if (!Array.isArray(d.eventoTipos)) d.eventoTipos = [];
           if (!Array.isArray(d.cursos)) d.cursos = [];
           if (!d.califs || typeof d.califs !== "object") d.califs = {};
           if (!d.carrera || typeof d.carrera !== "object") d.carrera = { titulo: "", universidad: "", pais: "" };
@@ -258,8 +260,12 @@
   var formEventoId = null;
   var formPeriodoId = null;
   var mapaPeriodo = null;
-  var formAlarmaId = null;
   var tiempoSeg = 0, tiempoInt = null, tempSeg = 0, tempInicial = 0, pomoSeg = 0, pomoInicial = 0;
+  /* El reloj no cuenta ticks: mide con la hora del equipo. Así un tick que llega
+     tarde (pestaña dormida, repintado pesado) no regala ni roba segundos, y
+     pausar/reanudar no reinicia la cuenta. `relojBase` es lo ya transcurrido en
+     la fase actual; `relojInicio` el instante en que se reanudó. */
+  var relojInicio = 0, relojBase = 0;
   var splitOn = false;
   var tabArrastrada = null;
   var splitNavHasta = 0;
@@ -453,6 +459,13 @@
     if (st && st.cola && st.cola.ultimoError) detalle.push(L("Último error: ", "Last error: ", "上次错误：") + st.cola.ultimoError);
     b.title = detalle.join("\n");
     b.setAttribute("aria-label", texto + ". " + detalle[0] + ". " + detalle[1] + ".");
+    var bs = $("#btn-sync");
+    if (bs) {
+      bs.className = "icono-btn sync sync--" + clase;
+      bs.setAttribute("data-estado", texto);
+      bs.title = detalle.join("\n");
+      bs.setAttribute("aria-label", texto + ". " + detalle[0] + ". " + detalle[1] + ".");
+    }
   }
   function abrirEnSync() {
     try { ir("ajustes"); } catch (e) {}
@@ -508,7 +521,7 @@
     estado.panel.tareas = "detalle";
     guardar();
     if (pantalla !== "tareas") ir("tareas"); else { pintarTareas(); pintarPanel(); }
-    if (window.innerWidth <= 1255) abrirPanel();
+    abrirPanel();
   }
   function abrirEventoDetalle(id) {
     if (!eventoPorId(id)) return;
@@ -516,7 +529,7 @@
     estado.panel.calendario = "detalle";
     guardar();
     if (pantalla !== "calendario") ir("calendario"); else { pintarCalendario(); pintarPanel(); }
-    if (window.innerWidth <= 1255) abrirPanel();
+    abrirPanel();
   }
   function alternarTarea(id) {
     var x = tareaPorId(id); if (!x) return;
@@ -524,9 +537,7 @@
     guardar(); pintarTareas(); pintarPanel();
   }
   function crearEventoEn(fecha) {
-    abrirEvento(null);
-    if (fecha) $("#evento-fecha").value = fecha;
-    $("#evento-titulo").focus();
+    abrirEvento(null, fecha || "");
   }
   function borrarNota(id) {
     if (window.MimoBloqueNotas) MimoBloqueNotas.borrar(id);
@@ -568,31 +579,31 @@
   function abrirSesionModal(id) {
     var s = (estado.sesiones || []).filter(function (x) { return x.id === id; })[0];
     if (!s) return;
-    $("#sesion-id").value = s.id;
-    $("#sesion-fecha").value = s.fecha || hoyISO();
-    $("#sesion-duracion").value = duracionInput(s.minutos);
-    $("#sesion-hora").value = s.hora || "";
-    var ops = ['<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>'];
+    var opciones = [{ v: "", t: L("Sin ramo", "No course", "无课程") }];
     var actuales = cursosEnCurso();
-    actuales.forEach(function (c) { ops.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
+    actuales.forEach(function (c) { opciones.push({ v: c.codigo, t: c.codigo + " — " + c.nombre }); });
     if (s.ramo && !actuales.some(function (c) { return c.codigo === s.ramo; })) {
       var viejo = ramoPorCodigo(s.ramo);
-      if (viejo) ops.push('<option value="' + esc(viejo.codigo) + '">' + esc(viejo.codigo) + " — " + esc(viejo.nombre) + " (" + esc(L("cerrado", "closed", "已关闭")) + ")</option>");
+      if (viejo) opciones.push({ v: viejo.codigo, t: viejo.codigo + " — " + viejo.nombre + " (" + L("cerrado", "closed", "已关闭") + ")" });
     }
-    $("#sesion-ramo").innerHTML = ops.join("");
-    $("#sesion-ramo").value = s.ramo || "";
-    $("#modal-sesion").classList.add("on");
-    $("#sesion-duracion").focus();
-    $("#sesion-duracion").select();
+    MimoModal.abrir({
+      id: "sesion",
+      titulo: L("Editar sesión de estudio", "Edit study session", "编辑学习会话"),
+      sub: L("Corrige lo que registró Tiempo o una sesión manual.", "Fix what Time or a manual session logged.", "修正时间或手动记录的会话。"),
+      campos: [
+        { id: "sesion-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: s.fecha || hoyISO() },
+        { id: "sesion-duracion", etiqueta: L("Duración", "Duration", "时长"), valor: duracionInput(s.minutos), ph: "2:30:21", inputmode: "decimal" },
+        { id: "sesion-ramo", etiqueta: L("Ramo", "Course", "课程"), tipo: "select", valor: s.ramo || "", opciones: opciones },
+        { id: "sesion-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: s.hora || "" }
+      ],
+      guardar: L("Guardar", "Save", "保存"),
+      borrar: { texto: L("Borrar", "Delete", "删除"), run: function () { borrarSesion(id); } },
+      onGuardar: function () { return guardarSesionDesdeVentana(s); }
+    });
   }
-  function cerrarSesionModal() { $("#modal-sesion").classList.remove("on"); }
-  function guardarSesionModal(e) {
-    if (e) e.preventDefault();
-    var id = $("#sesion-id").value;
-    var s = (estado.sesiones || []).filter(function (x) { return x.id === id; })[0];
-    if (!s) return;
+  function guardarSesionDesdeVentana(s) {
     var minutos = Math.min(1440, parseDuracion($("#sesion-duracion").value));
-    if (!minutos) { aviso(L("La duración no puede quedar en cero.", "Duration cannot be zero.", "时长不能为零。")); return; }
+    if (!minutos) { aviso(L("La duración no puede quedar en cero.", "Duration cannot be zero.", "时长不能为零。")); return false; }
     if (window.MimoDominioSesiones) {
       MimoDominioSesiones.actualizar(s, {
         fecha: $("#sesion-fecha").value || s.fecha || hoyISO(),
@@ -606,8 +617,9 @@
       s.ramo = $("#sesion-ramo").value || "";
       s.hora = $("#sesion-hora").value || "";
     }
-    guardar(); cerrarSesionModal(); pintarTiempo(); refrescarEstudio();
+    guardar(); pintarTiempo(); refrescarEstudio();
     aviso(L("Sesión corregida: ", "Session updated: ", "会话已修正：") + fmtDuracion(s.minutos) + ".");
+    return true;
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || L("Sin título", "Untitled", "无标题")); }
   function menuDeContexto(el) {
@@ -619,7 +631,7 @@
         { accion: "ramo-abrir", texto: L("Abrir ficha", "Open details", "打开详情"), run: function () {
           estado.ramoSel = r.codigo; estado.panel.malla = "detalle";
           guardar(); pintarMalla(); pintarPanel();
-          if (window.innerWidth <= 1255) abrirPanel();
+          abrirPanel();
         } },
         { accion: "ramo-editar", texto: "Editar", run: function () { abrirFormularioRamo(r); } },
         { accion: "ramo-estado", texto: r.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程"), run: function () { alternarRamo(r.codigo); } },
@@ -844,12 +856,45 @@
     }
   }
 
+  /* El rótulo del botón de plegar dice lo que hará al pulsarlo, en el idioma de
+     turno. Se pinta aquí y en aplicarPrefs: pintarTabs corre al cambiar idioma. */
+  /* ☰: la barra de secciones se oculta entera y el contenido sube. */
+  function pintarSecciones() {
+    var bs = $("#btn-secciones"); if (!bs) return;
+    var oculta = !!(estado.prefs || {}).navOculta;
+    var rotulo = oculta ? L("Mostrar las secciones", "Show the sections", "显示分区")
+                        : L("Ocultar las secciones", "Hide the sections", "隐藏分区");
+    bs.setAttribute("aria-expanded", oculta ? "false" : "true");
+    bs.setAttribute("aria-label", rotulo);
+    bs.title = rotulo;
+  }
+  /* El botón del panel dice lo que hará: ocultarlo o mostrarlo. */
+  function pintarBotonPanel() {
+    var bp = $("#btn-panel"); if (!bp) return;
+    var abierto = window.innerWidth > 1255
+      ? !document.body.classList.contains("panel-oculto")
+      : document.body.classList.contains("panel-abierto");
+    var rotulo = abierto ? L("Ocultar el panel", "Hide the panel", "隐藏面板")
+                         : L("Mostrar el panel", "Show the panel", "显示面板");
+    bp.setAttribute("aria-expanded", abierto ? "true" : "false");
+    bp.setAttribute("aria-label", rotulo);
+    bp.title = rotulo;
+  }
+  function pintarPlegado() {
+    var bp = $("#btn-plegar"); if (!bp) return;
+    var plegada = !!(estado.prefs || {}).navPlegada;
+    var rotulo = plegada ? L("Desplegar la barra", "Expand the bar", "展开栏")
+                         : L("Plegar la barra", "Collapse the bar", "收起栏");
+    bp.setAttribute("aria-expanded", plegada ? "false" : "true");
+    bp.setAttribute("aria-label", rotulo);
+    bp.title = rotulo;
+  }
   function pintarTabs() {
     $("#tabs").innerHTML = secciones().map(function (id) {
       var on = id === pantalla ? " on" : "";
       var cod = codigoDe(id);
       return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" data-codigo="' + esc(cod) + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
-        icono(iconoDe(id)) + (cod ? '<span class="cod cod--tab" aria-hidden="true">' + esc(cod) + "</span>" : "") + "</button>";
+        icono(iconoDe(id)) + '<span class="tab__nom">' + esc(nombre(id)) + "</span></button>";
     }).join("");
     $$("#tabs .tab").forEach(function (b) {
       var id = b.getAttribute("data-ir");
@@ -881,6 +926,9 @@
     });
     var kb = $("#kpi-bloques");
     if (kb) kb.textContent = String(estado.instalados.length);
+    pintarPlegado();
+    pintarSecciones();
+    pintarBotonPanel();
     pintarAjustes();
   }
 
@@ -907,6 +955,8 @@
       normalizarEstudio: normalizarEstudio, normalizarNotas: function () { return normalizarNotas(); },
       eventoPorId: eventoPorId, eventosTodos: eventosTodos, eventosDe: eventosDe,
       tareaPorId: tareaPorId, ramoPorCodigo: ramoPorCodigo, califDe: califDe,
+      colorDeContexto: colorDeContexto, marcaContexto: marcaContexto, iconoContexto: iconoContexto,
+      iconoRamo: iconoRamoHTML, marcaRamo: marcaRamo, identidad: function () { return window.MimoIdentidad || null; },
       abrirNota: function (id) { return abrirNota(id); },
       abrirTarea: function (id) { return abrirTarea(id); },
       abrirEventoDetalle: function (id) { return abrirEventoDetalle(id); },
@@ -1062,16 +1112,77 @@
     }
   }
 
+  /* ---- categorías (etiquetas) de los eventos ----
+     Un evento puede llevar una categoría propia aunque no tenga ramo: es el
+     «tipo» de Mimo Académics, que se pintaba en cada chip del calendario. La
+     categoría se crea desde la ventana del evento o desde el carril, y se
+     guarda como {id, nombre}; el nombre es del usuario, no se traduce. */
+  function tiposEvento() {
+    if (!Array.isArray(estado.eventoTipos)) estado.eventoTipos = [];
+    return estado.eventoTipos;
+  }
+  function tipoEvento(id) {
+    var v = String(id || "");
+    if (!v) return null;
+    return tiposEvento().filter(function (t) { return t.id === v; })[0] || null;
+  }
+  function nombreTipoEvento(id) {
+    var t = tipoEvento(id);
+    return t ? t.nombre : "";
+  }
+  function colorTipoEvento(id) {
+    return window.MimoIdentidad ? MimoIdentidad.colorAuto("categoria:" + String(id || "")) : "var(--muted)";
+  }
+  function slugTipoEvento(nombre) {
+    var base = String(nombre || "").toLowerCase().normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "").slice(0, 40);
+    if (!base) base = "cat-" + (window.MimoIdentidad ? MimoIdentidad.hash(nombre) : Date.now());
+    return base;
+  }
+  function crearTipoEvento(nombre) {
+    var limpio = String(nombre || "").trim();
+    if (!limpio) return "";
+    var mismo = tiposEvento().filter(function (t) {
+      return t.nombre.toLowerCase() === limpio.toLowerCase();
+    })[0];
+    if (mismo) return mismo.id;
+    var base = slugTipoEvento(limpio), id = base, n = 2;
+    while (tipoEvento(id)) { id = base + "-" + n; n++; }
+    tiposEvento().push({ id: id, nombre: limpio });
+    return id;
+  }
+  function normalizarTiposEvento() {
+    var vistos = {}, out = [];
+    (Array.isArray(estado.eventoTipos) ? estado.eventoTipos : []).forEach(function (t, i) {
+      var nombre = String(t && t.nombre || "").trim();
+      if (!nombre) return;
+      var id = String(t.id || "").trim() || slugTipoEvento(nombre);
+      while (vistos[id]) id += "-" + (i + 1);
+      vistos[id] = 1;
+      out.push({ id: id, nombre: nombre });
+    });
+    estado.eventoTipos = out;
+  }
   function normalizarEventos() {
+    normalizarTiposEvento();
     estado.eventos = (estado.eventos || []).map(function (e, i) {
-      return conservar({
+      var tipo = String(e.tipo || "").trim();
+      if (tipo && !tipoEvento(tipo)) {
+        var id = crearTipoEvento(tipo);
+        tipo = id || tipo;
+      }
+      var ev = conservar({
         id: e.id || "e" + i,
         titulo: e.titulo || "Sin título",
         fecha: e.fecha || hoyISO(),
         hora: e.hora || "",
         contexto: e.contexto || "",
+        tipo: "",
         nota: e.nota || ""
       }, e);
+      ev.tipo = tipo;
+      return ev;
     });
   }
   var calendarioFuentes = {};
@@ -1121,8 +1232,21 @@
   function chipEvento(e) {
     var col = colorDeContexto(e.contexto);
     var estilo = col ? ' style="background:' + col + ';color:' + textoSobre(col) + '"' : "";
-    return '<button class="evento-chip" type="button" data-evento="' + e.id + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
-      (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b> " : "") + esc(e.titulo) + "</button>";
+    var tipo = tipoEvento(e.tipo);
+    var etiqueta = tipo ? '<span class="evento-chip__tag" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
+    return '<button class="evento-chip" type="button" data-evento="' + esc(e.id) + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
+      (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b>" : "") +
+      '<span class="evento-chip__tit">' + esc(e.titulo) + "</span>" + etiqueta + "</button>";
+  }
+  function pintarTiposCalendario() {
+    var caja = $("#cal-tipos"); if (!caja) return;
+    var cuenta = {};
+    eventosTodos().forEach(function (e) { if (e.tipo) cuenta[e.tipo] = (cuenta[e.tipo] || 0) + 1; });
+    var tipos = tiposEvento();
+    caja.innerHTML = tipos.length ? tipos.map(function (t) {
+      return '<span class="cal-tipo" style="--tag:' + colorTipoEvento(t.id) + '"><i aria-hidden="true"></i>' +
+        esc(t.nombre) + '<b>' + (cuenta[t.id] || 0) + "</b></span>";
+    }).join("") : '<p class="muted">' + esc(t("cal.sinCategorias")) + "</p>";
   }
   function pintarContextosCursos() {
     var dl = $("#contextos-ramos"); if (!dl) return;
@@ -1132,10 +1256,13 @@
   function pintarCalendario() {
     normalizarEventos();
     pintarContextosCursos();
+    pintarTiposCalendario();
     var hoy = new Date(), y = calCursor.getFullYear(), m = calCursor.getMonth();
     var total = eventosTodos().length;
     $("#kpi-eventos").textContent = String(total);
     $("#kpi-tareas").textContent = String(estado.tareas.filter(function (t) { return t.fecha; }).length);
+    var minReg = (estado.sesiones || []).reduce(function (a, s) { return a + (Number(s.minutos) || 0); }, 0);
+    if ($("#kpi-horas")) $("#kpi-horas").textContent = fmtHoras(minReg);
     $$("#vista-calendario button").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-cal-vista") === vistaCalendario);
     });
@@ -1152,7 +1279,9 @@
       agenda.innerHTML = orden.length ? orden.map(function (e) {
         var col = colorDeContexto(e.contexto);
         var estilo = col ? ' style="box-shadow:inset 4px 0 0 ' + col + '"' : "";
-        return '<button class="cal-agenda__item" type="button" data-evento="' + e.id + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span><b>' + esc(e.titulo) + "</b><small>" + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + "</small></span><span class=\"pill\">" + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
+        var tipoAgenda = tipoEvento(e.tipo);
+        var tagAgenda = tipoAgenda ? '<span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoAgenda.id) + '">' + esc(tipoAgenda.nombre) + "</span>" : "";
+        return '<button class="cal-agenda__item" type="button" data-evento="' + esc(e.id) + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span class="cal-agenda__cuerpo"><span class="cal-agenda__tit">' + iconoContexto(e.contexto) + "<b>" + esc(e.titulo) + "</b>" + tagAgenda + '</span><small>' + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + '</small></span><span class="pill">' + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
       }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
     } else if (vistaCalendario === "semana") {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
@@ -1218,19 +1347,75 @@
         var ctx = ctxDe(b);
         estado.panel[ctx] = "detalle";
         guardar(); pintarPanelDe(ctx); pintarCalendario();
-        if (window.innerWidth <= 1255) abrirPanel();
+        abrirPanel();
       });
     });
   }
-  function abrirEvento(ev) {
+  /* El evento se edita en la ventana única (js/nucleo/modal.js): la sección ya no
+     lleva formulario propio. Campos, orden y validación son los de antes. */
+  function abrirEvento(ev, fecha) {
     normalizarEventos();
     formEventoId = ev ? ev.id : null;
-    $("#evento-titulo").value = ev ? ev.titulo : "";
-    $("#evento-fecha").value = ev ? ev.fecha : hoyISO();
-    $("#evento-hora").value = ev ? ev.hora : "";
-    $("#evento-contexto").value = ev ? ev.contexto : "";
-    $("#evento-form").hidden = false;
-    $("#evento-titulo").focus();
+    var opcionesTipo = [{ v: "", t: L("Sin categoría", "No category", "无分类") }];
+    tiposEvento().forEach(function (tp) { opcionesTipo.push({ v: tp.id, t: tp.nombre }); });
+    if (ev && ev.tipo && !tipoEvento(ev.tipo)) opcionesTipo.push({ v: ev.tipo, t: ev.tipo });
+    MimoModal.abrir({
+      id: "evento",
+      titulo: ev ? L("Editar evento", "Edit event", "编辑事件") : L("Nuevo evento", "New event", "新建事件"),
+      sub: ev ? L("Cambia lo que haga falta; se guarda al confirmar.", "Change what you need; it is saved when you confirm.", "按需修改，确认后保存。")
+              : L("Con el título basta; la fecha y la hora pueden quedar para después.", "The title is enough; date and time can wait.", "标题即可，日期和时间可以稍后补。"),
+      campos: [
+        { id: "evento-titulo", etiqueta: L("Título", "Title", "标题"), valor: ev ? ev.titulo : "", ph: L("Título del evento", "Event title", "事件标题") },
+        { id: "evento-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: ev ? ev.fecha : (fecha || hoyISO()) },
+        { id: "evento-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: ev ? ev.hora : "" },
+        { id: "evento-tipo", etiqueta: L("Categoría", "Category", "分类"), tipo: "select", valor: ev ? ev.tipo : "", opciones: opcionesTipo },
+        { id: "evento-tipo-nuevo", etiqueta: L("Nueva categoría (opcional)", "New category (optional)", "新分类（可选）"), valor: "", ph: L("Ej.: Laboratorio, Cumpleaños", "E.g.: Lab, Birthday", "例如：实验室、生日"), ayuda: L("Se crea y se asigna a este evento.", "It is created and assigned to this event.", "将创建并分配给此事件。") },
+        { id: "evento-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: ev ? ev.contexto : "", lista: "contextos-ramos", ph: L("Ramo o lugar", "Course or place", "课程或地点") }
+      ],
+      guardar: ev ? L("Guardar", "Save", "保存") : L("Crear evento", "Create event", "创建事件"),
+      onGuardar: guardarEventoDesdeVentana
+    });
+  }
+  function abrirCategoriaEvento() {
+    MimoModal.abrir({
+      id: "categoria",
+      titulo: L("Nueva categoría", "New category", "新分类"),
+      sub: L("Agrupa eventos sueltos sin depender de un ramo. Después se elige en cada evento.", "Groups standalone events without a course. Then pick it in each event.", "无需课程即可归类独立事件。之后可在每个事件中选择。"),
+      campos: [
+        { id: "categoria-nombre", etiqueta: L("Nombre", "Name", "名称"), valor: "", ph: L("Ej.: Laboratorio, Cumpleaños", "E.g.: Lab, Birthday", "例如：实验室、生日") }
+      ],
+      guardar: L("Crear categoría", "Create category", "创建分类"),
+      onGuardar: function () {
+        var nombre = $("#categoria-nombre").value.trim();
+        if (!nombre) { $("#categoria-nombre").focus(); return false; }
+        crearTipoEvento(nombre);
+        guardar(); pintarCalendario();
+        aviso(L("Categoría creada.", "Category created.", "分类已创建。"));
+        return true;
+      }
+    });
+  }
+  function guardarEventoDesdeVentana() {
+    var titulo = $("#evento-titulo").value.trim();
+    if (!titulo) { $("#evento-titulo").focus(); return false; }
+    var ev = formEventoId ? eventoPorId(formEventoId) : null;
+    if (!ev) {
+      ev = { id: "e" + Date.now() };
+      estado.eventos.push(ev);
+    }
+    ev.titulo = titulo;
+    ev.fecha = $("#evento-fecha").value || hoyISO();
+    ev.hora = $("#evento-hora").value;
+    var nuevaCat = $("#evento-tipo-nuevo").value.trim();
+    ev.tipo = nuevaCat ? crearTipoEvento(nuevaCat) : $("#evento-tipo").value;
+    ev.contexto = $("#evento-contexto").value.trim();
+    ev.nota = ev.nota || "";
+    estado.eventoSel = ev.id;
+    estado.panel[pantalla] = "detalle";
+    formEventoId = null;
+    guardar(); pintarCalendario(); pintarPanel();
+    aviso(L("Evento guardado.", "Event saved.", "事件已保存。"));
+    return true;
   }
   function borrarEvento(id) {
     var ev = eventoPorId(id); if (!ev) return;
@@ -1320,7 +1505,7 @@
   function tarjetaTablero(t) {
     var p = progreso(t);
     return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="' + esc(tr("cal.clicDerecho")) + '">' +
-      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + marcaContexto(t.contexto) + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
       (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
   }
   function bindTareas() {
@@ -1331,7 +1516,7 @@
         var ctx = ctxDe(fila);
         estado.panel[ctx] = "detalle";
         guardar(); pintarTareas(); pintarPanelDe(ctx);
-        if (window.innerWidth <= 1255) abrirPanel();
+        abrirPanel();
       });
       fila.addEventListener("keydown", function (ev) {
         if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); fila.click(); }
@@ -1388,28 +1573,73 @@
     bindTareas();
   }
   var formEditId = null;
+  /* Devuelve las opciones como datos (valor + rótulo): la ventana única las pinta. */
   function opcionesPadre(t) {
     var excluir = {};
     if (t) { excluir[t.id] = 1; descendientes(t).forEach(function (x) { excluir[x.id] = 1; }); }
-    return '<option value="">' + esc(L("Sin padre", "No parent", "无父任务")) + '</option>' + estado.tareas.filter(function (x) {
+    var out = [{ v: "", t: L("Sin padre", "No parent", "无父任务") }];
+    estado.tareas.filter(function (x) {
       return !excluir[x.id] && profundidad(x) < 4;
-    }).map(function (x) {
-      return '<option value="' + x.id + '">' + esc("— ".repeat(profundidad(x)) + (x.tipo === "proyecto" ? L("Proyecto: ", "Project: ", "项目：") : "") + x.titulo) + "</option>";
-    }).join("");
+    }).forEach(function (x) {
+      out.push({ v: x.id, t: "— ".repeat(profundidad(x)) + (x.tipo === "proyecto" ? L("Proyecto: ", "Project: ", "项目：") : "") + x.titulo });
+    });
+    return out;
   }
   function abrirFormulario(t, padreId) {
     normalizarTareas();
     formEditId = t ? t.id : null;
-    $("#tarea-titulo").value = t ? t.titulo : "";
-    $("#tarea-tipo").value = t ? t.tipo : "tarea";
-    $("#tarea-padre").innerHTML = opcionesPadre(t);
-    $("#tarea-padre").value = t ? (t.padre_id || "") : (padreId || "");
-    $("#tarea-fecha").value = t ? t.fecha : hoyISO();
-    $("#tarea-prioridad").value = t ? t.prioridad : "media";
-    $("#tarea-contexto").value = t ? t.contexto : "";
-    $("#tarea-form").hidden = false;
-    $("#tarea-form button[type=submit]").textContent = t ? L("Guardar", "Save", "保存") : L("Crear", "Create", "创建");
-    $("#tarea-titulo").focus();
+    MimoModal.abrir({
+      id: "tarea",
+      titulo: t ? L("Editar tarea", "Edit task", "编辑任务") : L("Nueva tarea", "New task", "新建任务"),
+      sub: t ? L("Cambia lo que haga falta; se guarda al confirmar.", "Change what you need; it is saved when you confirm.", "按需修改，确认后保存。")
+              : L("Una tarea puede ser un proyecto: dentro caben otras tareas.", "A task can be a project: other tasks fit inside.", "任务可以是项目，里面可以放其他任务。"),
+      campos: [
+        { id: "tarea-titulo", etiqueta: L("Qué hay que hacer", "What needs doing", "要做什么"), valor: t ? t.titulo : "", ph: L("¿Qué hay que hacer?", "What needs doing?", "要做什么？") },
+        { id: "tarea-tipo", etiqueta: L("Tipo", "Type", "类型"), tipo: "select", valor: t ? t.tipo : "tarea",
+          opciones: [{ v: "tarea", t: L("Tarea", "Task", "任务") }, { v: "proyecto", t: L("Proyecto", "Project", "项目") }] },
+        { id: "tarea-padre", etiqueta: L("Dentro de", "Inside", "所属"), tipo: "select", valor: t ? (t.padre_id || "") : (padreId || ""), opciones: opcionesPadre(t) },
+        { id: "tarea-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: t ? t.fecha : hoyISO() },
+        { id: "tarea-prioridad", etiqueta: L("Prioridad", "Priority", "优先级"), tipo: "select", valor: t ? t.prioridad : "media",
+          opciones: [{ v: "alta", t: L("Alta", "High", "高") }, { v: "media", t: L("Media", "Medium", "中") }, { v: "baja", t: L("Baja", "Low", "低") }] },
+        { id: "tarea-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: t ? t.contexto : "", ph: L("Contexto (opcional)", "Context (optional)", "情境（可选）") }
+      ],
+      guardar: t ? L("Guardar", "Save", "保存") : L("Crear tarea", "Create task", "创建任务"),
+      onGuardar: guardarTareaDesdeVentana
+    });
+  }
+  function guardarTareaDesdeVentana() {
+    var titulo = $("#tarea-titulo").value.trim();
+    if (!titulo) { $("#tarea-titulo").focus(); return false; }
+    var tipo = $("#tarea-tipo").value === "proyecto" ? "proyecto" : "tarea";
+    var padre = $("#tarea-padre").value || null;
+    var t;
+    if (formEditId) {
+      t = tareaPorId(formEditId);
+      if (!t) return true;
+    } else {
+      t = { id: "t" + Date.now(), creada: new Date().toISOString(), orden: estado.tareas.length };
+      estado.tareas.push(t);
+    }
+    if (padre === t.id) padre = null;
+    t.titulo = titulo;
+    t.tipo = tipo;
+    t.padre_id = padre;
+    t.fecha = $("#tarea-fecha").value || "";
+    t.prioridad = $("#tarea-prioridad").value;
+    t.contexto = $("#tarea-contexto").value.trim();
+    t.nota = t.nota || "";
+    if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
+    estado.tareaSel = t.id;
+    estado.panel[pantalla] = "detalle";
+    formEditId = null;
+    if (vistaTareas === "hoy") {
+      vistaTareas = "arbol";
+      estado.vistaTareas = "arbol";
+      $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === "arbol"); });
+    }
+    guardar(); pintarTareas(); pintarPanel();
+    aviso(tipo === "proyecto" ? L("Proyecto creado. Añade tareas dentro.", "Project created. Add tasks inside.", "项目已创建。可在其中添加任务。") : L("Tarea creada.", "Task created.", "任务已创建。"));
+    return true;
   }
   function borrarTarea(id) {
     var t = tareaPorId(id); if (!t) return;
@@ -1426,9 +1656,11 @@
   function normalizarCursos() {
     if (window.MimoDominioCursos) {
       estado.cursos = MimoDominioCursos.normalizar(estado.cursos);
-      return;
+    } else {
+      estado.cursos = estado.cursos || [];
     }
-    estado.cursos = estado.cursos || [];
+    // La identidad se valida aquí: color #rrggbb e icono del catálogo, o nada.
+    if (window.MimoIdentidad) estado.cursos.forEach(MimoIdentidad.normalizar);
   }
   function ramoPorCodigo(cod) {
     if (window.MimoDominioCursos) return MimoDominioCursos.obtener(estado.cursos, cod);
@@ -1437,6 +1669,29 @@
   }
   function notificarCurso(c) {
     if (c && window.MimoDominioCursos) MimoDominioCursos.actualizar(c, {});
+  }
+  /* El código es la identidad del ramo: al cambiarlo, todo lo que lo nombra
+     tiene que seguirlo. Antes se movían las notas y los requisitos, pero las
+     sesiones, las metas y los contextos se quedaban con el código viejo y
+     desaparecían de Estudio y Tiempo. */
+  function renombrarCursoEnEstado(viejo, nuevo) {
+    if (!viejo || !nuevo || viejo === nuevo) return;
+    var mismo = function (v) { return String(v || "").trim().toUpperCase() === viejo; };
+    (estado.sesiones || []).forEach(function (s) { if (s && mismo(s.ramo)) s.ramo = nuevo; });
+    var est = estado.estudio || {};
+    if (est.metasRamo && Object.prototype.hasOwnProperty.call(est.metasRamo, viejo)) {
+      est.metasRamo[nuevo] = est.metasRamo[viejo];
+      delete est.metasRamo[viejo];
+    }
+    Object.keys(est.minutosSemana || {}).forEach(function (semana) {
+      var fila = est.minutosSemana[semana];
+      if (!fila || !Object.prototype.hasOwnProperty.call(fila, viejo)) return;
+      fila[nuevo] = fila[viejo];
+      delete fila[viejo];
+    });
+    (estado.eventos || []).forEach(function (e) { if (e && mismo(e.contexto)) e.contexto = nuevo; });
+    (estado.tareas || []).forEach(function (t) { if (t && mismo(t.contexto)) t.contexto = nuevo; });
+    if (mismo(estado.tiempoRamo)) estado.tiempoRamo = nuevo;
   }
   function cursosEnCurso() {
     return (estado.cursos || []).filter(function (c) { return !!c.enCurso && !c.cerrado; });
@@ -1533,6 +1788,7 @@
       " · <b class=\"malla-estado-" + e + "\">" + esc(etiquetaEstado(e)) + "</b>" +
       (aprob ? " · " + Math.round(aprob) + esc(L(" % de aprobación", "% approval", "% 通过率")) : "") + "</p></div>" +
       '<div class="fila"><button class="btn btn--chico" type="button" data-malla-editar="' + esc(c.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+      '<button class="btn btn--chico" type="button" data-malla-identidad="' + esc(c.codigo) + '">' + esc(t("ident.abrir")) + '</button>' +
       '<button class="btn btn--chico" type="button" data-malla-limpiar>' + esc(L("Quitar selección", "Clear selection", "清除选择")) + '</button></div></div>' +
       '<div class="malla-chips"><div><b>' + esc(L("Antes necesitas", "You need first", "先修要求")) + '</b>' +
       (antes.length ? antes.map(function (x) { return chipRamo(x.cod, x.txt); }).join("") : '<span class="muted">' + esc(L("Sin prerrequisitos.", "No prerequisites.", "没有先修要求。")) + '</span>') +
@@ -1621,7 +1877,7 @@
           var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
           var titulo = c.nombre + (req ? " · " + L("requiere ", "requires ", "需要 ") + req : "") + (faltan.length ? " · " + L("faltan: ", "missing: ", "缺少：") + faltan.join(", ") : "");
           return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
-            '<span class="ramo-card__top"><b>' + (hexColor(c.color) ? '<i class="ramo-card__color" style="background:' + esc(c.color) + '"></i>' : "") + esc(c.codigo) + '</b><span class="ramo-card__ico">' + icono(iconoEstado(e)) + "</span></span>" +
+            '<span class="ramo-card__top"><b>' + marcaRamo(c) + esc(c.codigo) + '</b><span class="ramo-card__ico">' + iconoRamoHTML(c) + "</span></span>" +
             '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
             '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
             '<span class="ramo-card__est">' + esc(etiquetaEstado(e)) + "</span></button>";
@@ -1634,7 +1890,7 @@
         estado.ramoSel = estado.ramoSel === cod ? null : cod;
         estado.panel.malla = "detalle";
         guardar(); pintarMalla(); pintarPanel();
-        if (window.innerWidth <= 1255 && estado.ramoSel) abrirPanel();
+        if (estado.ramoSel) abrirPanel();
       });
     });
     if (detalle) detalle.innerHTML = detalleMallaHTML();
@@ -1646,6 +1902,8 @@
     });
     var ed = $("#malla-detalle [data-malla-editar]");
     if (ed) ed.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(ed.getAttribute("data-malla-editar"))); });
+    var idm = $("#malla-detalle [data-malla-identidad]");
+    if (idm) idm.addEventListener("click", function () { abrirIdentidadCalif(idm.getAttribute("data-malla-identidad")); });
     var limpiar = $("#malla-detalle [data-malla-limpiar]");
     if (limpiar) limpiar.addEventListener("click", limpiarSeleccionMalla);
     if (window.requestAnimationFrame) window.requestAnimationFrame(dibujarLineasMalla); else setTimeout(dibujarLineasMalla, 30);
@@ -1686,6 +1944,16 @@
   function alternarRamo(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
     if (c.cerrado) { reabrirCurso(cod); return; }
+    cerrarCurso(cod);
+  }
+  /* Cerrar un curso es una sola acción venga de Malla, del panel o de
+     Calificaciones. Si no hay notas, se pide confirmación y se cierra como
+     aprobado manualmente, igual que antes desde Malla: así un curso que se
+     reabrió para elegir su icono se puede volver a cerrar desde donde se
+     esté mirando. */
+  function cerrarCurso(cod) {
+    var c = ramoPorCodigo(cod); if (!c) return;
+    if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
     var conCalif = instalado("calificaciones");
     var q = conCalif ? califDe(cod) : null;
     var P = q ? presentacionDe(q) : null, nf = q ? notaFinalDe(q) : null;
@@ -1694,29 +1962,22 @@
         ? L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？")
         : L("Calificaciones no está instalado. ¿Cerrar \"" + c.codigo + "\" como aprobado manualmente?", "Grades is not installed. Close \"" + c.codigo + "\" as passed manually?", "成绩未安装。要手动将“" + c.codigo + "”关闭为通过吗？");
       if (!window.confirm(pregunta)) return;
-      c.cerrado = true; c.aprobado = true; c.resultado = "aprobado";
-      c.notaCierre = null; c.cerradoEn = selloLocal(); c.enCurso = false;
-      notificarCurso(c);
-      guardar(); pintarMalla(); pintarPanel();
-      aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
+      marcarCierreCurso(c, "aprobado", null);
       return;
     }
     if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
-    cerrarCurso(cod);
-  }
-  function cerrarCurso(cod) {
-    var c = ramoPorCodigo(cod); if (!c) return;
-    if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
-    var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
-    if (P === null) { aviso(L("No hay notas para calcular el resultado del curso.", "There are no grades to calculate the course result.", "没有成绩可计算课程结果。")); return; }
-    if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
     var res = nf >= q.notaMin ? "aprobado" : "reprobado";
     if (!window.confirm(L("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) + "? Quedará " + res.toUpperCase() + ".", "Close \"" + c.codigo + " — " + c.nombre + "\" with a final grade of " + fmtNota(nf) + "? It will be " + res.toUpperCase() + ".", "以 " + fmtNota(nf) + " 的最终成绩关闭“" + c.codigo + " — " + c.nombre + "”？结果将为 " + res.toUpperCase() + "。"))) return;
+    marcarCierreCurso(c, res, nf);
+  }
+  function marcarCierreCurso(c, res, nf) {
     c.cerrado = true; c.aprobado = res === "aprobado"; c.resultado = res;
-    c.notaCierre = Math.round(nf * 10) / 10; c.cerradoEn = selloLocal(); c.enCurso = false;
+    c.notaCierre = nf === null ? null : Math.round(nf * 10) / 10;
+    c.cerradoEn = selloLocal(); c.enCurso = false;
     notificarCurso(c);
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
-    aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
+    if (nf === null) aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
+    else aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
   }
   function reabrirCurso(cod) {
     var c = ramoPorCodigo(cod); if (!c || !c.cerrado) return;
@@ -1730,21 +1991,24 @@
   function abrirFormularioRamo(c) {
     normalizarCursos();
     formRamoId = c ? c.codigo : null;
-    $("#ramo-codigo").value = c ? c.codigo : "";
-    $("#ramo-nombre").value = c ? c.nombre : "";
-    $("#ramo-creditos").value = c ? c.creditos : 6;
-    $("#ramo-nivel").value = c ? c.nivel : 1;
-    $("#ramo-requisitos").value = c ? (c.requisitos || []).join(", ") : "";
-    $("#ramo-color").value = c ? colorDeRamo(c) : PALETA_ESTUDIO[estado.cursos.length % PALETA_ESTUDIO.length];
-    $("#ramo-aprobado").checked = !!(c && c.cerrado && c.aprobado);
-    $("#ramo-curso").checked = !!(c && !c.cerrado && c.enCurso);
-    $("#ramo-form").hidden = false;
-    $("#ramo-form button[type=submit]").textContent = c ? L("Guardar", "Save", "保存") : L("Crear", "Create", "创建");
-    $("#ramo-codigo").focus(); $("#ramo-codigo").select();
-  }
-  function cerrarFormularioRamo() {
-    var f = $("#ramo-form"); if (f) f.hidden = true;
-    formRamoId = null;
+    MimoModal.abrir({
+      id: "ramo",
+      titulo: c ? L("Editar ramo", "Edit course", "编辑课程") : L("Nuevo ramo", "New course", "新建课程"),
+      sub: c ? L("El código es la identidad del ramo; cambiarlo arrastra notas y sesiones.", "The code is the course identity; changing it carries grades and sessions over.", "代码是课程标识，修改会带走成绩和时段。")
+              : L("Código, nombre y créditos. Los requisitos se escriben separados por comas.", "Code, name and credits. Prerequisites go separated by commas.", "代码、名称和学分。先修课程用逗号分隔。"),
+      campos: [
+        { id: "ramo-codigo", etiqueta: L("Código", "Code", "代码"), valor: c ? c.codigo : "", ph: L("Código (MA1001)", "Code (MA1001)", "代码（MA1001）") },
+        { id: "ramo-nombre", etiqueta: L("Nombre", "Name", "名称"), valor: c ? c.nombre : "", ph: L("Nombre del ramo", "Course name", "课程名称") },
+        { id: "ramo-creditos", etiqueta: L("Créditos", "Credits", "学分"), tipo: "number", min: 0, max: 40, paso: 1, valor: c ? c.creditos : 6 },
+        { id: "ramo-nivel", etiqueta: L("Nivel", "Level", "层级"), tipo: "number", min: 1, max: 99, paso: 1, valor: c ? c.nivel : 1 },
+        { id: "ramo-color", etiqueta: L("Color", "Color", "颜色"), tipo: "color", valor: c ? colorDeRamo(c) : MimoIdentidad.colorAuto("nuevo") },
+        { id: "ramo-requisitos", etiqueta: L("Requisitos", "Prerequisites", "先修要求"), valor: c ? (c.requisitos || []).join(", ") : "", ph: L("Requisitos: MA1001, FI2001", "Prerequisites: MA1001, FI2001", "先修：MA1001, FI2001") },
+        { id: "ramo-aprobado", tipo: "check", etiqueta: L("Aprobado (cierra)", "Passed (closes)", "已通过（关闭）"), valor: !!(c && c.cerrado && c.aprobado) },
+        { id: "ramo-curso", tipo: "check", etiqueta: L("En curso", "In progress", "进行中"), valor: !!(c && !c.cerrado && c.enCurso) }
+      ],
+      guardar: c ? L("Guardar", "Save", "保存") : L("Crear ramo", "Create course", "创建课程"),
+      onGuardar: guardarRamoDesdeVentana
+    });
   }
   function borrarRamo(cod) {
     normalizarCursos();
@@ -2152,6 +2416,23 @@
     if (Math.abs(f1 - f0) < 1e-9) return null;
     return (objetivo - f0) / (f1 - f0);
   }
+  /* Agrupa sesiones por ramo para el plegable: cada ramo es una categoría con su
+     cuenta y sus horas. El orden es el de la lista (la más reciente primero). */
+  function agruparPorRamo(sesiones) {
+    var orden = [], mapa = {};
+    (sesiones || []).forEach(function (s) {
+      var k = s.ramo || "_";
+      if (!mapa[k]) { mapa[k] = { ramo: s.ramo || "", items: [], minutos: 0 }; orden.push(k); }
+      mapa[k].items.push(s);
+      mapa[k].minutos += Number(s.minutos || 0);
+    });
+    return orden.map(function (k) { return mapa[k]; });
+  }
+  function tituloDeRamo(codigo) {
+    var r = codigo ? ramoPorCodigo(codigo) : null;
+    return r ? r.codigo + " — " + r.nombre : L("Sin ramo", "No course", "无课程");
+  }
+
   function htmlDetalleCalif(cur, q) {
     if (!cur) return '<p class="muted">' + esc(L("Selecciona un ramo.", "Select a course.", "选择一门课程。")) + '</p>';
     var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q, cur), ex = estadoEximicion(q);
@@ -2218,9 +2499,14 @@
         '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">' + esc(L("Reabrir curso", "Reopen course", "重新打开课程")) + '</button></div>'
       : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div>';
     return '<div class="card calif-card">' +
-      '<div class="calif-cab"><div><h2>' + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
+      '<div class="calif-cab"><div class="calif-cab__izq">' + iconoRamoHTML(cur, "ramo-ico--lg") +
+        "<div><h2>" + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
         '<p class="muted">' + creditosDe(cur) + " " + esc(L("créditos", "credits", "学分")) + " · " + esc(etiquetaNivel(cur.nivel)) + " · " + esc(L("meta ", "goal ", "目标 ")) + fmtNota(q.meta) + "</p></div>" +
-        '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div>" +
+        '</div>' +
+        '<div class="calif-cab__der"><button class="btn btn--chico calif-ident" type="button" data-accion-calif="identidad" title="' +
+          esc(t("ident.abrir")) + '" aria-label="' + esc(t("ident.abrir")) + '">' +
+          iconoRamoHTML(cur) + '<span>' + esc(L("Identidad", "Identity", "标识")) + '</span></button>' +
+        '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div></div>" +
       '<div class="calif-resumen">' +
         '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>" + esc(L("Presentación", "Presentation", "平时成绩")) + "</span></div>" +
         '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
@@ -2232,30 +2518,150 @@
         '<label class="campo">' + esc(L("Meta", "Goal", "目标")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
         '<span class="muted">' + esc(L("Examen para la meta: ", "Exam for the goal: ", "达成目标的考试：")) + (q.examen.activo ? textoNecesario(necMeta) : L("sin examen", "no exam", "无考试")) + "</span>" +
       "</div>" +
-      '<section class="calif-bloque"><h3>' + esc(L("Categorías", "Categories", "分类")) + ' <span>' + esc(L("peso sobre la presentación", "weight over the presentation grade", "占平时成绩比重")) + '</span></h3>' +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":cats", abierto: true,
+        titulo: L("Categorías", "Categories", "分类"),
+        cuenta: q.categorias.length + " " + L("categorías", "categories", "分类"),
+        cuerpo:
+        '<p class="muted calif-nota">' + esc(L("Cada categoría pesa sobre la presentación.", "Each category weighs over the presentation grade.", "每个分类占平时成绩的比重。")) + '</p>' +
         '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>' + esc(L("Categoría", "Category", "分类")) + '</th><th class="num">' + esc(L("Peso %", "Weight %", "权重 %")) + '</th><th class="num">' + esc(L("Promedio", "Average", "平均")) + '</th><th></th></tr></thead><tbody>' +
         (filasCat || '<tr><td colspan="4" class="muted">' + esc(L("Sin categorías.", "No categories.", "没有分类。")) + '</td></tr>') + "</tbody></table></div>" +
-        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">' + esc(L("+ Categoría", "+ Category", "+ 分类")) + '</button></section>' +
-      '<section class="calif-bloque"><h3>' + esc(L("Componentes y notas", "Components and grades", "评分项与成绩")) + '</h3>' +
+        '<button class="btn btn--chico" type="button" data-accion-calif="cat-add">' + esc(L("+ Categoría", "+ Category", "+ 分类")) + '</button>' }) +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":comps",
+        titulo: L("Componentes y notas", "Components and grades", "评分项与成绩"),
+        cuenta: q.componentes.length + " " + L("componentes", "components", "评分项"),
+        cuerpo:
         '<div class="calif-tabla-wrap"><table class="calif-tabla"><thead><tr><th>' + esc(L("Componente", "Component", "评分项")) + '</th><th>' + esc(L("Categoría", "Category", "分类")) + '</th><th class="num">' + esc(L("Nota", "Grade", "成绩")) + '</th><th>' + esc(L("Fecha", "Date", "日期")) + '</th><th></th></tr></thead><tbody>' +
         (filasComp || '<tr><td colspan="5" class="muted">' + esc(L("Sin componentes todavía.", "No components yet.", "还没有评分项。")) + '</td></tr>') + "</tbody></table></div>" +
-        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">' + esc(L("+ Componente", "+ Component", "+ 评分项")) + '</button></section>' +
-      '<section class="calif-bloque"><h3>' + esc(L("Examen", "Exam", "考试")) + '</h3><div class="calif-examen">' +
+        '<button class="btn btn--chico" type="button" data-accion-calif="comp-add">' + esc(L("+ Componente", "+ Component", "+ 评分项")) + '</button>' }) +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":examen",
+        titulo: L("Examen", "Exam", "考试"),
+        cuenta: q.examen.activo ? L("activo", "on", "启用") : L("apagado", "off", "关闭"),
+        cuerpo: '<div class="calif-examen">' +
         '<label class="check"><input type="checkbox" data-exam-activo' + (q.examen.activo ? " checked" : "") + "> " + esc(L("Activo", "Active", "启用")) + "</label>" +
         '<label class="campo">' + esc(L("Peso %", "Weight %", "权重 %")) + ' <input class="entrada calif-num" type="number" min="0" max="100" step="5" data-exam-peso value="' + q.examen.peso + '"></label>' +
         '<label class="campo">' + esc(L("Nota", "Grade", "成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-exam-nota value="' + (q.examen.nota === null ? "" : q.examen.nota) + '"></label>' +
         '<label class="campo">' + esc(L("Reemplaza", "Replaces", "替代")) + ' <select class="entrada calif-entrada" data-exam-reemplaza><option value="">—</option>' + opcionesComp + "</select></label>" +
-      "</div></section>" +
-      '<section class="calif-bloque"><h3>' + esc(L("Eximición", "Exemption", "免考")) + '</h3>' +
+      "</div>" }) +
+      MimoPlegable.html({ id: "calif:" + cur.codigo + ":exim",
+        titulo: L("Eximición", "Exemption", "免考"),
+        cuenta: q.eximicion.activa ? q.eximicion.condiciones.length + " " + L("condiciones", "conditions", "条件") : L("apagada", "off", "关闭"),
+        cuerpo:
         '<label class="check"><input type="checkbox" data-exim-activa' + (q.eximicion.activa ? " checked" : "") + "> " + esc(L("El ramo se puede eximir", "The course can be exempted", "课程可以免考")) + "</label>" +
         '<label class="campo">' + esc(L("Deben cumplirse", "Must meet", "须满足")) + ' <select class="entrada" data-exim-modo>' +
           '<option value="todas"' + (q.eximicion.modo === "todas" ? " selected" : "") + ">" + esc(L("Todas", "All", "全部")) + "</option>" +
           '<option value="alguna"' + (q.eximicion.modo === "alguna" ? " selected" : "") + ">" + esc(L("Al menos una", "At least one", "至少一项")) + "</option></select></label>" +
         (filasCond || '<p class="muted">' + esc(L("Sin condiciones: mientras no haya ninguna, el ramo no se exime.", "No conditions: while there are none, the course is not exempted.", "没有条件：在添加条件前，课程不能免考。")) + '</p>') +
         '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">' + esc(L("+ Condición", "+ Condition", "+ 条件")) + '</button>' +
-        '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p></section>" +
+        '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p>" }) +
       "</div>";
   }
+  /* Identidad del ramo: color e icono, en la ventana única. El color se elige con
+     el selector RGB o con la paleta del tema; el icono, del catálogo del proyecto
+     (js/dominio/iconos-ramo.js), con buscador y filtro por categoría para que 121
+     iconos no se conviertan en una pared. Se guarda el id del icono. */
+  function abrirIdentidadCalif(cod) {
+    var cur = ramoPorCodigo(cod); if (!cur) return;
+    var color = colorDeRamo(cur), icono = iconoDeRamo(cur);
+    var catalogo = window.MimoIconosRamo || null;
+    var todos = catalogo ? catalogo.ICONOS : [];
+    var categorias = catalogo ? catalogo.CATEGORIAS : [];
+    var normal = function (s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
+    var nombreDe = function (i) { return t("ico." + i.id.replace(/^i-ramo-/, "")); };
+
+    var paleta = MimoIdentidad.PALETA.map(function (h) {
+      return '<button class="ident-color" type="button" data-ident-color="' + esc(h) + '" style="--sw:' + esc(h) +
+        '" aria-label="' + esc(h) + '" aria-pressed="' + (h.toLowerCase() === String(color).toLowerCase()) + '"></button>';
+    }).join("");
+    var filtros = '<button class="ident-cat on" type="button" data-ident-cat="todas" aria-pressed="true">' + esc(t("ico.todas")) + "</button>" +
+      categorias.map(function (c) {
+        return '<button class="ident-cat" type="button" data-ident-cat="' + esc(c.id) + '" aria-pressed="false">' + esc(c.nombre[idioma()] || c.nombre.es) + "</button>";
+      }).join("");
+
+    var cuerpoIconos = function (i) {
+      return '<button class="ident-ico" type="button" data-ident-icono="' + esc(i.id) + '" aria-pressed="' + (i.id === icono) +
+        '" aria-label="' + esc(nombreDe(i)) + '" title="' + esc(nombreDe(i)) + '">' +
+        iconoRamoHTML({ codigo: cur.codigo, color: $("#ident-color") ? $("#ident-color").value : color, icono: i.id }) +
+        '<span class="ident-ico__nom">' + esc(nombreDe(i)) + "</span></button>";
+    };
+
+    MimoModal.abrir({
+      id: "identidad",
+      titulo: t("ident.titulo"),
+      sub: t("ident.sub"),
+      html: '<div class="ident-preview" id="ident-preview">' + iconoRamoHTML(cur, "ramo-ico--lg") +
+          '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div></div>" +
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.color")) + "</span>" +
+          '<input class="entrada ident-rgb" id="ident-color" type="color" value="' + esc(color) + '" aria-label="' + esc(t("ident.color")) + '"></div>' +
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.paleta")) + '</span><div class="ident-paleta" role="group" aria-label="' + esc(t("ident.paleta")) + '">' + paleta + "</div></div>" +
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.iconos")) + "</span>" +
+          '<input class="entrada ident-buscar" id="ident-buscar" type="search" placeholder="' + esc(t("ico.buscar")) +
+            '" aria-label="' + esc(t("ico.buscar")) + '" aria-controls="ident-iconos" autocomplete="off">' +
+          '<div class="ident-filtros" role="group" aria-label="' + esc(t("ico.filtro")) + '">' + filtros + "</div>" +
+          '<div class="ident-iconos" id="ident-iconos" role="group" aria-label="' + esc(t("ico.ver")) + '"></div>' +
+          '<p class="ident-cuenta" id="ident-cuenta" role="status" aria-live="polite"></p></div>',
+      guardar: L("Guardar", "Save", "保存"),
+      despues: function (form) {
+        var caja = form.querySelector("#ident-iconos");
+        var buscar = form.querySelector("#ident-buscar");
+        var cuenta = form.querySelector("#ident-cuenta");
+        var cat = "todas";
+
+        var pintarVista = function () {
+          var v = { codigo: cur.codigo, color: $("#ident-color").value, icono: icono };
+          $("#ident-preview").innerHTML = iconoRamoHTML(v, "ramo-ico--lg") +
+            '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div>";
+        };
+        var filtrar = function () {
+          var q = normal(buscar.value);
+          var lista = todos.filter(function (i) {
+            if (cat !== "todas" && i.cat !== cat) return false;
+            if (!q) return true;
+            return normal(nombreDe(i) + " " + i.tags.join(" ") + " " + i.id).indexOf(q) !== -1;
+          });
+          caja.innerHTML = lista.length ? lista.map(cuerpoIconos).join("")
+            : '<p class="muted ident-vacio">' + esc(t("ico.sinResultados")) + "</p>";
+          cuenta.textContent = tf("ico.cuenta", { n: lista.length });
+        };
+
+        form.querySelectorAll("[data-ident-cat]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            cat = b.getAttribute("data-ident-cat");
+            form.querySelectorAll("[data-ident-cat]").forEach(function (x) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            filtrar();
+          });
+        });
+        buscar.addEventListener("input", filtrar);
+        /* delegado: el catálogo se repinta al filtrar */
+        caja.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-ident-icono]"); if (!b) return;
+          icono = b.getAttribute("data-ident-icono");
+          caja.querySelectorAll("[data-ident-icono]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+          pintarVista();
+        });
+        form.querySelectorAll("[data-ident-color]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            $("#ident-color").value = b.getAttribute("data-ident-color");
+            form.querySelectorAll("[data-ident-color]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            pintarVista();
+          });
+        });
+        $("#ident-color").addEventListener("input", pintarVista);
+        filtrar();
+      },
+      onGuardar: function () {
+        var hex = $("#ident-color").value;
+        if (!MimoIdentidad.esColor(hex)) return false;
+        cur.color = hex.toLowerCase();
+        cur.icono = MimoIdentidad.iconoVigente(icono) || "";
+        notificarCurso(cur);
+        guardar();
+        pintarCalificaciones(); pintarMalla(); pintarEstudio(); pintarTiempo(); pintarCalendario(); pintarTareas(); pintarPanel();
+        aviso(t("ident.guardada"));
+        return true;
+      }
+    });
+  }
+
   function pintarCalificaciones() {
     var lista = $("#calif-lista"), det = $("#calif-detalle");
     if (!lista || !det) return;
@@ -2265,7 +2671,7 @@
     var sinMalla = !instalado("malla");
     if ($("#btn-calif-malla")) $("#btn-calif-malla").hidden = sinMalla;
     if ($("#calif-crear-ramo")) $("#calif-crear-ramo").hidden = sinMalla;
-    if ($("#calif-curso-form")) $("#calif-curso-form").hidden = !sinMalla;
+    if ($("#btn-calif-curso")) $("#btn-calif-curso").hidden = !sinMalla;
     if ($("#calif-vacio-texto-malla")) $("#calif-vacio-texto-malla").hidden = sinMalla;
     if ($("#calif-vacio-texto-sola")) $("#calif-vacio-texto-sola").hidden = !sinMalla;
     if (!cursos.length) {
@@ -2280,7 +2686,7 @@
     lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
       var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
       return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
-        '<span class="calif-item__nom"><b>' + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
+        '<span class="calif-item__nom">' + iconoRamoHTML(cur) + "<b>" + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
         '<small>' + esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(notaFinalDe(q)) + "</small>" +
         '<em class="pill ' + est.clase + '">' + esc(est.texto) + "</em></button>";
     }).join("");
@@ -2345,6 +2751,7 @@
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
     var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "identidad") { abrirIdentidadCalif(califSel); return; }
     if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
     if (accion === "comp-cal") {
@@ -2385,25 +2792,41 @@
   function hexColor(v) {
     return /^#[0-9a-f]{6}$/i.test(String(v || "")) ? String(v) : "";
   }
+  /* El color y el icono del ramo salen de un solo sitio (js/dominio/identidad.js):
+     el usuario manda; si no eligió, el hash del código decide, siempre igual. */
   function colorAutoDe(cod) {
-    var i = estado.cursos.map(function (c) { return c.codigo; }).indexOf(cod);
-    return i < 0 ? PALETA_ESTUDIO[0] : PALETA_ESTUDIO[i % PALETA_ESTUDIO.length];
+    return window.MimoIdentidad ? MimoIdentidad.colorAuto(cod) : PALETA_ESTUDIO[0];
   }
   function colorDeRamo(c) {
     if (!c) return "";
-    return hexColor(c.color) || colorAutoDe(c.codigo);
+    return window.MimoIdentidad ? MimoIdentidad.colorDe(c) : (hexColor(c.color) || colorAutoDe(c.codigo));
+  }
+  function iconoDeRamo(c) {
+    return window.MimoIdentidad ? MimoIdentidad.iconoDe(c) : "i-libro";
+  }
+  function marcaRamo(c) {
+    return window.MimoIdentidad ? MimoIdentidad.puntoHTML(c) : "";
+  }
+  function iconoRamoHTML(c, clase) {
+    return window.MimoIdentidad ? MimoIdentidad.iconoHTML(c, clase) : "";
   }
   function colorEstudio(cod) {
     var c = ramoPorCodigo(cod);
     return c ? colorDeRamo(c) : "var(--muted)";
   }
-  function colorDeContexto(ctx) {
+  function cursoDeContexto(ctx) {
     var q = String(ctx || "").trim();
-    if (!q) return "";
+    if (!q) return null;
     var c = ramoPorCodigo(q);
     if (!c) c = (estado.cursos || []).filter(function (x) { return String(x.nombre || "").toLowerCase() === q.toLowerCase(); })[0];
-    return c ? hexColor(c.color) : "";
+    return c || null;
   }
+  function colorDeContexto(ctx) {
+    var c = cursoDeContexto(ctx);
+    return c ? colorDeRamo(c) : "";
+  }
+  function marcaContexto(ctx) { var c = cursoDeContexto(ctx); return c ? marcaRamo(c) : ""; }
+  function iconoContexto(ctx) { var c = cursoDeContexto(ctx); return c ? iconoRamoHTML(c) : ""; }
   function textoSobre(hex) {
     var h = String(hex || "").replace("#", "");
     if (h.length === 3) h = h.split("").map(function (x) { return x + x; }).join("");
@@ -2468,7 +2891,6 @@
     var semanas = semanasEstudio();
     var meta = Number(estado.estudio.metaSemanal) || 0;
     if ($("#est-meta")) $("#est-meta").value = meta;
-    if ($("#est-fecha") && !$("#est-fecha").value) $("#est-fecha").value = hoyISO();
     var sel = $("#est-ramo");
     if (sel) {
       var val = sel.value;
@@ -2560,7 +2982,7 @@
         fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
       : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
     var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
-      return '<span><i style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
+      return '<span>' + marcaRamo(c) + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
     });
     if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>' + esc(L("Sin ramo ", "No course ", "无课程 ")) + fmtHoras(totalRamo._) + "</span>");
     $("#est-leyenda").innerHTML = leyenda.join("");
@@ -2573,7 +2995,7 @@
     var filas = cursos.map(function (c) {
       var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
       var pct = m ? Math.min(100, Math.round(h / (m * 60 * Math.max(1, semanas.length)) * 100)) : 0;
-      return '<tr><td><i class="est-punto" style="background:' + colorEstudio(c.codigo) + '"></i>' + esc(c.codigo) + " — " + esc(c.nombre) + "</td>" +
+      return '<tr><td><span class="est-ramo">' + iconoRamoHTML(c) + esc(c.codigo) + " — " + esc(c.nombre) + "</span></td>" +
         '<td class="num">' + fmtHoras(h) + "</td>" +
         '<td class="num"><input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-ramo="' + esc(c.codigo) + '" value="' + m + '"> h</td>' +
         '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + (m * semanas.length) + " h" : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
@@ -2582,12 +3004,21 @@
       fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
     $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">' + esc(L("Sin ramos. Crea uno en Malla.", "No courses. Create one in the plan.", "没有课程。请在课程规划中创建。")) + '</td></tr>';
     var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
-    $("#est-sesiones").innerHTML = recientes.length ? recientes.map(function (x) {
-      var c = x.s.ramo ? ramoPorCodigo(x.s.ramo) : null;
-      return '<div class="est-sesion" data-sesion="' + esc(x.s.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' + esc(c ? c.codigo : L("Sin ramo", "No course", "无课程")) + "</b> " + esc(c ? c.nombre : "") +
-        "</span><small>" + esc(x.s.fecha) + " · " + esc(fmtDuracion(x.s.minutos)) + '</small>' +
-        '<button class="calif-x" type="button" data-editar-estudio="' + esc(x.s.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
-        '<button class="calif-x" type="button" data-borrar-estudio="' + esc(x.s.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+    var grupos = agruparPorRamo(recientes.map(function (x) { return x.s; }));
+    $("#est-sesiones").innerHTML = grupos.length ? grupos.map(function (g) {
+      var items = g.items.map(function (s) {
+        return '<div class="est-sesion" data-sesion="' + esc(s.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '">' +
+          '<span><b>' + esc(fechaCorta(s.fecha)) + "</b></span><small>" + esc(fmtDuracion(s.minutos)) + "</small>" +
+          '<button class="calif-x" type="button" data-editar-estudio="' + esc(s.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+          '<button class="calif-x" type="button" data-borrar-estudio="' + esc(s.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+      }).join("");
+      return MimoPlegable.html({
+        id: "estudio:sesion:" + (g.ramo || "_"),
+        titulo: tituloDeRamo(g.ramo),
+        icono: g.ramo ? iconoRamoHTML(ramoPorCodigo(g.ramo)) : "",
+        cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
+        cuerpo: items
+      });
     }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + '</p>';
     if (pantalla === "estudio") pintarPanel();
   }
@@ -2642,6 +3073,7 @@
     });
     var seg = vals[0] * 3600 + vals[1] * 60 + vals[2];
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    relojBase = 0; relojInicio = 0;
     if (estado.tiempoModo === "crono") tiempoSeg = seg;
     else if (estado.tiempoModo === "temporizador") { tempSeg = seg; tempInicial = seg; }
     else if (estado.tiempoModo === "pomodoro") { pomoSeg = seg; pomoInicial = seg; }
@@ -2731,35 +3163,9 @@
       });
       $("#pomo-cada").addEventListener("change", function (e) { estado.pomo.cada = Math.max(1, Number(e.target.value) || 4); guardar(); });
     } else if (cfg && estado.tiempoModo === "alarmas") {
-      cfg.innerHTML = '<form class="alarma-form" id="alarma-form"><input class="entrada" id="alarma-hora" type="time" aria-label="' + esc(L("Hora de la alarma", "Alarm time", "闹钟时间")) + '">' +
-        '<input class="entrada" id="alarma-texto" type="text" placeholder="' + esc(L("Para qué es", "What it is for", "用途")) + '" aria-label="' + esc(L("Texto de la alarma", "Alarm text", "闹钟文字")) + '">' +
-        '<button class="btn btn--chico btn-primario" id="alarma-add" type="submit">' + esc(L("+ Alarma", "+ Alarm", "+ 闹钟")) + '</button>' +
-        '<button class="btn btn--chico" id="alarma-cancelar" type="button" hidden>' + esc(L("Cancelar", "Cancel", "取消")) + '</button></form>' +
+      cfg.innerHTML = '<div class="alarma-acciones"><button class="btn btn--chico btn-primario" id="btn-nueva-alarma" type="button">' + esc(L("+ Alarma", "+ Alarm", "+ 闹钟")) + '</button></div>' +
         '<div class="alarma-lista" id="alarma-lista"></div>';
-      $("#alarma-form").addEventListener("submit", function (e) {
-        e.preventDefault();
-        var hora = $("#alarma-hora").value;
-        if (!hora) { aviso(L("Elige una hora para la alarma.", "Choose a time for the alarm.", "请选择闹钟时间。")); return; }
-        var texto = $("#alarma-texto").value.trim() || L("Alarma", "Alarm", "闹钟");
-        var a = formAlarmaId ? (estado.alarmas || []).filter(function (x) { return x.id === formAlarmaId; })[0] : null;
-        if (a) {
-          a.hora = hora; a.texto = texto; a.ultima = ""; formAlarmaId = null;
-          guardar(); pintarTiempo(); aviso(L("Alarma corregida a las ", "Alarm updated to ", "闹钟已改为 ") + hora + ".");
-        } else {
-          estado.alarmas.push({ id: "a" + Date.now(), hora: hora, texto: texto, activa: true, ultima: "" });
-          guardar(); pintarTiempo(); aviso(L("Alarma a las ", "Alarm at ", "闹钟设为 ") + hora + ".");
-        }
-      });
-      if (formAlarmaId) {
-        var ae = (estado.alarmas || []).filter(function (x) { return x.id === formAlarmaId; })[0];
-        if (ae) {
-          $("#alarma-hora").value = ae.hora; $("#alarma-texto").value = ae.texto;
-          $("#alarma-add").textContent = "Guardar"; $("#alarma-cancelar").hidden = false;
-        } else formAlarmaId = null;
-      }
-      $("#alarma-cancelar").addEventListener("click", function () {
-        formAlarmaId = null; $("#alarma-hora").value = ""; $("#alarma-texto").value = ""; pintarTiempo();
-      });
+      $("#btn-nueva-alarma").addEventListener("click", function () { abrirAlarma(null); });
       $("#alarma-lista").innerHTML = (estado.alarmas || []).length ? estado.alarmas.map(function (a) {
         return '<div class="alarma-item' + (a.activa ? "" : " off") + '"><b>' + esc(a.hora) + "</b><span>" + esc(a.texto) + "</span>" +
           '<button class="btn btn--chico" type="button" data-alarma-toggle="' + esc(a.id) + '">' + esc(a.activa ? L("Activa", "Active", "启用") : L("Apagada", "Off", "关闭")) + "</button>" +
@@ -2768,12 +3174,7 @@
       }).join("") : '<p class="muted">' + esc(L("Sin alarmas.", "No alarms.", "没有闹钟。")) + '</p>';
       $$("#alarma-lista [data-alarma-editar]").forEach(function (b) {
         b.addEventListener("click", function () {
-          var a = estado.alarmas.filter(function (x) { return x.id === b.getAttribute("data-alarma-editar"); })[0];
-          if (!a) return;
-          formAlarmaId = a.id;
-          $("#alarma-hora").value = a.hora; $("#alarma-texto").value = a.texto;
-          $("#alarma-hora").focus();
-          aviso(L("Editando la alarma de las ", "Editing the alarm at ", "正在编辑闹钟 ") + a.hora + L(". Guarda para aplicar.", ". Save to apply.", "。保存后生效。"));
+          abrirAlarma(estado.alarmas.filter(function (x) { return x.id === b.getAttribute("data-alarma-editar"); })[0] || null);
         });
       });
       $$("#alarma-lista [data-alarma-toggle]").forEach(function (b) {
@@ -2813,15 +3214,24 @@
     if ($("#tiempo-horas")) $("#tiempo-horas").textContent = fmtHoras(min);
     var listaSes = $("#tiempo-lista-sesiones");
     if (listaSes) {
-      listaSes.innerHTML = ses.length ? ses.map(function (x) {
-        var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
-        var ram = x.ramo ? ramoPorCodigo(x.ramo) : null;
-        return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' +
-          esc(fechaCorta(x.fecha)) + "</b>" + (ram ? " · " + esc(ram.codigo) : "") + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
-          esc(fmtDuracion(x.minutos)) + "</small>" +
-          '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
-          '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
-      }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + '</p>';
+      var gruposSes = agruparPorRamo(ses);
+      listaSes.innerHTML = gruposSes.length ? gruposSes.map(function (g) {
+        var items = g.items.map(function (x) {
+          var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
+          return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' +
+            esc(fechaCorta(x.fecha)) + "</b>" + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
+            esc(fmtDuracion(x.minutos)) + "</small>" +
+            '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+            '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
+        }).join("");
+        return MimoPlegable.html({
+          id: "tiempo:sesion:" + (g.ramo || "_"),
+          titulo: tituloDeRamo(g.ramo),
+          icono: g.ramo ? iconoRamoHTML(ramoPorCodigo(g.ramo)) : "",
+          cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
+          cuerpo: items
+        });
+      }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + "</p>";
       $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
         b.addEventListener("click", function () { borrarSesion(b.getAttribute("data-borrar-sesion")); });
       });
@@ -2857,69 +3267,147 @@
       setTimeout(function () { o.stop(); ac.close(); }, 700);
     } catch (e) {}
   }
-  function tickTiempo() {
+  function segundosReloj() {
     var modo = estado.tiempoModo || "crono";
-    if (modo === "crono") tiempoSeg++;
-    else if (modo === "temporizador") {
-      tempSeg--;
-      if (tempSeg <= 0) {
-        tempSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
-        registrarSesion(tempInicial / 60, "temporizador");
-        aviso(L("Temporizador terminado. Sesión registrada.", "Timer finished. Session logged.", "计时结束。会话已记录。")); pitido(); pintarTiempo(); return;
-      }
-    } else if (modo === "pomodoro") {
-      pomoSeg--;
-      if (pomoSeg <= 0) {
-        pomoSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
-        if (estado.pomo.fase === "trabajo") {
-          registrarSesion(pomoInicial / 60, "pomodoro");
-          estado.pomo.trabajos = (estado.pomo.trabajos || 0) + 1;
-          estado.pomo.fase = estado.pomo.trabajos % (estado.pomo.cada || 4) === 0 ? "largo" : "corto";
-          aviso(L("Pomodoro completado. Descansa: ", "Pomodoro complete. Rest: ", "番茄钟完成。休息：") + (estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息")) + ".");
-        } else {
-          estado.pomo.fase = "trabajo";
-          aviso(L("Pausa terminada. Vuelve al trabajo.", "Break over. Back to work.", "休息结束。回到工作。"));
-        }
-        guardar(); pitido(); pintarTiempo(); return;
-      }
+    if (modo === "crono") return Math.max(0, tiempoSeg);
+    if (modo === "temporizador") return Math.max(0, tempInicial - tempSeg);
+    if (modo === "pomodoro") return Math.max(0, pomoInicial - pomoSeg);
+    return 0;
+  }
+  /* Lleva el reloj al instante actual. Devuelve true si la cuenta llegó a cero
+     (y ya registró la sesión), false si sigue corriendo. */
+  function actualizarReloj() {
+    if (!tiempoInt) return false;
+    var modo = estado.tiempoModo || "crono";
+    var total = relojBase + Math.max(0, (Date.now() - relojInicio) / 1000);
+    if (modo === "crono") {
+      tiempoSeg = total;
+      return false;
     }
+    if (modo === "temporizador") {
+      tempSeg = Math.max(0, tempInicial - total);
+      if (tempSeg > 0) return false;
+      tempSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
+      var hecho = tempInicial;
+      tempInicial = 0;
+      registrarSesion(hecho / 60, "temporizador");
+      aviso(L("Temporizador terminado. Sesión registrada.", "Timer finished. Session logged.", "计时结束。会话已记录。"));
+      pitido(); pintarTiempo();
+      return true;
+    }
+    if (modo === "pomodoro") {
+      pomoSeg = Math.max(0, pomoInicial - total);
+      if (pomoSeg > 0) return false;
+      pomoSeg = 0; clearInterval(tiempoInt); tiempoInt = null;
+      var trabajo = pomoInicial;
+      pomoInicial = 0;
+      if (estado.pomo.fase === "trabajo") {
+        registrarSesion(trabajo / 60, "pomodoro");
+        estado.pomo.trabajos = (estado.pomo.trabajos || 0) + 1;
+        estado.pomo.fase = estado.pomo.trabajos % (estado.pomo.cada || 4) === 0 ? "largo" : "corto";
+        aviso(L("Pomodoro completado. Descansa: ", "Pomodoro complete. Rest: ", "番茄钟完成。休息：") + (estado.pomo.fase === "corto" ? L("pausa corta", "short break", "短休息") : L("pausa larga", "long break", "长休息")) + ".");
+      } else {
+        estado.pomo.fase = "trabajo";
+        aviso(L("Pausa terminada. Vuelve al trabajo.", "Break over. Back to work.", "休息结束。回到工作。"));
+      }
+      guardar(); pitido(); pintarTiempo();
+      return true;
+    }
+    return false;
+  }
+  function tickTiempo() {
+    if (actualizarReloj()) return;
     pintaReloj(); pintarEstadoTiempo();
   }
   function empezarTiempo() {
     if (tiempoInt || estado.tiempoModo === "alarmas") return;
-    if (estado.tiempoModo === "temporizador" && tempSeg <= 0) tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
-    if (estado.tiempoModo === "temporizador") tempInicial = tempSeg;
-    if (estado.tiempoModo === "pomodoro" && pomoSeg <= 0) pomoSeg = Math.round(duracionPomo() * 60);
-    if (estado.tiempoModo === "pomodoro") pomoInicial = pomoSeg;
+    if (estado.tiempoModo === "temporizador" && tempSeg <= 0) {
+      tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60);
+      tempInicial = tempSeg;
+    }
+    if (estado.tiempoModo === "pomodoro" && pomoSeg <= 0) {
+      pomoSeg = Math.round(duracionPomo() * 60);
+      pomoInicial = pomoSeg;
+    }
+    /* Se reanuda desde lo ya medido, sin reemplazar el total de la fase. */
+    relojBase = segundosReloj();
+    relojInicio = Date.now();
     tiempoInt = setInterval(tickTiempo, 1000);
     $("#btn-empezar").disabled = true; $("#btn-pausar").disabled = false; $("#btn-parar").disabled = false;
+    tickTiempo();
     pintarEstadoTiempo();
   }
   function pausarTiempo() {
-    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    if (tiempoInt) {
+      var completo = actualizarReloj();
+      if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+      if (completo) return;
+      relojBase = segundosReloj();
+    }
     $("#btn-empezar").disabled = false; $("#btn-pausar").disabled = true;
-    pintarEstadoTiempo();
+    pintaReloj(); pintarEstadoTiempo();
   }
   function pararTiempo() {
-    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
-    if (estado.tiempoModo === "crono" && tiempoSeg > 0) registrarSesion(tiempoSeg / 60, "crono");
-    else if (estado.tiempoModo === "temporizador" && tempInicial > tempSeg) registrarSesion((tempInicial - tempSeg) / 60, "temporizador");
-    else if (estado.tiempoModo === "pomodoro" && estado.pomo.fase === "trabajo" && pomoInicial > pomoSeg) registrarSesion((pomoInicial - pomoSeg) / 60, "pomodoro");
+    var modo = estado.tiempoModo || "crono";
+    if (tiempoInt) {
+      actualizarReloj();
+      if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    }
+    var seg = segundosReloj();
+    if (seg > 0) {
+      if (modo === "crono") registrarSesion(seg / 60, "crono");
+      else if (modo === "temporizador") registrarSesion(seg / 60, "temporizador");
+      else if (modo === "pomodoro" && estado.pomo.fase === "trabajo") registrarSesion(seg / 60, "pomodoro");
+    }
     tiempoSeg = 0; tempSeg = 0; pomoSeg = 0; tempInicial = 0; pomoInicial = 0;
+    relojBase = 0; relojInicio = 0;
     $("#btn-empezar").disabled = estado.tiempoModo === "alarmas"; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
     pintaReloj(); pintarEstadoTiempo();
   }
   function reiniciarTiempo() {
     if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
     tiempoSeg = 0; tempSeg = 0; pomoSeg = 0; tempInicial = 0; pomoInicial = 0;
+    relojBase = 0; relojInicio = 0;
     $("#btn-empezar").disabled = estado.tiempoModo === "alarmas"; $("#btn-pausar").disabled = true; $("#btn-parar").disabled = true;
     pintarTiempo();
   }
+  /* La alarma se crea y se corrige en la ventana única: la sección solo lleva la
+     lista y un botón. Antes el formulario vivía dentro de la tarjeta de Tiempo y
+     se repintaba con cada cambio. */
+  function abrirAlarma(a) {
+    MimoModal.abrir({
+      id: "alarma",
+      titulo: a ? L("Editar alarma", "Edit alarm", "编辑闹钟") : L("Nueva alarma", "New alarm", "新建闹钟"),
+      sub: a ? L("Cambia la hora o para qué es; se aplica al guardar.", "Change the time or what it is for; it applies when you save.", "修改时间或用途，保存后生效。")
+             : L("A la hora indicada, Mimo avisa aunque estés en otra sección.", "At that time Mimo warns you even from another section.", "到点后即使在其他分区也会提醒。"),
+      campos: [
+        { id: "alarma-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: a ? a.hora : "" },
+        { id: "alarma-texto", etiqueta: L("Para qué es", "What it is for", "用途"), valor: a ? a.texto : "", ph: L("Para qué es", "What it is for", "用途") }
+      ],
+      guardar: a ? L("Guardar", "Save", "保存") : L("Crear alarma", "Create alarm", "创建闹钟"),
+      onGuardar: function () { return guardarAlarmaDesdeVentana(a); }
+    });
+  }
+  function guardarAlarmaDesdeVentana(a) {
+    var hora = $("#alarma-hora").value;
+    if (!hora) { aviso(L("Elige una hora para la alarma.", "Choose a time for the alarm.", "请选择闹钟时间。")); return false; }
+    var texto = $("#alarma-texto").value.trim() || L("Alarma", "Alarm", "闹钟");
+    if (a) {
+      a.hora = hora; a.texto = texto; a.ultima = "";
+      guardar(); pintarTiempo(); aviso(L("Alarma corregida a las ", "Alarm updated to ", "闹钟已改为 ") + hora + ".");
+    } else {
+      estado.alarmas.push({ id: "a" + Date.now(), hora: hora, texto: texto, activa: true, ultima: "" });
+      guardar(); pintarTiempo(); aviso(L("Alarma a las ", "Alarm at ", "闹钟设为 ") + hora + ".");
+    }
+    return true;
+  }
+
   function cambiarModoTiempo(id) {
     if (estado.tiempoHijos.indexOf(id) === -1) return;
-    if (tiempoInt) { clearInterval(tiempoInt); tiempoInt = null; }
+    /* Cambiar de modo con la cuenta corriendo no puede borrar lo medido: se
+       registra la sesión como si se hubiera pulsado Parar. */
+    if (tiempoInt) pararTiempo();
     estado.tiempoModo = id;
-    formAlarmaId = null;
     if (id === "temporizador") { tempSeg = Math.round(Math.max(0.1, Number(estado.tempMin) || 25) * 60); tempInicial = tempSeg; }
     if (id === "pomodoro") { pomoSeg = Math.round(duracionPomo() * 60); pomoInicial = pomoSeg; }
     guardar(); pintarTiempo();
@@ -2989,7 +3477,7 @@
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Abrir", "Open", "打开")) + '</button></div>';
       } else if (pantalla === "malla" && ramo) {
         var estR = estadoDeRamo(ramo), faltanR = faltantesDe(ramo), reqR = requisitosTexto(ramo);
-        html = "<h2>" + esc(L("Ramo", "Course", "课程")) + "</h2><h3>" + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
+        html = "<h2>" + esc(L("Ramo", "Course", "课程")) + "</h2><h3>" + iconoRamoHTML(ramo) + esc(ramo.codigo) + " — " + esc(ramo.nombre) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(L("Estado", "Status", "状态")) + '</span><small>' + esc(etiquetaEstado(estR)) + "</small></div>" +
           '<div class="panel__bloque"><span>' + esc(L("Créditos", "Credits", "学分")) + '</span><small>' + creditosDe(ramo) + "</small></div>" +
           '<div class="panel__bloque"><span>' + esc(L("Nivel", "Level", "层级")) + '</span><small>' + esc(etiquetaNivel(ramo.nivel)) + "</small></div>" +
@@ -2998,6 +3486,7 @@
           '<div class="fila" style="margin-top:10px">' +
           (instalado("calificaciones") ? '<button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Calificaciones", "Grades", "成绩")) + '</button>' : "") +
           '<button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-identidad-ramo="' + esc(ramo.codigo) + '">' + esc(t("ident.abrir")) + '</button>' +
           '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程")) + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
       } else if (pantalla === "calendario" && ev) {
@@ -3006,9 +3495,11 @@
             '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ev.codigo || "") + '">' + esc(L("Abrir Calificaciones", "Open Grades", "打开成绩")) + "</button></div>"
           : '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-evento="' + ev.id + '">' + esc(t("acc.editar")) + '</button>' +
             '<button class="btn btn--chico btn-peligro" type="button" data-borrar-evento="' + ev.id + '">' + esc(t("acc.borrar")) + "</button></div>";
+        var tipoEv = tipoEvento(ev.tipo);
         html = "<h2>" + esc(t("panel.evento")) + "</h2><h3>" + esc(ev.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(ev.fecha) + "</small></div>" +
           (ev.hora ? '<div class="panel__bloque"><span>' + esc(t("panel.hora")) + '</span><small>' + esc(ev.hora) + "</small></div>" : "") +
+          (tipoEv ? '<div class="panel__bloque"><span>' + esc(t("cal.categoria")) + '</span><small><span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoEv.id) + '">' + esc(tipoEv.nombre) + "</span></small></div>" : "") +
           (ev.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
           (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
@@ -3103,11 +3594,14 @@
         califSel = b.getAttribute("data-abrir-calif"); estado.califSel = califSel;
         if (!estado.califs[califSel]) estado.califs[califSel] = califPorDefecto();
         guardar(); ir("calificaciones"); pintarCalificaciones();
-        if (window.innerWidth <= 1255) abrirPanel();
+        abrirPanel();
       });
     });
     $$("#panel-cuerpo [data-editar-ramo]").forEach(function (b) {
       b.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(b.getAttribute("data-editar-ramo"))); });
+    });
+    $$("#panel-cuerpo [data-identidad-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () { abrirIdentidadCalif(b.getAttribute("data-identidad-ramo")); });
     });
     $$("#panel-cuerpo [data-toggle-ramo]").forEach(function (b) {
       b.addEventListener("click", function () { alternarRamo(b.getAttribute("data-toggle-ramo")); });
@@ -3121,9 +3615,16 @@
 
   function aplicarPrefs() {
     var p = estado.prefs || {};
-    document.documentElement.style.fontSize = (Number(p.escala) || 100) + "%";
+    var escala = Number(p.escala) || 100;
+    document.documentElement.style.fontSize = escala + "%";
+    // Los huecos no siguen al font-size de la raíz: se escalan aparte, o la letra
+    // crece y las cajas se quedan igual (era el defecto de beta.5).
+    document.documentElement.style.setProperty("--esc", String(escala / 100));
     document.documentElement.style.setProperty("--ancho-panel", (p.panelAncho || "320") + "px");
     document.body.classList.toggle("nav-izq", p.navPos === "izquierda");
+    document.body.classList.toggle("nav-plegada", !!p.navPlegada);
+    document.body.classList.toggle("nav-oculta", !!p.navOculta);
+    pintarPlegado(); pintarSecciones();
     var fi = $("#pref-inicio"), fh = $("#pref-hora"), fp = $("#pref-panel-ancho");
     if (fi) fi.value = p.inicioSemana || "lunes";
     if (fh) fh.value = p.hora || "24";
@@ -3199,6 +3700,16 @@
     pintarAjustes();
     pintarPie();
     if ($("#modal").classList.contains("on")) pintarCatalogo();
+    // La ventana de edición toma sus botones del idioma vigente (los campos y el
+    // título llegan ya traducidos desde cada editor).
+    if (window.MimoModal) {
+      MimoModal.configurar({
+        guardar: L("Guardar", "Save", "保存"),
+        cancelar: L("Cancelar", "Cancel", "取消"),
+        cerrar: L("Cerrar", "Close", "关闭"),
+        borrar: L("Borrar", "Delete", "删除")
+      });
+    }
   }
   function pintarAjustes() {
     var p = estado.prefs || {};
@@ -3438,10 +3949,8 @@
     if ($("#modal-sync-conflict").classList.contains("on")) { $("#sync-conf-cancelar").click(); return true; }
     if ($("#modal-split").classList.contains("on")) { cerrarSplitModal(); return true; }
     if ($("#modal-periodo").classList.contains("on")) { cerrarPeriodo(); return true; }
-    if ($("#modal-sesion").classList.contains("on")) { cerrarSesionModal(); return true; }
     if ($("#modal").classList.contains("on")) { cerrarModal(); return true; }
-    if (!$("#evento-form").hidden) { $("#evento-cancelar").click(); return true; }
-    if (!$("#tarea-form").hidden) { $("#tarea-cancelar").click(); return true; }
+    if (window.MimoModal && MimoModal.estaAbierto()) { MimoModal.cerrar("cancelar"); return true; }
     if (splitOn) { cerrarSplit(); return true; }
     if (document.body.classList.contains("panel-abierto")) { cerrarPanel(); return true; }
     return false;
@@ -3742,12 +4251,12 @@
   function abrirPanel() {
     document.body.classList.remove("panel-oculto");
     document.body.classList.add("panel-abierto");
-    $("#btn-panel").setAttribute("aria-expanded", "true");
+    pintarBotonPanel();
   }
   function cerrarPanel() {
     document.body.classList.remove("panel-abierto");
     if (window.innerWidth > 1255) document.body.classList.add("panel-oculto");
-    $("#btn-panel").setAttribute("aria-expanded", "false");
+    pintarBotonPanel();
   }
   function alternarPanel() {
     if (window.innerWidth > 1255) {
@@ -3809,7 +4318,7 @@
     splitOn = true;
     document.body.classList.add("split");
     $("#contenido-b").hidden = false;
-    $("#btn-split").setAttribute("aria-pressed", "true");
+    if ($("#btn-split")) $("#btn-split").setAttribute("aria-pressed", "true");
     var lab = $("#lab-split"); if (lab) lab.checked = true;
     pintarSplit();
     moverSeccionSplit(estado.splitSeccion);
@@ -3820,7 +4329,7 @@
     splitOn = false;
     document.body.classList.remove("split");
     $("#contenido-b").hidden = true;
-    $("#btn-split").setAttribute("aria-pressed", "false");
+    if ($("#btn-split")) $("#btn-split").setAttribute("aria-pressed", "false");
     var lab = $("#lab-split"); if (lab) lab.checked = false;
     mostrarPaneles();
   }
@@ -3869,29 +4378,10 @@
   function bindMalla() {
     $("#btn-nuevo-ramo").addEventListener("click", function () { abrirFormularioRamo(null); });
     $("#malla-crear").addEventListener("click", function () { abrirFormularioRamo(null); });
-    $("#ramo-cancelar").addEventListener("click", cerrarFormularioRamo);
     $("#btn-importar-malla").addEventListener("click", function () { $("#archivo-malla").click(); });
     $("#malla-importar-vacio").addEventListener("click", function () { $("#archivo-malla").click(); });
     $("#btn-exportar-malla").addEventListener("click", exportarMalla);
-    $("#btn-editar-carrera").addEventListener("click", function () {
-      var c = estado.carrera || {};
-      $("#carrera-titulo").value = c.titulo || "";
-      $("#carrera-universidad").value = c.universidad || "";
-      $("#carrera-pais").value = c.pais || "";
-      $("#carrera-form").hidden = false;
-      $("#carrera-titulo").focus();
-    });
-    $("#carrera-cancelar").addEventListener("click", function () { $("#carrera-form").hidden = true; });
-    $("#carrera-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      estado.carrera = {
-        titulo: $("#carrera-titulo").value.trim(),
-        universidad: $("#carrera-universidad").value.trim(),
-        pais: $("#carrera-pais").value.trim()
-      };
-      guardar(); $("#carrera-form").hidden = true; pintarMalla();
-      aviso(L("Datos de la carrera guardados.", "Degree details saved.", "学位信息已保存。"));
-    });
+    $("#btn-editar-carrera").addEventListener("click", abrirCarrera);
     $("#archivo-malla").addEventListener("change", function (e) {
       var f = e.target.files[0]; if (!f) return;
       importarMalla(f); e.target.value = "";
@@ -3900,101 +4390,164 @@
     $("#malla-filtro").addEventListener("change", function (e) { mallaFiltro = e.target.value; pintarMalla(); });
     $("#malla-rapido").addEventListener("change", function (e) { mallaRapido = e.target.checked; });
     $("#malla-quitar-sel").addEventListener("click", limpiarSeleccionMalla);
-    $("#ramo-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var cod = $("#ramo-codigo").value.trim().toUpperCase();
-      var nombre = $("#ramo-nombre").value.trim();
-      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
-      normalizarCursos();
-      var original = formRamoId ? ramoPorCodigo(formRamoId) : null;
-      var choque = ramoPorCodigo(cod);
-      if (choque && (!original || choque.codigo !== original.codigo)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
-      var reqs = $("#ramo-requisitos").value.split(/[,;]+/).map(function (r) {
-        return r.trim().toUpperCase();
-      }).filter(function (r) { return r && r !== cod; });
-      reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
-      if (original && original.codigo !== cod) {
-        var viejo = original.codigo;
-        estado.cursos.forEach(function (x) {
-          x.requisitos = x.requisitos.map(function (r) { return r === viejo ? cod : r; });
-          x.requisitos_o = (x.requisitos_o || []).map(function (g) {
-            return g.map(function (r) { return r === viejo ? cod : r; });
-          });
-        });
-        if (estado.ramoSel === viejo) estado.ramoSel = cod;
-        if (estado.califSel === viejo) estado.califSel = cod;
-        if (estado.califs && estado.califs[viejo]) { estado.califs[cod] = estado.califs[viejo]; delete estado.califs[viejo]; }
-        original.codigo = cod;
-      }
-      var c = original || { codigo: cod };
-      c.nombre = nombre;
-      c.creditos = Math.max(0, parseInt($("#ramo-creditos").value, 10) || 0);
-      c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
-      c.requisitos = reqs;
-      c.requisitos_o = c.requisitos_o || [];
-      c.color = hexColor($("#ramo-color").value) || "";
-      var aprobado = $("#ramo-aprobado").checked;
-      var enCurso = $("#ramo-curso").checked && !aprobado;
-      var cerrado = aprobado || (!!original && original.cerrado && !original.aprobado && !enCurso);
-      c.cerrado = cerrado;
-      c.aprobado = cerrado && aprobado;
-      c.resultado = cerrado ? (c.aprobado ? "aprobado" : "reprobado") : "";
-      c.notaCierre = cerrado ? (original ? original.notaCierre : null) : null;
-      c.cerradoEn = cerrado ? (original && original.cerradoEn ? original.cerradoEn : selloLocal()) : "";
-      c.enCurso = enCurso;
-      if (!original) estado.cursos.push(c);
-      notificarCurso(c);
-      estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
-      guardar(); cerrarFormularioRamo(); pintarMalla(); pintarPanel();
-      aviso(original ? "Ramo guardado." : "Ramo creado.");
-    });
 
   }
+  function guardarRamoDesdeVentana() {
+    var cod = $("#ramo-codigo").value.trim().toUpperCase();
+    var nombre = $("#ramo-nombre").value.trim();
+    if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return false; }
+    normalizarCursos();
+    var original = formRamoId ? ramoPorCodigo(formRamoId) : null;
+    var choque = ramoPorCodigo(cod);
+    if (choque && (!original || choque.codigo !== original.codigo)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return false; }
+    var reqs = $("#ramo-requisitos").value.split(/[,;]+/).map(function (r) {
+      return r.trim().toUpperCase();
+    }).filter(function (r) { return r && r !== cod; });
+    reqs = reqs.filter(function (r, i) { return reqs.indexOf(r) === i; });
+    if (original && original.codigo !== cod) {
+      var viejo = original.codigo;
+      estado.cursos.forEach(function (x) {
+        x.requisitos = x.requisitos.map(function (r) { return r === viejo ? cod : r; });
+        x.requisitos_o = (x.requisitos_o || []).map(function (g) {
+          return g.map(function (r) { return r === viejo ? cod : r; });
+        });
+      });
+      if (estado.ramoSel === viejo) estado.ramoSel = cod;
+      if (estado.califSel === viejo) estado.califSel = cod;
+      if (estado.califs && estado.califs[viejo]) { estado.califs[cod] = estado.califs[viejo]; delete estado.califs[viejo]; }
+      renombrarCursoEnEstado(viejo, cod);
+      original.codigo = cod;
+    }
+    var c = original || { codigo: cod };
+    c.nombre = nombre;
+    c.creditos = Math.max(0, parseInt($("#ramo-creditos").value, 10) || 0);
+    c.nivel = Math.max(1, Math.min(99, parseInt($("#ramo-nivel").value, 10) || 1));
+    c.requisitos = reqs;
+    c.requisitos_o = c.requisitos_o || [];
+    c.color = hexColor($("#ramo-color").value) || "";
+    var aprobado = $("#ramo-aprobado").checked;
+    var enCurso = $("#ramo-curso").checked && !aprobado;
+    var cerrado = aprobado || (!!original && original.cerrado && !original.aprobado && !enCurso);
+    c.cerrado = cerrado;
+    c.aprobado = cerrado && aprobado;
+    c.resultado = cerrado ? (c.aprobado ? "aprobado" : "reprobado") : "";
+    c.notaCierre = cerrado ? (original ? original.notaCierre : null) : null;
+    c.cerradoEn = cerrado ? (original && original.cerradoEn ? original.cerradoEn : selloLocal()) : "";
+    c.enCurso = enCurso;
+    if (!original) estado.cursos.push(c);
+    notificarCurso(c);
+    estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
+    guardar(); pintarMalla(); pintarPanel(); abrirPanel();
+    aviso(original ? L("Ramo guardado.", "Course saved.", "课程已保存。") : L("Ramo creado.", "Course created.", "课程已创建。"));
+    return true;
+  }
+
+  /* Curso creado desde Calificaciones cuando Malla no está instalada: mismo
+     formulario de antes (código y nombre), ahora en la ventana única. */
+  function abrirCursoCalif() {
+    MimoModal.abrir({
+      id: "curso",
+      titulo: L("Nuevo curso", "New course", "新建课程"),
+      sub: L("Se crea en curso; después puedes calificarlo aquí mismo.", "It is created in progress; you can grade it right here afterwards.", "创建后即为进行中，之后可在这里评分。"),
+      campos: [
+        { id: "calif-curso-codigo", etiqueta: L("Código", "Code", "代码"), valor: "", ph: L("Código (MA1001)", "Code (MA1001)", "代码（MA1001）") },
+        { id: "calif-curso-nombre", etiqueta: L("Nombre", "Name", "名称"), valor: "", ph: L("Nombre del curso", "Course name", "课程名称") }
+      ],
+      guardar: L("Crear curso", "Create course", "创建课程"),
+      onGuardar: guardarCursoCalifDesdeVentana
+    });
+  }
+  function guardarCursoCalifDesdeVentana() {
+    var cod = String($("#calif-curso-codigo").value || "").trim().toUpperCase();
+    var nombre = String($("#calif-curso-nombre").value || "").trim();
+    if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return false; }
+    normalizarCursos();
+    if (ramoPorCodigo(cod)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return false; }
+    var nuevo = window.MimoDominioCursos ? MimoDominioCursos.crear({ codigo: cod, nombre: nombre }) : { codigo: cod, nombre: nombre, creditos: 0, nivel: 1 };
+    if (!nuevo) { aviso(L("No se pudo crear el curso.", "Could not create the course.", "无法创建课程。")); return false; }
+    nuevo.enCurso = true;
+    estado.cursos.push(nuevo);
+    califSel = nuevo.codigo; estado.califSel = califSel; estado.ramoSel = califSel;
+    estado.panel.calificaciones = "detalle";
+    califDe(califSel);
+    guardar(); pintarCalificaciones(); pintarPanel();
+    aviso(L("Curso creado. Ya puedes cargar sus notas.", "Course created. You can now enter its grades.", "课程已创建。现在可以录入成绩。"));
+    return true;
+  }
+
+  function abrirCarrera() {
+    var c = estado.carrera || {};
+    MimoModal.abrir({
+      id: "carrera",
+      titulo: L("Datos de la carrera", "Degree details", "学位信息"),
+      sub: L("Se ven en la cabecera de la Malla.", "They show in the plan header.", "显示在规划顶部。"),
+      campos: [
+        { id: "carrera-titulo", etiqueta: L("Carrera", "Degree", "学位"), valor: c.titulo || "", ph: L("Nombre de la carrera", "Degree name", "学位名称") },
+        { id: "carrera-universidad", etiqueta: L("Universidad", "University", "大学"), valor: c.universidad || "", ph: L("Universidad", "University", "大学") },
+        { id: "carrera-pais", etiqueta: L("País", "Country", "国家"), valor: c.pais || "", ph: L("País", "Country", "国家") }
+      ],
+      guardar: L("Guardar", "Save", "保存"),
+      onGuardar: function () {
+        estado.carrera = {
+          titulo: $("#carrera-titulo").value.trim(),
+          universidad: $("#carrera-universidad").value.trim(),
+          pais: $("#carrera-pais").value.trim()
+        };
+        guardar(); pintarMalla();
+        aviso(L("Datos de la carrera guardados.", "Degree details saved.", "学位信息已保存。"));
+      }
+    });
+  }
+
   function bindCalificaciones() {
     $("#btn-calif-malla").addEventListener("click", function () { ir("malla"); });
     $("#calif-crear-ramo").addEventListener("click", function () { ir("malla"); abrirFormularioRamo(null); });
-    $("#calif-curso-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var cod = String($("#calif-curso-codigo").value || "").trim().toUpperCase();
-      var nombre = String($("#calif-curso-nombre").value || "").trim();
-      if (!cod || !nombre) { aviso(L("Código y nombre son obligatorios.", "Code and name are required.", "代码和名称为必填项。")); return; }
-      normalizarCursos();
-      if (ramoPorCodigo(cod)) { aviso(L("Ese código ya existe.", "That code already exists.", "该代码已存在。")); return; }
-      var nuevo = window.MimoDominioCursos ? MimoDominioCursos.crear({ codigo: cod, nombre: nombre }) : { codigo: cod, nombre: nombre, creditos: 0, nivel: 1 };
-      if (!nuevo) { aviso(L("No se pudo crear el curso.", "Could not create the course.", "无法创建课程。")); return; }
-      nuevo.enCurso = true;
-      estado.cursos.push(nuevo);
-      califSel = nuevo.codigo; estado.califSel = califSel; estado.ramoSel = califSel;
-      estado.panel.calificaciones = "detalle";
-      califDe(califSel);
-      guardar(); pintarCalificaciones(); pintarPanel();
-      $("#calif-curso-codigo").value = ""; $("#calif-curso-nombre").value = "";
-      aviso(L("Curso creado. Ya puedes cargar sus notas.", "Course created. You can now enter its grades.", "课程已创建。现在可以录入成绩。"));
-    });
+    $("#btn-calif-curso").addEventListener("click", abrirCursoCalif);
     $("#calif-lista").addEventListener("click", function (e) {
       var b = e.target.closest("[data-calif]"); if (!b) return;
       califSel = b.getAttribute("data-calif"); estado.califSel = califSel;
       estado.ramoSel = califSel; estado.panel.calificaciones = "detalle";
       guardar(); pintarCalificaciones(); pintarPanel();
-      if (window.innerWidth <= 1255) abrirPanel();
+      abrirPanel();
     });
     $("#calif-detalle").addEventListener("change", cambioCalif);
     $("#calif-detalle").addEventListener("click", accionCalif);
 
   }
+  /* Registrar una sesión suelta: el mismo formulario de antes (ramo, fecha y
+     duración), ahora en la ventana única en vez de en una tarjeta de la sección. */
+  function abrirRegistrarSesion() {
+    normalizarCursos(); normalizarEstudio();
+    var opciones = [{ v: "", t: L("Sin ramo", "No course", "无课程") }];
+    cursosEnCurso().forEach(function (c) { opciones.push({ v: c.codigo, t: c.codigo + " — " + c.nombre }); });
+    MimoModal.abrir({
+      id: "sesion-nueva",
+      titulo: L("Registrar estudio", "Log study", "记录学习"),
+      sub: L("Una sesión suelta para lo que no pasó por el cronómetro.", "A one-off session for what did not go through the stopwatch.", "用于记录未经过秒表的学习时段。"),
+      campos: [
+        { id: "est-ramo", etiqueta: L("Ramo", "Course", "课程"), tipo: "select", valor: "", opciones: opciones },
+        { id: "est-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: hoyISO() },
+        { id: "est-minutos", etiqueta: L("Duración", "Duration", "时长"), valor: "1:00:00", ph: "2:30:21", inputmode: "decimal", ayuda: L("Acepta 90 (minutos), 1:30 (h:m) o 2:30:21 (h:m:s).", "Accepts 90 (minutes), 1:30 (h:m) or 2:30:21 (h:m:s).", "接受 90（分钟）、1:30（时:分）或 2:30:21（时:分:秒）。") }
+      ],
+      guardar: L("Registrar", "Log", "记录"),
+      onGuardar: function () { return guardarSesionEstudio(); }
+    });
+  }
+  function guardarSesionEstudio() {
+    normalizarEstudio();
+    var fecha = $("#est-fecha").value || hoyISO();
+    var minutos = Math.min(1440, parseDuracion($("#est-minutos").value));
+    if (!minutos) { aviso(L("Escribe una duración: 90, 1:30 o 2:30:21.", "Enter a duration: 90, 1:30 or 2:30:21.", "输入时长：90、1:30 或 2:30:21。")); return false; }
+    var sesion = { fecha: fecha, hora: "", minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "", tipo: "manual" };
+    estado.sesiones.push(window.MimoDominioSesiones ? MimoDominioSesiones.crear(sesion) : sesion);
+    guardar(); pintarEstudio(); pintarTiempo();
+    aviso(L("Sesión de ", "Session of ", "会话 ") + fmtDuracion(minutos) + L(" registrada.", " logged.", " 已记录。"));
+    return true;
+  }
+
   function bindEstudio() {
     $("#btn-estudio-malla").addEventListener("click", function () { ir("malla"); });
-    $("#est-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      normalizarEstudio();
-      var fecha = $("#est-fecha").value || hoyISO();
-      var minutos = Math.min(1440, parseDuracion($("#est-minutos").value));
-      if (!minutos) { aviso(L("Escribe una duración: 90, 1:30 o 2:30:21.", "Enter a duration: 90, 1:30 or 2:30:21.", "输入时长：90、1:30 或 2:30:21。")); return; }
-      var sesion = { fecha: fecha, hora: "", minutos: minutos, ramo: $("#est-ramo").value || "", vinculo: "", tipo: "manual" };
-      estado.sesiones.push(window.MimoDominioSesiones ? MimoDominioSesiones.crear(sesion) : sesion);
-      guardar(); pintarEstudio(); pintarTiempo();
-      aviso(L("Sesión de ", "Session of ", "会话 ") + fmtDuracion(minutos) + L(" registrada.", " logged.", " 已记录。"));
-    });
+    $("#btn-registrar-sesion").addEventListener("click", abrirRegistrarSesion);
     $("#est-meta").addEventListener("change", function (e) {
       normalizarEstudio(); estado.estudio.metaSemanal = Math.max(0, Number(e.target.value) || 0);
       guardar(); pintarEstudio();
@@ -4027,6 +4580,14 @@
 
   async function init() {
     registrarFuenteCalendario("calificaciones", fuenteCalificaciones);
+    // El plegable guarda su estado en el mismo estado de la app: sobrevive a
+    // cambiar de sección y a recargar (y viaja en el respaldo como un campo más).
+    if (window.MimoPlegable) {
+      MimoPlegable.configurar({
+        leer: function () { return estado.plegables || {}; },
+        guardar: function (m) { estado.plegables = m; guardar(); }
+      });
+    }
     // Si localStorage desapareció o está corrupto, el espejo nativo es la recuperación.
     if (arranqueLimpio && !RESET && window.MimoAlmacen && MimoAlmacen.esTauri()) {
       try {
@@ -4063,6 +4624,9 @@
     secciones().forEach(montarHost);
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
+    // El panel arranca cerrado: se abre cuando el dueño pide ver algo (o lo deja abierto
+    // en Ajustes y entonces se respeta).
+    if (estado.prefs.panelAbierto === false) cerrarPanel();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTemas();
     historial = [JSON.stringify(estado)]; historialPos = 0; pintarHistorial();
@@ -4091,7 +4655,6 @@
     $("#btn-panel").addEventListener("click", alternarPanel);
     $("#btn-panel-cerrar").addEventListener("click", cerrarPanel);
     $("#velo").addEventListener("click", cerrarPanel);
-    $("#btn-split").addEventListener("click", alternarSplit);
     $("#btn-cerrar-split").addEventListener("click", cerrarSplit);
     $("#split-x").addEventListener("click", cerrarSplitModal);
     $("#split-cancelar").addEventListener("click", cerrarSplitModal);
@@ -4120,6 +4683,14 @@
       });
     });
     $("#btn-add").addEventListener("click", abrirModal);
+    $("#btn-plegar").addEventListener("click", function () {
+      estado.prefs.navPlegada = !estado.prefs.navPlegada;
+      guardar(); aplicarPrefs();
+    });
+    $("#btn-secciones").addEventListener("click", function () {
+      estado.prefs.navOculta = !estado.prefs.navOculta;
+      guardar(); aplicarPrefs();
+    });
     $("#btn-catalogo-ajustes").addEventListener("click", abrirModal);
     $("#btn-periodo-ajustes").addEventListener("click", abrirPeriodo);
     ["#periodo-semanas", "#periodo-receso", "#periodo-examenes"].forEach(function (sel) {
@@ -4292,51 +4863,8 @@
     });
     $("#btn-nueva-tarea").addEventListener("click", function () { abrirFormulario(null); });
     $("#tareas-crear").addEventListener("click", function () { abrirFormulario(null); });
-    $("#tarea-cancelar").addEventListener("click", function () { $("#tarea-form").hidden = true; });
-    $("#tarea-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var titulo = $("#tarea-titulo").value.trim();
-      if (!titulo) return;
-      var tipo = $("#tarea-tipo").value === "proyecto" ? "proyecto" : "tarea";
-      var padre = $("#tarea-padre").value || null;
-      var t;
-      if (formEditId) {
-        t = tareaPorId(formEditId);
-        if (!t) return;
-      } else {
-        t = { id: "t" + Date.now(), creada: new Date().toISOString(), orden: estado.tareas.length };
-        estado.tareas.push(t);
-      }
-      if (padre === t.id) padre = null;
-      t.titulo = titulo;
-      t.tipo = tipo;
-      t.padre_id = padre;
-      t.fecha = $("#tarea-fecha").value || "";
-      t.prioridad = $("#tarea-prioridad").value;
-      t.contexto = $("#tarea-contexto").value.trim();
-      t.nota = t.nota || "";
-      if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
-      estado.tareaSel = t.id;
-      estado.panel[ctxDe($("#tarea-form"))] = "detalle";
-      $("#tarea-form").hidden = true;
-      formEditId = null;
-      if (vistaTareas === "hoy") {
-        vistaTareas = "arbol";
-        estado.vistaTareas = "arbol";
-        $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === "arbol"); });
-      }
-      guardar(); pintarTareas(); pintarPanel();
-      aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
-    });
     $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
     $("#btn-periodo").addEventListener("click", abrirPeriodo);
-    $("#sesion-x").addEventListener("click", cerrarSesionModal);
-    $("#sesion-cancelar").addEventListener("click", cerrarSesionModal);
-    $("#modal-sesion").addEventListener("click", function (e) { if (e.target === $("#modal-sesion")) cerrarSesionModal(); });
-    $("#sesion-form").addEventListener("submit", guardarSesionModal);
-    $("#sesion-borrar").addEventListener("click", function () {
-      var id = $("#sesion-id").value; cerrarSesionModal(); borrarSesion(id);
-    });
     $("#periodo-x").addEventListener("click", cerrarPeriodo);
     $("#periodo-cancelar").addEventListener("click", cerrarPeriodo);
     $("#modal-periodo").addEventListener("click", function (e) { if (e.target === $("#modal-periodo")) cerrarPeriodo(); });
@@ -4396,28 +4924,7 @@
     });
     $("#btn-nuevo").addEventListener("click", abrirPeriodo);
     $("#btn-nuevo-evento").addEventListener("click", function () { abrirEvento(null); });
-    $("#evento-cancelar").addEventListener("click", function () { $("#evento-form").hidden = true; });
-    $("#evento-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var titulo = $("#evento-titulo").value.trim();
-      if (!titulo) return;
-      var ev = formEventoId ? eventoPorId(formEventoId) : null;
-      if (!ev) {
-        ev = { id: "e" + Date.now() };
-        estado.eventos.push(ev);
-      }
-      ev.titulo = titulo;
-      ev.fecha = $("#evento-fecha").value || hoyISO();
-      ev.hora = $("#evento-hora").value;
-      ev.contexto = $("#evento-contexto").value.trim();
-      ev.nota = ev.nota || "";
-      estado.eventoSel = ev.id;
-      estado.panel[ctxDe($("#evento-form"))] = "detalle";
-      $("#evento-form").hidden = true;
-      formEventoId = null;
-      guardar(); pintarCalendario(); pintarPanel();
-      aviso(L("Evento guardado.", "Event saved.", "事件已保存。"));
-    });
+    if ($("#btn-nueva-categoria")) $("#btn-nueva-categoria").addEventListener("click", abrirCategoriaEvento);
     $$("#vista-calendario button").forEach(function (b) {
       b.addEventListener("click", function () {
         vistaCalendario = b.getAttribute("data-cal-vista");

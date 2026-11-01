@@ -46,7 +46,7 @@ def crear_ramo(page) -> None:
     page.locator("#ramo-codigo").fill("MA1001")
     page.locator("#ramo-nombre").fill("Cálculo I")
     page.locator("#ramo-curso").check()
-    page.locator('#ramo-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(120)
 
 
@@ -115,9 +115,10 @@ def main() -> int:
             exigir(primera != segunda,
                    f"tiempo: la hora de Alarmas sigue corriendo — «{primera}» → «{segunda}»", fallas)
             hora = datetime.datetime.now().strftime("%H:%M")
+            page.locator("#btn-nueva-alarma").click(); page.wait_for_timeout(150)
             page.locator("#alarma-hora").fill(hora)
             page.locator("#alarma-texto").fill("Prueba")
-            page.locator('#alarma-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(1800)
             exigir("Prueba" in page.locator("#alarma-lista").inner_text(),
                    "tiempo: la alarma queda en la lista", fallas)
@@ -126,6 +127,43 @@ def main() -> int:
             exigir(page.evaluate("window.__notifs.length") >= 1,
                    "tiempo: la alarma usa notificación nativa", fallas)
             exigir(not errores, f"tiempo: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+
+        # R105: el reloj se mide con la hora, no contando ticks. Con el reloj
+        # falso se puede pausar y reanudar sin que la sesión pierda lo medido.
+        ctx, page, errores = nav.abrir(APP, 1440, 950, reloj=True)
+        try:
+            instalar(page)
+            crear_ramo(page)
+            page.locator('#tabs .tab[data-ir="tiempo"]').click()
+            page.wait_for_timeout(150)
+            page.locator("#tiempo-ramo").select_option("MA1001")
+            page.locator('#estanteria-tiempo [data-hijo="temporizador"]').click()
+            page.wait_for_timeout(100)
+            page.locator("#temp-min").fill("0.1")
+            page.locator("#temp-min").blur()
+            page.wait_for_timeout(100)
+            page.locator("#btn-empezar").click()
+            page.clock.run_for(2000)
+            page.locator("#btn-pausar").click()
+            page.clock.run_for(3000)
+            page.locator("#btn-empezar").click()
+            page.clock.run_for(5000)
+            page.wait_for_timeout(150)
+            ses = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).sesiones")
+            exigir(bool(ses) and ses[-1].get("tipo") == "temporizador" and abs(ses[-1].get("minutos", 0) - 0.1) < 0.001,
+                   f"tiempo: pausar y reanudar conserva los 6 s completos — {ses[-1] if ses else None}", fallas)
+            page.locator('#estanteria-tiempo [data-hijo="crono"]').click()
+            page.wait_for_timeout(100)
+            page.locator("#btn-empezar").click()
+            page.clock.run_for(5000)
+            page.locator("#btn-parar").click()
+            page.wait_for_timeout(150)
+            ses = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).sesiones")
+            exigir(bool(ses) and ses[-1].get("tipo") == "crono" and 0.06 <= ses[-1].get("minutos", 0) <= 0.1,
+                   f"tiempo: el cronómetro registra lo medido — {ses[-1] if ses else None}", fallas)
+            exigir(not errores, f"tiempo: consola limpia con reloj falso — {errores[:3]}", fallas)
         finally:
             ctx.close()
 

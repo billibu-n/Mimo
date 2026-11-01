@@ -27,4 +27,4 @@
 .tiempo-config-fila{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:var(--sp-3)}
 .tiempo-config .campo{display:flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
 .tiempo-num{width:82px;text-align:right}
-@media (max-width:520px){.tiempo-config-fila,.alarma-form{flex-direction:column;align-items:stretch}.alarma-form #alarma-hora,.alarma-form #alarma-texto{width:100%}}
+@media (max-width:520px){.tiempo-config-fila{flex-direction:column;align-items:stretch}}

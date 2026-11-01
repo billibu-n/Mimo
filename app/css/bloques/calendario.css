@@ -13,12 +13,10 @@
 .cal-dow--sem,.cal-sem-col{font-size:var(--fs-xs);color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center}
 .cal-sem-col{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);font-weight:700;letter-spacing:.02em}
 .cal-sem-col[title*="receso"],.cal-sem-col[title*="examen"]{color:var(--warn)}
-@media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:54px;font-size:10px}}
+@media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:calc(54px * var(--esc));font-size:var(--fs-xs)}}
 .cal-vacio{grid-column:1/-1}
 @media (max-width:900px){.cal-layout{grid-template-columns:1fr}}
 @media (max-width:520px){.cal-dia{min-height:54px}}
-.evento-form{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
-.evento-form .entrada{flex:1 1 150px;min-width:120px}
 .evento-chip{display:block;width:100%;text-align:left;border:0;border-radius:4px;background:var(--ac);color:var(--ac-txt);font:inherit;font-size:var(--fs-xs);line-height:1.25;padding:2px 4px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .evento-chip b{font-weight:700}
 .cal-eventos{margin-top:2px}
@@ -31,7 +29,10 @@
 .cal-agenda{display:flex;flex-direction:column;gap:var(--sp-1)}
 .cal-agenda__item{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;text-align:left;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);font:inherit;color:var(--fg);cursor:pointer}
 .cal-agenda__item:hover{border-color:var(--ac)}
-.cal-agenda__item b{display:block;font-size:var(--fs-sm)}
+.cal-agenda__cuerpo{min-width:0}
+.cal-agenda__tit{display:flex;align-items:center;gap:var(--sp-1);min-width:0}
+.cal-agenda__tit .ramo-ico{width:14px;height:14px}
+.cal-agenda__item b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cal-agenda__item small{color:var(--muted);font-size:var(--fs-xs)}
 @media (max-width:520px){.cal-grid--semana{grid-template-columns:1fr}.cal-semana-dia{min-height:0}}
 body.split .cal-layout{grid-template-columns:1fr}
@@ -40,3 +41,21 @@ body.split .cal-layout .rail{display:none}
 .cal-sem-col{font:inherit;cursor:pointer;padding:0}
 .cal-sem-col.tipo-receso{color:var(--warn);border-color:var(--warn)}
 .cal-sem-col.tipo-examenes{color:var(--bad);border-color:var(--bad)}
+
+/* Categorías de evento: el «tipo» de Mimo Académics, visible en el carril y en
+   cada chip. El color sale de la identidad del ramo (hash estable del id), así
+   que no hay hex por vista. */
+.cal-tipos{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-bottom:var(--sp-2)}
+.cal-tipo{display:inline-flex;align-items:center;gap:4px;max-width:100%;border:1px solid var(--line2);border-radius:999px;padding:2px 8px;font-size:var(--fs-xs);background:var(--sup);overflow:hidden}
+.cal-tipo i{width:8px;height:8px;border-radius:50%;background:var(--tag,var(--muted));flex:0 0 auto}
+.cal-tipo b{font-weight:600;color:var(--muted);margin-left:2px}
+.cal-agenda__tag{display:inline-flex;align-items:center;flex:0 0 auto;max-width:9em;border:1px solid color-mix(in srgb,var(--tag,var(--line2)) 55%,transparent);background:color-mix(in srgb,var(--tag,var(--line2)) 14%,transparent);border-radius:999px;padding:0 6px;font-size:var(--fs-xs);font-weight:600;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.evento-chip{display:flex;align-items:center;gap:3px}
+.evento-chip b,.evento-chip__tag{flex:0 0 auto}
+.evento-chip__tag{display:inline-block;max-width:4.5em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:999px;padding:0 4px;font-size:calc(var(--fs-xs) * .82);font-weight:700;letter-spacing:.03em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--tag,currentColor) 55%,transparent);background:color-mix(in srgb,var(--tag,currentColor) 18%,transparent)}
+.evento-chip__tit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* En la grilla del mes el chip es estrecho: el título ocupa su línea y la
+   etiqueta va debajo, entera, en vez de partir las dos palabras. */
+.cal-grid--mes .evento-chip{flex-wrap:wrap;row-gap:0}
+.cal-grid--mes .evento-chip__tit{flex:1 1 100%}
+.cal-grid--mes .evento-chip__tag{max-width:100%;margin-top:1px}

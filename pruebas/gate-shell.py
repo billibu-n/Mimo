@@ -24,7 +24,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, desborde, exigir, salir  # noqa: E402
 
 
 def main() -> int:
@@ -52,7 +52,7 @@ def main() -> int:
             page.locator("#evento-fecha").fill(hoy)
             page.locator("#evento-hora").fill("10:00")
             page.locator("#evento-contexto").fill("Proyecto")
-            page.locator('#evento-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(120)
             exigir(page.locator(".evento-chip").count() >= 1, "calendario: el evento aparece en el mes", fallas)
             exigir(page.locator("#cal-cuenta").inner_text().find("1 evento") >= 0, "calendario: la cuenta sube a 1", fallas)
@@ -115,7 +115,7 @@ def main() -> int:
             page.wait_for_timeout(80)
             page.locator("#btn-nueva-tarea").click()
             page.locator("#tarea-titulo").fill("Preparar la reunión del lunes")
-            page.locator('#tarea-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
             exigir(page.locator(".tarea-fila").count() == 1, "tareas: crear una tarea", fallas)
             page.locator(".tarea-fila").first.click()
@@ -128,14 +128,14 @@ def main() -> int:
             page.locator("#tarea-titulo").fill("Proyecto web")
             page.locator("#tarea-tipo").select_option("proyecto")
             page.locator("#tarea-fecha").fill("2026-10-30")
-            page.locator('#tarea-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(120)
             exigir(page.locator(".tarea-fila").count() >= 2, "tareas: crear un proyecto raíz", fallas)
             exigir(page.locator('[data-vista="arbol"]').get_attribute("class").find("on") >= 0,
                    "tareas: después de crear, la vista Árbol muestra el proyecto", fallas)
             page.locator(".tarea-fila", has_text="Proyecto web").locator("[data-add-sub]").click()
             page.locator("#tarea-titulo").fill("Diseñar portada")
-            page.locator('#tarea-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(120)
             exigir(page.locator(".tarea-fila").count() >= 3, "tareas: añadir una subtarea dentro del proyecto", fallas)
             page.locator(".tarea-fila", has_text="Diseñar portada").locator("[data-check]").click()
@@ -147,7 +147,7 @@ def main() -> int:
             page.locator("#panel-cuerpo [data-editar-tarea]").click()
             page.wait_for_timeout(80)
             page.locator("#tarea-titulo").fill("Rediseño del sitio v2")
-            page.locator('#tarea-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
             exigir("Rediseño del sitio v2" in page.locator("#tareas-lista").inner_text(),
                    "tareas: editar el proyecto conserva su lugar", fallas)
@@ -226,10 +226,12 @@ def main() -> int:
             page.locator("#pref-nav").select_option("arriba")
             page.locator("#pref-idioma").select_option("es")
             page.wait_for_timeout(80)
-            page.locator("#btn-split").click()
-            page.wait_for_timeout(80)
+            # La casilla vive en Ajustes; el clic directo evita que el deslizamiento del
+            # panel la deje «inestable» para Playwright.
+            page.evaluate("document.querySelector('#lab-split').click()")
+            page.wait_for_timeout(150)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
-                   "split: el diálogo de dos secciones se abre", fallas)
+                   "split: el diálogo de dos secciones se abre desde Ajustes", fallas)
             page.locator("#split-izq").select_option("notas")
             page.locator("#split-der").select_option("tareas")
             page.locator("#split-abrir").click()
@@ -252,14 +254,18 @@ def main() -> int:
                    "split: la interacción de la derecha abre su detalle", fallas)
             page.locator("#btn-cerrar-split").click()
             page.wait_for_timeout(60)
-            exigir(page.locator(".footer").is_visible(), "geometría: el pie es visible", fallas)
+            exigir(page.locator(".footer").is_visible(), "geometría: el pie está siempre", fallas)
+            antes_ancho = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
             page.locator("#btn-panel").click()
-            page.wait_for_timeout(80)
-            exigir(not page.locator(".panel").is_visible(), "geometría: el panel se oculta sin mover el pie", fallas)
+            page.wait_for_timeout(300)   # el panel se desliza (180 ms)
+            tras_ancho = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
+            exigir((antes_ancho <= 1) != (tras_ancho <= 1),
+                   f"panel: el botón lo alterna — {antes_ancho:.0f} → {tras_ancho:.0f} px", fallas)
             page.locator("#btn-panel").click()
-            page.wait_for_timeout(80)
-            exigir(page.locator(".panel").is_visible(), "geometría: el panel vuelve", fallas)
-            exigir(page.locator(".footer").is_visible(), "geometría: el pie sigue visible", fallas)
+            page.wait_for_timeout(300)
+            vuelta = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
+            exigir(abs(vuelta - antes_ancho) <= 1,
+                   f"panel: el botón lo devuelve — {vuelta:.0f} px", fallas)
 
             # Lo que se añade también se quita: evento, tarea y periodo.
             page.locator('#tabs .tab[data-ir="calendario"]').click()
@@ -307,6 +313,7 @@ def main() -> int:
             page.wait_for_timeout(120)
             exigir(page.locator(".sesion-item").count() == 1,
                    "tiempo: la sesión registrada se lista y se puede quitar", fallas)
+            abrir_plegable(page, ".sesion-item")
             page.locator(".sesion-item").first.click(button="right")
             page.wait_for_timeout(80)
             page.once("dialog", lambda d: d.accept())

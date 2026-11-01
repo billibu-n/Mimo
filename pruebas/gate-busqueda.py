@@ -39,7 +39,7 @@ def crear_tarea(page, titulo: str) -> None:
     page.wait_for_timeout(80)
     page.locator("#btn-nueva-tarea").click()
     page.locator("#tarea-titulo").fill(titulo)
-    page.locator('#tarea-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(100)
 
 
@@ -85,7 +85,7 @@ def main() -> int:
             page.locator("#btn-nuevo-ramo").click()
             page.locator("#ramo-codigo").fill("MA1001")
             page.locator("#ramo-nombre").fill("Cálculo I")
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
             page.keyboard.press("Control+k")
             page.wait_for_timeout(100)

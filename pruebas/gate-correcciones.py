@@ -15,7 +15,7 @@ Mide sobre app/index.html:
   8. la tarjeta de sincronización tiene aire (padding y campos), separa la conexión del
      cifrado en paneles, ofrece el registro de Nextcloud y no desborda en móvil;
   9. el tamaño de letra se aplica, no desborda y se recuerda; la mascota lleva a la primera
-     sección; los bloques llevan código de dos dígitos e iconos propios;
+     sección; la barra dice el nombre de cada sección, sin códigos, con icono propio;
  10. el botón de desarrollador «Guardar tutorial» ya no está y Restablecer de fábrica deja
      la app vacía.
 
@@ -34,7 +34,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
 
 
 def respaldo_viejo() -> Path:
@@ -127,8 +127,8 @@ def main() -> int:
             texto_aj = page.locator("#p-ajustes").inner_text().lower()
             exigir("colaborar" in texto_aj and "dinero" not in texto_aj and "donación" not in texto_aj,
                    "ajustes: colaborar sin hablar de dinero", fallas)
-            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.5",
-                   f"marca: versión v1.2.0-beta.5 — {page.locator('.badge').inner_text().strip()}", fallas)
+            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.6",
+                   f"marca: versión v1.2.0-beta.6 — {page.locator('.badge').inner_text().strip()}", fallas)
             fuente = page.locator(".wordmark").evaluate("e => getComputedStyle(e).fontFamily")
             exigir("Comfortaa" in fuente, f"marca: wordmark Comfortaa — {fuente}", fallas)
             columnas = page.locator(".ajustes-grid").first.evaluate(
@@ -210,9 +210,12 @@ def main() -> int:
                    "mascota: estando ya ahí no cambia de sección", fallas)
 
             # Identidad de los bloques: código de dos dígitos e iconos distintos.
+            # El código de dos dígitos salió de la pestaña (R2): ahora dice su nombre.
             codigos = page.eval_on_selector_all("#tabs .cod", "els => els.map(e => e.textContent.trim())")
-            exigir(codigos and all(re.fullmatch(r"\d{2}", c) for c in codigos),
-                   f"bloques: los códigos son de dos dígitos — {codigos}", fallas)
+            exigir(not codigos, f"barra: la pestaña ya no lleva código de bloque — {codigos}", fallas)
+            nombres = page.eval_on_selector_all("#tabs .tab__nom", "els => els.map(e => e.textContent.trim())")
+            exigir(nombres[:4] == ["Calendario", "Tareas", "Notas", "Tiempo"],
+                   f"barra: cada pestaña dice su nombre — {nombres[:4]}", fallas)
             exigir(len(set(codigos)) == len(codigos), f"bloques: códigos únicos — {codigos}", fallas)
             exigir(page.evaluate("MimoRegistro.obtener('estudio').icono") != page.evaluate("MimoRegistro.obtener('tiempo').icono"),
                    "bloques: Estudio y Tiempo ya no comparten icono", fallas)
@@ -239,20 +242,22 @@ def main() -> int:
             exigir(vals == ["00", "02", "00"], f"reloj: queda en 00:02:00 — {vals}", fallas)
 
             page.locator('[data-hijo="alarmas"]').click(); page.wait_for_timeout(180)
+            page.locator("#btn-nueva-alarma").click(); page.wait_for_timeout(150)
             page.locator("#alarma-hora").fill("07:30")
             page.locator("#alarma-texto").fill("Desayuno")
-            page.locator("#alarma-form button[type=submit]").click(); page.wait_for_timeout(180)
-            page.locator("[data-alarma-editar]").first.click(); page.wait_for_timeout(120)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(180)
+            page.locator("[data-alarma-editar]").first.click(); page.wait_for_timeout(180)
             page.locator("#alarma-hora").fill("08:00")
             page.locator("#alarma-texto").fill("Desayuno largo")
-            page.locator("#alarma-form button[type=submit]").click(); page.wait_for_timeout(180)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(180)
             d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
             exigir(d["alarmas"][0]["hora"] == "08:00" and d["alarmas"][0]["texto"] == "Desayuno largo",
                    f"alarma: editada a 08:00 — {d['alarmas'][0]}", fallas)
 
+            abrir_plegable(page, "#tiempo-lista-sesiones [data-editar-sesion]")
             page.locator("[data-editar-sesion]").first.click(); page.wait_for_timeout(150)
             page.locator("#sesion-duracion").fill("1:30")
-            page.locator("#sesion-form button[type=submit]").click(); page.wait_for_timeout(150)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(150)
             d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
             exigir(abs(d["sesiones"][0]["minutos"] - 90) < 0.01,
                    f"sesión: corregida a 90 min — {d['sesiones'][0]['minutos']}", fallas)
@@ -264,8 +269,9 @@ def main() -> int:
             page.keyboard.press("Escape")
 
             page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(180)
+            page.locator("#btn-registrar-sesion").click(); page.wait_for_timeout(150)
             page.locator("#est-minutos").fill("2:30:21")
-            page.locator("#est-form button[type=submit]").click(); page.wait_for_timeout(180)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(180)
             d = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1'))")
             exigir(abs(d["sesiones"][-1]["minutos"] - 150.35) < 0.01,
                    f"estudio: 2:30:21 son 150,35 min — {d['sesiones'][-1]['minutos']}", fallas)

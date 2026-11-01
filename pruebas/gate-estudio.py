@@ -22,7 +22,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, desborde, exigir, salir  # noqa: E402
 
 
 def instalar_academics(page) -> None:
@@ -41,7 +41,7 @@ def crear_ramo(page, codigo: str, nombre: str) -> None:
     page.locator("#ramo-codigo").fill(codigo)
     page.locator("#ramo-nombre").fill(nombre)
     page.locator("#ramo-curso").check()
-    page.locator('#ramo-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(100)
 
 
@@ -57,10 +57,12 @@ def crear_periodo(page) -> None:
 
 
 def registrar(page, ramo: str, fecha: str, minutos: str) -> None:
+    page.locator("#btn-registrar-sesion").click()
+    page.wait_for_timeout(120)
     page.locator("#est-ramo").select_option(ramo)
     page.locator("#est-fecha").fill(fecha)
     page.locator("#est-minutos").fill(minutos)
-    page.locator('#est-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(280)
 
 
@@ -113,6 +115,7 @@ def main() -> int:
             exigir("25 %" in page.locator("#est-tabla").inner_text(),
                    "estudio: avance del ramo contra su meta", fallas)
 
+            abrir_plegable(page, "#est-sesiones [data-borrar-estudio]")
             page.locator("[data-borrar-estudio]").first.click()
             page.wait_for_timeout(250)
             exigir(page.locator("#est-k-sesiones").inner_text().strip() == "1",
@@ -132,6 +135,28 @@ def main() -> int:
             exigir(page.locator("#est-k-sesiones").inner_text().strip() == "2",
                    "estudio: la sesión de Tiempo entra en Estudio", fallas)
 
+            # R104/R105: cambiar el código del ramo arrastra sesiones y metas; la
+            # tabla y las horas siguen al ramo nuevo, no se queda el código viejo.
+            horas_antes = page.locator("#est-k-horas").inner_text().strip()
+            page.locator('#tabs .tab[data-ir="malla"]').click()
+            page.wait_for_timeout(120)
+            page.locator('.ramo-card[data-ramo="MA1001"]').click(button="right")
+            page.wait_for_timeout(100)
+            page.locator('#menu-ctx [data-accion="ramo-editar"]').click()
+            page.wait_for_timeout(120)
+            page.locator("#ramo-codigo").fill("MA1003")
+            page.locator("#modal-guardar").click()
+            page.wait_for_timeout(250)
+            page.locator('#tabs .tab[data-ir="estudio"]').click()
+            page.wait_for_timeout(200)
+            exigir(page.locator("#est-k-horas").inner_text().strip() == horas_antes,
+                   f"estudio: renombrar el ramo conserva las horas — {horas_antes} -> {page.locator('#est-k-horas').inner_text()}", fallas)
+            exigir("MA1003" in page.locator("#est-tabla").inner_text()
+                   and "MA1001" not in page.locator("#est-tabla").inner_text(),
+                   "estudio: la tabla sigue al código nuevo", fallas)
+            exigir(page.locator('[data-est-meta-ramo="MA1003"]').input_value() == "1",
+                   "estudio: la meta del ramo viaja con el código", fallas)
+
             # Un ramo cerrado deja de ofrecerse en los selectores y en las tablas.
             page.locator('#tabs .tab[data-ir="malla"]').click()
             page.wait_for_timeout(120)
@@ -141,8 +166,12 @@ def main() -> int:
             page.wait_for_timeout(250)
             page.locator('#tabs .tab[data-ir="estudio"]').click()
             page.wait_for_timeout(200)
+            page.locator("#btn-registrar-sesion").click()
+            page.wait_for_timeout(150)
             exigir("FI1001" not in page.locator("#est-ramo").inner_text(),
                    "estudio: el ramo cerrado no se ofrece", fallas)
+            page.locator("#modal-cancelar").click()
+            page.wait_for_timeout(120)
             exigir("FI1001" not in page.locator("#est-tabla").inner_text(),
                    "estudio: el ramo cerrado no aparece en la tabla", fallas)
             page.locator('#tabs .tab[data-ir="tiempo"]').click()

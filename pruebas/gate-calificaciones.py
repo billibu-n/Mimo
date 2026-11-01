@@ -23,7 +23,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, desborde, exigir, salir  # noqa: E402
 
 
 def instalar_academics(page) -> None:
@@ -41,7 +41,7 @@ def crear_ramo(page, codigo="MA1001", nombre="Cálculo I", creditos="6") -> None
     page.locator("#ramo-nombre").fill(nombre)
     page.locator("#ramo-creditos").fill(creditos)
     page.locator("#ramo-curso").check()
-    page.locator('#ramo-form button[type="submit"]').click()
+    page.locator("#modal-guardar").click()
     page.wait_for_timeout(150)
 
 
@@ -64,12 +64,14 @@ def main() -> int:
             exigir(page.locator("#calif-vacio").is_visible(), "calif: sin ramos muestra el vacío", fallas)
             page.locator("#calif-crear-ramo").click()
             page.wait_for_timeout(100)
-            exigir(page.locator("#ramo-form").is_visible(), "calif: el vacío lleva a crear el ramo", fallas)
+            exigir(page.locator("#modal-editor").is_visible() and
+                   page.locator("#modal-editor").get_attribute("data-editor") == "ramo",
+                   "calif: el vacío lleva a crear el ramo", fallas)
             page.locator("#ramo-codigo").fill("MA1001")
             page.locator("#ramo-nombre").fill("Cálculo I")
             page.locator("#ramo-creditos").fill("6")
             page.locator("#ramo-curso").check()
-            page.locator('#ramo-form button[type="submit"]').click()
+            page.locator("#modal-guardar").click()
             page.wait_for_timeout(150)
 
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
@@ -78,6 +80,7 @@ def main() -> int:
             exigir("en curso" in page.locator(".calif-resumen").inner_text(),
                    "calif: sin notas el curso sigue en curso", fallas)
 
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-comp-nombre="0"]', "Control 1")
@@ -90,6 +93,7 @@ def main() -> int:
             cambiar(page, '[data-cat-nombre="1"]', "Tareas")
             cambiar(page, '[data-cat-peso="0"]', "50")
             cambiar(page, '[data-cat-peso="1"]', "50")
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-comp-nombre="1"]', "Tarea 1")
@@ -101,6 +105,7 @@ def main() -> int:
             exigir("en curso" in page.locator(".calif-resumen").inner_text(),
                    "calif: con examen pendiente el curso sigue en curso", fallas)
 
+            abrir_plegable(page, "[data-exam-nota]")
             cambiar(page, "[data-exam-nota]", "6.0")
             exigir("5.7" in page.locator(".calif-resumen").inner_text(),
                    "calif: final 5.7 con examen al 40 %", fallas)
@@ -108,6 +113,7 @@ def main() -> int:
             exigir("5.8" in page.locator(".calif-resumen").inner_text(),
                    "calif: final 5.8 con examen al 50 %", fallas)
 
+            abrir_plegable(page, "[data-exim-activa]")
             page.locator("[data-exim-activa]").check()
             page.wait_for_timeout(200)
             page.locator('[data-accion-calif="cond-add"]').click()
@@ -168,6 +174,7 @@ def main() -> int:
             crear_ramo(page)
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
             page.wait_for_timeout(200)
+            abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
             page.wait_for_timeout(150)
             cambiar(page, '[data-comp-nota="0"]', "5.0")

@@ -63,6 +63,41 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             abrir_todo(page)
+            # 0) Rótulos: ninguna clave se dibuja como texto y ninguna clave usada
+            #    en el HTML o en el JS se queda sin traducción. El rótulo «aj.letra»
+            #    se veía tal cual en Ajustes porque el diccionario no lo tenía.
+            dicc = page.evaluate(
+                "({es:Object.keys(window.MIMO_I18N.es),en:Object.keys(window.MIMO_I18N.en),"
+                "zh:Object.keys(window.MIMO_I18N.zh)})")
+            base = set(dicc["es"])
+            faltan = sorted(base - set(dicc["en"])) + sorted(base - set(dicc["zh"]))
+            exigir(not faltan, f"idioma: el diccionario está completo en inglés y chino — {faltan[:4]}", fallas)
+            usadas = set()
+            for fichero in [RAIZ / "app" / "index.html"] + sorted((RAIZ / "app" / "js").rglob("*.js")):
+                for clave in re.findall(r'data-i18n[a-z-]*="([^"]+)"', fichero.read_text(encoding="utf-8")):
+                    if re.fullmatch(r"[a-z][a-zA-Z0-9.]*", clave):
+                        usadas.add(clave)
+            huerfanas = sorted(usadas - base)
+            exigir(not huerfanas, f"idioma: toda clave data-i18n existe en el diccionario — {huerfanas[:4]}", fallas)
+            dibujadas: list[str] = []
+            for sec in SECCIONES:
+                page.locator(f'#tabs [data-ir="{sec}"]').click()
+                page.wait_for_timeout(160)
+                dibujadas += page.evaluate("""() => {
+                  // Una clave es una palabra con puntos, en minúsculas y sin espacios.
+                  const pareceClave = t => {
+                    if (!/^[a-z][a-z0-9.]*$/.test(t)) return false;
+                    const partes = t.split('.');
+                    return partes.length > 1 && partes.every(p => p.length > 0);
+                  };
+                  return Array.from(document.querySelectorAll('body *')).filter(e => {
+                    if (e.children.length) return false;
+                    const r = e.getBoundingClientRect();
+                    return r.width > 0 && r.height > 0 && pareceClave((e.textContent || '').trim());
+                  }).map(e => e.textContent.trim());
+                }""")
+            exigir(not dibujadas, f"idioma: ninguna clave se dibuja como rótulo — {sorted(set(dibujadas))[:4]}", fallas)
+
             page.locator("#btn-ajustes").click()
             page.wait_for_timeout(120)
             page.locator("#pref-idioma").select_option("zh")
@@ -89,7 +124,7 @@ def main() -> int:
                    "zh/tareas: placeholder de tarea", fallas)
             exigir(page.locator("#tarea-tipo option").nth(0).inner_text() == "任务",
                    "zh/tareas: opción Tarea", fallas)
-            page.locator("#tarea-cancelar").click()
+            page.locator("#modal-cancelar").click()
 
             page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(120)
             page.locator("#btn-nueva-nota").click(); page.wait_for_timeout(100)

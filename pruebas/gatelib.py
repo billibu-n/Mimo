@@ -39,12 +39,15 @@ class Navegador:
         if self.pw:
             self.pw.stop()
 
-    def abrir(self, fichero: Path, ancho: int = 1440, alto: int = 900, reset: bool = True):
+    def abrir(self, fichero: Path, ancho: int = 1440, alto: int = 900, reset: bool = True,
+              reloj: bool = False):
         ctx = self.browser.new_context(viewport={"width": ancho, "height": alto})
         page = ctx.new_page()
         errores = []
         page.on("console", lambda m: errores.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
         page.on("pageerror", lambda e: errores.append(f"pageerror: {e}"))
+        if reloj:
+            page.clock.install()
         url = fichero.resolve().as_uri() + ("?reset=1" if reset else "")
         page.goto(url, wait_until="load")
         page.wait_for_timeout(250)
@@ -56,6 +59,20 @@ def desborde(page) -> int:
         "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
         " document.body.scrollWidth - document.body.clientWidth)"
     ))
+
+
+def abrir_plegable(page, selector: str) -> None:
+    """Deja ABIERTO el plegable que contiene `selector` (si no lo está ya).
+
+    Los items viven dentro de una barra que nace cerrada; abrirla a ciegas la
+    cerraría cuando el flujo ya la había abierto.
+    """
+    page.evaluate("""sel => {
+        const item = document.querySelector(sel);
+        const caja = item && item.closest ? item.closest('.plegable') : null;
+        if (caja && !caja.classList.contains('on')) caja.querySelector('.plegable__cab').click();
+    }""", selector)
+    page.wait_for_timeout(220)
 
 
 def texto_tabs(page):

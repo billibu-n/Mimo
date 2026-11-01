@@ -15,7 +15,7 @@
 .periodo{background:transparent;border:1px solid transparent;color:var(--muted);font-size:var(--fs-sm);padding:0 var(--sp-2);height:var(--sp-7);border-radius:var(--r-sm)}
 .periodo:hover{background:var(--sup2);color:var(--fg)}
 .tab-add{
-  margin-left:auto;display:inline-flex;align-items:center;justify-content:center;
+  margin-left:0;display:inline-flex;align-items:center;justify-content:center;
   width:var(--sp-7);height:var(--sp-7);flex:none;
   border:1px dashed var(--line);border-radius:var(--r-sm);
   background:transparent;color:var(--muted);
@@ -84,6 +84,97 @@ body.split #contenido-b{display:block}
 .modal__caja{width:min(760px,100%);max-height:86vh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-5);box-shadow:0 12px 40px rgb(0 0 0 / .25)}
 .modal__cab{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sp-3)}
 .modal__cab h2{margin:0;font-size:var(--fs-xl)}
+/* la ventana de edición: los campos se declaran como datos y la ventana los pinta,
+   así todos los editores se ven igual sin repetir la plantilla en cada vista */
+.modal-editor-caja{width:min(520px,100%)}
+.modal-campos{display:flex;flex-direction:column;gap:var(--sp-3);margin-top:var(--sp-4)}
+.modal-campos .campo{display:flex;flex-direction:column;gap:var(--sp-1)}
+.modal-campos .campo>span{font-size:var(--fs-sm);color:var(--muted)}
+.modal-campos .campo>small{font-size:var(--fs-xs)}
+.modal-campos .campo>input,.modal-campos .campo>select,.modal-campos .campo>textarea{width:100%}
+.modal-campos .campo>input[type="color"]{width:var(--sp-8);height:var(--sp-7);padding:2px}
+.modal-pie{margin-top:var(--sp-4)}
+.alarma-acciones{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-2)}
+
+/* ---- el plegable: una barra por categoría ------------------------------------
+   Copia medida de la app anterior (`.barra-extraible`): barra con borde y fondo
+   de superficie, cabecera que se tiñe al pasar el ratón, y al abrir toma el
+   acento del tema, la flecha gira 90° y el cuerpo se despliega deslizándose.
+   Aquí el estado lo pone `on` (no el atributo `open` de <details>), para poder
+   animar también el cierre; cerrado, el cuerpo queda `inert` (no se tabula). */
+.plegable{border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup);overflow:hidden;
+  transition:border-color var(--t) var(--curva),box-shadow var(--t) var(--curva)}
+.plegable + .plegable{margin-top:var(--sp-2)}
+.plegable.on{border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 12%,transparent)}
+.plegable__cab{display:flex;align-items:center;gap:var(--sp-2);width:100%;margin:0;border:0;
+  padding:var(--sp-2) var(--sp-3);background:none;color:var(--fg);font:inherit;font-size:var(--fs-md);
+  text-align:left;cursor:pointer;
+  transition:background var(--t) var(--curva),color var(--t) var(--curva),border-color var(--t) var(--curva)}
+.plegable__cab:hover{background:var(--sup2)}
+.plegable.on > .plegable__cab{background:var(--info-bg);color:var(--ac);font-weight:600;border-bottom:1px solid var(--line2)}
+.plegable__cab:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
+.plegable__tit{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:var(--sp-2);overflow:hidden}
+.plegable__tit>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plegable__cuenta{flex:none;font-size:var(--fs-xs);font-weight:400;color:var(--muted)}
+.plegable__flecha{flex:none;color:var(--muted);font-size:var(--fs-sm);transform:scaleX(-1);
+  transition:transform var(--t) var(--curva)}
+.plegable.on .plegable__flecha{transform:rotate(90deg)}
+.plegable__cuerpo{display:grid;grid-template-rows:0fr;transition:grid-template-rows .18s var(--curva)}
+.plegable.on .plegable__cuerpo{grid-template-rows:1fr}
+.plegable__dentro{overflow:hidden;min-height:0}
+.plegable__relleno{padding:var(--sp-3)}
+@media (prefers-reduced-motion:reduce){
+  .plegable,.plegable__cab,.plegable__cuerpo,.plegable__flecha{transition:none}
+}
+.modal-pie .btn{margin-left:0}
+
+/* ---- identidad del ramo: color e icono ---------------------------------------
+   El color llega como --ramo (lo pone js/dominio/identidad.js); aquí solo se pinta.
+   El icono va en la lista, en la cabecera y en el selector, siempre igual. */
+.ramo-punto{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none;background:var(--ramo,var(--muted))}
+.ramo-ico{color:var(--ramo,var(--muted));flex:none;vertical-align:middle}
+/* Cuando el icono va al lado de texto (panel, filas sueltas) no se pega. */
+.panel__cuerpo h3 .ramo-ico,.panel h3 .ramo-ico{margin-right:var(--sp-1)}
+.tarea-meta .ramo-punto,.tarjeta-tarea .ramo-punto{margin-right:var(--sp-1);vertical-align:middle}
+.ramo-ico--lg{width:26px;height:26px}
+.calif-cab__izq{display:flex;align-items:center;gap:var(--sp-2);min-width:0}
+.calif-cab__der{display:flex;align-items:center;gap:var(--sp-2)}
+.calif-ident{display:inline-flex;align-items:center;gap:var(--sp-1)}
+.calif-ident .ramo-ico{width:14px;height:14px}
+.ident-preview{display:flex;align-items:center;gap:var(--sp-3);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3);background:var(--sup)}
+.ident-preview b{display:block;font-size:var(--fs-md)}
+.ident-preview small{display:block;font-size:var(--fs-xs);color:var(--muted)}
+.ident-grupo{display:flex;flex-direction:column;gap:var(--sp-1);margin-bottom:var(--sp-3)}
+.ident-etq{font-size:var(--fs-sm);color:var(--muted)}
+.ident-rgb{width:var(--sp-8);height:var(--sp-7);padding:2px}
+.ident-paleta{display:flex;flex-wrap:wrap;gap:var(--sp-1)}
+.ident-color{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:var(--sw);cursor:pointer;padding:0}
+.ident-color[aria-pressed="true"]{border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 35%,transparent)}
+.ident-color:focus-visible,.ident-ico:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.ident-buscar{width:100%;margin-bottom:var(--sp-1)}
+.ident-filtros{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin-bottom:var(--sp-1)}
+.ident-cat{border:1px solid var(--line);border-radius:999px;background:var(--sup);color:var(--muted);font:inherit;font-size:var(--fs-xs);padding:2px var(--sp-2);cursor:pointer}
+.ident-cat.on{background:var(--ac);border-color:var(--ac);color:var(--ac-txt);font-weight:600}
+.ident-cat:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+/* La celda es icono + nombre. Todas las filas miden lo mismo (1fr) y dentro
+   el icono queda arriba, la etiqueta justo debajo con el mismo hueco, y el
+   sobrante se va al pie: así una etiqueta de dos líneas no descoloca la fila. */
+.ident-iconos{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--sp-8) + var(--sp-8) + var(--sp-1)),1fr));grid-auto-rows:calc(var(--sp-8) + var(--sp-7));gap:var(--sp-1);max-height:calc(var(--sp-8) * 7);overflow:auto;padding:2px;scrollbar-gutter:stable}
+.ident-cuenta{margin:var(--sp-1) 0 0;font-size:var(--fs-xs);color:var(--muted)}
+.ident-vacio{grid-column:1/-1;font-size:var(--fs-sm);padding:var(--sp-2) 0}
+.ident-ico{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:var(--sp-1);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--sup);color:var(--fg);cursor:pointer;padding:var(--sp-1) var(--sp-1) var(--sp-2);text-align:center}
+.ident-ico .ramo-ico{width:22px;height:22px;flex:none;margin-top:2px;color:var(--fg)}
+/* La etiqueta reserva SIEMPRE dos líneas: así una palabra larga ("Estetoscopio")
+   parte y ninguna celda queda más baja que su vecina. */
+.ident-ico__nom{width:100%;height:calc(2 * 1.2em);font-size:var(--fs-xs);font-weight:400;
+  line-height:1.2;color:var(--muted);text-align:center;
+  hyphens:auto;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
+.ident-ico[aria-pressed="true"]{border-color:var(--ac);background:var(--info-bg)}
+.ident-ico[aria-pressed="true"] .ramo-ico,
+.ident-ico[aria-pressed="true"] .ident-ico__nom{color:var(--ac)}
+.ident-ico[aria-pressed="true"] .ident-ico__nom{font-weight:600}
 .modal-historial-caja{width:min(560px,100%)}
 .historial-acciones{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:var(--sp-3) 0}
 .historial-acciones .btn{justify-content:space-between;min-height:var(--sp-8)}
@@ -130,6 +221,8 @@ body.split #contenido-b{display:block}
 }
 @media (max-width:520px){
   .badge{display:none}
+  .topbar .marca .wordmark{display:none}
+  .topbar .buscador kbd{display:none}
   .nav-acciones .periodo{display:none}
   .panel{width:100%}
   .modal{padding:var(--sp-2)}
@@ -144,10 +237,10 @@ body.split #contenido-b{display:block}
 
 /* ---- geometría estable: el panel no mueve header ni footer ---- */
 body{padding-bottom:var(--alto-pie)}
-.shell{height:calc(100vh - var(--alto-topbar) - var(--alto-navbar) - var(--alto-pie));min-height:0;align-items:stretch}
-.contenido{overflow:auto;min-height:0}
+.shell{flex:1;min-height:0;align-items:stretch;transition:margin-left .18s var(--curva)}
+.contenido{overflow:auto;min-height:0;scrollbar-gutter:stable}
 .contenido-b{height:100%;max-height:none;overflow:auto}
-.panel{height:100%;overflow:auto}
+.panel{height:100%}
 .footer{
   position:fixed;left:0;right:0;bottom:0;height:var(--alto-pie);z-index:30;
   display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-3);
@@ -167,9 +260,22 @@ body{padding-bottom:var(--alto-pie)}
 .footer__punto--gris{background:var(--muted2)}
 .footer__punto--girando{background:var(--ok);animation:pulso-punto 1.1s ease-in-out infinite}
 @keyframes pulso-punto{0%,100%{opacity:1}50%{opacity:.35}}
-@media (min-width:1256px){body.panel-oculto .panel{display:none}}
+#btn-sync.sync--ok{color:var(--ok)}
+#btn-sync.sync--warn{color:var(--warn)}
+#btn-sync.sync--err{color:var(--bad)}
+#btn-sync.sync--gris{color:var(--muted)}
+#btn-sync.sync--girando{animation:pulso-punto 1.1s ease-in-out infinite}
+/* El panel se abre y se cierra en un solo paso: animar el ancho reflotaba el
+   calendario fotograma a fotograma y lo deformaba. Lo que se anima (el chevron y el
+   cajón del móvil) no toca la maqueta. */
+.panel{display:flex;flex-direction:column;overflow:hidden;
+  transition:width .18s var(--curva),opacity .18s var(--curva),padding .18s var(--curva),border-left-width .18s var(--curva)}
+#panel-cuerpo{overflow:auto;min-height:0;flex:1}
+@media (min-width:1256px){
+  body.panel-oculto .panel{width:0;opacity:0;padding-left:0;padding-right:0;border-left-width:0}
+}
 @media (max-width:1255px){
-  .panel{top:calc(var(--alto-topbar) + var(--alto-navbar));bottom:var(--alto-pie);height:auto}
+  .panel{top:calc(var(--alto-topbar) + var(--alto-navbar-viva));bottom:var(--alto-pie);height:auto}
   }
 
 /* ---- U2: árbol, tablero y detalle de tareas ---- */
@@ -189,8 +295,27 @@ body{padding-bottom:var(--alto-pie)}
 .marca:hover img{transform:scale(1.06)}
 .navbar .tabs{flex:1;min-width:0}
 .navbar .nav-acciones{margin-left:auto;flex:none}
-.tab{width:40px;justify-content:center;padding:0}
-.tab span{display:none}
+body.nav-oculta{--alto-navbar-viva:0px}
+body.nav-oculta .navbar{padding-top:0;padding-bottom:0;border-bottom-width:0}
+/* Ocultar manda sobre el carril, esté desplegado o plegado: si no, con el carril
+   en 64 px el ☰ no hacía nada. */
+body.nav-oculta.nav-izq .navbar,
+body.nav-oculta.nav-izq.nav-plegada .navbar{width:0;padding:0;border-right-width:0}
+body.nav-oculta.nav-izq .shell,
+body.nav-oculta.nav-izq.nav-plegada .shell{margin-left:0}
+.tab__nom{white-space:nowrap}
+.tab-plegar{display:inline-flex;align-items:center;justify-content:center;width:var(--sp-7);height:var(--sp-7);flex:none;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--muted);cursor:pointer}
+.tab-plegar:hover{background:var(--sup2);color:var(--fg)}
+.tab-plegar .icono{transition:transform var(--t) var(--curva)}
+body.nav-plegada .tab-plegar .icono{transform:rotate(180deg)}
+/* plegada: sólo iconos, y el botón queda para volver a abrirla */
+body.nav-plegada .tab{width:40px;justify-content:center;padding:0}
+body.nav-plegada .tab__nom{display:none}
+/* ventana angosta: se pliega sola sin tocar la preferencia */
+@media (max-width:1180px){
+  body:not(.nav-izq) .tab{width:40px;justify-content:center;padding:0}
+  body:not(.nav-izq) .tab__nom{display:none}
+}
 .btn-periodo-nuevo{width:32px;height:32px;min-height:32px;padding:0;font-size:1.1rem;line-height:1}
 .periodo{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .periodo-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-2);margin:var(--sp-3) 0}
@@ -210,7 +335,7 @@ body{padding-bottom:var(--alto-pie)}
 @keyframes mimo-brinco{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-4px) rotate(-6deg)}70%{transform:translateY(1px) rotate(4deg)}}
 body.split #contenido{flex:1 1 50%;max-width:none;margin:0}
 body.split #contenido-b{flex:1 1 50%;width:auto;max-width:none}
-.navbar .tabs{margin-left:auto}
+.navbar .tabs{justify-content:flex-end}
 body.split #contenido{width:auto}
 .ajustes-grid .campo{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--muted);margin:var(--sp-2) 0}
 .ajustes-grid .campo select{max-width:160px}
@@ -218,13 +343,20 @@ body.split #contenido{width:auto}
 .navbar .tabs{justify-content:flex-end}
 
 /* ---- navegación en rail izquierdo (preferencia) ---- */
-body.nav-izq .navbar{position:fixed;left:0;top:var(--alto-topbar);bottom:var(--alto-pie);width:64px;height:auto;flex-direction:column;align-items:center;padding:var(--sp-2) 0;border-right:1px solid var(--line);border-bottom:0;z-index:25}
-body.nav-izq .navbar .tabs{flex-direction:column;justify-content:flex-start;align-items:center;margin:0;width:100%;overflow:visible}
-body.nav-izq .navbar .tab{width:44px;height:44px}
+body.nav-izq .navbar{position:fixed;left:0;top:var(--alto-topbar);bottom:var(--alto-pie);width:184px;height:auto;flex-direction:column;align-items:stretch;padding:var(--sp-2);border-right:1px solid var(--line);border-bottom:0;z-index:25;transition:width .18s var(--curva),padding .18s var(--curva),border-color .18s var(--curva)}
+body.nav-izq .navbar .tabs{flex-direction:column;justify-content:flex-start;align-items:stretch;margin:0;width:100%;overflow:visible}
+body.nav-izq .navbar .tab{width:100%;height:44px;justify-content:flex-start;padding:0 var(--sp-2)}
 body.nav-izq .navbar .nav-acciones{flex-direction:column;margin:0;gap:var(--sp-1)}
 body.nav-izq .navbar .periodo{display:none}
-body.nav-izq .navbar .tab-add{margin:0}
-body.nav-izq .shell{margin-left:64px}
+body.nav-izq .navbar .tab-add{margin:var(--sp-2) 0 0;width:100%}
+body.nav-izq .navbar .tab-plegar{align-self:flex-end;margin-top:auto}
+body.nav-izq .shell{margin-left:184px}
+body.nav-izq.nav-plegada .navbar{width:64px;align-items:center}
+body.nav-izq.nav-plegada .navbar .tabs{align-items:center}
+body.nav-izq.nav-plegada .navbar .tab{width:44px;justify-content:center;padding:0}
+body.nav-izq.nav-plegada .navbar .tab-add{width:44px;margin:var(--sp-2) 0 0}
+body.nav-izq.nav-plegada .navbar .tab-plegar{align-self:center}
+body.nav-izq.nav-plegada .shell{margin-left:64px}
 
 /* ---- acciones universales: clic derecho y borrado ---- */
 .menu-ctx{
@@ -269,15 +401,12 @@ body.nav-izq .shell{margin-left:64px}
 /* ---- U4c: Estudio ---- */
 
 /* ---- U5: temporizador, pomodoro y alarmas ---- */
-.alarma-form{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;justify-content:center;margin-bottom:var(--sp-2)}
-.alarma-form #alarma-hora{width:130px}
-.alarma-form #alarma-texto{flex:1 1 180px;width:auto;min-width:140px}
 .alarma-lista{display:flex;flex-direction:column;gap:2px}
 .alarma-item{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-1) var(--sp-2);font-size:var(--fs-xs)}
 .alarma-item b{color:var(--ac);font-variant-numeric:tabular-nums}
 .alarma-item span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
 .alarma-item.off{opacity:.55}
-.alarma-item .btn{min-height:24px;font-size:10px}
+.alarma-item .btn{min-height:var(--sp-6);font-size:var(--fs-xs)}
 
 /* ---- U6: buscador global ---- */
 .modal-buscar .modal__caja{width:min(680px,100%);padding:var(--sp-4)}
@@ -286,7 +415,7 @@ body.nav-izq .shell{margin-left:64px}
 .buscar-resultados{display:flex;flex-direction:column;gap:2px;max-height:52vh;overflow:auto;margin-top:var(--sp-2)}
 .buscar-res{display:grid;grid-template-columns:68px minmax(0,1fr) auto;align-items:center;gap:var(--sp-2);width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);font:inherit;padding:var(--sp-2);cursor:pointer}
 .buscar-res:hover,.buscar-res:focus-visible{background:var(--sup2);border-color:var(--line2)}
-.buscar-tipo{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ac);border:1px solid color-mix(in srgb,var(--ac) 35%,var(--line));border-radius:4px;text-align:center;padding:2px 3px}
+.buscar-tipo{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;color:var(--ac);border:1px solid color-mix(in srgb,var(--ac) 35%,var(--line));border-radius:4px;text-align:center;padding:2px 3px}
 .buscar-txt{min-width:0}
 .buscar-txt b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .buscar-txt small{display:block;color:var(--muted);font-size:var(--fs-xs);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
@@ -418,7 +547,7 @@ body.nav-izq .shell{margin-left:64px}
 .semana-chip{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:var(--r-sm);background:var(--sup);color:var(--fg);padding:var(--sp-1) var(--sp-2);font:inherit;text-align:left;cursor:pointer;min-height:48px}
 .semana-chip b{font-size:var(--fs-sm)}
 .semana-chip span{font-size:var(--fs-xs);font-weight:600}
-.semana-chip small{font-size:10px;color:var(--muted)}
+.semana-chip small{font-size:var(--fs-xs);color:var(--muted)}
 .semana-chip.tipo-receso{border-left-color:var(--warn)}
 .semana-chip.tipo-receso span{color:var(--warn)}
 .semana-chip.tipo-examenes{border-left-color:var(--bad)}

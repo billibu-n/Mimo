@@ -6,7 +6,7 @@ impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 pruebas/correr-gates.py     # los 19 gates web, resumen al final
+python3 pruebas/correr-gates.py     # los 27 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila. El gate lo arranca en modo headless
@@ -28,7 +28,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-shell` | el shell universal: instalar Tiempo, quitar hijo, kit Academics, tarea, nota, panel por sección, temas | sin demo: mide `app/index.html` |
 | `gate-bloques` | registro válido, host dinámico, montaje/desmontaje, base fija, dependencias, eventos de dominio, ficha de catálogo, Calificaciones sin Malla y datos conservados; Tiempo sin Estudio y Estudio sin Tiempo | registro duplicado, base removible, host que no se desmonta, curso o sesión perdidos, evento que no se emite |
 | `gate-arquitectura` | estático: orden de scripts, registro/dominio sin DOM, sin borrado en cascada, fuente de calendario, secciones fuera de `index.html`, vistas por bloque y gates en el arnés | un dominio toca `document`/`estado`, falta una vista, vuelve la copia de eventos o reaparece `evaluaciones` |
-| `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 9 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
+| `gate-diseno` | 5 tamaños, 8 espacios, 3 radios, 1 duración, 10 temas, contraste AA | `fg = bg` en un tema debe salir 1 |
 | `gate-datos` | formato 2 -> v3 conserva 87 cursos, 18 aprobados, 54 sesiones y 3.838 min; ida y vuelta | catálogo no objeto debe rechazarse |
 | `gate-busqueda` | Ctrl+K encuentra tareas, notas, eventos, ramos y periodos y navega | sin demo: mide `app/index.html` |
 | `gate-correcciones` | respaldo académico importado (ramos, tareas, sesiones, metas, bloques), reloj editable, sesión corregida, clic derecho, pareja de temas, 4 grupos de Ajustes, KaTeX en Notas, enlace de registro y espaciado de la sync en 1440/411 | importación incompleta, reloj no editable, tema sin pareja, fórmula rota, sin enlace o tarjeta sin aire |
@@ -39,6 +39,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-respaldo` | exportar/importar conserva los datos, crea copia previa, rechaza versión futura y el banner de cuota aparece si localStorage falla | importación sin copia previa, versión 99 aplicada o fallo de cuota silencioso |
 | `gate-actualizacion` | configuración Tauri del updater, tarjeta de Ajustes, versión única y manifiesto por tipo de paquete (sin genérico ni Arch) | falta pubkey, endpoint `latest`, manifiesto con clave genérica o firma ausente |
 | `gate-tutorial` | `app/tutorial.json` es un `mimo.backup` con la versión de la app, el proyecto Mimo, 11 tareas y la nota con Markdown | JSON inválido, versión distinta, sin proyecto o sin la nota |
+| `gate-categorias` | categorías de evento sueltas: creación desde la ventana y desde el carril, etiqueta en mes/semana/agenda/detalle, color estable, persistencia y 411 | sin `MimoIdentidad` la etiqueta pierde el color |
 
 ## Fixtures
 

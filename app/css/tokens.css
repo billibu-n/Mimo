@@ -8,42 +8,61 @@
 
 :root{
   /* 5 tamaños de letra. Lo que no quepa en uno de estos, no entra. */
-  --fs-xs:.68rem;
-  --fs-sm:.76rem;
-  --fs-md:.82rem;
-  --fs-lg:1.05rem;
-  --fs-xl:1.3rem;
+  --fs-xs:.7rem;
+  --fs-sm:.8rem;
+  --fs-md:.9rem;
+  --fs-lg:1.12rem;
+  --fs-xl:1.4rem;
+
+  /* Factor de escala: lo escribe Ajustes con «Tamaño de letra» (90 a 140 %).
+     La letra crece con el `font-size` de la raíz; los huecos y las alturas,
+     con esto, para que las cajas crezcan con el texto y no lo desborden. */
+  --esc:1;
 
   /* 8 espacios. El ritmo vertical y horizontal sale de aquí. */
-  --sp-1:4px;
-  --sp-2:8px;
-  --sp-3:12px;
-  --sp-4:16px;
-  --sp-5:20px;
-  --sp-6:24px;
-  --sp-7:32px;
-  --sp-8:40px;
+  --sp-1:calc(4px * var(--esc));
+  --sp-2:calc(8px * var(--esc));
+  --sp-3:calc(12px * var(--esc));
+  --sp-4:calc(16px * var(--esc));
+  --sp-5:calc(20px * var(--esc));
+  --sp-6:calc(24px * var(--esc));
+  --sp-7:calc(32px * var(--esc));
+  --sp-8:calc(40px * var(--esc));
 
   /* 3 radios: control, tarjeta y contenedor grande. */
-  --r-sm:6px;
-  --r-md:9px;
-  --r-lg:14px;
+  --r-sm:calc(6px * var(--esc));
+  --r-md:calc(9px * var(--esc));
+  --r-lg:calc(14px * var(--esc));
 
   /* 1 duración y 1 curva para toda la app. */
   --t:.12s;
   --curva:cubic-bezier(.4,0,.2,1);
 
-  /* Medidas del shell viejo, las que el dueño reconoce. */
-  --alto-topbar:53px;
-  --alto-navbar:55px;
+  /* Medidas del shell viejo, las que el dueño reconoce. Las franjas crecen con
+     la escala: si no, el armazón se queda a 53 px y la letra grande no cabe. */
+  --alto-topbar:calc(53px * var(--esc));
+  --alto-navbar:calc(55px * var(--esc));
+  /* El alto que ocupa de verdad: pasa a 0 cuando la barra se oculta (☰). */
+  --alto-navbar-viva:var(--alto-navbar);
   --ancho-contenido:1240px;
-  --alto-kpi:68px;
-  --alto-pie:42px;
+  --alto-kpi:calc(68px * var(--esc));
+  --alto-pie:calc(42px * var(--esc));
   --ancho-rail:222px;
   --ancho-panel:320px;
+  /* El recuadro del contenido: el relleno medido en Mimo Académics (22/24/52).
+     Crece con la escala, como el resto de las medidas del armazón. */
+  --lienzo-pad:calc(22px * var(--esc)) calc(24px * var(--esc)) calc(52px * var(--esc));
   --linea:1.45;
 
   /* Sombra y foco son forma, no tema; el tema puede pisarlas. */
   --sombra:0 1px 2px rgb(15 23 42 / .08);
   --foco:0 0 0 2px var(--sup), 0 0 0 4px var(--ac);
 }
+
+/* El lienzo del contenido es la segunda superficie del tema (`--sup2`), la misma
+   que usaba Mimo Académics para el recuadro de todas las secciones. Se nombra
+   aparte para que un tema pueda subirle o bajarle la intensidad sin tocar el
+   resto de las superficies; aquí no se escribe ningún color.
+   Va en `[data-tema]` y no en `:root` a propósito: el tema vive en el <body>, y
+   un valor compuesto en `:root` se resolvería allí, donde `--sup2` no existe. */
+[data-tema]{--lienzo:var(--sup2)}

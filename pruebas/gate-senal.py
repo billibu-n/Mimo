@@ -41,11 +41,17 @@ def abrir(nav, reset=True):
 
 
 def pie(page):
+    # El pie está siempre (R97 lo ocultaba sin nube; se revirtió).
     return page.locator("#pie-sync-texto").inner_text().strip()
 
 
 def punto(page):
     return page.locator("#pie-sync .footer__punto").get_attribute("class") or ""
+
+
+def indicador(page):
+    # El botón de la barra lleva el mismo estado, además del pie.
+    return (page.locator("#btn-sync").get_attribute("data-estado") or "").strip()
 
 
 def meta_con(page, **extra):
@@ -80,8 +86,14 @@ def main() -> int:
     with Navegador() as nav:
         ctx, page, errores = abrir(nav)
 
+        # 0. el pie se muestra siempre, haya nube o no
+        exigir(page.locator(".footer").is_visible(), "sin destino el pie se muestra igual", fallas)
+        exigir(page.locator("#btn-sync").is_visible(), "el indicador de la barra acompaña al pie", fallas)
+        exigir(indicador(page) == pie(page),
+               f"barra y pie dicen lo mismo — «{indicador(page)}» / «{pie(page)}»", fallas)
+
         # 1. sin cambios
-        exigir(pie(page) == "Local", f"sin cambios el pie dice Local (dice «{pie(page)}»)", fallas)
+        exigir(pie(page) == "Local", f"sin cambios el indicador dice Local (dice «{pie(page)}»)", fallas)
         exigir(not HORA.search(pie(page)), "sin cambios no se inventa una hora", fallas)
         exigir("--gris" in punto(page), "sin destino el punto es neutro", fallas)
 
@@ -102,6 +114,7 @@ def main() -> int:
         # 3. destino al día
         meta_con(page)
         cargar(page)
+        exigir(page.locator(".footer").is_visible(), "con destino el pie vuelve", fallas)
         texto = pie(page)
         exigir(texto.startswith("Nube · ") and bool(HORA.search(texto)), f"con destino al día dice Nube y la hora: «{texto}»", fallas)
         exigir("--ok" in punto(page), "al día el punto es verde", fallas)

@@ -32,7 +32,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
 
 DRAG = """([srcSel, dstSel]) => {
   const src = document.querySelector(srcSel), dst = document.querySelector(dstSel);
@@ -133,7 +133,7 @@ def main() -> int:
             page.locator("#btn-nuevo-evento").click(); page.wait_for_timeout(150)
             exigir(page.locator("#evento-titulo").get_attribute("placeholder") == "事件标题",
                    f"idioma: placeholder del evento en chino — {page.locator('#evento-titulo').get_attribute('placeholder')}", fallas)
-            page.locator("#evento-cancelar").click(); page.wait_for_timeout(100)
+            page.locator("#modal-cancelar").click(); page.wait_for_timeout(100)
 
             page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
             page.locator("#pref-idioma").select_option("en"); page.wait_for_timeout(250)
@@ -153,7 +153,8 @@ def main() -> int:
                    f"idioma: bandera genérica de Sudamérica — {bandera}", fallas)
 
             # Dos secciones y arrastre.
-            page.locator("#btn-split").click(); page.wait_for_timeout(150)
+            # El split ya no vive en la barra: se abre desde Ajustes (R3).
+            page.evaluate("document.querySelector('#lab-split').click()"); page.wait_for_timeout(200)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
                    "split: abre el diálogo de dos secciones", fallas)
             page.locator("#split-izq").select_option("tareas")
@@ -204,6 +205,7 @@ def main() -> int:
             }""", viernes)
             page.locator('#tabs [data-ir="calificaciones"]').click(); page.wait_for_timeout(250)
             page.locator('[data-calif="T1"]').click(); page.wait_for_timeout(150)
+            abrir_plegable(page, '[data-accion-calif="comp-cal"]')
             page.locator('[data-accion-calif="comp-cal"]').click(); page.wait_for_timeout(250)
             evs = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).eventos")
             exigir(not any(e.get("id") == "calif-T1-0" for e in evs),
@@ -226,7 +228,7 @@ def main() -> int:
             page.locator('#tabs [data-ir="tareas"]').click(); page.wait_for_timeout(120)
             page.locator("#btn-nueva-tarea").click()
             page.locator("#tarea-titulo").fill("Tarea enlazada")
-            page.locator("#tarea-form button[type=submit]").click(); page.wait_for_timeout(200)
+            page.locator("#modal-guardar").click(); page.wait_for_timeout(200)
             page.locator('#tabs [data-ir="notas"]').click(); page.wait_for_timeout(120)
             page.locator("#btn-nueva-nota").click()
             page.locator("#nota-titulo").fill("Nota enlazada"); page.wait_for_timeout(150)

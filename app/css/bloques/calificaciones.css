@@ -1,13 +1,14 @@
 /* calificaciones.css — estilos del bloque Calificaciones. */
 
 .calif-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--sp-4);align-items:start}
-.calif-curso-form{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--sp-2);margin-top:var(--sp-3)}
-.calif-curso-form .entrada{max-width:220px}
 .calif-lista{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--sp-2);max-height:calc(100vh - 220px);overflow:auto}
 .calif-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--sp-2);width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--fg);font:inherit;padding:var(--sp-2);margin-bottom:2px;cursor:pointer}
 .calif-item:hover{background:var(--sup2)}
 .calif-item.on{background:var(--sup2);border-color:var(--line)}
-.calif-item__nom{grid-column:1/-1;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calif-item__nom{grid-column:1/-1;display:flex;align-items:center;gap:var(--sp-1);min-width:0;
+  font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calif-item__nom .ramo-ico{width:15px;height:15px}
+.calif-item__nom b{flex:none}
 .calif-item__nom b{letter-spacing:.02em}
 .calif-item small{color:var(--muted);font-size:var(--fs-xs);margin-top:2px}
 .calif-item .pill{align-self:center;font-size:var(--fs-xs)}
@@ -22,9 +23,7 @@
 .calif-ajustes{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3)}
 .calif-ajustes .campo{display:flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
 .calif-ajustes .calif-num{width:72px}
-.calif-bloque{border-top:1px solid var(--line2);padding-top:var(--sp-3);margin-top:var(--sp-3)}
-.calif-bloque h3{margin:0 0 var(--sp-2);font-size:var(--fs-sm);display:flex;align-items:baseline;gap:var(--sp-2)}
-.calif-bloque h3 span{font-weight:400;font-size:var(--fs-xs);color:var(--muted)}
+.calif-nota{margin:0 0 var(--sp-2);font-size:var(--fs-xs)}
 .calif-tabla-wrap{overflow-x:auto;margin-bottom:var(--sp-2)}
 .calif-tabla{width:100%;border-collapse:collapse;min-width:520px}
 .calif-tabla th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:2px var(--sp-1);border-bottom:1px solid var(--line2)}
