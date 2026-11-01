@@ -3,7 +3,7 @@
 """gate-cromo.py — el armazón que sobra: panel, pie, barra y cifras.
 
 Mide sobre app/index.html:
-  1. al arrancar el panel está cerrado y no hay pie si no hay nube;
+  1. al arrancar el panel está cerrado y el pie sigue en su sitio (siempre);
   2. la vista dividida no ocupa un botón en la barra: vive en Ajustes;
   3. pedir el detalle de un evento abre el panel, aunque el panel estuviera cerrado;
   4. sin nube el estado de guardado vive en el botón de la barra, con su hora;
@@ -33,7 +33,7 @@ def main() -> int:
         # 1) arranque sobrio
         ancho = page.evaluate(ANCHO_PANEL)
         exigir(ancho <= 1, f"arranque: el panel está cerrado — {ancho:.0f} px", fallas)
-        exigir(not page.locator(".footer").is_visible(), "arranque: sin nube no hay pie", fallas)
+        exigir(page.locator(".footer").is_visible(), "arranque: el pie está siempre", fallas)
         exigir(page.locator("#btn-split").count() == 0,
                "barra: la vista dividida no ocupa un botón", fallas)
 
@@ -47,7 +47,7 @@ def main() -> int:
         tras = page.locator("#btn-sync").get_attribute("data-estado") or ""
         exigir(tras != estado and any(c.isdigit() for c in tras),
                f"indicador: un cambio pone la hora — «{estado}» → «{tras}»", fallas)
-        exigir(not page.locator(".footer").is_visible(), "indicador: el pie sigue sin mostrarse", fallas)
+        exigir(page.locator(".footer").is_visible(), "indicador: el pie sigue en su sitio tras un cambio", fallas)
 
         # 3) el detalle abre el panel
         page.locator('#tabs [data-ir="calendario"]').click()

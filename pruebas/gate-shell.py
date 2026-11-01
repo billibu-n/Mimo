@@ -254,7 +254,7 @@ def main() -> int:
                    "split: la interacción de la derecha abre su detalle", fallas)
             page.locator("#btn-cerrar-split").click()
             page.wait_for_timeout(60)
-            exigir(not page.locator(".footer").is_visible(), "geometría: sin nube el pie no se muestra", fallas)
+            exigir(page.locator(".footer").is_visible(), "geometría: el pie está siempre", fallas)
             antes_ancho = page.evaluate("document.querySelector('#panel').getBoundingClientRect().width")
             page.locator("#btn-panel").click()
             page.wait_for_timeout(300)   # el panel se desliza (180 ms)

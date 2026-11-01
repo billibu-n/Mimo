@@ -169,9 +169,6 @@ body{padding-bottom:var(--alto-pie)}
 .footer__punto--gris{background:var(--muted2)}
 .footer__punto--girando{background:var(--ok);animation:pulso-punto 1.1s ease-in-out infinite}
 @keyframes pulso-punto{0%,100%{opacity:1}50%{opacity:.35}}
-/* Sin destino en la nube no hay pie: el estado vive en el botón de la barra. */
-body.sin-pie{--alto-pie:0px}
-body.sin-pie .footer{display:none}
 #btn-sync.sync--ok{color:var(--ok)}
 #btn-sync.sync--warn{color:var(--warn)}
 #btn-sync.sync--err{color:var(--bad)}

@@ -444,9 +444,6 @@
     }
     if (salida) salida.textContent = texto;
     if (punto) punto.className = "footer__punto footer__punto--" + clase;
-    // Sin nube el pie no se muestra: el mismo estado vive en el botón de la barra,
-    // con su color y su detalle.
-    document.body.classList.toggle("sin-pie", !hayDestino);
     var detalle = [
       L("Último cambio guardado: ", "Last change saved: ", "上次更改已保存：") + (ultimoGuardado ? fechaHora(ultimoGuardado) : L("sin cambios", "no changes", "没有更改")),
       L("Última sincronización: ", "Last sync: ", "上次同步：") + (meta && meta.lastSyncAt ? fechaHora(new Date(meta.lastSyncAt).getTime()) : L("nunca", "never", "从未")),

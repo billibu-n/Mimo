@@ -41,16 +41,17 @@ def abrir(nav, reset=True):
 
 
 def pie(page):
-    # Sin nube el pie no se muestra: el estado se lee en el botón de la barra.
-    return (page.locator("#btn-sync").get_attribute("data-estado") or "").strip()
+    # El pie está siempre (R97 lo ocultaba sin nube; se revirtió).
+    return page.locator("#pie-sync-texto").inner_text().strip()
 
 
 def punto(page):
-    clase = page.locator("#btn-sync").get_attribute("class") or ""
-    for parte in clase.split():
-        if parte.startswith("sync--"):
-            return parte.replace("sync--", "--")
-    return ""
+    return page.locator("#pie-sync .footer__punto").get_attribute("class") or ""
+
+
+def indicador(page):
+    # El botón de la barra lleva el mismo estado, además del pie.
+    return (page.locator("#btn-sync").get_attribute("data-estado") or "").strip()
 
 
 def meta_con(page, **extra):
@@ -85,9 +86,11 @@ def main() -> int:
     with Navegador() as nav:
         ctx, page, errores = abrir(nav)
 
-        # 0. sin destino no hay pie; el indicador está en la barra
-        exigir(not page.locator(".footer").is_visible(), "sin destino el pie no se muestra", fallas)
-        exigir(page.locator("#btn-sync").is_visible(), "sin destino el indicador vive en la barra", fallas)
+        # 0. el pie se muestra siempre, haya nube o no
+        exigir(page.locator(".footer").is_visible(), "sin destino el pie se muestra igual", fallas)
+        exigir(page.locator("#btn-sync").is_visible(), "el indicador de la barra acompaña al pie", fallas)
+        exigir(indicador(page) == pie(page),
+               f"barra y pie dicen lo mismo — «{indicador(page)}» / «{pie(page)}»", fallas)
 
         # 1. sin cambios
         exigir(pie(page) == "Local", f"sin cambios el indicador dice Local (dice «{pie(page)}»)", fallas)
