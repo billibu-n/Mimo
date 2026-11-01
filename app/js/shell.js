@@ -1529,7 +1529,7 @@
       $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === "arbol"); });
     }
     guardar(); pintarTareas(); pintarPanel();
-    aviso(tipo === "proyecto" ? "Proyecto creado. Añade tareas dentro." : "Tarea creada.");
+    aviso(tipo === "proyecto" ? L("Proyecto creado. Añade tareas dentro.", "Project created. Add tasks inside.", "项目已创建。可在其中添加任务。") : L("Tarea creada.", "Task created.", "任务已创建。"));
     return true;
   }
   function borrarTarea(id) {
@@ -1560,6 +1560,29 @@
   }
   function notificarCurso(c) {
     if (c && window.MimoDominioCursos) MimoDominioCursos.actualizar(c, {});
+  }
+  /* El código es la identidad del ramo: al cambiarlo, todo lo que lo nombra
+     tiene que seguirlo. Antes se movían las notas y los requisitos, pero las
+     sesiones, las metas y los contextos se quedaban con el código viejo y
+     desaparecían de Estudio y Tiempo. */
+  function renombrarCursoEnEstado(viejo, nuevo) {
+    if (!viejo || !nuevo || viejo === nuevo) return;
+    var mismo = function (v) { return String(v || "").trim().toUpperCase() === viejo; };
+    (estado.sesiones || []).forEach(function (s) { if (s && mismo(s.ramo)) s.ramo = nuevo; });
+    var est = estado.estudio || {};
+    if (est.metasRamo && Object.prototype.hasOwnProperty.call(est.metasRamo, viejo)) {
+      est.metasRamo[nuevo] = est.metasRamo[viejo];
+      delete est.metasRamo[viejo];
+    }
+    Object.keys(est.minutosSemana || {}).forEach(function (semana) {
+      var fila = est.minutosSemana[semana];
+      if (!fila || !Object.prototype.hasOwnProperty.call(fila, viejo)) return;
+      fila[nuevo] = fila[viejo];
+      delete fila[viejo];
+    });
+    (estado.eventos || []).forEach(function (e) { if (e && mismo(e.contexto)) e.contexto = nuevo; });
+    (estado.tareas || []).forEach(function (t) { if (t && mismo(t.contexto)) t.contexto = nuevo; });
+    if (mismo(estado.tiempoRamo)) estado.tiempoRamo = nuevo;
   }
   function cursosEnCurso() {
     return (estado.cursos || []).filter(function (c) { return !!c.enCurso && !c.cerrado; });
@@ -1656,6 +1679,7 @@
       " · <b class=\"malla-estado-" + e + "\">" + esc(etiquetaEstado(e)) + "</b>" +
       (aprob ? " · " + Math.round(aprob) + esc(L(" % de aprobación", "% approval", "% 通过率")) : "") + "</p></div>" +
       '<div class="fila"><button class="btn btn--chico" type="button" data-malla-editar="' + esc(c.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+      '<button class="btn btn--chico" type="button" data-malla-identidad="' + esc(c.codigo) + '">' + esc(t("ident.abrir")) + '</button>' +
       '<button class="btn btn--chico" type="button" data-malla-limpiar>' + esc(L("Quitar selección", "Clear selection", "清除选择")) + '</button></div></div>' +
       '<div class="malla-chips"><div><b>' + esc(L("Antes necesitas", "You need first", "先修要求")) + '</b>' +
       (antes.length ? antes.map(function (x) { return chipRamo(x.cod, x.txt); }).join("") : '<span class="muted">' + esc(L("Sin prerrequisitos.", "No prerequisites.", "没有先修要求。")) + '</span>') +
@@ -1769,6 +1793,8 @@
     });
     var ed = $("#malla-detalle [data-malla-editar]");
     if (ed) ed.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(ed.getAttribute("data-malla-editar"))); });
+    var idm = $("#malla-detalle [data-malla-identidad]");
+    if (idm) idm.addEventListener("click", function () { abrirIdentidadCalif(idm.getAttribute("data-malla-identidad")); });
     var limpiar = $("#malla-detalle [data-malla-limpiar]");
     if (limpiar) limpiar.addEventListener("click", limpiarSeleccionMalla);
     if (window.requestAnimationFrame) window.requestAnimationFrame(dibujarLineasMalla); else setTimeout(dibujarLineasMalla, 30);
@@ -1809,6 +1835,16 @@
   function alternarRamo(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
     if (c.cerrado) { reabrirCurso(cod); return; }
+    cerrarCurso(cod);
+  }
+  /* Cerrar un curso es una sola acción venga de Malla, del panel o de
+     Calificaciones. Si no hay notas, se pide confirmación y se cierra como
+     aprobado manualmente, igual que antes desde Malla: así un curso que se
+     reabrió para elegir su icono se puede volver a cerrar desde donde se
+     esté mirando. */
+  function cerrarCurso(cod) {
+    var c = ramoPorCodigo(cod); if (!c) return;
+    if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
     var conCalif = instalado("calificaciones");
     var q = conCalif ? califDe(cod) : null;
     var P = q ? presentacionDe(q) : null, nf = q ? notaFinalDe(q) : null;
@@ -1817,29 +1853,22 @@
         ? L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？")
         : L("Calificaciones no está instalado. ¿Cerrar \"" + c.codigo + "\" como aprobado manualmente?", "Grades is not installed. Close \"" + c.codigo + "\" as passed manually?", "成绩未安装。要手动将“" + c.codigo + "”关闭为通过吗？");
       if (!window.confirm(pregunta)) return;
-      c.cerrado = true; c.aprobado = true; c.resultado = "aprobado";
-      c.notaCierre = null; c.cerradoEn = selloLocal(); c.enCurso = false;
-      notificarCurso(c);
-      guardar(); pintarMalla(); pintarPanel();
-      aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
+      marcarCierreCurso(c, "aprobado", null);
       return;
     }
     if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
-    cerrarCurso(cod);
-  }
-  function cerrarCurso(cod) {
-    var c = ramoPorCodigo(cod); if (!c) return;
-    if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
-    var q = califDe(cod), P = presentacionDe(q), nf = notaFinalDe(q);
-    if (P === null) { aviso(L("No hay notas para calcular el resultado del curso.", "There are no grades to calculate the course result.", "没有成绩可计算课程结果。")); return; }
-    if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
     var res = nf >= q.notaMin ? "aprobado" : "reprobado";
     if (!window.confirm(L("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) + "? Quedará " + res.toUpperCase() + ".", "Close \"" + c.codigo + " — " + c.nombre + "\" with a final grade of " + fmtNota(nf) + "? It will be " + res.toUpperCase() + ".", "以 " + fmtNota(nf) + " 的最终成绩关闭“" + c.codigo + " — " + c.nombre + "”？结果将为 " + res.toUpperCase() + "。"))) return;
+    marcarCierreCurso(c, res, nf);
+  }
+  function marcarCierreCurso(c, res, nf) {
     c.cerrado = true; c.aprobado = res === "aprobado"; c.resultado = res;
-    c.notaCierre = Math.round(nf * 10) / 10; c.cerradoEn = selloLocal(); c.enCurso = false;
+    c.notaCierre = nf === null ? null : Math.round(nf * 10) / 10;
+    c.cerradoEn = selloLocal(); c.enCurso = false;
     notificarCurso(c);
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
-    aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
+    if (nf === null) aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
+    else aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
   }
   function reabrirCurso(cod) {
     var c = ramoPorCodigo(cod); if (!c || !c.cerrado) return;
@@ -3299,6 +3328,7 @@
           '<div class="fila" style="margin-top:10px">' +
           (instalado("calificaciones") ? '<button class="btn btn--chico" type="button" data-abrir-calif="' + esc(ramo.codigo) + '">' + esc(L("Calificaciones", "Grades", "成绩")) + '</button>' : "") +
           '<button class="btn btn--chico" type="button" data-editar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Editar", "Edit", "编辑")) + '</button>' +
+          '<button class="btn btn--chico" type="button" data-identidad-ramo="' + esc(ramo.codigo) + '">' + esc(t("ident.abrir")) + '</button>' +
           '<button class="btn btn--chico" type="button" data-toggle-ramo="' + esc(ramo.codigo) + '">' + (ramo.cerrado ? L("Reabrir", "Reopen", "重新打开") : L("Cerrar curso", "Close course", "关闭课程")) + "</button>" +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-ramo="' + esc(ramo.codigo) + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
       } else if (pantalla === "calendario" && ev) {
@@ -3409,6 +3439,9 @@
     });
     $$("#panel-cuerpo [data-editar-ramo]").forEach(function (b) {
       b.addEventListener("click", function () { abrirFormularioRamo(ramoPorCodigo(b.getAttribute("data-editar-ramo"))); });
+    });
+    $$("#panel-cuerpo [data-identidad-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () { abrirIdentidadCalif(b.getAttribute("data-identidad-ramo")); });
     });
     $$("#panel-cuerpo [data-toggle-ramo]").forEach(function (b) {
       b.addEventListener("click", function () { alternarRamo(b.getAttribute("data-toggle-ramo")); });
@@ -4222,6 +4255,7 @@
       if (estado.ramoSel === viejo) estado.ramoSel = cod;
       if (estado.califSel === viejo) estado.califSel = cod;
       if (estado.califs && estado.califs[viejo]) { estado.califs[cod] = estado.califs[viejo]; delete estado.califs[viejo]; }
+      renombrarCursoEnEstado(viejo, cod);
       original.codigo = cod;
     }
     var c = original || { codigo: cod };
@@ -4244,7 +4278,7 @@
     notificarCurso(c);
     estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
     guardar(); pintarMalla(); pintarPanel(); abrirPanel();
-    aviso(original ? "Ramo guardado." : "Ramo creado.");
+    aviso(original ? L("Ramo guardado.", "Course saved.", "课程已保存。") : L("Ramo creado.", "Course created.", "课程已创建。"));
     return true;
   }
 

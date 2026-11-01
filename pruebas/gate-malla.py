@@ -90,6 +90,34 @@ def main() -> int:
             exigir("ANTES NECESITAS" in page.locator("#malla-detalle").inner_text().upper(),
                    "malla: el detalle muestra los prerrequisitos", fallas)
 
+            # R104: un ramo aprobado se puede identificar sin reabrirlo, y si se
+            # reabre para elegir icono se puede volver a cerrar desde Calificaciones.
+            page.locator("#malla-detalle [data-malla-identidad]").click()
+            page.wait_for_timeout(150)
+            exigir(page.locator("#modal-editor-tit").inner_text().strip() == "Identidad del ramo",
+                   "malla: el ramo aprobado abre su identidad", fallas)
+            page.locator("#ident-buscar").fill("libro")
+            page.wait_for_timeout(120)
+            page.locator("#ident-iconos .ident-ico").first.click()
+            page.locator("#modal-guardar").click()
+            page.wait_for_timeout(180)
+            estado = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).cursos.filter(c => c.codigo === 'MA1001')[0]")
+            exigir(estado.get("icono") == "i-ramo-libro" and estado["cerrado"] and estado["aprobado"],
+                   f"malla: elegir icono no reabre el ramo — {estado.get('icono')} / {estado['cerrado']}", fallas)
+            page.locator('.ramo-card[data-ramo="MA1001"]').click(button="right")
+            page.wait_for_timeout(120)
+            page.locator('#menu-ctx [data-accion="ramo-estado"]').click()
+            page.wait_for_timeout(150)
+            page.locator('#tabs .tab[data-ir="calificaciones"]').click()
+            page.wait_for_timeout(200)
+            page.locator('[data-accion-calif="cerrar-curso"]').click()
+            page.wait_for_timeout(180)
+            estado = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).cursos.filter(c => c.codigo === 'MA1001')[0]")
+            exigir(estado["cerrado"] and estado["aprobado"] and estado.get("icono") == "i-ramo-libro",
+                   f"malla: sin notas, Calificaciones cierra el ramo reabierto — {estado['cerrado']}", fallas)
+            page.locator('#tabs .tab[data-ir="malla"]').click()
+            page.wait_for_timeout(150)
+
             page.locator("#malla-rapido").check()
             page.locator('.ramo-card[data-ramo="MA2001"]').click()
             page.wait_for_timeout(100)

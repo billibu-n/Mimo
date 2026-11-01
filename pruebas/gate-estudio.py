@@ -135,6 +135,28 @@ def main() -> int:
             exigir(page.locator("#est-k-sesiones").inner_text().strip() == "2",
                    "estudio: la sesión de Tiempo entra en Estudio", fallas)
 
+            # R104/R105: cambiar el código del ramo arrastra sesiones y metas; la
+            # tabla y las horas siguen al ramo nuevo, no se queda el código viejo.
+            horas_antes = page.locator("#est-k-horas").inner_text().strip()
+            page.locator('#tabs .tab[data-ir="malla"]').click()
+            page.wait_for_timeout(120)
+            page.locator('.ramo-card[data-ramo="MA1001"]').click(button="right")
+            page.wait_for_timeout(100)
+            page.locator('#menu-ctx [data-accion="ramo-editar"]').click()
+            page.wait_for_timeout(120)
+            page.locator("#ramo-codigo").fill("MA1003")
+            page.locator("#modal-guardar").click()
+            page.wait_for_timeout(250)
+            page.locator('#tabs .tab[data-ir="estudio"]').click()
+            page.wait_for_timeout(200)
+            exigir(page.locator("#est-k-horas").inner_text().strip() == horas_antes,
+                   f"estudio: renombrar el ramo conserva las horas — {horas_antes} -> {page.locator('#est-k-horas').inner_text()}", fallas)
+            exigir("MA1003" in page.locator("#est-tabla").inner_text()
+                   and "MA1001" not in page.locator("#est-tabla").inner_text(),
+                   "estudio: la tabla sigue al código nuevo", fallas)
+            exigir(page.locator('[data-est-meta-ramo="MA1003"]').input_value() == "1",
+                   "estudio: la meta del ramo viaja con el código", fallas)
+
             # Un ramo cerrado deja de ofrecerse en los selectores y en las tablas.
             page.locator('#tabs .tab[data-ir="malla"]').click()
             page.wait_for_timeout(120)
