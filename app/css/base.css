@@ -87,6 +87,25 @@ input.entrada,select.entrada,textarea.entrada{-webkit-text-fill-color:var(--fg)}
   margin:0 auto;
   padding:var(--sp-4);
 }
+/* ---- el recuadro del contenido ---------------------------------------------
+   La pieza que le daba color y aire a Mimo Académics y que el rediseño perdió:
+   una capa de superficie por detrás de TODAS las secciones, con su borde, sus
+   esquinas y su relleno. El contenido deja de flotar sobre el fondo de la página
+   y se apoya en un lienzo, que es lo que separa la ventana de las tarjetas.
+
+   Medido en la app anterior (`/html/body/div[1]/main/section[5]`, 1.1.2): fondo
+   var(--sup2), borde 1px var(--line), radio 14 px, relleno 22 px 24 px 52 px,
+   ancho máximo 1240 px y margen 4 px auto 0. No hay degradado ni textura: son
+   tres capas de superficie (página → lienzo → tarjeta), y el color de cada una
+   lo pone el tema. --lienzo es el nombre del tema para la capa de en medio. */
+.contenido > .seccion{
+  background:var(--lienzo);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  padding:var(--lienzo-pad);
+  max-width:var(--ancho-contenido);
+  margin:var(--sp-1) auto 0;
+}
 .layout{display:grid;grid-template-columns:var(--ancho-rail) minmax(0,1fr);gap:var(--sp-4);align-items:start}
 .rail{
   width:var(--ancho-rail);
@@ -176,6 +195,10 @@ input.entrada,select.entrada,textarea.entrada{-webkit-text-fill-color:var(--fg)}
 @media (max-width:520px){
   .topbar .badge,.topbar .oculto-movil{display:none}
   .contenido{padding:var(--sp-2)}
+  /* En el teléfono el lienzo conserva su capa, pero aprieta el relleno: con los
+     24 px de escritorio los rótulos de las tarjetas se quedaban sin sitio (medido
+     a 411 px: «DeepSea» pasaba a «De…»). El marco lo sigue dibujando el borde. */
+  .contenido > .seccion{padding:var(--sp-3) var(--sp-1) var(--sp-6)}
 }
 
 .muestras{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-4);margin-top:var(--sp-4)}

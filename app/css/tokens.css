@@ -49,9 +49,20 @@
   --alto-pie:calc(42px * var(--esc));
   --ancho-rail:222px;
   --ancho-panel:320px;
+  /* El recuadro del contenido: el relleno medido en Mimo Académics (22/24/52).
+     Crece con la escala, como el resto de las medidas del armazón. */
+  --lienzo-pad:calc(22px * var(--esc)) calc(24px * var(--esc)) calc(52px * var(--esc));
   --linea:1.45;
 
   /* Sombra y foco son forma, no tema; el tema puede pisarlas. */
   --sombra:0 1px 2px rgb(15 23 42 / .08);
   --foco:0 0 0 2px var(--sup), 0 0 0 4px var(--ac);
 }
+
+/* El lienzo del contenido es la segunda superficie del tema (`--sup2`), la misma
+   que usaba Mimo Académics para el recuadro de todas las secciones. Se nombra
+   aparte para que un tema pueda subirle o bajarle la intensidad sin tocar el
+   resto de las superficies; aquí no se escribe ningún color.
+   Va en `[data-tema]` y no en `:root` a propósito: el tema vive en el <body>, y
+   un valor compuesto en `:root` se resolvería allí, donde `--sup2` no existe. */
+[data-tema]{--lienzo:var(--sup2)}

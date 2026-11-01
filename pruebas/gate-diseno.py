@@ -9,7 +9,9 @@ Mide la piel, no el gusto:
   4. el banco abre a 1440/1100/411 sin desborde y sin errores de consola
   5. contraste >= 4,5 en fg/bg, muted/bg, fg/sup y ac-txt/ac de cada tema
   6. "Aplicar" cambia el tema del body
-  7. fixture roto: un tema con fg = bg debe salir 1
+  7. el recuadro del contenido: todas las secciones pintan el lienzo del tema
+     (--sup2) con su borde, su radio y su relleno, en los 10 temas
+  8. fixture roto: un tema con fg = bg debe salir 1
 
 Uso:
   python3 pruebas/gate-diseno.py
@@ -82,6 +84,20 @@ def revisar_css() -> list[str]:
         exigir(f'[data-tema="{tema}"]' in texto, f"tema {tema}: selector [data-tema]", fallas)
         faltan = [v for v in REQUERIDOS if not re.search(rf"{re.escape(v)}\s*:", texto)]
         exigir(not faltan, f"tema {tema}: paleta completa — faltan {faltan}", fallas)
+    # El recuadro del contenido: la regla no incrusta ni un color y se apoya en los
+    # nombres del tema, para que funcione en los 10 sin tocar cada vista.
+    regla = re.search(r"\.contenido > \.seccion\{([^}]*)\}", base)
+    exigir(regla is not None, "recuadro: falta la regla .contenido > .seccion", fallas)
+    if regla:
+        cuerpo = re.sub(r"\s+", "", regla.group(1))
+        for pieza in ("background:var(--lienzo)", "border:1pxsolidvar(--line)",
+                      "border-radius:var(--r-lg)", "padding:var(--lienzo-pad)",
+                      "max-width:var(--ancho-contenido)"):
+            exigir(pieza in cuerpo, f"recuadro: la regla no dice «{pieza}»", fallas)
+    exigir(re.search(r"--lienzo-pad\s*:", tokens) is not None,
+           "recuadro: falta --lienzo-pad en tokens", fallas)
+    exigir(re.search(r"\[data-tema\]\{--lienzo:var\(--sup2\)\}", re.sub(r"\s+", "", tokens)) is not None,
+           "recuadro: el lienzo no sale del tema (--lienzo sale de --sup2)", fallas)
     return fallas
 
 
@@ -177,12 +193,85 @@ def controles() -> list[str]:
     return fallas
 
 
+def recuadro() -> list[str]:
+    """El recuadro del contenido: la capa que le daba color a Mimo Académics.
+
+    No es decoración de una sección: TODAS pintan el lienzo del tema, con el mismo
+    borde, el mismo radio y el mismo relleno. Se mide contra una sonda que lleva los
+    nombres del tema, así el gate no repite ni un color a mano.
+    """
+    fallas: list[str] = []
+    SONDA = """() => {
+      const s = document.createElement('i');
+      s.style.cssText = 'position:absolute;visibility:hidden;background:var(--sup2);'
+        + 'border:1px solid var(--line);border-radius:var(--r-lg);padding:var(--lienzo-pad);';
+      document.body.appendChild(s);
+      const c = getComputedStyle(s);
+      const out = {fondo: c.backgroundColor, borde: c.borderTopColor, radio: c.borderTopLeftRadius,
+                   relleno: [c.paddingTop, c.paddingRight, c.paddingBottom, c.paddingLeft]};
+      s.remove();
+      out.pagina = getComputedStyle(document.body).backgroundColor;
+      return out;
+    }"""
+    VISTO = """() => {
+      const s = document.querySelector('.contenido > .seccion:not([hidden])');
+      if (!s) return null;
+      const c = getComputedStyle(s);
+      return {id: s.getAttribute('data-pantalla'), fondo: c.backgroundColor,
+              borde: c.borderTopColor, ancho: c.borderTopWidth, radio: c.borderTopLeftRadius,
+              relleno: [c.paddingTop, c.paddingRight, c.paddingBottom, c.paddingLeft],
+              maxw: c.maxWidth,
+              desborde: Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,
+                                 document.body.scrollWidth - document.body.clientWidth)};
+    }"""
+    with Navegador() as nav:
+        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        try:
+            secciones = page.evaluate(
+                "Array.from(document.querySelectorAll('.contenido > .seccion[data-pantalla]'))"
+                ".map(e => e.getAttribute('data-pantalla'))")
+            exigir(len(secciones) >= 4, f"recuadro: secciones en el contenido — {secciones}", fallas)
+            for tema in TEMAS:
+                page.evaluate("t => document.body.setAttribute('data-tema', t)", tema)
+                page.wait_for_timeout(30)
+                esperado = page.evaluate(SONDA)
+                for sid in secciones:
+                    page.locator(f'#tabs [data-ir="{sid}"]').click()
+                    page.wait_for_timeout(120)
+                    visto = page.evaluate(VISTO)
+                    if not visto:
+                        exigir(False, f"recuadro {tema}/{sid}: no hay sección visible", fallas)
+                        continue
+                    nombre = f"recuadro {tema}/{visto['id']}"
+                    exigir(visto["fondo"] != "rgba(0, 0, 0, 0)",
+                           f"{nombre}: la sección tiene lienzo", fallas)
+                    exigir(visto["fondo"] == esperado["fondo"],
+                           f"{nombre}: lienzo del tema — {visto['fondo']} vs {esperado['fondo']}", fallas)
+                    exigir(visto["ancho"] == "1px" and visto["borde"] == esperado["borde"],
+                           f"{nombre}: borde de 1 px del tema — {visto['ancho']} {visto['borde']}", fallas)
+                    exigir(visto["radio"] == esperado["radio"],
+                           f"{nombre}: radio — {visto['radio']} vs {esperado['radio']}", fallas)
+                    exigir(visto["relleno"] == esperado["relleno"],
+                           f"{nombre}: relleno — {visto['relleno']} vs {esperado['relleno']}", fallas)
+                    exigir(visto["maxw"] == "1240px", f"{nombre}: ancho máximo — {visto['maxw']}", fallas)
+                    exigir(visto["desborde"] == 0, f"{nombre}: no desborda la ventana — {visto['desborde']}px", fallas)
+                    # La capa se tiene que leer: en el tema de alto contraste claro el
+                    # lienzo es blanco a propósito (el marco lo dibuja el borde negro).
+                    if tema != "alto-contraste-claro":
+                        exigir(visto["fondo"] != esperado["pagina"],
+                               f"{nombre}: el lienzo se despega del fondo de la página", fallas)
+            exigir(not errores, f"recuadro: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+    return fallas
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--demo", action="store_true")
     args = ap.parse_args()
 
-    fallas = revisar_css() + revisar_banco(BANCO) + controles()
+    fallas = revisar_css() + revisar_banco(BANCO) + controles() + recuadro()
     codigo = salir("gate-diseno", fallas)
     if not args.demo:
         return codigo
