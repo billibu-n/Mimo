@@ -9,6 +9,13 @@ dentro de la app. Las licencias completas de cada dependencia están también ju
 La interfaz usa iconos de [Lucide](https://lucide.dev), bajo **ISC**. Una parte deriva de
 [Feather](https://feathericons.com), bajo **MIT**.
 
+El catálogo de iconos de ramo (121 iconos, `app/js/dominio/iconos-ramo.js`) sale del paquete
+`lucide-static` 0.469.0 y se convierte con `_archivo/2026-11-01/iconos-ramo/generar.py` al mismo
+formato del sprite: `<symbol>` de 24x24, trazo 1.8, `stroke="currentColor"`. La licencia es la
+misma ISC de arriba; el script de conversión y la tabla de iconos (id, categoría, etiquetas y
+nombre en es/en/zh) viven junto a él, así que el catálogo se puede ampliar o rehacer sin tocar
+las vistas.
+
 ```text
 ISC License
 

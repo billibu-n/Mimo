@@ -109,9 +109,30 @@ def main() -> int:
             exigir(capa.is_visible() and capa.get_attribute("data-editor") == "identidad",
                    "identidad: abre la ventana única", fallas)
             exigir(page.locator(".ident-color").count() == 9, "identidad: paleta de 9", fallas)
-            exigir(page.locator(".ident-ico").count() == 16, "identidad: catálogo de 16 iconos", fallas)
             exigir(page.locator("#ident-color").get_attribute("type") == "color",
                    "identidad: hay selector RGB", fallas)
+
+            # 2b) el catálogo ampliado, con su buscador y su filtro
+            total = page.evaluate("window.MimoIconosRamo ? MimoIconosRamo.ICONOS.length : 0")
+            cats = page.evaluate("window.MimoIconosRamo ? MimoIconosRamo.CATEGORIAS.length : 0")
+            exigir(total >= 100, f"catálogo: al menos 100 iconos — {total}", fallas)
+            exigir(cats >= 10, f"catálogo: al menos 10 categorías — {cats}", fallas)
+            exigir(page.locator(".ident-ico").count() == total,
+                   f"catálogo: la grilla los pinta todos — {page.locator('.ident-ico').count()}", fallas)
+            page.locator('[data-ident-cat="ingenieria"]').click()
+            page.wait_for_timeout(200)
+            filtrados = page.locator(".ident-ico").count()
+            exigir(0 < filtrados < total, f"filtro: la categoría recorta — {filtrados}", fallas)
+            page.locator('[data-ident-cat="todas"]').click()
+            page.wait_for_timeout(150)
+            page.locator("#ident-buscar").fill("mecánica")
+            page.wait_for_timeout(300)
+            buscados = page.locator(".ident-ico").count()
+            exigir(0 < buscados < total, f"búsqueda: «mecánica» devuelve — {buscados}", fallas)
+            exigir(page.locator("#ident-cuenta").inner_text().startswith(str(buscados)),
+                   "búsqueda: la cuenta dice cuántos quedan", fallas)
+            page.locator("#ident-buscar").fill("")
+            page.wait_for_timeout(250)
 
             # 6) teclado: un color de la paleta y un icono con Enter
             muestra = page.locator('[data-ident-color="#dc2626"]')
@@ -121,7 +142,7 @@ def main() -> int:
             exigir(muestra.get_attribute("aria-pressed") == "true", "teclado: la muestra de color se activa", fallas)
             exigir(page.locator("#ident-color").input_value() == "#dc2626",
                    "teclado: el selector RGB toma la muestra", fallas)
-            icono_btn = page.locator('[data-ident-icono="i-libro"]')
+            icono_btn = page.locator('[data-ident-icono="i-ramo-libro"]')
             icono_btn.focus()
             page.keyboard.press("Enter")
             page.wait_for_timeout(150)
@@ -132,21 +153,21 @@ def main() -> int:
             page.wait_for_timeout(500)
             exigir(not capa.is_visible(), "identidad: al guardar se cierra", fallas)
             ident = identidad(page, "FI2001")
-            exigir(ident["color"] == "#dc2626" and ident["icono"] == "i-libro",
+            exigir(ident["color"] == "#dc2626" and ident["icono"] == "i-ramo-libro",
                    f"identidad: queda guardada — {ident}", fallas)
 
             # 5) la misma identidad en las siete secciones
             page.locator('#tabs [data-ir="calificaciones"]').click()
             page.wait_for_timeout(350)
-            exigir(page.locator('#calif-lista .ramo-ico use[href="#i-libro"]').count() == 1,
+            exigir(page.locator('#calif-lista .ramo-ico use[href="#i-ramo-libro"]').count() == 1,
                    "calificaciones: el ramo lleva su icono en la lista", fallas)
-            exigir(page.locator('#calif-detalle .calif-cab__izq .ramo-ico use[href="#i-libro"]').count() == 1,
+            exigir(page.locator('#calif-detalle .calif-cab__izq .ramo-ico use[href="#i-ramo-libro"]').count() == 1,
                    "calificaciones: la cabecera lleva su icono", fallas)
-            exigir(ver_en(page, "estudio", '#est-tabla .ramo-ico use[href="#ICONO"]', "i-libro"),
+            exigir(ver_en(page, "estudio", '#est-tabla .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
                    "estudio: la fila del ramo lleva su icono", fallas)
-            exigir(ver_en(page, "malla", '.ramo-card .ramo-ico use[href="#ICONO"]', "i-libro"),
+            exigir(ver_en(page, "malla", '.ramo-card .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
                    "malla: la tarjeta lleva su icono", fallas)
-            exigir(ver_en(page, "tiempo", '#tiempo-lista-sesiones .plegable__tit .ramo-ico use[href="#ICONO"]', "i-libro"),
+            exigir(ver_en(page, "tiempo", '#tiempo-lista-sesiones .plegable__tit .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
                    "tiempo: el grupo de sesiones lleva su icono", fallas)
             page.locator('#tabs [data-ir="calendario"]').click()
             page.wait_for_timeout(350)
@@ -156,7 +177,7 @@ def main() -> int:
             }"""), "calendario: el chip usa el color del ramo", fallas)
             page.locator("#vista-calendario [data-cal-vista='agenda']").click()
             page.wait_for_timeout(300)
-            exigir(page.locator('.cal-agenda__item .ramo-ico use[href="#i-libro"]').count() >= 1,
+            exigir(page.locator('.cal-agenda__item .ramo-ico use[href="#i-ramo-libro"]').count() >= 1,
                    "calendario: la agenda lleva el icono del ramo", fallas)
             page.locator('#tabs [data-ir="tareas"]').click()
             page.wait_for_timeout(300)
@@ -169,7 +190,7 @@ def main() -> int:
             page.goto(APP.as_uri(), wait_until="load")
             page.wait_for_timeout(600)
             ident = identidad(page, "FI2001")
-            exigir(ident["color"] == "#dc2626" and ident["icono"] == "i-libro",
+            exigir(ident["color"] == "#dc2626" and ident["icono"] == "i-ramo-libro",
                    f"identidad: sobrevive a recargar — {ident}", fallas)
 
             # 7) criterio estable: ni el orden ni los otros ramos cambian el color

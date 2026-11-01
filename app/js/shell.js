@@ -2418,20 +2418,32 @@
       "</div>";
   }
   /* Identidad del ramo: color e icono, en la ventana única. El color se elige con
-     el selector RGB o con la paleta del tema; el icono, del catálogo del proyecto.
-     Se guarda el id del icono y el hex; nada de HTML por vista. */
+     el selector RGB o con la paleta del tema; el icono, del catálogo del proyecto
+     (js/dominio/iconos-ramo.js), con buscador y filtro por categoría para que 121
+     iconos no se conviertan en una pared. Se guarda el id del icono. */
   function abrirIdentidadCalif(cod) {
     var cur = ramoPorCodigo(cod); if (!cur) return;
     var color = colorDeRamo(cur), icono = iconoDeRamo(cur);
-    var vista = function () { return { codigo: cur.codigo, color: $("#ident-color").value, icono: icono }; };
+    var catalogo = window.MimoIconosRamo || null;
+    var todos = catalogo ? catalogo.ICONOS : [];
+    var categorias = catalogo ? catalogo.CATEGORIAS : [];
+    var normal = function (s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
+    var nombreDe = function (i) { return t("ico." + i.id.replace(/^i-ramo-/, "")); };
+
     var paleta = MimoIdentidad.PALETA.map(function (h) {
       return '<button class="ident-color" type="button" data-ident-color="' + esc(h) + '" style="--sw:' + esc(h) +
         '" aria-label="' + esc(h) + '" aria-pressed="' + (h.toLowerCase() === String(color).toLowerCase()) + '"></button>';
     }).join("");
-    var iconos = MimoIdentidad.ICONOS.map(function (id) {
-      return '<button class="ident-ico" type="button" data-ident-icono="' + esc(id) + '" aria-pressed="' + (id === icono) +
-        '" aria-label="' + esc(t("ico." + id)) + '" title="' + esc(t("ico." + id)) + '">' + iconoRamoHTML({ codigo: cur.codigo, color: color, icono: id }) + "</button>";
-    }).join("");
+    var filtros = '<button class="ident-cat on" type="button" data-ident-cat="todas" aria-pressed="true">' + esc(t("ico.todas")) + "</button>" +
+      categorias.map(function (c) {
+        return '<button class="ident-cat" type="button" data-ident-cat="' + esc(c.id) + '" aria-pressed="false">' + esc(c.nombre[idioma()] || c.nombre.es) + "</button>";
+      }).join("");
+
+    var cuerpoIconos = function (i) {
+      return '<button class="ident-ico" type="button" data-ident-icono="' + esc(i.id) + '" aria-pressed="' + (i.id === icono) +
+        '" aria-label="' + esc(nombreDe(i)) + '" title="' + esc(nombreDe(i)) + '">' + iconoRamoHTML({ codigo: cur.codigo, color: $("#ident-color") ? $("#ident-color").value : color, icono: i.id }) + "</button>";
+    };
+
     MimoModal.abrir({
       id: "identidad",
       titulo: t("ident.titulo"),
@@ -2441,35 +2453,66 @@
         '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.color")) + "</span>" +
           '<input class="entrada ident-rgb" id="ident-color" type="color" value="' + esc(color) + '" aria-label="' + esc(t("ident.color")) + '"></div>' +
         '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.paleta")) + '</span><div class="ident-paleta" role="group" aria-label="' + esc(t("ident.paleta")) + '">' + paleta + "</div></div>" +
-        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.iconos")) + '</span><div class="ident-iconos" role="group" aria-label="' + esc(t("ico.aria")) + '">' + iconos + "</div></div>",
+        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.iconos")) + "</span>" +
+          '<input class="entrada ident-buscar" id="ident-buscar" type="search" placeholder="' + esc(t("ico.buscar")) +
+            '" aria-label="' + esc(t("ico.buscar")) + '" aria-controls="ident-iconos" autocomplete="off">' +
+          '<div class="ident-filtros" role="group" aria-label="' + esc(t("ico.filtro")) + '">' + filtros + "</div>" +
+          '<div class="ident-iconos" id="ident-iconos" role="group" aria-label="' + esc(t("ico.ver")) + '"></div>' +
+          '<p class="ident-cuenta" id="ident-cuenta" role="status" aria-live="polite"></p></div>',
       guardar: L("Guardar", "Save", "保存"),
       despues: function (form) {
+        var caja = form.querySelector("#ident-iconos");
+        var buscar = form.querySelector("#ident-buscar");
+        var cuenta = form.querySelector("#ident-cuenta");
+        var cat = "todas";
+
         var pintarVista = function () {
-          var v = vista();
+          var v = { codigo: cur.codigo, color: $("#ident-color").value, icono: icono };
           $("#ident-preview").innerHTML = iconoRamoHTML(v, "ramo-ico--lg") +
             '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div>";
         };
-        $$("#modal-campos [data-ident-color]").forEach(function (b) {
+        var filtrar = function () {
+          var q = normal(buscar.value);
+          var lista = todos.filter(function (i) {
+            if (cat !== "todas" && i.cat !== cat) return false;
+            if (!q) return true;
+            return normal(nombreDe(i) + " " + i.tags.join(" ") + " " + i.id).indexOf(q) !== -1;
+          });
+          caja.innerHTML = lista.length ? lista.map(cuerpoIconos).join("")
+            : '<p class="muted ident-vacio">' + esc(t("ico.sinResultados")) + "</p>";
+          cuenta.textContent = tf("ico.cuenta", { n: lista.length });
+        };
+
+        form.querySelectorAll("[data-ident-cat]").forEach(function (b) {
           b.addEventListener("click", function () {
-            $("#ident-color").value = b.getAttribute("data-ident-color");
-            $$("#modal-campos [data-ident-color]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-            pintarVista();
+            cat = b.getAttribute("data-ident-cat");
+            form.querySelectorAll("[data-ident-cat]").forEach(function (x) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            filtrar();
           });
         });
-        $$("#modal-campos [data-ident-icono]").forEach(function (b) {
+        buscar.addEventListener("input", filtrar);
+        /* delegado: el catálogo se repinta al filtrar */
+        caja.addEventListener("click", function (e) {
+          var b = e.target.closest("[data-ident-icono]"); if (!b) return;
+          icono = b.getAttribute("data-ident-icono");
+          caja.querySelectorAll("[data-ident-icono]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+          pintarVista();
+        });
+        form.querySelectorAll("[data-ident-color]").forEach(function (b) {
           b.addEventListener("click", function () {
-            icono = b.getAttribute("data-ident-icono");
-            $$("#modal-campos [data-ident-icono]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            $("#ident-color").value = b.getAttribute("data-ident-color");
+            form.querySelectorAll("[data-ident-color]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
             pintarVista();
           });
         });
         $("#ident-color").addEventListener("input", pintarVista);
+        filtrar();
       },
       onGuardar: function () {
         var hex = $("#ident-color").value;
         if (!MimoIdentidad.esColor(hex)) return false;
-        cur.color = MimoIdentidad.esColor(hex) ? hex.toLowerCase() : "";
-        cur.icono = MimoIdentidad.esIcono(icono) ? icono : "";
+        cur.color = hex.toLowerCase();
+        cur.icono = MimoIdentidad.iconoVigente(icono) || "";
         notificarCurso(cur);
         guardar();
         pintarCalificaciones(); pintarMalla(); pintarEstudio(); pintarTiempo(); pintarCalendario(); pintarTareas(); pintarPanel();
