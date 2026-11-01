@@ -1,19 +1,19 @@
 {
-  "version": "1.2.0-beta.5",
-  "notes": "Actualizador incorporado y respaldos verificables.",
-  "pub_date": "2026-10-31T04:48:35Z",
+  "version": "1.2.0-beta.6",
+  "notes": "Categorías de evento, cierre e identidad del ramo y reloj exacto.",
+  "pub_date": "2026-11-01T20:16:57Z",
   "platforms": {
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RytrRGwyNFh1SUR2bEMvRXk3d3lsTlpaZ3VLUWRYNk5STzQ5VVVUcFcyTTF0YnRHM004Nk80UWluaHArMkJheUxROXhiRnBzdzgwVE1QbHlnSmd0Y2d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDIxOTIzCWZpbGU6TWltb18xLjIuMC1iZXRhLjVfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMi4wLWJldGEuNQpYdjZUM2dlZGtjaFd3U1pJVlZOelNsT2laMTU5OHZ3ZTdibkRGQlM4TzVNM01kWUhJYXJHSkFGYnhDL0xPU2dnU3NybzdCSkJaeW9HbjBiejkzS3hEdz09Cg==",
-      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/Mimo_1.2.0-beta.5_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4R3dXZitsdDM1R2FkMUg3UXRRUHJmL3hrd3hoTnJycHp5bWsyUlpySGZzTXlnOVk5UTRTck9HYkY0NTc5OCthNnM0UGhWWHpsaWg1eVIwcjZiM3cwY2c0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTY0MDExCWZpbGU6TWltb18xLjIuMC1iZXRhLjZfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMi4wLWJldGEuNgozOG9ic21uYlV2UEtKWHF3Vlo0R2pNbE5vTisvcWZONW5wanVoU0RQRHBCVkpSNk1wMjRIV2NhUlBaeTdTM3d6SDU2RW5wV29sK2kyR2xKR2YrZzJBZz09Cg==",
+      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.6/Mimo_1.2.0-beta.6_x64-setup.exe"
     },
     "linux-x86_64-deb": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzdvelNEQnRIbFhQMEV2b1M4T0J5YVA5cVo2ekNpUVkxK05ZWXVzeitpbFQ1bGczRlJ0SE53eG1XNUpiU0wwVmd2V3I4VUJQclZCWEp1emNpbU9LcmdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDIxODU0CWZpbGU6TWltb18xLjIuMC1iZXRhLjVfYW1kNjQuZGViCXZlcnNpb246MS4yLjAtYmV0YS41CllFYWtJK0VTQ0ZETm1HS3AzdDRyVGRWUDZsOHpsdVdsVG0zRFRVK3VnMWplUFF1QWxlbk56bWV5bW5jd010eUlna1ZEa3B5OWZvNEJ4MXZxRVBOekNBPT0K",
-      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/Mimo_1.2.0-beta.5_amd64.deb"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzJXZ04wY2V2cFlIZzlCRElPTFVBWW1hWkIyRnBHbUtJSitaNThoaEhVMno4WUw5TUVReVR5VHhPRVY5c0c1Qll4QkJBc1ZoZVdIMFA2ME9XSXY1aUFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTYzOTIzCWZpbGU6TWltb18xLjIuMC1iZXRhLjZfYW1kNjQuZGViCXZlcnNpb246MS4yLjAtYmV0YS42Ck9ERnlRNVY4cFhvWGMySERndnUxeTNjc0h6dDRUS2JjSG1ZVWhIdHVyTkRnZE1zUmxsUlRoc243QjArRDdhTjNqc1lMd1ZzUDJldm90SU5aMDEvSENBPT0K",
+      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.6/Mimo_1.2.0-beta.6_amd64.deb"
     },
     "linux-x86_64-rpm": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzVORE0wZkhoam44YWxCR1h0OW95eldHV3RNdzNIRElseDNoUmNlUXZpTWlMc3YzMFg1UUNuZGxFSDhHSktVWmdLaElQemFpaldteU1iY2VuWUkvbGdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNDIxODU2CWZpbGU6TWltby0xLjIuMC1iZXRhLjUtMS54ODZfNjQucnBtCXZlcnNpb246MS4yLjAtYmV0YS41CjVteTFSSTl5UDgxR2NsdVNPRFA3N1lWeWxmVjFJYzlqZUJTbnF0TmFYejlzV25JMlo1VEVvUml4d3NDUktrQUhRZjZxVjJKYXFTbzV6K1QyR2l2REFnPT0K",
-      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.5/Mimo-1.2.0-beta.5-1.x86_64.rpm"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzNMc216SDN4aGNxSFcyTXNhVXp4eGdMS1BMVUtPclJCN3libzh5OEkzZnNvTzg3dGRmS0pJS3ZmU2dvNkJGN1dyL251aGZ0OFFLK3BIRHVtYU5RaXdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzNTYzOTI1CWZpbGU6TWltby0xLjIuMC1iZXRhLjYtMS54ODZfNjQucnBtCXZlcnNpb246MS4yLjAtYmV0YS42CnF4N25NbitsR2thdVhHUzNCNDVTNHBWcjNhV1hxS3QrdGV1bUtFUDc1YW5sUUpuaXN2UmdCTkU5OTVrMmhWcmF6RjNhLytHZUJ3bzF1Z2Vta0ZFWENBPT0K",
+      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.6/Mimo-1.2.0-beta.6-1.x86_64.rpm"
     }
   }
 }
