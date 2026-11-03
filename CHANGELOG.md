@@ -60,6 +60,9 @@
 - La **línea de meta** se dibuja dentro del área de las barras y el techo toma el máximo de la
   semana actual si supera la meta; una semana de 30 h con meta de 20 h deja la barra por encima
   de la línea, sin arrastrar el máximo de otras semanas.
+- La tabla **Horas por ramo** también es semanal: **Horas semanales** muestra lo registrado en
+  la semana actual y **Avance** compara contra la meta semanal del ramo, sin multiplicar por las
+  semanas del período (5,5 h de meta son el 100 %).
 
 ### Calendario
 

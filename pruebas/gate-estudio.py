@@ -15,6 +15,7 @@ Uso: python3 pruebas/gate-estudio.py
 from __future__ import annotations
 
 import sys
+from datetime import date, timedelta
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
@@ -45,10 +46,16 @@ def crear_ramo(page, codigo: str, nombre: str) -> None:
     page.wait_for_timeout(100)
 
 
+LUNES_ACTUAL = date.today() - timedelta(days=date.today().weekday())
+INICIO = LUNES_ACTUAL.isoformat()
+SEM1 = INICIO
+SEM2 = (LUNES_ACTUAL + timedelta(days=7)).isoformat()
+
+
 def crear_periodo(page) -> None:
     page.locator("#btn-nuevo").click()
     page.locator("#periodo-nombre").fill("Primavera 2026")
-    page.locator("#periodo-inicio").fill("2026-08-03")
+    page.locator("#periodo-inicio").fill(INICIO)
     page.locator("#periodo-semanas").fill("4")
     page.locator("#periodo-receso").fill("0")
     page.locator("#periodo-examenes").fill("0")
@@ -89,13 +96,13 @@ def main() -> int:
             page.wait_for_timeout(250)
             exigir(page.locator(".est-col").count() == 4, "estudio: pinta las 4 semanas del periodo", fallas)
 
-            registrar(page, "MA1001", "2026-08-04", "60")
+            registrar(page, "MA1001", SEM1, "60")
             exigir(page.locator("#est-k-horas").inner_text().strip() == "1 h",
                    "estudio: una sesión de 60 min suma 1 h", fallas)
             exigir(page.locator(".est-col").first.inner_text().find("1 h") >= 0,
                    "estudio: la sesión cae en la primera semana", fallas)
 
-            registrar(page, "FI1001", "2026-08-11", "30")
+            registrar(page, "FI1001", SEM2, "30")
             exigir(page.locator("#est-k-horas").inner_text().strip() == "1,5 h",
                    "estudio: dos ramos suman 1,5 h", fallas)
             exigir(page.locator("#est-k-sesiones").inner_text().strip() == "2",
@@ -109,11 +116,16 @@ def main() -> int:
             page.wait_for_timeout(250)
             exigir(page.locator("#est-k-semanas").inner_text().strip() == "1",
                    "estudio: una semana sobre la meta", fallas)
-            page.locator('[data-est-meta-ramo="MA1001"]').fill("1")
+            fila_ma = page.locator("#est-tabla tr", has_text="MA1001")
+            fila_fi = page.locator("#est-tabla tr", has_text="FI1001")
+            exigir(fila_ma.locator("td").nth(1).inner_text().strip() == "1 h" and
+                   fila_fi.locator("td").nth(1).inner_text().strip() == "0 h",
+                   "estudio: la tabla muestra las horas de la semana actual", fallas)
+            page.locator('[data-est-meta-ramo="MA1001"]').fill("4")
             page.locator('[data-est-meta-ramo="MA1001"]').blur()
             page.wait_for_timeout(250)
-            exigir("25 %" in page.locator("#est-tabla").inner_text(),
-                   "estudio: avance del ramo contra su meta", fallas)
+            exigir("25 % de 4 h" in page.locator("#est-tabla").inner_text(),
+                   "estudio: avance semanal contra la meta del ramo", fallas)
 
             abrir_plegable(page, "#est-sesiones [data-borrar-estudio]")
             page.locator("[data-borrar-estudio]").first.click()
@@ -154,7 +166,7 @@ def main() -> int:
             exigir("MA1003" in page.locator("#est-tabla").inner_text()
                    and "MA1001" not in page.locator("#est-tabla").inner_text(),
                    "estudio: la tabla sigue al código nuevo", fallas)
-            exigir(page.locator('[data-est-meta-ramo="MA1003"]').input_value() == "1",
+            exigir(page.locator('[data-est-meta-ramo="MA1003"]').input_value() == "4",
                    "estudio: la meta del ramo viaja con el código", fallas)
 
             # Un ramo cerrado deja de ofrecerse en los selectores y en las tablas.
@@ -196,7 +208,7 @@ def main() -> int:
             crear_periodo(page)
             page.locator('#tabs .tab[data-ir="estudio"]').click()
             page.wait_for_timeout(150)
-            registrar(page, "MA1001", "2026-08-04", "60")
+            registrar(page, "MA1001", SEM1, "60")
             d = desborde(page)
             exigir(d == 0, f"411: estudio sin desborde — {d}px", fallas)
             exigir(page.locator(".est-col").count() == 4, "411: el gráfico se pinta", fallas)

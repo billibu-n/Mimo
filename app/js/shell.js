@@ -3638,6 +3638,7 @@
     })[0] || semanas[semanas.length - 1];
     var maxSemana = semanaActual ? porSemana[semanaActual.desde] : 0;
     var max = Math.max(metaGrafico * 60, maxSemana, 1);
+    var porCursoActual = null;
     var cols = semanas.map(function (w) {
       var total = porSemana[w.desde], pct = Math.min(100, total / max * 100);
       var segs = Object.keys(totalRamo).length ? "" : "";
@@ -3655,6 +3656,7 @@
         if (!m) return;
         porCurso[k] = (porCurso[k] || 0) + m;
       });
+      if (w === semanaActual) porCursoActual = porCurso;
       var barras = Object.keys(porCurso).map(function (k) {
         return '<i style="flex:' + porCurso[k] + ';background:' + colorEstudio(k) + '" title="' +
           esc(k === "_" ? L("Sin ramo", "No course", "无课程") : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
@@ -3677,15 +3679,18 @@
       $("#est-meta-ramo").innerHTML = esc(L("Meta semanal", "Weekly goal", "每周目标")) + ' <b>' + fmtHoras(metaGrafico * 60) + "</b>";
     }
     var filas = cursos.map(function (c) {
-      var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
-      var pct = m ? Math.min(100, Math.round(h / (m * 60 * Math.max(1, semanas.length)) * 100)) : 0;
+      /* La tabla también es semanal: horas de la semana actual y avance contra
+         la meta semanal del ramo, sin multiplicar por las semanas del período. */
+      var h = (porCursoActual && porCursoActual[c.codigo]) || 0;
+      var m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
+      var pct = m ? Math.min(100, Math.round(h / (m * 60) * 100)) : 0;
       return '<tr><td><span class="est-ramo">' + iconoRamoHTML(c) + esc(c.codigo) + " — " + esc(c.nombre) + "</span></td>" +
         '<td class="num">' + fmtHoras(h) + "</td>" +
         '<td class="num"><input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-ramo="' + esc(c.codigo) + '" value="' + m + '"> h</td>' +
-        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + (m * semanas.length) + " h" : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
+        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + fmtHoras(m * 60) : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
     }).join("");
-    if (totalRamo._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>' + esc(L("Sin ramo", "No course", "无课程")) + '</td><td class="num">' +
-      fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
+    if (porCursoActual && porCursoActual._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>' + esc(L("Sin ramo", "No course", "无课程")) + '</td><td class="num">' +
+      fmtHoras(porCursoActual._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
     $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">' + esc(L("Sin ramos. Crea uno en Malla.", "No courses. Create one in the plan.", "没有课程。请在课程规划中创建。")) + '</td></tr>';
     var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
     var grupos = agruparPorRamo(recientes.map(function (x) { return x.s; }));
