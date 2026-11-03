@@ -64,9 +64,6 @@ def main() -> int:
                 "getComputedStyle(document.querySelector('.cal-layout')).gridTemplateColumns.split(' ').length")
             exigir(columnas_cal >= 2,
                    f"calendario: rail y calendario en dos columnas — {columnas_cal}", fallas)
-            page.locator('[data-cal-vista="agenda"]').click()
-            page.wait_for_timeout(80)
-            exigir(page.locator(".cal-agenda__item").count() == 1, "calendario: la agenda lista el evento", fallas)
             page.locator('[data-cal-vista="mes"]').click()
             page.wait_for_timeout(80)
 

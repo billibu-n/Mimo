@@ -255,7 +255,7 @@
   textoGuardado = JSON.stringify(estado);
   var pantalla = "calendario";
   var vistaTareas = estado.vistaTareas || "hoy";
-  var vistaCalendario = ["mes", "anio", "semestre", "semana", "agenda"].indexOf(estado.vistaCalendario) >= 0 ? estado.vistaCalendario : "mes";
+  var vistaCalendario = ["mes", "anio", "semestre", "semana"].indexOf(estado.vistaCalendario) >= 0 ? estado.vistaCalendario : "mes";
   var calCursor = new Date();
   var formEventoId = null;
   var formPeriodoId = null;
@@ -1233,7 +1233,7 @@
     var col = colorDeContexto(e.contexto);
     var estilo = col ? ' style="--chip:' + col + '"' : "";
     var tipo = tipoEvento(e.tipo);
-    var etiqueta = tipo ? '<span class="evento-chip__tag" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
+    var etiqueta = tipo ? '<span class="evento-chip__tag" title="' + esc(tipo.nombre) + '" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
     return '<button class="evento-chip' + (col ? " evento-chip--color" : "") + '" type="button" data-evento="' + esc(e.id) + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b>" : "") +
       '<span class="evento-chip__tit">' + esc(e.titulo) + "</span>" + etiqueta + "</button>";
@@ -1274,6 +1274,22 @@
     if (w.tipo === "examenes") return "EX";
     return "S" + w.n;
   }
+  function _calSemanaActualDe(p) {
+    if (!p || !Array.isArray(p.semanas)) return null;
+    return p.semanas.filter(function (w) { return hoyISO() >= w.desde && hoyISO() <= w.hasta; })[0] || null;
+  }
+  function _calSemanasVisibles(p) {
+    if (!p || !Array.isArray(p.semanas) || !p.corteActual) return p ? (p.semanas || []) : [];
+    var actual = _calSemanaActualDe(p);
+    if (!actual) return p.semanas;
+    var i = p.semanas.indexOf(actual);
+    return i > 0 ? p.semanas.slice(i) : p.semanas;
+  }
+  function _calSemanaCortada(p, sem) {
+    if (!p || !p.corteActual || !sem) return false;
+    var actual = _calSemanaActualDe(p);
+    return !!(actual && sem.desde < actual.desde);
+  }
   function _calMinutosSemana(w) {
     var total = 0;
     sesionesActuales(estado.sesiones).forEach(function (s) {
@@ -1304,6 +1320,12 @@
     if (i < 0) i = 0;
     estado.periodoActivo = ps[(i + delta + ps.length) % ps.length].id;
     guardar(); pintarPeriodo();
+  }
+  function _calAlternarCorte() {
+    var p = periodoActivoObj();
+    if (!p) return;
+    p.corteActual = !p.corteActual;
+    guardar(); pintarCalendario();
   }
   function _calMover(delta) {
     if (vistaCalendario === "anio") calCursor.setFullYear(calCursor.getFullYear() + delta);
@@ -1339,6 +1361,7 @@
       var f = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
       var iso = isoFecha(f);
       var sem = semanaDePeriodo(iso) || semanaDePeriodo(isoFecha(new Date(f.getTime() + 3 * 86400000)));
+      if (sem && _calSemanaCortada(periodoCal, sem)) sem = null;
       if (i % 7 === 0 && conSemana) {
         if (sem) {
           var titulo = sem.numero ? tf("cal.tituloSemana", { n: sem.numero }) : sem.tipo === "receso" ? t("cal.tituloReceso") : t("cal.tituloExamenes");
@@ -1360,7 +1383,7 @@
     return { html: html, visibles: visibles, clase: "cal-grid cal-grid--mes" + (conSemana ? " cal-grid--con-semana" : "") };
   }
   function _calAnioHTML() {
-    var y = calCursor.getFullYear(), total = 0;
+    var y = calCursor.getFullYear(), total = 0, periodoAnio = periodoActivoObj();
     var html = "";
     for (var m = 0; m < 12; m++) {
       var primero = new Date(y, m, 1);
@@ -1372,6 +1395,7 @@
       for (var i = 0; i < offset; i++) html += '<span class="cal-mes-cel vacia"></span>';
       for (var d = 1; d <= diasEnMes; d++) {
         var f = new Date(y, m, d), iso = isoFecha(f), evs = eventosDe(iso), sem = semanaDePeriodo(iso);
+        if (sem && _calSemanaCortada(periodoAnio, sem)) sem = null;
         if (evs.length) total += evs.length;
         html += '<button class="cal-mes-cel num' + (evs.length ? " con" : "") + (sem ? " sem-" + sem.tipo : "") +
           '" type="button" data-cal-dia="' + iso + '" title="' + esc(t("cal.verMes") + " " + iso) + '">' + d +
@@ -1387,7 +1411,8 @@
       return { html: '<p class="empty">' + esc(t("cal.sinPeriodo")) + "</p>", visibles: 0 };
     }
     var dias = _calDiasLunes(), filas = [], maximo = 0, total = 0;
-    p.semanas.forEach(function (w) {
+    var semanas = _calSemanasVisibles(p);
+    semanas.forEach(function (w) {
       var min = _calMinutosSemana(w);
       maximo = Math.max(maximo, min);
       var celdas = [];
@@ -1425,28 +1450,14 @@
     $$("#vista-calendario button").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-cal-vista") === vistaCalendario);
     });
-    var grid = $("#cal-grid"), anio = $("#cal-anio"), semestre = $("#cal-semestre"), agenda = $("#cal-agenda");
+    var grid = $("#cal-grid"), anio = $("#cal-anio"), semestre = $("#cal-semestre");
     var esMes = vistaCalendario === "mes", esSemana = vistaCalendario === "semana";
     var esAnio = vistaCalendario === "anio", esSemestre = vistaCalendario === "semestre";
     grid.hidden = !(esMes || esSemana);
     anio.hidden = !esAnio;
     semestre.hidden = !esSemestre;
-    agenda.hidden = vistaCalendario !== "agenda";
     var visibles = 0;
-    if (vistaCalendario === "agenda") {
-      var orden = eventosTodos().slice().sort(function (a, b) {
-        return (a.fecha + " " + (a.hora || "")) < (b.fecha + " " + (b.hora || "")) ? -1 : 1;
-      });
-      visibles = orden.length;
-      $("#cal-mes-titulo").textContent = t("cal.agenda");
-      agenda.innerHTML = orden.length ? orden.map(function (e) {
-        var col = colorDeContexto(e.contexto);
-        var estilo = col ? ' style="box-shadow:inset 4px 0 0 ' + col + '"' : "";
-        var tipoAgenda = tipoEvento(e.tipo);
-        var tagAgenda = tipoAgenda ? '<span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoAgenda.id) + '">' + esc(tipoAgenda.nombre) + "</span>" : "";
-        return '<button class="cal-agenda__item" type="button" data-evento="' + esc(e.id) + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span class="cal-agenda__cuerpo"><span class="cal-agenda__tit">' + iconoContexto(e.contexto) + "<b>" + esc(e.titulo) + "</b>" + tagAgenda + '</span><small>' + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + '</small></span><span class="pill">' + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
-      }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
-    } else if (esAnio) {
+    if (esAnio) {
       var a = _calAnioHTML();
       anio.innerHTML = a.html; visibles = a.visibles;
       $("#cal-mes-titulo").textContent = idioma() === "zh" ? y + "年" : String(y);
@@ -1476,6 +1487,14 @@
     }
     $("#cal-cuenta").textContent = visibles + " " + t(visibles === 1 ? "cal.evento" : "cal.eventos");
     if ($("#btn-hoy")) $("#btn-hoy").setAttribute("title", esAnio ? t("cal.esteAnio") : esSemestre ? t("cal.esteSemestre") : esSemana ? t("cal.estaSemana") : t("cal.esteMes"));
+    var pActivo = periodoActivoObj(), btnCorte = $("#cal-corte");
+    if (btnCorte) {
+      var cortado = !!(pActivo && pActivo.corteActual);
+      btnCorte.setAttribute("aria-pressed", cortado ? "true" : "false");
+      btnCorte.classList.toggle("on", cortado);
+      btnCorte.disabled = !pActivo;
+      btnCorte.title = pActivo ? t("cal.corteAyuda") : t("cal.sinPeriodo");
+    }
     $("#cal-vacio").hidden = visibles > 0;
     $$("#cal-grid [data-semana]").forEach(function (b) {
       b.addEventListener("click", function (e) {
@@ -1491,7 +1510,7 @@
         guardar(); pintarCalendario();
       });
     });
-    $$("#cal-grid [data-evento], #cal-anio [data-evento], #cal-semestre [data-evento], #cal-agenda [data-evento]").forEach(function (b) {
+    $$("#cal-grid [data-evento], #cal-anio [data-evento], #cal-semestre [data-evento]").forEach(function (b) {
       b.addEventListener("click", function () {
         estado.eventoSel = b.getAttribute("data-evento");
         var ctx = ctxDe(b);
@@ -5226,6 +5245,7 @@
     $("#btn-nueva-tarea").addEventListener("click", function () { abrirFormulario(null); });
     $("#tareas-crear").addEventListener("click", function () { abrirFormulario(null); });
     $("#btn-hoy").addEventListener("click", _calIrHoy);
+    if ($("#cal-corte")) $("#cal-corte").addEventListener("click", _calAlternarCorte);
     $("#btn-periodo").addEventListener("click", abrirPeriodo);
     $("#periodo-x").addEventListener("click", cerrarPeriodo);
     $("#periodo-cancelar").addEventListener("click", cerrarPeriodo);

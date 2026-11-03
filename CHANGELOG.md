@@ -22,17 +22,21 @@
 - Las vistas se navegan con las flechas (mes, año o periodo) y **Hoy** vuelve al periodo
   actual. En el año, pulsar un día abre su mes. La tabla del semestre marca la semana actual
   y mide las horas registradas por semana.
+- La cabecera del calendario ofrece **Desde la semana actual**: oculta las semanas
+  anteriores en la tabla y en las marcas del periodo, sin perder la fila actual, los chips ni
+  las horas. Es reversible y se conserva al reabrir.
 - Los chips recuperan el tinte suave y el borde de color del ramo; la categoría del evento
-  sigue visible en mes, semana, semestre, agenda y detalle.
+  sigue visible en mes, semana, semestre y detalle.
 
 ### Pruebas
 
 - Nueva `gate-malla-grafo.py`: 39 aristas del fixture, sin bezier, sin tramos inclinados, sin
   líneas sobre tarjetas, sin tramos colineales solapados y con el mismo trazado al repintar,
   a 1440 y 411 px.
-- Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana/Agenda, 42 celdas, 12 meses,
-  18 semanas con estudio, navegación y categorías, a 1440 y 411. La suite web pasa a
+- Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana, 42 celdas, 12 meses,
+  18 semanas con estudio, navegación, corte y categorías, a 1440 y 411. La suite web pasa a
   **29 compuertas**.
+- Se retiró la vista **Agenda**: los eventos siguen en mes, semana, semestre y detalle.
 
 ## 1.2.0-beta.6 — 2026-11-01
 

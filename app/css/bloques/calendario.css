@@ -37,14 +37,6 @@
 .cal-semana-dia>b{display:block;font-size:var(--fs-sm);margin-bottom:4px}
 .cal-semana-dia.hoy{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
 .cal-vacio-dia{color:var(--muted)}
-.cal-agenda{display:flex;flex-direction:column;gap:var(--sp-1)}
-.cal-agenda__item{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);width:100%;text-align:left;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);font:inherit;color:var(--fg);cursor:pointer}
-.cal-agenda__item:hover{border-color:var(--ac)}
-.cal-agenda__cuerpo{min-width:0}
-.cal-agenda__tit{display:flex;align-items:center;gap:var(--sp-1);min-width:0}
-.cal-agenda__tit .ramo-ico{width:14px;height:14px}
-.cal-agenda__item b{display:block;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cal-agenda__item small{color:var(--muted);font-size:var(--fs-xs)}
 @media (max-width:520px){.cal-grid--semana{grid-template-columns:1fr}.cal-semana-dia{min-height:0}}
 body.split .cal-layout{grid-template-columns:1fr}
 body.split .cal-layout .rail{display:none}
@@ -116,10 +108,14 @@ body.split .cal-layout .rail{display:none}
 .cal-sem .evento-chip{display:block;white-space:normal;overflow:visible;line-height:1.2}
 .cal-sem .evento-chip b{display:block;font-size:calc(var(--fs-xs) * .9)}
 .cal-sem .evento-chip__tit{display:block;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word}
-.cal-sem .evento-chip__tag{display:inline-block;max-width:100%;margin-top:2px;padding:0 2px;font-size:calc(var(--fs-xs) * .7);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-sem .evento-chip__tag{display:inline-block;max-width:100%;margin-top:2px;padding:0 2px;font-size:calc(var(--fs-xs) * .7);letter-spacing:0;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* La semana repite el apilado del semestre: en una columna de 120 px el
    título no cabe junto a la hora y la categoría. */
 .cal-semana-dia .evento-chip{flex-wrap:wrap;row-gap:1px}
 .cal-semana-dia .evento-chip__tit{flex:1 1 100%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word}
 .cal-semana-dia .evento-chip__tag{max-width:100%}
+
+/* Interruptor del corte, a la vista en la cabecera del calendario. */
+#cal-corte[aria-pressed="true"]{border-color:var(--ac);background:var(--ac);color:var(--ac-txt);font-weight:600}
+#cal-corte:disabled{opacity:.55;cursor:not-allowed}

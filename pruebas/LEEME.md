@@ -40,8 +40,8 @@ Un gate que no discrimina es un gate roto.
 | `gate-actualizacion` | configuración Tauri del updater, tarjeta de Ajustes, versión única y manifiesto por tipo de paquete (sin genérico ni Arch) | falta pubkey, endpoint `latest`, manifiesto con clave genérica o firma ausente |
 | `gate-tutorial` | `app/tutorial.json` es un `mimo.backup` con la versión de la app, el proyecto Mimo, 11 tareas y la nota con Markdown | JSON inválido, versión distinta, sin proyecto o sin la nota |
 | `gate-malla-grafo` | grafo de Malla: 39 aristas ortogonales con arcos de radio 6, sin pisar tarjetas y sin tramos colineales solapados, estable al repintar, a 1440 y 411 | curva bezier, tramo inclinado, línea sobre una tarjeta o dos líneas que comparten carril |
-| `gate-calendario-motor` | cinco vistas (Mes, Año, Semestre, Semana, Agenda), 42 celdas de mes, 12 meses de año, 18 semanas con estudio, navegación por flechas/Hoy, salto de año a mes y categorías en mes/semana/agenda/detalle, a 1440 y 411 | motor sin Año/Semestre, mes sin 42 celdas, año sin 12 meses o categoría perdida |
-| `gate-categorias` | categorías de evento sueltas: creación desde la ventana y desde el carril, etiqueta en mes/semana/agenda/detalle, color estable, persistencia y 411 | sin `MimoIdentidad` la etiqueta pierde el color |
+| `gate-calendario-motor` | cuatro vistas (Mes, Año, Semestre, Semana), 42 celdas de mes, 12 meses de año, 18 semanas con estudio, navegación por flechas/Hoy, salto de año a mes, corte desde la semana actual y categorías en mes/semana/semestre/detalle, a 1440 y 411 | motor sin Año/Semestre, mes sin 42 celdas, año sin 12 meses, corte ausente o categoría perdida |
+| `gate-categorias` | categorías de evento sueltas: creación desde la ventana y desde el carril, etiqueta en mes/semana/detalle, color estable, persistencia y 411 | sin `MimoIdentidad` la etiqueta pierde el color |
 
 ## Fixtures
 

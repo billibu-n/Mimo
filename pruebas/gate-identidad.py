@@ -263,10 +263,6 @@ def main() -> int:
                        cs.borderLeftWidth === '3px' &&
                        (chip.getAttribute('style') || '').indexOf('--chip:#dc2626') !== -1;
             }"""), "calendario: el chip usa el color del ramo en el borde", fallas)
-            page.locator("#vista-calendario [data-cal-vista='agenda']").click()
-            page.wait_for_timeout(300)
-            exigir(page.locator('.cal-agenda__item .ramo-ico use[href="#i-ramo-libro"]').count() >= 1,
-                   "calendario: la agenda lleva el icono del ramo", fallas)
             page.locator('#tabs [data-ir="tareas"]').click()
             page.wait_for_timeout(300)
             page.locator('#vista-tareas [data-vista="tablero"]').click()

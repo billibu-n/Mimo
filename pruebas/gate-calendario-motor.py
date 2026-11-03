@@ -3,14 +3,16 @@
 """gate-calendario-motor.py — el motor de mes, año y semestre.
 
 Mide lo que el encargo pide, no la impresión:
-  1. las cinco vistas existen (Mes, Año, Semestre, Semana, Agenda);
+  1. las cuatro vistas existen (Mes, Año, Semestre, Semana);
   2. el mes tiene 42 celdas, número de día, marcas de semana y chips con categoría;
   3. el año pinta los 12 meses, pone un punto por día con eventos y al pulsar un
      día vuelve al mes de ese día;
   4. el semestre pinta una tabla de semanas con 7 días, fila actual, estudio y chips;
   5. las flechas y Hoy navegan de verdad (mes, año y semestre);
-  6. las categorías siguen visibles en mes, semana, agenda y detalle;
-  7. a 411 px no hay desborde del documento.
+  6. las categorías siguen visibles en mes, semana, semestre y detalle;
+  7. el corte desde la semana actual se activa, se guarda, sobrevive a reabrir,
+     conserva fila actual/chips/horas y se desactiva;
+  8. a 411 px no hay desborde del documento.
 
 El motor anterior no tenía Año ni Semestre y usaba curvas/una grilla distinta:
 la compuerta falla en la primera comprobación de pestañas.
@@ -96,6 +98,7 @@ def main() -> int:
     hoy = date.today()
     lunes = hoy - timedelta(days=hoy.weekday())
     y, m = hoy.year, hoy.month
+    inicio = lunes - timedelta(weeks=4)  # el corte deja S5 como primera semana visible
     dias = [3, 8, 12, 18]
     fechas = [f"{y}-{m:02d}-{d:02d}" for d in dias]
     with Navegador() as nav:
@@ -103,7 +106,7 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             instalar_academics(page)
-            crear_periodo(page, lunes.isoformat())
+            crear_periodo(page, inicio.isoformat())
             crear_ramo(page, "CAL101", "Cálculo I")
             registrar_sesion(page, "CAL101", (lunes + timedelta(days=1)).isoformat(), "90")
             registrar_sesion(page, "CAL101", (lunes + timedelta(days=8)).isoformat(), "45")
@@ -111,8 +114,8 @@ def main() -> int:
             page.locator('#tabs [data-ir="calendario"]').click()
             page.wait_for_timeout(200)
             vistas = page.locator("#vista-calendario button").all_inner_texts()
-            exigir(vistas == ["Mes", "Año", "Semestre", "Semana", "Agenda"],
-                   f"vistas: Mes, Año, Semestre, Semana y Agenda — {vistas}", fallas)
+            exigir(vistas == ["Mes", "Año", "Semestre", "Semana"],
+                   f"vistas: Mes, Año, Semestre y Semana — {vistas}", fallas)
             if "Año" not in vistas or "Semestre" not in vistas:
                 return salir("gate-calendario-motor", fallas)
             exigir(page.locator("#vista-calendario .on").get_attribute("data-cal-vista") == "mes",
@@ -197,6 +200,65 @@ def main() -> int:
             exigir(any("EVALUACIONES" in c.inner_text().upper() for c in page.locator(".cal-sem .evento-chip").all()),
                    "semestre: el chip conserva la categoría", fallas)
 
+            # Corte desde la semana actual: se enciende y se apaga desde el calendario.
+            if page.locator("#cal-corte").count() == 0:
+                exigir(False, "corte: falta el control en el calendario", fallas)
+                return salir("gate-calendario-motor", fallas)
+            exigir(page.locator("#cal-corte").get_attribute("aria-pressed") == "false",
+                   "corte: el control nace apagado", fallas)
+            page.locator("#cal-corte").click()
+            page.wait_for_timeout(300)
+            exigir(page.locator("#cal-corte").get_attribute("aria-pressed") == "true",
+                   "corte: el control queda encendido", fallas)
+            filas_corte = page.locator(".cal-sem tbody tr")
+            exigir(filas_corte.count() == 14,
+                   f"corte: quedan las 14 semanas desde la actual — {filas_corte.count()}", fallas)
+            exigir(filas_corte.first.locator(".cal-sem-bl b").inner_text().strip() == "S5",
+                   f"corte: la primera fila es la semana actual — {filas_corte.first.locator('.cal-sem-bl b').inner_text()}", fallas)
+            exigir(page.locator(".cal-sem tr.actual").count() == 1,
+                   "corte: la semana actual sigue marcada", fallas)
+            exigir(page.locator(".cal-sem .evento-chip").count() >= 1,
+                   "corte: los chips de las semanas visibles no se pierden", fallas)
+            exigir(any(h not in ("0 h", "0,0 h") for h in page.locator(".cal-sem td.cal-sem-est b").all_inner_texts()),
+                   "corte: las horas de la semana actual siguen", fallas)
+            exigir(bool(estado(page)["periodos"][0].get("corteActual")),
+                   "corte: el ajuste se guarda en el periodo", fallas)
+
+            # El mes comparte el rango: las semanas anteriores tampoco llevan marca.
+            page.locator('#vista-calendario [data-cal-vista="mes"]').click()
+            page.wait_for_timeout(150)
+            page.locator("#cal-ant").click()
+            page.wait_for_timeout(200)
+            etiquetas_mes = page.locator("#cal-grid .cal-sem-col").all_inner_texts()
+            exigir("S1" not in etiquetas_mes and "S2" not in etiquetas_mes,
+                   f"corte: el mes anterior ya no marca S1/S2 — {etiquetas_mes}", fallas)
+            page.locator("#cal-sig").click()
+            page.wait_for_timeout(150)
+            page.locator('#vista-calendario [data-cal-vista="semestre"]').click()
+            page.wait_for_timeout(150)
+
+            page.goto(APP.as_uri(), wait_until="load")
+            page.wait_for_timeout(300)
+            page.locator('#tabs [data-ir="calendario"]').click()
+            page.wait_for_timeout(200)
+            page.locator('#vista-calendario [data-cal-vista="semestre"]').click()
+            page.wait_for_timeout(250)
+            exigir(page.locator(".cal-sem tbody tr").count() == 14,
+                   f"corte: el ajuste sobrevive a reabrir — {page.locator('.cal-sem tbody tr').count()}", fallas)
+            exigir(page.locator("#cal-corte").get_attribute("aria-pressed") == "true",
+                   "corte: el botón reaparece encendido", fallas)
+
+            page.locator("#cal-corte").click()
+            page.wait_for_timeout(300)
+            exigir(page.locator(".cal-sem tbody tr").count() == 18,
+                   f"corte: al desactivar vuelven las 18 semanas — {page.locator('.cal-sem tbody tr').count()}", fallas)
+            exigir(page.locator(".cal-sem tbody tr").first.locator(".cal-sem-bl b").inner_text().strip() == "S1",
+                   "corte: al desactivar vuelve S1", fallas)
+            exigir(page.locator("#cal-corte").get_attribute("aria-pressed") == "false",
+                   "corte: el botón queda apagado", fallas)
+            exigir(not bool(estado(page)["periodos"][0].get("corteActual")),
+                   "corte: el ajuste apagado también se guarda", fallas)
+
             # Semestre: las flechas cambian de periodo cuando hay más de uno.
             crear_periodo(page, (lunes + timedelta(weeks=20)).isoformat(), "Segundo periodo")
             page.wait_for_timeout(250)
@@ -209,7 +271,7 @@ def main() -> int:
             exigir(page.locator("#cal-mes-titulo").inner_text().strip() == "Semestre de prueba",
                    f"semestre: la flecha vuelve al periodo anterior — {page.locator('#cal-mes-titulo').inner_text()}", fallas)
 
-            # Semana y agenda conservan la categoría.
+            # La semana conserva la categoría.
             page.locator('#vista-calendario [data-cal-vista="semana"]').click()
             page.wait_for_timeout(200)
             exigir(page.locator(".cal-semana-dia").count() == 7,
@@ -219,13 +281,7 @@ def main() -> int:
             exigir(any("EVALUACIONES" in c.inner_text().upper() for c in page.locator(".cal-semana-dia .evento-chip").all()),
                    "semana: el chip conserva la categoría", fallas)
 
-            page.locator('#vista-calendario [data-cal-vista="agenda"]').click()
-            page.wait_for_timeout(200)
-            exigir(page.locator(".cal-agenda__item").count() == 4,
-                   f"agenda: cuatro eventos — {page.locator('.cal-agenda__item').count()}", fallas)
-            exigir(any("Evaluaciones" in tag.inner_text() for tag in page.locator(".cal-agenda__tag").all()),
-                   "agenda: la etiqueta de categoría sigue", fallas)
-            page.locator(".cal-agenda__item").first.click()
+            page.locator(".cal-semana-dia .evento-chip").first.click()
             page.wait_for_timeout(220)
             exigir("Categoría" in page.locator("#panel-cuerpo").inner_text() and
                    "Evaluaciones" in page.locator("#panel-cuerpo").inner_text(),
@@ -241,7 +297,7 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             instalar_academics(page)
-            crear_periodo(page, lunes.isoformat())
+            crear_periodo(page, inicio.isoformat())
             page.locator('#tabs [data-ir="calendario"]').click()
             page.wait_for_timeout(200)
             page.locator('#vista-calendario [data-cal-vista="anio"]').click()

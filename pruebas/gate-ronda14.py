@@ -211,9 +211,9 @@ def main() -> int:
             exigir(not any(e.get("id") == "calif-T1-0" for e in evs),
                    f"calificaciones: el evento es derivado, no copia en eventos — {evs}", fallas)
             page.locator('#tabs [data-ir="calendario"]').click(); page.wait_for_timeout(150)
-            page.locator('#vista-calendario button[data-cal-vista="agenda"]').click(); page.wait_for_timeout(150)
-            exigir("Control" in page.locator("#cal-agenda").inner_text(),
-                   "calificaciones: el componente aparece en la agenda del calendario", fallas)
+            page.locator('#vista-calendario button[data-cal-vista="semestre"]').click(); page.wait_for_timeout(180)
+            exigir("Control" in page.locator("#cal-semestre").inner_text(),
+                   "calificaciones: el componente aparece en el semestre del calendario", fallas)
 
             # Meta por semana.
             page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(250)

@@ -150,7 +150,8 @@
     });
     return {
       id: String(p.id || ("periodo-" + i)), nombre: String(p.nombre || p.id || ("Periodo " + (i + 1))),
-      inicio: String(p.inicio || (semanas[0] && semanas[0].desde) || ""), semanas: semanas
+      inicio: String(p.inicio || (semanas[0] && semanas[0].desde) || ""), semanas: semanas,
+      corteActual: !!p.corteActual
     };
   }
   function horaDe(e) {
