@@ -48,6 +48,16 @@
   Abrir ficha, Ver en Malla, Editar ramo, Identidad, Añadir/Retirar, Cerrar/Reabrir y Borrar
   ramo; el clic derecho de la sección añade Nuevo ramo y Ver Malla.
 
+### Estudio
+
+- El bloque **Meta por semana** desaparece: en su lugar queda una línea compacta con la
+  **meta semanal del ramo**, sin una fila de inputs por semana.
+- El techo del gráfico y la línea de meta usan esa **meta semanal del ramo** (la suma de las
+  metas de los ramos), no el total del semestre ni el máximo de otras semanas; las barras se
+  escalan contra ella y la barra máxima llega al 100 %.
+- El campo global **Meta semanal** se oculta cuando hay metas de ramo: la meta se edita en la
+  columna **Meta semanal** de la tabla.
+
 ### Calendario
 
 - Vuelve el motor de **mes, año y semestre** de Mimo Académics: grilla mensual de 42 celdas

@@ -201,6 +201,10 @@ def main() -> int:
                 componentes:[{nombre:"Control",categoria:"General",nota:null,fecha:fecha,peso:1}],
                 examen:{activo:false,peso:0,nota:null,reemplaza:null},
                 eximicion:{activa:false,modo:"todas",condiciones:[]}, notaMin:4, meta:5, cerrado:false}};
+              const ws = (s.periodos && s.periodos[0] && s.periodos[0].semanas) || [];
+              const ultima = ws[ws.length - 1];
+              s.estudio = Object.assign({}, s.estudio, { metasRamo: {T1: 22}, metasSemana: {} });
+              s.sesiones = [{ id: "s-ronda14", fecha: ultima ? ultima.desde : fecha, minutos: 660, ramo: "T1" }];
               MimoHost.reemplazar(s);
             }""", viernes)
             page.locator('#tabs [data-ir="calificaciones"]').click(); page.wait_for_timeout(250)
@@ -215,14 +219,40 @@ def main() -> int:
             exigir("Control" in page.locator("#cal-semestre").inner_text(),
                    "calificaciones: el componente aparece en el semestre del calendario", fallas)
 
-            # Meta por semana.
-            page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(250)
-            metas = page.locator("#est-metas-semana input")
-            exigir(metas.count() == 4, f"estudio: una meta por semana — {metas.count()}", fallas)
-            metas.first.fill("3"); metas.first.dispatch_event("change"); page.wait_for_timeout(200)
-            guardadas = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).estudio.metasSemana")
-            exigir(len(guardadas) >= 1 and 3 in [float(x) for x in guardadas.values()],
-                   f"estudio: meta semanal guardada — {guardadas}", fallas)
+            # Meta semanal del ramo: sin la tira de metas por semana, el techo del
+            # gráfico sale de la meta del ramo y la barra de la semana actual se mide
+            # contra ella (11 h de 22 h = 50 %), no contra el total del semestre.
+            page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(300)
+            exigir(page.locator("#est-metas-semana").count() == 0,
+                   "estudio: no queda el bloque de metas por semana", fallas)
+            exigir("22 h" in page.locator("#est-meta-ramo").inner_text(),
+                   f"estudio: la línea muestra la meta del ramo — {page.locator('#est-meta-ramo').inner_text()}", fallas)
+            exigir("meta 22 h" in page.locator("#est-grafico").inner_text(),
+                   f"estudio: la línea de meta usa la meta del ramo — {page.locator('#est-grafico').inner_text()[:80]}", fallas)
+            alto = page.evaluate("""() => {
+              const cols = [...document.querySelectorAll('.est-col')];
+              const pila = cols[cols.length - 1].querySelector('.est-pila');
+              const base = document.querySelector('.est-cols').getBoundingClientRect().height;
+              return {alto: pila.getBoundingClientRect().height, base};
+            }""")
+            ratio = alto["alto"] / alto["base"] if alto["base"] else 0
+            exigir(0.45 <= ratio <= 0.55,
+                   f"estudio: la barra usa la meta del ramo, no el total — {ratio:.2f} ({alto})", fallas)
+            page.locator('[data-est-meta-ramo="T1"]').fill("44")
+            page.locator('[data-est-meta-ramo="T1"]').blur()
+            page.wait_for_timeout(300)
+            exigir("44 h" in page.locator("#est-meta-ramo").inner_text() and
+                   "meta 44 h" in page.locator("#est-grafico").inner_text(),
+                   "estudio: al cambiar la meta se actualiza el techo", fallas)
+            alto = page.evaluate("""() => {
+              const cols = [...document.querySelectorAll('.est-col')];
+              const pila = cols[cols.length - 1].querySelector('.est-pila');
+              const base = document.querySelector('.est-cols').getBoundingClientRect().height;
+              return {alto: pila.getBoundingClientRect().height, base};
+            }""")
+            ratio = alto["alto"] / alto["base"] if alto["base"] else 0
+            exigir(0.20 <= ratio <= 0.30,
+                   f"estudio: la barra se reescala con la meta nueva — {ratio:.2f} ({alto})", fallas)
 
             # Enlace recíproco nota -> tarea.
             page.locator('#tabs [data-ir="tareas"]').click(); page.wait_for_timeout(120)

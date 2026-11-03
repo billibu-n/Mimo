@@ -3565,7 +3565,15 @@
     var hist = (estado.estudio && estado.estudio.minutosSemana) || {};
     var semanas = semanasEstudio();
     var meta = Number(estado.estudio.metaSemanal) || 0;
+    /* La meta del gráfico es la suma de las metas semanales de los ramos; si
+       todavía no hay ninguna, se conserva la meta global como respaldo. */
+    var metaRamo = cursos.reduce(function (a, c) {
+      return a + Math.max(0, Number(estado.estudio.metasRamo[c.codigo]) || 0);
+    }, 0);
+    var metaGrafico = metaRamo || meta;
     if ($("#est-meta")) $("#est-meta").value = meta;
+    /* Con metas de ramo, el campo global sobra: la meta se edita en la tabla. */
+    if ($("#est-meta-campo")) $("#est-meta-campo").hidden = metaRamo > 0;
     var sel = $("#est-ramo");
     if (sel) {
       var val = sel.value;
@@ -3606,11 +3614,9 @@
         totalRamo[k] = (totalRamo[k] || 0) + m;
       });
     });
-    function metaDeSemana(w) {
-      var ms = estado.estudio.metasSemana || {};
-      return Object.prototype.hasOwnProperty.call(ms, w.desde) ? Math.max(0, Number(ms[w.desde]) || 0) : meta;
-    }
-    var sobre = semanas.filter(function (w) { return porSemana[w.desde] > metaDeSemana(w) * 60 && metaDeSemana(w) > 0; }).length;
+    var sobre = metaGrafico > 0 ? semanas.filter(function (w) {
+      return porSemana[w.desde] > metaGrafico * 60;
+    }).length : 0;
     var conDatos = semanas.filter(function (w) { return porSemana[w.desde] > 0; });
     var prom = conDatos.length ? conDatos.reduce(function (a, w) { return a + porSemana[w.desde]; }, 0) / conDatos.length : 0;
     if ($("#est-k-horas")) $("#est-k-horas").textContent = fmtHoras(totalMin);
@@ -3621,11 +3627,9 @@
       ? L("Periodo ", "Term ", "学期 ") + periodoActivoObj().nombre + " · " + semanas.length + " " + L("semanas", "weeks", "周")
       : L("Últimas ", "Last ", "最近 ") + semanas.length + " " + L("semanas", "weeks", "周");
     if ($("#est-resumen")) $("#est-resumen").textContent = ses.length || histMin
-      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + (histMin ? " · " + L("incluye histórico semanal", "includes weekly history", "含每周历史记录") : "") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(meta * 60) + " " + L("por semana.", "per week.", "每周。")
+      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + (histMin ? " · " + L("incluye histórico semanal", "includes weekly history", "含每周历史记录") : "") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(metaGrafico * 60) + " " + L("por semana.", "per week.", "每周。")
       : L("Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.", "No sessions yet. Log one or use the Time stopwatch.", "还没有会话。记录一次，或使用时间的秒表。");
-    var max = Math.max(meta * 60, 1);
-    semanas.forEach(function (w) { max = Math.max(max, porSemana[w.desde]); });
-    max *= 1.15;
+    var max = Math.max(metaGrafico * 60, 1);
     var cols = semanas.map(function (w) {
       var total = porSemana[w.desde], pct = Math.min(100, total / max * 100);
       var segs = Object.keys(totalRamo).length ? "" : "";
@@ -3652,20 +3656,17 @@
         '<div class="est-pila" style="height:' + pct + '%">' + barras + "</div>" +
         '<span class="est-etq">' + esc(w.etiqueta) + "</span></div>";
     }).join("");
-    $("#est-grafico").innerHTML = totalMin || meta
-      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, meta * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
-        fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
+    $("#est-grafico").innerHTML = totalMin || metaGrafico
+      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, metaGrafico * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
+        fmtHoras(metaGrafico * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
       : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
     var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
       return '<span>' + marcaRamo(c) + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
     });
     if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>' + esc(L("Sin ramo ", "No course ", "无课程 ")) + fmtHoras(totalRamo._) + "</span>");
     $("#est-leyenda").innerHTML = leyenda.join("");
-    if ($("#est-metas-semana")) {
-      $("#est-metas-semana").innerHTML = '<span class="muted">' + esc(L("Meta por semana:", "Goal per week:", "每周目标：")) + '</span>' + semanas.map(function (w) {
-        var v = metaDeSemana(w);
-        return '<label class="est-meta-sem">' + esc(w.etiqueta) + ' <input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-semana="' + esc(w.desde) + '" value="' + v + '"> h</label>';
-      }).join("");
+    if ($("#est-meta-ramo")) {
+      $("#est-meta-ramo").innerHTML = esc(L("Meta semanal", "Weekly goal", "每周目标")) + ' <b>' + fmtHoras(metaGrafico * 60) + "</b>";
     }
     var filas = cursos.map(function (c) {
       var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
@@ -5248,12 +5249,6 @@
       var el = e.target.closest("[data-est-meta-ramo]"); if (!el) return;
       normalizarEstudio();
       estado.estudio.metasRamo[el.getAttribute("data-est-meta-ramo")] = Math.max(0, Number(el.value) || 0);
-      guardar(); pintarEstudio();
-    });
-    $("#est-metas-semana").addEventListener("change", function (e) {
-      var el = e.target.closest("[data-est-meta-semana]"); if (!el) return;
-      normalizarEstudio();
-      estado.estudio.metasSemana[el.getAttribute("data-est-meta-semana")] = Math.max(0, Number(el.value) || 0);
       guardar(); pintarEstudio();
     });
     $("#est-sesiones").addEventListener("click", function (e) {

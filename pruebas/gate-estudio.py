@@ -6,7 +6,7 @@ Mide sobre app/index.html:
   1. sin ramos, Estudio explica que se crean en Malla;
   2. una sesión suelta suma horas y aparece en la semana del periodo;
   3. dos ramos se apilan con colores distintos;
-  4. la meta semanal y la meta por ramo se reflejan;
+  4. la meta semanal del ramo se refleja y el techo del gráfico la usa;
   5. borrar una sesión descuenta;
   6. 411 sin desborde y consola limpia.
 

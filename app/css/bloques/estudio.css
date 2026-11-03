@@ -17,6 +17,7 @@
 .est-leyenda i{width:9px;height:9px;border-radius:2px;display:inline-block}
 .est-sep{border:0;border-top:1px solid var(--line2);margin:var(--sp-3) 0}
 .est-num{width:78px}
+.est-meta-campo[hidden]{display:none}
 .est-tabla-wrap{overflow-x:auto}
 .est-tabla{width:100%;border-collapse:collapse;min-width:560px}
 .est-tabla th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:2px var(--sp-1);border-bottom:1px solid var(--line2)}
@@ -33,9 +34,8 @@
 .est-sesion small{color:var(--muted);font-size:var(--fs-xs);white-space:nowrap}
 @media (max-width:900px){.estudio-layout{grid-template-columns:1fr}}
 @media (max-width:520px){.est-col{width:32px}.est-pila{width:22px}}
-.est-metas-semana{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--line2)}
-.est-meta-sem{display:inline-flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--muted)}
-.est-meta-sem .entrada{width:58px;min-height:28px;font-size:var(--fs-xs)}
+.est-meta-ramo{display:flex;align-items:baseline;gap:var(--sp-2);margin:var(--sp-3) 0 0;padding-top:var(--sp-3);border-top:1px solid var(--line2);font-size:var(--fs-xs);color:var(--muted)}
+.est-meta-ramo b{color:var(--fg);font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
 
 /* El ramo en la tabla: icono, código y nombre en una línea, con aire. */
 .est-ramo{display:inline-flex;align-items:center;gap:var(--sp-1);min-width:0}
