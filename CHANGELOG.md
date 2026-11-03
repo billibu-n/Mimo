@@ -1,5 +1,25 @@
 # Cambios
 
+## Sin publicar
+
+### Malla
+
+- El grafo de requisitos se dibuja con **tramos ortogonales y esquinas redondeadas**
+  (`--malla-radio`), no con curvas que atravesaban las tarjetas. Cada arista tiene su carril,
+  las salidas y las entradas usan mitades distintas del borde y los ramos largos cruzan por
+  las franjas libres entre tarjeta y tarjeta. Si no hay hueco, bajan a una banda inferior.
+- El orden de las líneas es estable: se ordenan por nivel, posición y código, y cada carril
+  se reparte con el mismo criterio en cada repintado. Elegir un ramo atenúa las líneas que no
+  son suyas.
+- Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha, sin pasar
+  por encima de las tarjetas.
+
+### Pruebas
+
+- Nueva `gate-malla-grafo.py`: 39 aristas del fixture, sin bezier, sin tramos inclinados, sin
+  líneas sobre tarjetas, sin tramos colineales solapados y con el mismo trazado al repintar,
+  a 1440 y 411 px. La suite web pasa a **28 compuertas**.
+
 ## 1.2.0-beta.6 — 2026-11-01
 
 ### Pruebas antes de publicar

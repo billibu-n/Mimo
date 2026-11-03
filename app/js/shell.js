@@ -1911,16 +1911,42 @@
   function limpiarSeleccionMalla() {
     estado.ramoSel = null; guardar(); pintarMalla(); pintarPanel();
   }
-  function dibujarLineasMalla() {
-    var cont = $("#malla-tablero"), svg = $("#malla-lineas");
-    if (!cont || !svg) return;
-    var ancho = Math.max(cont.scrollWidth, cont.clientWidth), alto = Math.max(cont.scrollHeight, cont.clientHeight);
-    if (!ancho || !alto) return;
-    svg.setAttribute("viewBox", "0 0 " + ancho + " " + alto);
-    svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
-    var caja = cont.getBoundingClientRect(), nodos = {};
-    $$("#malla-cols [data-ramo]").forEach(function (el) { nodos[el.getAttribute("data-ramo")] = el; });
-    var sel = estado.ramoSel, partes = [];
+  /* ---------------------------------------------------------------------
+     Grafo de Malla: trazado ortogonal por carriles.
+
+     Cada arista sale por un punto distinto del borde derecho de su ramo y
+     entra por otro del borde izquierdo (o del derecho si es del mismo nivel).
+     Las columnas se separan lo justo para que cada tramo vertical tenga su
+     carril; los ramos largos cruzan por las franjas libres entre tarjeta y
+     tarjeta, y solo bajan bajo el tablero cuando no queda hueco. Así ninguna
+     línea pisa un ramo y dos líneas no comparten un tramo.
+     --------------------------------------------------------------------- */
+  function _mallaToken(el, nombre, porDefecto) {
+    var v = window.getComputedStyle(el).getPropertyValue(nombre).trim();
+    var n = parseFloat(v);
+    return isFinite(n) ? n : porDefecto;
+  }
+  function _mallaGeo(cont) {
+    var caja = cont.getBoundingClientRect();
+    var cols = [], indice = {}, nodos = {};
+    $$("#malla-cols .malla-col").forEach(function (colEl) {
+      var r = colEl.getBoundingClientRect();
+      indice[String(colEl.getAttribute("data-nivel"))] = cols.length;
+      cols.push({ nivel: String(colEl.getAttribute("data-nivel")), left: r.left - caja.left, right: r.right - caja.left, top: r.top - caja.top, bottom: r.bottom - caja.top });
+    });
+    $$("#malla-cols [data-ramo]").forEach(function (el) {
+      var r = el.getBoundingClientRect(), col = el.closest(".malla-col");
+      var clave = el.getAttribute("data-ramo");
+      nodos[clave] = {
+        codigo: clave, el: el, col: indice[String(col && col.getAttribute("data-nivel"))],
+        left: r.left - caja.left, right: r.right - caja.left,
+        top: r.top - caja.top, bottom: r.bottom - caja.top, height: r.height
+      };
+    });
+    return { caja: caja, cols: cols, nodos: nodos };
+  }
+  function _mallaAristas(nodos) {
+    var vistos = {}, aristas = [];
     estado.cursos.forEach(function (c) {
       var destino = nodos[c.codigo]; if (!destino) return;
       var reqs = (c.requisitos || []).slice();
@@ -1929,16 +1955,209 @@
       });
       reqs.forEach(function (req) {
         var origen = nodos[req]; if (!origen) return;
-        var clase = sel ? (c.codigo === sel ? "req" : req === sel ? "des" : "tenue") : "tenue";
-        var a = origen.getBoundingClientRect(), b = destino.getBoundingClientRect();
-        var x1 = a.right - caja.left, y1 = a.top + a.height / 2 - caja.top;
-        var x2 = b.left - caja.left, y2 = b.top + b.height / 2 - caja.top;
-        var dx = Math.max(18, Math.abs(x2 - x1) * 0.45);
-        var d = "M" + x1.toFixed(1) + " " + y1.toFixed(1) + " C" + (x1 + dx).toFixed(1) + " " + y1.toFixed(1) + " " +
-          (x2 - dx).toFixed(1) + " " + y2.toFixed(1) + " " + x2.toFixed(1) + " " + y2.toFixed(1);
-        partes.push('<path class="malla-linea malla-linea--' + clase + '" d="' + d + '"/>');
+        if (origen.col > destino.col) return; // hacia atrás no hay carril
+        var clave = req + ">" + c.codigo;
+        if (vistos[clave]) return;
+        vistos[clave] = 1;
+        aristas.push({ de: req, a: c.codigo, oi: origen.col, di: destino.col, src: origen, dst: destino, lanes: {} });
       });
     });
+    return aristas.sort(function (a, b) {
+      return (a.oi - b.oi) || (a.src.top - b.src.top) || (a.di - b.di) || (a.dst.top - b.dst.top) ||
+        (a.de < b.de ? -1 : a.de > b.de ? 1 : 0) || (a.a < b.a ? -1 : a.a > b.a ? 1 : 0);
+    });
+  }
+  function _mallaReparto(aristas) {
+    var salida = {}, entrada = {};
+    aristas.forEach(function (e) {
+      (salida[e.de] = salida[e.de] || []).push(e);
+      (entrada[e.a] = entrada[e.a] || []).push(e);
+    });
+    /* Las salidas usan la mitad superior del borde y las entradas la inferior:
+       así una línea que sale y otra que entra en la misma fila no comparten
+       altura ni se pisan en el carril. */
+    function punto(nodo, i, n, salida) {
+      var medio = nodo.top + nodo.height / 2;
+      var min = salida ? nodo.top + 6 : medio + 1.5;
+      var max = salida ? medio - 1.5 : nodo.bottom - 6;
+      if (max <= min) return medio + (salida ? -1.5 : 1.5);
+      if (n <= 1) return (min + max) / 2;
+      return min + (max - min) * (i + 1) / (n + 1);
+    }
+    Object.keys(salida).forEach(function (cod) {
+      salida[cod].sort(function (a, b) { return (a.di - b.di) || (a.dst.top - b.dst.top) || (a.a < b.a ? -1 : 1); });
+      salida[cod].forEach(function (e, i) { e.y1 = punto(e.src, i, salida[cod].length, true); });
+    });
+    Object.keys(entrada).forEach(function (cod) {
+      entrada[cod].sort(function (a, b) { return (a.oi - b.oi) || (a.src.top - b.src.top) || (a.de < b.de ? -1 : 1); });
+      entrada[cod].forEach(function (e, i) { e.y2 = punto(e.dst, i, entrada[cod].length, false); });
+    });
+  }
+  function _mallaCarriles(aristas, cols, aire, paso) {
+    var demanda = {};
+    aristas.forEach(function (e) {
+      if (e.di <= e.oi + 1) demanda[e.oi] = (demanda[e.oi] || 0) + 1;
+      else { demanda[e.oi] = (demanda[e.oi] || 0) + 1; demanda[e.di - 1] = (demanda[e.di - 1] || 0) + 1; }
+    });
+    var maximo = 0;
+    Object.keys(demanda).forEach(function (g) { maximo = Math.max(maximo, demanda[g]); });
+    return { maximo: maximo, demanda: demanda };
+  }
+  /* Franjas libres para cruzar de una columna a otra sin pisar una tarjeta:
+     se juntan los intervalos ocupados por los ramos de todas las columnas de
+     en medio y se devuelven los centros de los huecos que quedan entre ellos.
+     Los ramos largos viajan por ahí, no por debajo de todo el tablero. */
+  function _mallaBandas(geo, oi, di, paso, radio) {
+    var porCol = {};
+    Object.keys(geo.nodos).forEach(function (cod) {
+      var n = geo.nodos[cod];
+      (porCol[n.col] = porCol[n.col] || []).push([n.top, n.bottom]);
+    });
+    var ocupados = [];
+    for (var k = oi + 1; k < di; k++) {
+      (porCol[k] || []).forEach(function (iv) { ocupados.push(iv); });
+    }
+    ocupados.sort(function (a, b) { return a[0] - b[0]; });
+    var libres = [], prev = null, aire = radio + 1;
+    ocupados.forEach(function (iv) {
+      if (prev === null) { prev = iv[1]; return; }
+      if (iv[0] - prev >= 2 * aire + 1) libres.push([prev + aire, iv[0] - aire]);
+      prev = Math.max(prev, iv[1]);
+    });
+    var out = [];
+    libres.forEach(function (b) {
+      for (var y = b[0]; y <= b[1] + 0.01; y += paso) out.push(y);
+    });
+    return out;
+  }
+  function _mallaTracks(largas, geo, fondo, aire, paso, radio) {
+    var usados = [], caidas = 0;
+    largas.sort(function (a, b) {
+      return ((b.di - b.oi) - (a.di - a.oi)) || (a.oi - b.oi) || (a.y1 - b.y1) || (a.de < b.de ? -1 : 1);
+    });
+    largas.forEach(function (e) {
+      var cands = _mallaBandas(geo, e.oi, e.di, paso, radio);
+      var medio = (e.y1 + e.y2) / 2;
+      cands.sort(function (a, b) { return (Math.abs(a - medio) - Math.abs(b - medio)) || (a - b); });
+      var elegido = null;
+      for (var i = 0; i < cands.length; i++) {
+        var libre = true;
+        for (var j = 0; j < usados.length; j++) {
+          if (Math.abs(usados[j] - cands[i]) < 0.5) { libre = false; break; }
+        }
+        if (libre) { elegido = cands[i]; break; }
+      }
+      if (elegido === null) { elegido = fondo + aire + caidas * paso; caidas++; }
+      e.trackY = elegido;
+      usados.push(elegido);
+    });
+  }
+  function _mallaAsignarCarriles(aristas, cols, aire, paso) {
+    var porGap = {};
+    function meter(g, e, yA, yB, ancla, tipo) {
+      (porGap[g] = porGap[g] || []).push({ e: e, yA: yA, yB: yB, ancla: ancla, tipo: tipo });
+    }
+    aristas.forEach(function (e) {
+      if (e.di <= e.oi + 1) meter(e.oi, e, e.y1, e.y2, e.y1, "recta");
+      else {
+        meter(e.oi, e, e.y1, e.trackY, e.y1, "salida");
+        meter(e.di - 1, e, e.trackY, e.y2, e.y2, "entrada");
+      }
+    });
+    Object.keys(porGap).forEach(function (g) {
+      var tramos = porGap[g].sort(function (a, b) {
+        return (a.ancla - b.ancla) || (a.yA - b.yA) || (a.yB - b.yB) || (a.e.de < b.e.de ? -1 : 1);
+      });
+      var ginfo = cols[Number(g)];
+      var sig = cols[Number(g) + 1];
+      if (!ginfo) return;
+      var izq = ginfo.right + aire, der = sig ? sig.left - aire : ginfo.right + 80;
+      var ancho = Math.max(0, der - izq);
+      var real = tramos.length > 1 ? Math.min(paso, ancho / (tramos.length - 1)) : 0;
+      var inicio = izq + (ancho - real * (tramos.length - 1)) / 2;
+      tramos.forEach(function (t, i) { t.e.lanes[g] = inicio + real * i; });
+    });
+  }
+  function _mallaCamino(puntos, radio) {
+    function n(v) { return Number(v.toFixed(2)); }
+    var d = "M" + n(puntos[0].x) + " " + n(puntos[0].y);
+    for (var i = 1; i < puntos.length - 1; i++) {
+      var prev = puntos[i - 1], p = puntos[i], sig = puntos[i + 1];
+      var ux = Math.sign(p.x - prev.x), uy = Math.sign(p.y - prev.y);
+      var vx = Math.sign(sig.x - p.x), vy = Math.sign(sig.y - p.y);
+      var dentro = Math.abs(p.x - prev.x) + Math.abs(p.y - prev.y);
+      var fuera = Math.abs(sig.x - p.x) + Math.abs(sig.y - p.y);
+      var r = Math.min(radio, dentro / 2, fuera / 2);
+      if (r < 0.5) { d += " L" + n(p.x) + " " + n(p.y); continue; }
+      var a = { x: p.x - ux * r, y: p.y - uy * r };
+      var b = { x: p.x + vx * r, y: p.y + vy * r };
+      var sweep = (ux * vy - uy * vx) > 0 ? 1 : 0;
+      d += " L" + n(a.x) + " " + n(a.y) + " A" + n(r) + " " + n(r) + " 0 0 " + sweep + " " + n(b.x) + " " + n(b.y);
+    }
+    var fin = puntos[puntos.length - 1];
+    d += " L" + n(fin.x) + " " + n(fin.y);
+    return d;
+  }
+  function dibujarLineasMalla() {
+    var cont = $("#malla-tablero"), svg = $("#malla-lineas"), colsEl = $("#malla-cols");
+    if (!cont || !svg || !colsEl) return;
+    colsEl.style.removeProperty("--malla-sep");
+    cont.style.removeProperty("padding-bottom");
+    cont.style.removeProperty("padding-right");
+    var radio = _mallaToken(cont, "--malla-radio", 6);
+    var paso = _mallaToken(cont, "--malla-carril", 5);
+    var aire = _mallaToken(cont, "--malla-aire", 8);
+    var geo = _mallaGeo(cont);
+    var aristas = _mallaAristas(geo.nodos);
+    var demanda = _mallaCarriles(aristas, geo.cols, aire, paso);
+    var anchoGap = parseFloat(window.getComputedStyle(colsEl).columnGap) || 44;
+    var necesario = 2 * aire + Math.max(0, demanda.maximo - 1) * paso;
+    if (necesario > anchoGap + 0.5) {
+      colsEl.style.setProperty("--malla-sep", necesario + "px");
+      cont.offsetWidth; // fuerza el reflujo antes de volver a medir
+      geo = _mallaGeo(cont);
+      aristas = _mallaAristas(geo.nodos);
+    }
+    if (!aristas.length) {
+      svg.innerHTML = "";
+      svg.setAttribute("width", 0); svg.setAttribute("height", 0);
+      return;
+    }
+    _mallaReparto(aristas);
+    var fondo = 0;
+    Object.keys(geo.nodos).forEach(function (cod) { fondo = Math.max(fondo, geo.nodos[cod].bottom); });
+    var largas = aristas.filter(function (e) { return e.di > e.oi + 1; });
+    _mallaTracks(largas, geo, fondo, aire, paso, radio);
+    _mallaAsignarCarriles(aristas, geo.cols, aire, paso);
+    var sel = estado.ramoSel, partes = [], maxX = 0;
+    aristas.forEach(function (e) {
+      var g1 = e.oi, g2 = e.di - 1;
+      var x1 = e.src.right, y1 = e.y1, x2 = e.di === e.oi ? e.dst.right : e.dst.left, y2 = e.y2;
+      var puntos;
+      if (e.di <= e.oi + 1) {
+        puntos = [{ x: x1, y: y1 }, { x: e.lanes[g1], y: y1 }, { x: e.lanes[g1], y: y2 }, { x: x2, y: y2 }];
+      } else {
+        puntos = [
+          { x: x1, y: y1 }, { x: e.lanes[g1], y: y1 }, { x: e.lanes[g1], y: e.trackY },
+          { x: e.lanes[g2], y: e.trackY }, { x: e.lanes[g2], y: y2 }, { x: x2, y: y2 }
+        ];
+      }
+      puntos.forEach(function (p) { maxX = Math.max(maxX, p.x); });
+      var clase = sel ? (e.a === sel ? "req" : e.de === sel ? "des" : "tenue") : "";
+      var clases = "malla-linea" + (clase ? " malla-linea--" + clase : "");
+      partes.push('<path class="' + clases + '" d="' + _mallaCamino(puntos, radio) +
+        '" data-malla-de="' + esc(e.de) + '" data-malla-a="' + esc(e.a) + '" data-malla-span="' + (e.di - e.oi) + '"/>');
+    });
+    var altoNatural = Math.max(fondo + 12, cont.clientHeight);
+    var alto = Math.max(altoNatural, (largas.length ? largas[largas.length - 1].trackY + 12 : 0));
+    cont.style.paddingBottom = Math.max(12, alto - fondo) + "px";
+    var anchoNatural = Math.max(cont.scrollWidth, cont.clientWidth);
+    var extraDer = Math.max(0, maxX + 10 - anchoNatural);
+    cont.style.paddingRight = extraDer > 0 ? (2 + extraDer) + "px" : "";
+    var ancho = Math.max(cont.scrollWidth, cont.clientWidth);
+    alto = Math.max(cont.scrollHeight, alto);
+    svg.setAttribute("viewBox", "0 0 " + ancho + " " + alto);
+    svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
     svg.innerHTML = partes.join("");
   }
   function alternarRamo(cod) {

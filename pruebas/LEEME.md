@@ -6,7 +6,7 @@ impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 pruebas/correr-gates.py     # los 27 gates web, resumen al final
+python3 pruebas/correr-gates.py     # los 28 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila. El gate lo arranca en modo headless
@@ -39,6 +39,7 @@ Un gate que no discrimina es un gate roto.
 | `gate-respaldo` | exportar/importar conserva los datos, crea copia previa, rechaza versión futura y el banner de cuota aparece si localStorage falla | importación sin copia previa, versión 99 aplicada o fallo de cuota silencioso |
 | `gate-actualizacion` | configuración Tauri del updater, tarjeta de Ajustes, versión única y manifiesto por tipo de paquete (sin genérico ni Arch) | falta pubkey, endpoint `latest`, manifiesto con clave genérica o firma ausente |
 | `gate-tutorial` | `app/tutorial.json` es un `mimo.backup` con la versión de la app, el proyecto Mimo, 11 tareas y la nota con Markdown | JSON inválido, versión distinta, sin proyecto o sin la nota |
+| `gate-malla-grafo` | grafo de Malla: 39 aristas ortogonales con arcos de radio 6, sin pisar tarjetas y sin tramos colineales solapados, estable al repintar, a 1440 y 411 | curva bezier, tramo inclinado, línea sobre una tarjeta o dos líneas que comparten carril |
 | `gate-categorias` | categorías de evento sueltas: creación desde la ventana y desde el carril, etiqueta en mes/semana/agenda/detalle, color estable, persistencia y 411 | sin `MimoIdentidad` la etiqueta pierde el color |
 
 ## Fixtures

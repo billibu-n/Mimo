@@ -1,0 +1,371 @@
+{
+  "tipo": "mimo-malla",
+  "version": 1,
+  "cursos": [
+    {
+      "codigo": "G101",
+      "nombre": "Ramo del nivel 1 número 1",
+      "creditos": 5,
+      "nivel": 1,
+      "requisitos": [],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G102",
+      "nombre": "Ramo del nivel 1 número 2",
+      "creditos": 5,
+      "nivel": 1,
+      "requisitos": [
+        "G101"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G103",
+      "nombre": "Ramo del nivel 1 número 3",
+      "creditos": 5,
+      "nivel": 1,
+      "requisitos": [],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G104",
+      "nombre": "Ramo del nivel 1 número 4",
+      "creditos": 5,
+      "nivel": 1,
+      "requisitos": [],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G105",
+      "nombre": "Ramo del nivel 1 número 5",
+      "creditos": 5,
+      "nivel": 1,
+      "requisitos": [],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G201",
+      "nombre": "Ramo del nivel 2 número 1",
+      "creditos": 5,
+      "nivel": 2,
+      "requisitos": [
+        "G102"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G202",
+      "nombre": "Ramo del nivel 2 número 2",
+      "creditos": 5,
+      "nivel": 2,
+      "requisitos": [
+        "G103"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G203",
+      "nombre": "Ramo del nivel 2 número 3",
+      "creditos": 5,
+      "nivel": 2,
+      "requisitos": [
+        "G104"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G204",
+      "nombre": "Ramo del nivel 2 número 4",
+      "creditos": 5,
+      "nivel": 2,
+      "requisitos": [
+        "G105"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G205",
+      "nombre": "Ramo del nivel 2 número 5",
+      "creditos": 5,
+      "nivel": 2,
+      "requisitos": [
+        "G101"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G301",
+      "nombre": "Ramo del nivel 3 número 1",
+      "creditos": 5,
+      "nivel": 3,
+      "requisitos": [
+        "G202"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G302",
+      "nombre": "Ramo del nivel 3 número 2",
+      "creditos": 5,
+      "nivel": 3,
+      "requisitos": [
+        "G203",
+        "G102"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G303",
+      "nombre": "Ramo del nivel 3 número 3",
+      "creditos": 5,
+      "nivel": 3,
+      "requisitos": [
+        "G204"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G304",
+      "nombre": "Ramo del nivel 3 número 4",
+      "creditos": 5,
+      "nivel": 3,
+      "requisitos": [
+        "G205",
+        "G104"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G305",
+      "nombre": "Ramo del nivel 3 número 5",
+      "creditos": 5,
+      "nivel": 3,
+      "requisitos": [
+        "G201"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G401",
+      "nombre": "Ramo del nivel 4 número 1",
+      "creditos": 5,
+      "nivel": 4,
+      "requisitos": [
+        "G302",
+        "G101"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G402",
+      "nombre": "Ramo del nivel 4 número 2",
+      "creditos": 5,
+      "nivel": 4,
+      "requisitos": [
+        "G303",
+        "G202"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G403",
+      "nombre": "Ramo del nivel 4 número 3",
+      "creditos": 5,
+      "nivel": 4,
+      "requisitos": [
+        "G304"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G404",
+      "nombre": "Ramo del nivel 4 número 4",
+      "creditos": 5,
+      "nivel": 4,
+      "requisitos": [
+        "G305",
+        "G204"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G405",
+      "nombre": "Ramo del nivel 4 número 5",
+      "creditos": 5,
+      "nivel": 4,
+      "requisitos": [
+        "G301"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G501",
+      "nombre": "Ramo del nivel 5 número 1",
+      "creditos": 5,
+      "nivel": 5,
+      "requisitos": [
+        "G402",
+        "G101"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G502",
+      "nombre": "Ramo del nivel 5 número 2",
+      "creditos": 5,
+      "nivel": 5,
+      "requisitos": [
+        "G403",
+        "G302"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G503",
+      "nombre": "Ramo del nivel 5 número 3",
+      "creditos": 5,
+      "nivel": 5,
+      "requisitos": [
+        "G404",
+        "G201"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G504",
+      "nombre": "Ramo del nivel 5 número 4",
+      "creditos": 5,
+      "nivel": 5,
+      "requisitos": [
+        "G405",
+        "G304"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G505",
+      "nombre": "Ramo del nivel 5 número 5",
+      "creditos": 5,
+      "nivel": 5,
+      "requisitos": [
+        "G401"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G601",
+      "nombre": "Ramo del nivel 6 número 1",
+      "creditos": 5,
+      "nivel": 6,
+      "requisitos": [
+        "G502",
+        "G101"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G602",
+      "nombre": "Ramo del nivel 6 número 2",
+      "creditos": 5,
+      "nivel": 6,
+      "requisitos": [
+        "G503",
+        "G402"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G603",
+      "nombre": "Ramo del nivel 6 número 3",
+      "creditos": 5,
+      "nivel": 6,
+      "requisitos": [
+        "G504",
+        "G201"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G604",
+      "nombre": "Ramo del nivel 6 número 4",
+      "creditos": 5,
+      "nivel": 6,
+      "requisitos": [
+        "G505",
+        "G404"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    },
+    {
+      "codigo": "G605",
+      "nombre": "Ramo del nivel 6 número 5",
+      "creditos": 5,
+      "nivel": 6,
+      "requisitos": [
+        "G501"
+      ],
+      "requisitos_o": [],
+      "tipo": "obligatorio",
+      "enMalla": true
+    }
+  ]
+}
