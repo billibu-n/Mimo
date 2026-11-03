@@ -193,7 +193,7 @@ def main() -> int:
             exigir("Nota para deshacer" in titulos, f"deshacer: restaura — {titulos}", fallas)
 
             # Componente de Calificaciones -> calendario.
-            page.evaluate("""(fecha) => {
+            page.evaluate("""([fecha, hoyIso]) => {
               const s = MimoHost.snapshot();
               s.instalados = Array.from(new Set([...(s.instalados || []), "calificaciones", "estudio"]));
               s.cursos = [{codigo:"T1", nombre:"Curso de prueba", creditos:6, nivel:1, requisitos:[], enCurso:true}];
@@ -201,12 +201,10 @@ def main() -> int:
                 componentes:[{nombre:"Control",categoria:"General",nota:null,fecha:fecha,peso:1}],
                 examen:{activo:false,peso:0,nota:null,reemplaza:null},
                 eximicion:{activa:false,modo:"todas",condiciones:[]}, notaMin:4, meta:5, cerrado:false}};
-              const ws = (s.periodos && s.periodos[0] && s.periodos[0].semanas) || [];
-              const ultima = ws[ws.length - 1];
               s.estudio = Object.assign({}, s.estudio, { metasRamo: {T1: 22}, metasSemana: {} });
-              s.sesiones = [{ id: "s-ronda14", fecha: ultima ? ultima.desde : fecha, minutos: 660, ramo: "T1" }];
+              s.sesiones = [{ id: "s-ronda14", fecha: hoyIso, minutos: 660, ramo: "T1" }];
               MimoHost.reemplazar(s);
-            }""", viernes)
+            }""", [viernes, hoy.isoformat()])
             page.locator('#tabs [data-ir="calificaciones"]').click(); page.wait_for_timeout(250)
             page.locator('[data-calif="T1"]').click(); page.wait_for_timeout(150)
             abrir_plegable(page, '[data-accion-calif="comp-cal"]')
@@ -231,7 +229,8 @@ def main() -> int:
                    f"estudio: la línea de meta usa la meta del ramo — {page.locator('#est-grafico').inner_text()[:80]}", fallas)
             alto = page.evaluate("""() => {
               const cols = [...document.querySelectorAll('.est-col')];
-              const pila = cols[cols.length - 1].querySelector('.est-pila');
+              const col = cols.find(c => c.innerText.includes('11 h')) || cols[0];
+              const pila = col.querySelector('.est-pila');
               const base = document.querySelector('.est-cols').getBoundingClientRect().height;
               return {alto: pila.getBoundingClientRect().height, base};
             }""")
@@ -246,13 +245,28 @@ def main() -> int:
                    "estudio: al cambiar la meta se actualiza el techo", fallas)
             alto = page.evaluate("""() => {
               const cols = [...document.querySelectorAll('.est-col')];
-              const pila = cols[cols.length - 1].querySelector('.est-pila');
+              const col = cols.find(c => c.innerText.includes('11 h')) || cols[0];
+              const pila = col.querySelector('.est-pila');
               const base = document.querySelector('.est-cols').getBoundingClientRect().height;
               return {alto: pila.getBoundingClientRect().height, base};
             }""")
             ratio = alto["alto"] / alto["base"] if alto["base"] else 0
             exigir(0.20 <= ratio <= 0.30,
                    f"estudio: la barra se reescala con la meta nueva — {ratio:.2f} ({alto})", fallas)
+            # Con la semana por encima de la meta, la barra supera la línea y el
+            # techo sale de la semana actual, no de un valor fijo ni del semestre.
+            page.locator('[data-est-meta-ramo="T1"]').fill("5")
+            page.locator('[data-est-meta-ramo="T1"]').blur()
+            page.wait_for_timeout(300)
+            caja = page.evaluate("""() => {
+              const cols = document.querySelector('.est-cols').getBoundingClientRect();
+              const col = [...document.querySelectorAll('.est-col')].find(c => c.innerText.includes('11 h')) || document.querySelector('.est-col');
+              const pila = col.querySelector('.est-pila').getBoundingClientRect();
+              const linea = document.querySelector('.est-meta-line').getBoundingClientRect();
+              return {colsTop: cols.top, pilaTop: pila.top, lineaTop: linea.top};
+            }""")
+            exigir(caja["lineaTop"] >= caja["colsTop"] and caja["lineaTop"] > caja["pilaTop"] + 5,
+                   f"estudio: la línea queda dentro de las barras y la barra la supera — {caja}", fallas)
 
             # Enlace recíproco nota -> tarea.
             page.locator('#tabs [data-ir="tareas"]').click(); page.wait_for_timeout(120)

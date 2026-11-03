@@ -57,6 +57,9 @@
   escalan contra ella y la barra máxima llega al 100 %.
 - El campo global **Meta semanal** se oculta cuando hay metas de ramo: la meta se edita en la
   columna **Meta semanal** de la tabla.
+- La **línea de meta** se dibuja dentro del área de las barras y el techo toma el máximo de la
+  semana actual si supera la meta; una semana de 30 h con meta de 20 h deja la barra por encima
+  de la línea, sin arrastrar el máximo de otras semanas.
 
 ### Calendario
 

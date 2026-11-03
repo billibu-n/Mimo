@@ -3629,7 +3629,15 @@
     if ($("#est-resumen")) $("#est-resumen").textContent = ses.length || histMin
       ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + (histMin ? " · " + L("incluye histórico semanal", "includes weekly history", "含每周历史记录") : "") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(metaGrafico * 60) + " " + L("por semana.", "per week.", "每周。")
       : L("Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.", "No sessions yet. Log one or use the Time stopwatch.", "还没有会话。记录一次，或使用时间的秒表。");
-    var max = Math.max(metaGrafico * 60, 1);
+    /* El techo sale de la semana actual: su total manda si supera la meta; las
+       semanas anteriores no arrastran el máximo. Si la semana actual no tiene
+       horas, la meta sigue siendo el techo. */
+    var hoyIso = isoDeFecha(new Date());
+    var semanaActual = semanas.filter(function (w) {
+      return hoyIso >= w.desde && hoyIso <= w.hasta;
+    })[0] || semanas[semanas.length - 1];
+    var maxSemana = semanaActual ? porSemana[semanaActual.desde] : 0;
+    var max = Math.max(metaGrafico * 60, maxSemana, 1);
     var cols = semanas.map(function (w) {
       var total = porSemana[w.desde], pct = Math.min(100, total / max * 100);
       var segs = Object.keys(totalRamo).length ? "" : "";
@@ -3651,14 +3659,14 @@
         return '<i style="flex:' + porCurso[k] + ';background:' + colorEstudio(k) + '" title="' +
           esc(k === "_" ? L("Sin ramo", "No course", "无课程") : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
       }).join("");
-      return '<div class="est-col" title="' + esc(w.etiqueta) + " · " + fmtHoras(total) + '">' +
+      return '<div class="est-col" style="--alto:' + pct + '%" title="' + esc(w.etiqueta) + " · " + fmtHoras(total) + '">' +
         '<span class="est-total">' + (total ? fmtHoras(total) : "") + "</span>" +
-        '<div class="est-pila" style="height:' + pct + '%">' + barras + "</div>" +
+        '<div class="est-pila">' + barras + "</div>" +
         '<span class="est-etq">' + esc(w.etiqueta) + "</span></div>";
     }).join("");
     $("#est-grafico").innerHTML = totalMin || metaGrafico
-      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, metaGrafico * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
-        fmtHoras(metaGrafico * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
+      ? '<div class="est-plot"><div class="est-cols"><div class="est-meta-line" style="bottom:' + Math.min(98, metaGrafico * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
+        fmtHoras(metaGrafico * 60) + '</span></div>' + cols + "</div></div>"
       : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
     var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
       return '<span>' + marcaRamo(c) + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
