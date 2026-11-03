@@ -635,6 +635,38 @@
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || L("Sin título", "Untitled", "无标题")); }
   function menuDeContexto(el) {
+    var cfEl = el.closest("[data-calif]");
+    if (cfEl) {
+      var codCalif = cfEl.getAttribute("data-calif");
+      var cf = ramoPorCodigo(codCalif);
+      if (!cf) return null;
+      var irACalif = function () {
+        califSel = codCalif; estado.califSel = codCalif; estado.ramoSel = codCalif;
+        estado.panel.calificaciones = "detalle";
+      };
+      return { titulo: menuTitulo(L("Ramo", "Course", "课程"), cf.codigo + " — " + cf.nombre), items: [
+        { accion: "calif-abrir", texto: L("Abrir ficha", "Open details", "打开详情"), run: function () {
+          irACalif(); guardar(); pintarCalificaciones(); pintarPanel(); abrirPanel();
+        } },
+        { accion: "calif-malla", texto: L("Ver en Malla", "View in plan", "在规划中查看"), run: function () {
+          irACalif(); estado.panel.malla = "detalle"; guardar(); ir("malla"); pintarPanel(); abrirPanel();
+        } },
+        { accion: "calif-editar", texto: L("Editar ramo", "Edit course", "编辑课程"), run: function () {
+          irACalif(); abrirFormularioRamo(cf);
+        } },
+        { accion: "calif-identidad", texto: t("ident.abrir"), run: function () {
+          irACalif(); abrirIdentidadCalif(codCalif);
+        } },
+        { sep: true },
+        { accion: "calif-estado", texto: cf.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () {
+          irACalif(); alternarRamo(codCalif);
+        } },
+        { accion: "calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () {
+          irACalif(); borrarRamo(codCalif);
+        } }
+      ] };
+    }
+
     var rEl = el.closest("[data-ramo]");
     if (rEl) {
       var r = ramoPorCodigo(rEl.getAttribute("data-ramo"));
@@ -765,6 +797,23 @@
           { accion: "zona-ramo", texto: L("Nuevo ramo", "New course", "新建课程"), run: function () { abrirFormularioRamo(null); } },
           { accion: "zona-importar-malla", texto: L("Importar malla", "Import plan", "导入规划"), run: function () { $("#archivo-malla").click(); } }
         ] };
+      }
+      if (zona === "calificaciones") {
+        var cSel = ramoPorCodigo(califSel);
+        var itemsCalif = [
+          { accion: "zona-calif-nuevo", texto: L("Nuevo ramo", "New course", "新建课程"), run: function () {
+            if (instalado("malla")) abrirFormularioRamo(null); else abrirCursoCalif();
+          } }
+        ];
+        if (instalado("malla")) itemsCalif.push({ accion: "zona-calif-malla", texto: L("Ver Malla", "View plan", "查看规划"), run: function () { ir("malla"); } });
+        if (cSel) {
+          itemsCalif.push({ sep: true });
+          itemsCalif.push({ accion: "zona-calif-editar", texto: L("Editar ramo", "Edit course", "编辑课程"), run: function () { abrirFormularioRamo(cSel); } });
+          itemsCalif.push({ accion: "zona-calif-identidad", texto: t("ident.abrir"), run: function () { abrirIdentidadCalif(cSel.codigo); } });
+          itemsCalif.push({ accion: "zona-calif-estado", texto: cSel.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () { alternarRamo(cSel.codigo); } });
+          itemsCalif.push({ accion: "zona-calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () { borrarRamo(cSel.codigo); } });
+        }
+        return { titulo: L("Calificaciones", "Grades", "成绩"), items: itemsCalif };
       }
     }
     return null;
@@ -2074,16 +2123,20 @@
       if (detalle) { detalle.hidden = true; detalle.innerHTML = ""; }
       cols.innerHTML = "";
       var svg0 = $("#malla-lineas"); if (svg0) svg0.innerHTML = "";
+      if ($("#malla-tablero")) $("#malla-tablero").classList.remove("malla--sel");
       return;
     }
     if (vacio) vacio.hidden = true;
     if (scroll) scroll.hidden = false;
     if (detalle) detalle.hidden = false;
     if (estado.ramoSel && !ramoPorCodigo(estado.ramoSel)) estado.ramoSel = null;
+    var tablero = $("#malla-tablero");
+    if (tablero) tablero.classList.toggle("malla--sel", !!estado.ramoSel);
+    var vinculados = _mallaVinculos(estado.ramoSel);
     if ($("#malla-quitar-sel")) $("#malla-quitar-sel").hidden = !estado.ramoSel;
     if ($("#malla-pista")) $("#malla-pista").textContent = estado.ramoSel
-      ? L("Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a presionarlo para quitar la selección.", "You only see this course's lines: blue what it needs, orange what it unlocks. Press it again to clear the selection.", "只显示这门课程的线：蓝色是所需，橙色是解锁。再次按下可清除选择。")
-      : L("Las líneas muestran los requisitos. Elige un ramo para ver qué necesitas y qué desbloqueas.", "Lines show requirements. Pick a course to see what it needs and what it unlocks.", "线条显示要求。选择一门课程，查看需要什么、能解锁什么。");
+      ? t("malla.pistaSel")
+      : t("malla.pista");
     var q = mallaBusqueda.toLowerCase();
     var visibles = cursos.filter(function (c) {
       var e = estadoDeRamo(c);
@@ -2109,7 +2162,8 @@
         '<div class="malla-col__nodos">' + lista.map(function (c) {
           var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
           var titulo = c.nombre + (req ? " · " + L("requiere ", "requires ", "需要 ") + req : "") + (faltan.length ? " · " + L("faltan: ", "missing: ", "缺少：") + faltan.join(", ") : "");
-          return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
+          var claseSel = estado.ramoSel ? (c.codigo === estado.ramoSel ? " sel" : (vinculados[c.codigo] ? " malla-card--vinculo" : " malla-card--apagada")) : "";
+          return '<button class="ramo-card ramo-card--' + e + claseSel + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
             '<span class="ramo-card__top"><b>' + marcaRamo(c) + esc(c.codigo) + '</b><span class="ramo-card__ico">' + iconoRamoHTML(c) + "</span></span>" +
             '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
             '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
@@ -2145,14 +2199,13 @@
     estado.ramoSel = null; guardar(); pintarMalla(); pintarPanel();
   }
   /* ---------------------------------------------------------------------
-     Grafo de Malla: trazado ortogonal por carriles.
+     Grafo de Malla: trazado compacto por los huecos entre fichas.
 
-     Cada arista sale por un punto distinto del borde derecho de su ramo y
-     entra por otro del borde izquierdo (o del derecho si es del mismo nivel).
-     Las columnas se separan lo justo para que cada tramo vertical tenga su
-     carril; los ramos largos cruzan por las franjas libres entre tarjeta y
-     tarjeta, y solo bajan bajo el tablero cuando no queda hueco. Así ninguna
-     línea pisa un ramo y dos líneas no comparten un tramo.
+     Cada arista sale del borde derecho de su ramo y viaja por los huecos de
+     columna y por las franjas libres entre dos fichas. Las aristas comparten
+     carril vertical y franja horizontal: no se abre uno nuevo por cada cruce
+     ni se baja a una banda inferior. La selección atenúa el resto y deja
+     limpias solo las líneas del ramo elegido.
      --------------------------------------------------------------------- */
   function _mallaToken(el, nombre, porDefecto) {
     var v = window.getComputedStyle(el).getPropertyValue(nombre).trim();
@@ -2192,7 +2245,7 @@
         var clave = req + ">" + c.codigo;
         if (vistos[clave]) return;
         vistos[clave] = 1;
-        aristas.push({ de: req, a: c.codigo, oi: origen.col, di: destino.col, src: origen, dst: destino, lanes: {} });
+        aristas.push({ de: req, a: c.codigo, oi: origen.col, di: destino.col, src: origen, dst: destino });
       });
     });
     return aristas.sort(function (a, b) {
@@ -2208,7 +2261,7 @@
     });
     /* Las salidas usan la mitad superior del borde y las entradas la inferior:
        así una línea que sale y otra que entra en la misma fila no comparten
-       altura ni se pisan en el carril. */
+       altura ni se pisan en el corredor. */
     function punto(nodo, i, n, salida) {
       var medio = nodo.top + nodo.height / 2;
       var min = salida ? nodo.top + 6 : medio + 1.5;
@@ -2226,90 +2279,123 @@
       entrada[cod].forEach(function (e, i) { e.y2 = punto(e.dst, i, entrada[cod].length, false); });
     });
   }
-  function _mallaCarriles(aristas, cols, aire, paso) {
-    var demanda = {};
-    aristas.forEach(function (e) {
-      if (e.di <= e.oi + 1) demanda[e.oi] = (demanda[e.oi] || 0) + 1;
-      else { demanda[e.oi] = (demanda[e.oi] || 0) + 1; demanda[e.di - 1] = (demanda[e.di - 1] || 0) + 1; }
-    });
-    var maximo = 0;
-    Object.keys(demanda).forEach(function (g) { maximo = Math.max(maximo, demanda[g]); });
-    return { maximo: maximo, demanda: demanda };
+  /* Un solo carril por hueco de columna. Todos los cables que cruzan ese
+     hueco comparten la misma x: el trazado no abre un carril por arista. */
+  function _mallaLane(geo, g, aire) {
+    var izq = geo.cols[g] ? geo.cols[g].right : 0;
+    var der = geo.cols[g + 1] ? geo.cols[g + 1].left : izq + 80;
+    return { g: g, x: izq + Math.max(aire, (der - izq) / 2) };
   }
-  /* Franjas libres para cruzar de una columna a otra sin pisar una tarjeta:
-     se juntan los intervalos ocupados por los ramos de todas las columnas de
-     en medio y se devuelven los centros de los huecos que quedan entre ellos.
-     Los ramos largos viajan por ahí, no por debajo de todo el tablero. */
-  function _mallaBandas(geo, oi, di, paso, radio) {
-    var porCol = {};
-    Object.keys(geo.nodos).forEach(function (cod) {
-      var n = geo.nodos[cod];
-      (porCol[n.col] = porCol[n.col] || []).push([n.top, n.bottom]);
-    });
+  /* Huecos horizontales libres entre las fichas de las columnas intermedias.
+     Se comparten: varias aristas pueden usar la misma franja. */
+  function _mallaHuecos(geo, columnas, radio) {
     var ocupados = [];
-    for (var k = oi + 1; k < di; k++) {
-      (porCol[k] || []).forEach(function (iv) { ocupados.push(iv); });
-    }
+    columnas.forEach(function (col) {
+      Object.keys(geo.nodos).forEach(function (cod) {
+        var n = geo.nodos[cod];
+        if (n.col === col) ocupados.push([n.top, n.bottom]);
+      });
+    });
+    if (!ocupados.length) return [];
     ocupados.sort(function (a, b) { return a[0] - b[0]; });
-    var libres = [], prev = null, aire = radio + 1;
+    var out = [], prev = null;
     ocupados.forEach(function (iv) {
       if (prev === null) { prev = iv[1]; return; }
-      if (iv[0] - prev >= 2 * aire + 1) libres.push([prev + aire, iv[0] - aire]);
+      if (iv[0] - prev >= 2 * radio + 2) out.push((prev + iv[0]) / 2);
       prev = Math.max(prev, iv[1]);
-    });
-    var out = [];
-    libres.forEach(function (b) {
-      for (var y = b[0]; y <= b[1] + 0.01; y += paso) out.push(y);
     });
     return out;
   }
-  function _mallaTracks(largas, geo, fondo, aire, paso, radio) {
-    var usados = [], caidas = 0;
-    largas.sort(function (a, b) {
-      return ((b.di - b.oi) - (a.di - a.oi)) || (a.oi - b.oi) || (a.y1 - b.y1) || (a.de < b.de ? -1 : 1);
+  /* Huecos de una sola columna, para la ruta escalonada cuando no hay una
+     franja común. Incluye el aire sobre la primera ficha y bajo la última. */
+  function _mallaHuecosCol(geo, col, fondo, radio) {
+    var ivs = [];
+    Object.keys(geo.nodos).forEach(function (cod) {
+      var n = geo.nodos[cod];
+      if (n.col === col) ivs.push([n.top, n.bottom]);
     });
-    largas.forEach(function (e) {
-      var cands = _mallaBandas(geo, e.oi, e.di, paso, radio);
-      var medio = (e.y1 + e.y2) / 2;
-      cands.sort(function (a, b) { return (Math.abs(a - medio) - Math.abs(b - medio)) || (a - b); });
-      var elegido = null;
-      for (var i = 0; i < cands.length; i++) {
-        var libre = true;
-        for (var j = 0; j < usados.length; j++) {
-          if (Math.abs(usados[j] - cands[i]) < 0.5) { libre = false; break; }
-        }
-        if (libre) { elegido = cands[i]; break; }
-      }
-      if (elegido === null) { elegido = fondo + aire + caidas * paso; caidas++; }
-      e.trackY = elegido;
-      usados.push(elegido);
+    if (!ivs.length) return [];
+    ivs.sort(function (a, b) { return a[0] - b[0]; });
+    var out = [], arriba = ivs[0][0] - radio - 1;
+    if (arriba > radio) out.push(arriba);
+    for (var i = 0; i + 1 < ivs.length; i++) {
+      if (ivs[i + 1][0] - ivs[i][1] >= 2 * radio + 2) out.push((ivs[i][1] + ivs[i + 1][0]) / 2);
+    }
+    var abajo = ivs[ivs.length - 1][1] + radio + 1;
+    if (abajo < fondo - radio) out.push(abajo);
+    return out;
+  }
+  function _mallaCercano(lista, y) {
+    var elegido = null, dist = Infinity;
+    lista.forEach(function (v) {
+      var d = Math.abs(v - y);
+      if (d < dist) { dist = d; elegido = v; }
+    });
+    return elegido;
+  }
+  function _mallaSinDuplicados(puntos) {
+    return puntos.filter(function (p, i) {
+      var q = puntos[i - 1];
+      return i === 0 || Math.abs(p.x - q.x) > 0.01 || Math.abs(p.y - q.y) > 0.01;
     });
   }
-  function _mallaAsignarCarriles(aristas, cols, aire, paso) {
-    var porGap = {};
-    function meter(g, e, yA, yB, ancla, tipo) {
-      (porGap[g] = porGap[g] || []).push({ e: e, yA: yA, yB: yB, ancla: ancla, tipo: tipo });
+  /* Ruta ortogonal por los huecos entre fichas. Los ramos largos buscan una
+     franja común entre las columnas intermedias; si no existe, escalonan por
+     el hueco de cada columna. Nunca entran en una ficha y no bajan del
+     tablero. */
+  function _mallaRecorrido(geo, e, fondo, radio, aire) {
+    var laneS = _mallaLane(geo, e.oi, aire);
+    if (e.di === e.oi) {
+      return { puntos: _mallaSinDuplicados([
+        { x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 },
+        { x: laneS.x, y: e.y2 }, { x: e.dst.right, y: e.y2 }
+      ]), track: null, g: e.oi };
     }
-    aristas.forEach(function (e) {
-      if (e.di <= e.oi + 1) meter(e.oi, e, e.y1, e.y2, e.y1, "recta");
-      else {
-        meter(e.oi, e, e.y1, e.trackY, e.y1, "salida");
-        meter(e.di - 1, e, e.trackY, e.y2, e.y2, "entrada");
-      }
-    });
-    Object.keys(porGap).forEach(function (g) {
-      var tramos = porGap[g].sort(function (a, b) {
-        return (a.ancla - b.ancla) || (a.yA - b.yA) || (a.yB - b.yB) || (a.e.de < b.e.de ? -1 : 1);
-      });
-      var ginfo = cols[Number(g)];
-      var sig = cols[Number(g) + 1];
-      if (!ginfo) return;
-      var izq = ginfo.right + aire, der = sig ? sig.left - aire : ginfo.right + 80;
-      var ancho = Math.max(0, der - izq);
-      var real = tramos.length > 1 ? Math.min(paso, ancho / (tramos.length - 1)) : 0;
-      var inicio = izq + (ancho - real * (tramos.length - 1)) / 2;
-      tramos.forEach(function (t, i) { t.e.lanes[g] = inicio + real * i; });
-    });
+    if (e.di === e.oi + 1) {
+      return { puntos: _mallaSinDuplicados([
+        { x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 },
+        { x: laneS.x, y: e.y2 }, { x: e.dst.left, y: e.y2 }
+      ]), track: null, g: e.oi };
+    }
+    var laneD = _mallaLane(geo, e.di - 1, aire);
+    var intermedias = [];
+    for (var k = e.oi + 1; k < e.di; k++) intermedias.push(k);
+    var medio = (e.y1 + e.y2) / 2;
+    var comunes = _mallaHuecos(geo, intermedias, radio);
+    if (comunes.length) {
+      var yTrack = _mallaCercano(comunes, medio);
+      return { puntos: _mallaSinDuplicados([
+        { x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 },
+        { x: laneS.x, y: yTrack }, { x: laneD.x, y: yTrack },
+        { x: laneD.x, y: e.y2 }, { x: e.dst.left, y: e.y2 }
+      ]), track: yTrack, g: e.di - 1 };
+    }
+    var puntos = [{ x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 }];
+    var prevX = laneS.x, prevY = e.y1, primerTrack = null;
+    for (var j = e.oi + 1; j < e.di; j++) {
+      var ys = _mallaHuecosCol(geo, j, fondo, radio);
+      var yk = _mallaCercano(ys, medio);
+      if (yk === null) yk = prevY;
+      if (primerTrack === null) primerTrack = yk;
+      puntos.push({ x: prevX, y: yk });
+      var lane = _mallaLane(geo, j, aire);
+      puntos.push({ x: lane.x, y: yk });
+      prevX = lane.x; prevY = yk;
+    }
+    puntos.push({ x: prevX, y: e.y2 });
+    puntos.push({ x: e.dst.left, y: e.y2 });
+    return { puntos: _mallaSinDuplicados(puntos), track: primerTrack, g: e.di - 1 };
+  }
+  function _mallaVinculos(cod) {
+    var out = {};
+    if (!cod) return out;
+    var c = ramoPorCodigo(cod);
+    if (!c) return out;
+    out[cod] = 1;
+    (c.requisitos || []).forEach(function (r) { out[r] = 1; });
+    (c.requisitos_o || []).forEach(function (g) { g.forEach(function (r) { out[r] = 1; }); });
+    desbloqueaDe(cod).forEach(function (x) { out[x.codigo] = 1; });
+    return out;
   }
   function _mallaCamino(puntos, radio) {
     function n(v) { return Number(v.toFixed(2)); }
@@ -2338,19 +2424,9 @@
     cont.style.removeProperty("padding-bottom");
     cont.style.removeProperty("padding-right");
     var radio = _mallaToken(cont, "--malla-radio", 6);
-    var paso = _mallaToken(cont, "--malla-carril", 5);
     var aire = _mallaToken(cont, "--malla-aire", 8);
     var geo = _mallaGeo(cont);
     var aristas = _mallaAristas(geo.nodos);
-    var demanda = _mallaCarriles(aristas, geo.cols, aire, paso);
-    var anchoGap = parseFloat(window.getComputedStyle(colsEl).columnGap) || 44;
-    var necesario = 2 * aire + Math.max(0, demanda.maximo - 1) * paso;
-    if (necesario > anchoGap + 0.5) {
-      colsEl.style.setProperty("--malla-sep", necesario + "px");
-      cont.offsetWidth; // fuerza el reflujo antes de volver a medir
-      geo = _mallaGeo(cont);
-      aristas = _mallaAristas(geo.nodos);
-    }
     if (!aristas.length) {
       svg.innerHTML = "";
       svg.setAttribute("width", 0); svg.setAttribute("height", 0);
@@ -2359,36 +2435,22 @@
     _mallaReparto(aristas);
     var fondo = 0;
     Object.keys(geo.nodos).forEach(function (cod) { fondo = Math.max(fondo, geo.nodos[cod].bottom); });
-    var largas = aristas.filter(function (e) { return e.di > e.oi + 1; });
-    _mallaTracks(largas, geo, fondo, aire, paso, radio);
-    _mallaAsignarCarriles(aristas, geo.cols, aire, paso);
-    var sel = estado.ramoSel, partes = [], maxX = 0;
+    var sel = estado.ramoSel, partes = [], maxX = 0, maxY = fondo;
     aristas.forEach(function (e) {
-      var g1 = e.oi, g2 = e.di - 1;
-      var x1 = e.src.right, y1 = e.y1, x2 = e.di === e.oi ? e.dst.right : e.dst.left, y2 = e.y2;
-      var puntos;
-      if (e.di <= e.oi + 1) {
-        puntos = [{ x: x1, y: y1 }, { x: e.lanes[g1], y: y1 }, { x: e.lanes[g1], y: y2 }, { x: x2, y: y2 }];
-      } else {
-        puntos = [
-          { x: x1, y: y1 }, { x: e.lanes[g1], y: y1 }, { x: e.lanes[g1], y: e.trackY },
-          { x: e.lanes[g2], y: e.trackY }, { x: e.lanes[g2], y: y2 }, { x: x2, y: y2 }
-        ];
-      }
-      puntos.forEach(function (p) { maxX = Math.max(maxX, p.x); });
+      var ruta = _mallaRecorrido(geo, e, fondo, radio, aire);
+      ruta.puntos.forEach(function (p) { maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); });
       var clase = sel ? (e.a === sel ? "req" : e.de === sel ? "des" : "tenue") : "";
       var clases = "malla-linea" + (clase ? " malla-linea--" + clase : "");
-      partes.push('<path class="' + clases + '" d="' + _mallaCamino(puntos, radio) +
-        '" data-malla-de="' + esc(e.de) + '" data-malla-a="' + esc(e.a) + '" data-malla-span="' + (e.di - e.oi) + '"/>');
+      var track = ruta.track === null ? "" : ' data-malla-track="' + Number(ruta.track.toFixed(2)) + '"';
+      partes.push('<path class="' + clases + '" d="' + _mallaCamino(ruta.puntos, radio) +
+        '" data-malla-de="' + esc(e.de) + '" data-malla-a="' + esc(e.a) + '" data-malla-span="' + (e.di - e.oi) +
+        '" data-malla-corredor="' + ruta.g + '"' + track + "/>");
     });
-    var altoNatural = Math.max(fondo + 12, cont.clientHeight);
-    var alto = Math.max(altoNatural, (largas.length ? largas[largas.length - 1].trackY + 12 : 0));
-    cont.style.paddingBottom = Math.max(12, alto - fondo) + "px";
     var anchoNatural = Math.max(cont.scrollWidth, cont.clientWidth);
     var extraDer = Math.max(0, maxX + 10 - anchoNatural);
     cont.style.paddingRight = extraDer > 0 ? (2 + extraDer) + "px" : "";
     var ancho = Math.max(cont.scrollWidth, cont.clientWidth);
-    alto = Math.max(cont.scrollHeight, alto);
+    var alto = Math.max(cont.scrollHeight, fondo + 12, maxY + 8);
     svg.setAttribute("viewBox", "0 0 " + ancho + " " + alto);
     svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
     svg.innerHTML = partes.join("");
@@ -2400,9 +2462,9 @@
   }
   /* Cerrar un curso es una sola acción venga de Malla, del panel o de
      Calificaciones. Si no hay notas, se pide confirmación y se cierra como
-     aprobado manualmente, igual que antes desde Malla: así un curso que se
-     reabrió para elegir su icono se puede volver a cerrar desde donde se
-     esté mirando. */
+     aprobado manualmente. Si falta la nota del examen, usa la presentación
+     como final provisional: un curso reabierto para editar su identidad no
+     queda atrapado en abierto. */
   function cerrarCurso(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
     if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
@@ -2417,7 +2479,12 @@
       marcarCierreCurso(c, "aprobado", null);
       return;
     }
-    if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
+    if (nf === null) {
+      var resProv = P >= q.notaMin ? "aprobado" : "reprobado";
+      if (!window.confirm(tf("calif.cierreSinExamen", { nota: fmtNota(P), resultado: etiquetaEstado(resProv) }))) return;
+      marcarCierreCurso(c, resProv, P);
+      return;
+    }
     var res = nf >= q.notaMin ? "aprobado" : "reprobado";
     if (!window.confirm(L("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) + "? Quedará " + res.toUpperCase() + ".", "Close \"" + c.codigo + " — " + c.nombre + "\" with a final grade of " + fmtNota(nf) + "? It will be " + res.toUpperCase() + ".", "以 " + fmtNota(nf) + " 的最终成绩关闭“" + c.codigo + " — " + c.nombre + "”？结果将为 " + res.toUpperCase() + "。"))) return;
     marcarCierreCurso(c, res, nf);
@@ -2480,7 +2547,9 @@
       notificarCurso(x);
     });
     if (estado.ramoSel === cod) estado.ramoSel = null;
-    guardar(); pintarMalla(); pintarPanel(); aviso(L("Ramo borrado.", "Course deleted.", "课程已删除。"));
+    if (estado.califSel === cod) estado.califSel = null;
+    if (califSel === cod) califSel = null;
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel(); aviso(L("Ramo borrado.", "Course deleted.", "课程已删除。"));
   }
   function cursosDesdeDoc(doc) {
     var raw = [], aprob = {}, enCurso = {};
@@ -2955,7 +3024,9 @@
         "<div><h2>" + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
         '<p class="muted">' + creditosDe(cur) + " " + esc(L("créditos", "credits", "学分")) + " · " + esc(etiquetaNivel(cur.nivel)) + " · " + esc(L("meta ", "goal ", "目标 ")) + fmtNota(q.meta) + "</p></div>" +
         '</div>' +
-        '<div class="calif-cab__der"><button class="btn btn--chico calif-ident" type="button" data-accion-calif="identidad" title="' +
+        '<div class="calif-cab__der"><button class="btn btn--chico" type="button" data-accion-calif="editar">' +
+          esc(L("Editar", "Edit", "编辑")) + '</button>' +
+        '<button class="btn btn--chico calif-ident" type="button" data-accion-calif="identidad" title="' +
           esc(t("ident.abrir")) + '" aria-label="' + esc(t("ident.abrir")) + '">' +
           iconoRamoHTML(cur) + '<span>' + esc(L("Identidad", "Identity", "标识")) + '</span></button>' +
         '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div></div>" +
@@ -3118,7 +3189,7 @@
     var lista = $("#calif-lista"), det = $("#calif-detalle");
     if (!lista || !det) return;
     normalizarCursos(); normalizarCalifs();
-    var cursos = estado.cursos.filter(function (c) { return estado.califs[c.codigo] || c.enCurso; });
+    var cursos = estado.cursos.filter(function (c) { return c.enMalla !== false && (estado.califs[c.codigo] || c.enCurso); });
     var vacio = $("#calif-vacio"), layout = $("#calif-layout");
     var sinMalla = !instalado("malla");
     if ($("#btn-calif-malla")) $("#btn-calif-malla").hidden = sinMalla;
@@ -3133,7 +3204,10 @@
     }
     if (vacio) vacio.hidden = true;
     if (layout) layout.hidden = false;
-    if (!califSel || !ramoPorCodigo(califSel)) califSel = estado.califSel && ramoPorCodigo(estado.califSel) ? estado.califSel : cursos[0].codigo;
+    var enLista = function (cod) { return cursos.some(function (c) { return c.codigo === cod; }); };
+    if (!califSel || !ramoPorCodigo(califSel) || !enLista(califSel)) {
+      califSel = estado.califSel && enLista(estado.califSel) ? estado.califSel : cursos[0].codigo;
+    }
     estado.califSel = califSel; estado.ramoSel = califSel;
     lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
       var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
@@ -3203,6 +3277,7 @@
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
     var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "editar") { abrirFormularioRamo(ramoPorCodigo(califSel)); return; }
     if (accion === "identidad") { abrirIdentidadCalif(califSel); return; }
     if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
@@ -4882,7 +4957,7 @@
     if (!original) estado.cursos.push(c);
     notificarCurso(c);
     estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
-    guardar(); pintarMalla(); pintarPanel(); abrirPanel();
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel(); abrirPanel();
     aviso(original ? L("Ramo guardado.", "Course saved.", "课程已保存。") : L("Ramo creado.", "Course created.", "课程已创建。"));
     return true;
   }

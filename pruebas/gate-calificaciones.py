@@ -8,8 +8,11 @@ Mide el motor y la interfaz sobre app/index.html:
   3. examen al 40 % y al 50 % cambia la final;
   4. una condición de eximición cumplida usa la presentación;
   5. quitar un componente recalcula;
-  6. el panel Detalle muestra el resumen del ramo;
-  7. 411 sin desborde y consola limpia.
+  6. un curso sin nota de examen se puede cerrar con la presentación y reabrir;
+  7. el clic derecho abre la ficha, Malla, edición, identidad, cierre y borrado;
+  8. la lista solo muestra los ramos activos de Malla;
+  9. el panel Detalle muestra el resumen del ramo;
+ 10. 411 sin desborde y consola limpia.
 
 Uso: python3 pruebas/gate-calificaciones.py
 """
@@ -105,6 +108,33 @@ def main() -> int:
             exigir("en curso" in page.locator(".calif-resumen").inner_text(),
                    "calif: con examen pendiente el curso sigue en curso", fallas)
 
+            # Cerrar aunque falte la nota del examen: usa la presentación y no
+            # deja el curso atrapado en abierto (R114).
+            page.locator('[data-accion-calif="cerrar-curso"]').click()
+            page.wait_for_timeout(250)
+            exigir("Curso cerrado" in page.locator(".calif-cierre").inner_text()
+                   and "APROBADO" in page.locator(".calif-cierre").inner_text(),
+                   "calif: cierra sin nota de examen con la presentación", fallas)
+            exigir("5.5" in page.locator(".calif-cierre").inner_text(),
+                   "calif: el cierre sin examen guarda la presentación 5.5", fallas)
+            page.locator('[data-accion-calif="reabrir-curso"]').click()
+            page.wait_for_timeout(250)
+            exigir("Curso abierto" in page.locator(".calif-cierre").inner_text(),
+                   "calif: el ramo reabierto se puede volver a cerrar", fallas)
+
+            page.locator(".calif-item").first.click(button="right")
+            page.wait_for_timeout(150)
+            menu = page.locator("#menu-ctx").inner_text()
+            exigir("Ver en Malla" in menu and "Editar ramo" in menu and "Cerrar curso" in menu,
+                   "calif: el clic derecho ofrece abrir, editar y cerrar", fallas)
+            page.locator('#menu-ctx [data-accion="calif-editar"]').click()
+            page.wait_for_timeout(150)
+            exigir(page.locator("#modal-editor").is_visible() and
+                   page.locator("#ramo-codigo").input_value() == "MA1001",
+                   "calif: el menú contextual abre el ramo para editar", fallas)
+            page.locator("#modal-editor-x").click()
+            page.wait_for_timeout(120)
+
             abrir_plegable(page, "[data-exam-nota]")
             cambiar(page, "[data-exam-nota]", "6.0")
             exigir("5.7" in page.locator(".calif-resumen").inner_text(),
@@ -162,6 +192,28 @@ def main() -> int:
                    "calif: quitar un componente", fallas)
             exigir(page.locator(".calif-resumen").inner_text().split("\n")[0].strip() == "5.0",
                    "calif: al quitar el componente la presentación baja a 5.0", fallas)
+
+            page.locator("#calif-layout").click(button="right", position={"x": 30, "y": 500})
+            page.wait_for_timeout(150)
+            exigir("Calificaciones" in page.locator("#menu-ctx").inner_text() and
+                   "Nuevo ramo" in page.locator("#menu-ctx").inner_text(),
+                   "calif: el clic derecho de la sección ofrece utilidades", fallas)
+            page.keyboard.press("Escape")
+
+            # Un ramo fuera de la Malla no es un ramo activo: deja de listarse.
+            page.evaluate("""() => {
+              const k = 'mimo.shell.v1';
+              const e = JSON.parse(localStorage.getItem(k));
+              e.cursos[0].enMalla = false;
+              localStorage.setItem(k, JSON.stringify(e));
+            }""")
+            limpia = page.url.split("?")[0]
+            page.goto(limpia, wait_until="load")
+            page.wait_for_timeout(300)
+            page.locator('#tabs .tab[data-ir="calificaciones"]').click()
+            page.wait_for_timeout(250)
+            exigir(page.locator(".calif-item").count() == 0 and page.locator("#calif-vacio").is_visible(),
+                   "calif: solo lista ramos activos de la Malla", fallas)
             exigir(not errores, f"calif: consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()

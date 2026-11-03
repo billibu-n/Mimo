@@ -44,7 +44,7 @@
 .malla-col__cab b{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.05em;color:var(--muted2)}
 .malla-col__cab span{font-size:var(--fs-xs);color:var(--muted);white-space:nowrap}
 .malla-col__nodos{display:flex;flex-direction:column;gap:calc(var(--sp-2) * 2)}
-.ramo-card{position:relative;display:flex;flex-direction:column;gap:2px;width:100%;min-height:88px;text-align:left;border:1px solid var(--line2);border-left:5px solid var(--muted);border-radius:10px;background:var(--sup);color:var(--fg);font:inherit;padding:8px 10px;cursor:pointer;transition:transform .12s var(--curva),box-shadow .12s var(--curva),border-color .12s var(--curva)}
+.ramo-card{position:relative;display:flex;flex-direction:column;gap:2px;width:100%;min-height:88px;text-align:left;border:1px solid var(--line2);border-left:5px solid var(--muted);border-radius:10px;background:var(--sup);color:var(--fg);font:inherit;padding:8px 10px;cursor:pointer;transition:transform .12s var(--curva),box-shadow .12s var(--curva),border-color .12s var(--curva),opacity .16s var(--curva),filter .16s var(--curva)}
 .ramo-card:hover{transform:translateY(-1px);box-shadow:var(--sombra);border-color:var(--ac)}
 .ramo-card--aprobado{border-left-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--sup))}
 .ramo-card--curso{border-left-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--sup))}
@@ -52,6 +52,8 @@
 .ramo-card--bloqueado{border-left-color:var(--muted);opacity:.82}
 .ramo-card--reprobado{border-left-color:var(--bad);background:color-mix(in srgb,var(--bad) 9%,var(--sup))}
 .ramo-card.sel{outline:2px solid var(--ac);outline-offset:1px;box-shadow:0 6px 18px color-mix(in srgb,var(--ac) 18%,transparent)}
+.malla--sel .ramo-card{opacity:.16;filter:saturate(.3)}
+.malla--sel .ramo-card.sel,.malla--sel .malla-card--vinculo{opacity:1;filter:none}
 .ramo-card__top{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2)}
 .ramo-card__top b{display:inline-flex;align-items:center;gap:5px;font-size:var(--fs-sm);letter-spacing:.03em}
 .ramo-card__color{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none;box-shadow:0 0 0 1px color-mix(in srgb,var(--fg) 18%,transparent)}
@@ -72,6 +74,7 @@
 .malla-linea--tenue{opacity:.12}
 .malla-linea--req{stroke:var(--ac);stroke-width:2.4;opacity:.95}
 .malla-linea--des{stroke:var(--warn);stroke-width:2.4;opacity:.95}
+.malla--sel .malla-linea--tenue{display:none}
 .malla-sin{padding:var(--sp-5);text-align:center}
 .malla-detalle{margin-top:var(--sp-3);border:1px solid var(--line2);border-radius:var(--r-md);background:var(--sup2);padding:var(--sp-3)}
 .malla-detalle[hidden]{display:none}

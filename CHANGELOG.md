@@ -5,14 +5,15 @@
 ### Malla
 
 - El grafo de requisitos se dibuja con **tramos ortogonales y esquinas redondeadas**
-  (`--malla-radio`), no con curvas que atravesaban las tarjetas. Cada arista tiene su carril,
-  las salidas y las entradas usan mitades distintas del borde y los ramos largos cruzan por
-  las franjas libres entre tarjeta y tarjeta. Si no hay hueco, bajan a una banda inferior.
-- El orden de las líneas es estable: se ordenan por nivel, posición y código, y cada carril
-  se reparte con el mismo criterio en cada repintado. Elegir un ramo atenúa las líneas que no
-  son suyas.
-- Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha, sin pasar
-  por encima de las tarjetas.
+  (`--malla-radio`), no con curvas que atravesaban las tarjetas. Cada arista sale del borde
+  derecho de su ramo y viaja por los huecos de columna y por las **franjas entre dos fichas**:
+  varios cables comparten carril y franja, no se abre una pista por arista ni se baja a una
+  banda inferior. El trazado no entra en ninguna ficha y no crece hacia abajo.
+- El orden de las líneas es estable: se ordenan por nivel, posición y código, y cada corredor
+  se reutiliza con el mismo criterio en cada repintado. Al elegir un ramo quedan visibles solo
+  sus aristas y los ramos vinculados; el resto se atenúa. Al deseleccionar vuelve la vista
+  general.
+- Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha.
 
 ### Tareas
 
@@ -23,6 +24,16 @@
 - Vuelve el **gráfico de barra semanal** de siete días, separando hechas y pendientes.
 - El clic derecho vuelve a abrir acciones en Tareas, Malla, Calendario, Notas, Periodos y
   Sesiones.
+
+### Calificaciones
+
+- La lista muestra solo los **ramos activos de la Malla**; un ramo retirado del plan deja de
+  aparecer aunque conserve notas.
+- **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la
+  presentación como final provisional, se avisa del resultado y el ramo se puede reabrir.
+- Cada ramo ofrece **Editar** e **Identidad** en la cabecera. El clic derecho de la lista abre
+  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Cerrar/Reabrir y Borrar ramo; el clic
+  derecho de la sección añade Nuevo ramo y Ver Malla.
 
 ### Calendario
 
@@ -40,11 +51,14 @@
 
 ### Pruebas
 
-- Nueva `gate-malla-grafo.py`: 39 aristas del fixture, sin bezier, sin tramos inclinados, sin
-  líneas sobre tarjetas, sin tramos colineales solapados y con el mismo trazado al repintar,
-  a 1440 y 411 px.
+- Nueva `gate-malla-grafo.py`: 39 aristas del fixture con corredores compartidos (5 carriles
+  para 6 columnas y 3 franjas para 13 saltos), sin banda inferior, sin entrar en ninguna ficha,
+  selección que deja 3 aristas y 3 ramos vinculados con 26 atenuados, y el mismo trazado al
+  repintar, a 1440 y 411 px.
 - Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana, 42 celdas, 12 meses,
   18 semanas con estudio, navegación, corte y categorías, a 1440 y 411.
+- `gate-calificaciones.py` amplía el cierre sin nota de examen, el clic derecho de la lista y
+  de la sección, la edición desde el menú y el filtro de ramos activos.
 - Nueva `gate-tareas-tablero.py`: tablero inicial, filtros, barra semanal, completar/tachar,
   prioridad en el menú, clic derecho en tres secciones y 411. La suite web pasa a
   **30 compuertas**.
@@ -59,6 +73,16 @@
 - **27 compuertas web** en verde: las 26 anteriores más `gate-categorias.py`; `gate-tiempo` usa
   reloj falso para medir segundos exactos y `gate-malla`/`gate-estudio` cubren el cierre y el
   renombre de un ramo.
+
+### Calificaciones
+
+- La lista muestra solo los **ramos activos de la Malla**; un ramo retirado del plan deja de
+  aparecer aunque conserve notas.
+- **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la
+  presentación como final provisional, se avisa del resultado y el ramo se puede reabrir.
+- Cada ramo ofrece **Editar** e **Identidad** en la cabecera. El clic derecho de la lista abre
+  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Cerrar/Reabrir y Borrar ramo; el clic
+  derecho de la sección añade Nuevo ramo y Ver Malla.
 
 ### Calendario
 
