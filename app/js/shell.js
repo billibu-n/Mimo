@@ -254,7 +254,8 @@
   var estado = leer();
   textoGuardado = JSON.stringify(estado);
   var pantalla = "calendario";
-  var vistaTareas = estado.vistaTareas || "hoy";
+  var vistaTareas = ["tablero", "hoy", "arbol"].indexOf(estado.vistaTareas) >= 0 ? estado.vistaTareas : "tablero";
+  var filtroTareas = ["todas", "pendientes", "hoy", "ramos", "personal"].indexOf(estado.filtroTareas) >= 0 ? estado.filtroTareas : "todas";
   var vistaCalendario = ["mes", "anio", "semestre", "semana"].indexOf(estado.vistaCalendario) >= 0 ? estado.vistaCalendario : "mes";
   var calCursor = new Date();
   var formEventoId = null;
@@ -531,9 +532,20 @@
     if (pantalla !== "calendario") ir("calendario"); else { pintarCalendario(); pintarPanel(); }
     abrirPanel();
   }
+  var ORDEN_PRIORIDAD = ["baja", "media", "alta"];
+  function cambiarPrioridadTarea(id, delta) {
+    var t = tareaPorId(id); if (!t) return;
+    var i = ORDEN_PRIORIDAD.indexOf(t.prioridad || "media");
+    if (i < 0) i = 1;
+    i = Math.max(0, Math.min(ORDEN_PRIORIDAD.length - 1, i + delta));
+    t.prioridad = ORDEN_PRIORIDAD[i];
+    guardar(); pintarTareas(); pintarPanel();
+  }
   function alternarTarea(id) {
     var x = tareaPorId(id); if (!x) return;
-    x.hecha = !x.hecha; x.estado = x.hecha ? "hecha" : "pendiente";
+    var marcar = !x.hecha;
+    x.hecha = marcar; x.estado = marcar ? "hecha" : "pendiente";
+    if (marcar && x.tipo === "proyecto") descendientes(x).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
     guardar(); pintarTareas(); pintarPanel();
   }
   function crearEventoEn(fecha) {
@@ -675,17 +687,22 @@
 
     var tEl = el.closest("[data-tarea]");
     if (tEl) {
-      var t = tareaPorId(tEl.getAttribute("data-tarea"));
-      if (!t) return null;
-      return { titulo: menuTitulo(t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务"), t.titulo), items: [
-        { accion: "tarea-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirTarea(t.id); } },
-        { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(t); } },
-        { accion: "tarea-estado", texto: t.hecha ? L("Reabrir", "Reopen", "重新打开") : L("Marcar hecha", "Mark done", "标为完成"), run: function () { alternarTarea(t.id); } },
-        { accion: "tarea-sub", texto: L("Agregar subtarea", "Add subtask", "添加子任务"), run: function () { abrirFormulario(null, t.id); } },
-        { sep: true },
-        { accion: "tarea-borrar", texto: t.tipo === "proyecto" ? L("Borrar proyecto y sus tareas", "Delete project and its tasks", "删除项目及其任务") : L("Borrar tarea", "Delete task", "删除任务"), peligro: true,
-          run: function () { borrarTarea(t.id); } }
-      ] };
+      var tar = tareaPorId(tEl.getAttribute("data-tarea"));
+      if (!tar) return null;
+      var it = [
+        { accion: "tarea-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirTarea(tar.id); } },
+        { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(tar); } }
+      ];
+      var priIdx = ORDEN_PRIORIDAD.indexOf(tar.prioridad || "media");
+      if (priIdx < ORDEN_PRIORIDAD.length - 1) it.push({ accion: "tarea-prioridad-sube", texto: t("tar.subirPrioridad"), run: function () { cambiarPrioridadTarea(tar.id, 1); } });
+      if (priIdx > 0) it.push({ accion: "tarea-prioridad-baja", texto: t("tar.bajarPrioridad"), run: function () { cambiarPrioridadTarea(tar.id, -1); } });
+      it.push({ sep: true });
+      it.push({ accion: "tarea-estado", texto: tar.hecha ? t("tar.reabrir") : t("tar.completar"), run: function () { alternarTarea(tar.id); } });
+      it.push({ accion: "tarea-sub", texto: L("Agregar subtarea", "Add subtask", "添加子任务"), run: function () { abrirFormulario(null, tar.id); } });
+      it.push({ sep: true });
+      it.push({ accion: "tarea-borrar", texto: tar.tipo === "proyecto" ? L("Borrar proyecto y sus tareas", "Delete project and its tasks", "删除项目及其任务") : L("Borrar tarea", "Delete task", "删除任务"), peligro: true,
+        run: function () { borrarTarea(tar.id); } });
+      return { titulo: menuTitulo(tar.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务"), tar.titulo), items: it };
     }
 
     var pEl = el.closest("[data-periodo-item]");
@@ -1671,11 +1688,12 @@
     if (hijos.length) html += hijos.map(function (h) { return filaTarea(h, nivel + 1); }).join("");
     return html;
   }
-  function tarjetaTablero(t) {
-    var p = progreso(t);
-    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="' + esc(tr("cal.clicDerecho")) + '">' +
-      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + marcaContexto(t.contexto) + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
-      (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
+  function tarjetaTablero(tar) {
+    var p = progreso(tar);
+    return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (tar.hecha ? " hecha" : "") + '" data-tarea="' + tar.id + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
+      '<button class="tarea-check' + (tar.hecha ? " hecha" : "") + '" type="button" data-check="' + tar.id + '" aria-label="' + esc(tar.hecha ? t("tar.reabrir") : t("tar.completar")) + '">' + (tar.hecha ? "✓" : "") + "</button>" +
+      '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + "</b><small>" + esc(fechaCorta(tar.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+      (tar.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</span></div>";
   }
   function bindTareas() {
     $$("#tareas-lista [data-tarea]").forEach(function (fila) {
@@ -1710,6 +1728,38 @@
       });
     });
   }
+  function _pasaFiltroTareas(t, filtro) {
+    if (filtro === "pendientes") return !t.hecha;
+    if (filtro === "hoy") return t.fecha === hoyISO();
+    if (filtro === "ramos") return !!cursoDeContexto(t.contexto);
+    if (filtro === "personal") return !cursoDeContexto(t.contexto);
+    return true;
+  }
+  function _pintarBarraTareas(tareas) {
+    var caja = $("#tareas-barra"); if (!caja) return;
+    var lunes = lunesDe(new Date()), dias = _calDiasLunes(), hoy = hoyISO();
+    var cuentas = [], max = 1, hechas = 0, pend = 0;
+    for (var i = 0; i < 7; i++) {
+      var f = new Date(lunes.getTime()); f.setDate(f.getDate() + i);
+      var iso = isoFecha(f), h = 0, p = 0;
+      tareas.forEach(function (tar) {
+        if (tar.fecha !== iso) return;
+        if (tar.hecha) h++; else p++;
+      });
+      hechas += h; pend += p; max = Math.max(max, h + p);
+      cuentas.push({ h: h, p: p, iso: iso });
+    }
+    caja.innerHTML = cuentas.map(function (c, i) {
+      var total = c.h + c.p, alto = total ? Math.max(4, Math.round(total / max * 100)) : 0;
+      var hh = total ? (c.h / total * 100) : 0, pp = total ? (c.p / total * 100) : 0;
+      return '<div class="tareas-barra-dia' + (c.iso === hoy ? " hoy" : "") + '" title="' + esc(c.iso + " · " + c.h + " " + t("tar.hechas") + " · " + c.p + " " + t("tar.pendientes")) + '">' +
+        '<div class="tareas-barra-pila" style="height:' + alto + '%">' +
+        (c.h ? '<i class="hecha" style="height:' + hh.toFixed(1) + '%"></i>' : "") +
+        (c.p ? '<i class="pend" style="height:' + pp.toFixed(1) + '%"></i>' : "") + "</div>" +
+        '<span>' + esc(dias[i]) + "</span></div>";
+    }).join("");
+    if ($("#tareas-barra-resumen")) $("#tareas-barra-resumen").textContent = tf("tar.barraResumen", { h: hechas, p: pend });
+  }
   function pintarTareas() {
     normalizarTareas();
     var lista = $("#tareas-lista"), vacio = $("#tareas-vacio"), tareas = estado.tareas;
@@ -1720,21 +1770,35 @@
     $("#kpi-abiertas").textContent = String(abiertas.length);
     $("#kpi-hechas").textContent = String(hechas.length);
     $("#kpi-progreso").textContent = (tareas.length ? Math.round(hechas.length / tareas.length * 100) : 0) + " %";
+    $$("#vista-tareas button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-vista") === vistaTareas);
+    });
+    var filtros = $("#tareas-filtros");
+    if (filtros) filtros.hidden = vistaTareas !== "tablero";
+    $$("#tareas-filtros [data-filtro]").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-filtro") === filtroTareas);
+    });
+    var cuenta = { todas: tareas.length, pendientes: abiertas.length, hoy: tareas.filter(function (t) { return t.fecha === hoyISO(); }).length,
+      ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
+      personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
+    Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
+    _pintarBarraTareas(tareas);
     if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; return; }
     vacio.hidden = true;
     if (vistaTareas === "arbol") {
       lista.innerHTML = raicesTareas().map(function (t) { return filaTarea(t, 0); }).join("");
     } else if (vistaTareas === "tablero") {
-      var lunes = new Date(); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
-      var domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
-      var iso = function (d) { return d.toISOString().slice(0, 10); };
-      var colHoy = tareas.filter(function (t) { return !t.hecha && (!t.fecha || t.fecha <= hoyISO()); });
-      var colSemana = tareas.filter(function (t) { return !t.hecha && t.fecha > hoyISO(); });
-      var colHechas = tareas.filter(function (t) { return t.hecha; });
-      var col = function (titulo, items) {
-        return '<div class="tablero-col"><h3>' + titulo + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(L("Nada.", "Nothing.", "没有。")) + '</p>') + "</div>";
+      var lunes = lunesDe(new Date()), domingo = new Date(lunes.getTime());
+      domingo.setDate(domingo.getDate() + 6);
+      var lunesIso = isoFecha(lunes), domingoIso = isoFecha(domingo);
+      var visibles = tareas.filter(function (t) { return _pasaFiltroTareas(t, filtroTareas); });
+      var colHoy = visibles.filter(function (t) { return !t.hecha && t.fecha === hoyISO(); });
+      var colSemana = visibles.filter(function (t) { return !t.hecha && t.fecha > hoyISO() && t.fecha <= domingoIso; });
+      var colHechas = visibles.filter(function (t) { return t.hecha && t.fecha >= lunesIso && t.fecha <= domingoIso; });
+      var col = function (titulo, items, clave) {
+        return '<div class="tablero-col"><h3>' + esc(titulo) + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(t(clave)) + '</p>') + "</div>";
       };
-      lista.innerHTML = '<div class="tablero">' + col(L("Hoy / atrasadas", "Today / overdue", "今天 / 逾期"), colHoy) + col(L("Próximas", "Upcoming", "即将到来"), colSemana) + col(L("Hechas", "Done", "已完成"), colHechas) + "</div>";
+      lista.innerHTML = '<div class="tablero">' + col(t("tar.col.hoy"), colHoy, "tar.vacio.hoy") + col(t("tar.col.semana"), colSemana, "tar.vacio.semana") + col(t("tar.col.hechas"), colHechas, "tar.vacio.hechas") + "</div>";
     } else {
       var v = tareas.filter(function (t) { return !t.hecha && t.fecha && t.fecha <= hoyISO(); });
       lista.innerHTML = v.length ? v.map(function (t) { return filaTarea(t, 0); }).join("") : '<p class="muted">' + esc(L("Nada para hoy. Cambia a Árbol o Tablero.", "Nothing for today. Switch to Tree or Board.", "今天没有任务。请切换到树状或看板。")) + '</p>';
@@ -5238,7 +5302,13 @@
       b.addEventListener("click", function () {
         vistaTareas = b.getAttribute("data-vista");
         estado.vistaTareas = vistaTareas;
-        $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x === b); });
+        guardar(); pintarTareas();
+      });
+    });
+    $$("#tareas-filtros [data-filtro]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        filtroTareas = b.getAttribute("data-filtro");
+        estado.filtroTareas = filtroTareas;
         guardar(); pintarTareas();
       });
     });

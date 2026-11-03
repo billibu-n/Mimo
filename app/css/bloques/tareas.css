@@ -27,3 +27,31 @@
 .tarjeta-tarea b{display:block;font-size:var(--fs-sm);font-weight:600}
 .tarjeta-tarea small{display:block;color:var(--muted);font-size:var(--fs-xs);margin:2px 0 4px}
 @media (max-width:900px){.tablero{grid-template-columns:1fr}.tarea-fila .tarea-progreso{display:none}}
+
+/* Filtros del tablero (los mismos de la versión anterior). */
+.tareas-filtros{display:flex;flex-wrap:wrap;gap:var(--sp-1);margin:var(--sp-2) 0}
+.tareas-filtro{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:var(--sup);color:var(--muted);padding:var(--sp-1) var(--sp-2);font:inherit;font-size:var(--fs-xs);cursor:pointer}
+.tareas-filtro:hover{border-color:var(--ac);color:var(--fg)}
+.tareas-filtro.on{background:var(--ac);border-color:var(--ac);color:var(--ac-txt);font-weight:600}
+.tareas-filtro b{font-variant-numeric:tabular-nums;font-size:var(--fs-xs)}
+
+/* Barra semanal de tareas. */
+.tareas-barra-card{padding-top:var(--sp-2);padding-bottom:var(--sp-2)}
+.tareas-barra-cab{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-1)}
+.tareas-barra-cab b{font-size:var(--fs-sm)}
+.tareas-barra-cab span{font-size:var(--fs-xs);color:var(--muted)}
+.tareas-barra{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--sp-1);align-items:end;height:96px;padding-top:var(--sp-1)}
+.tareas-barra-dia{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.tareas-barra-dia>span{font-size:calc(var(--fs-xs) * .85);color:var(--muted);white-space:nowrap}
+.tareas-barra-dia.hoy>span{color:var(--ac);font-weight:700}
+.tareas-barra-pila{display:flex;flex-direction:column-reverse;width:100%;max-width:34px;min-height:2px;border-radius:var(--r-sm);overflow:hidden;background:var(--pista)}
+.tareas-barra-pila i{display:block;width:100%}
+.tareas-barra-pila .hecha{background:var(--ok)}
+.tareas-barra-pila .pend{background:var(--ac)}
+
+/* La tarjeta del tablero también se completa y se tacha. */
+.tarjeta-tarea{display:flex;align-items:flex-start;gap:var(--sp-2)}
+.tarjeta-tarea .tarea-check{flex:none;margin-top:1px}
+.tarjeta-cuerpo{min-width:0;flex:1}
+.tarjeta-tarea.hecha b{text-decoration:line-through;color:var(--muted)}
+.tarjeta-tarea.hecha{opacity:.72}

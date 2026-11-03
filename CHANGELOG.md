@@ -14,6 +14,16 @@
 - Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha, sin pasar
   por encima de las tarjetas.
 
+### Tareas
+
+- El **Tablero** vuelve a ser la vista inicial y recupera los filtros de la versión anterior:
+  Todas, Pendientes, Hoy, Ramos y Personales, con su cuenta.
+- La tarjeta del tablero se puede **completar** con un clic: queda tachada y pasa a Hechas.
+  El menú contextual ofrece Completar/Reabrir y **subir o bajar la prioridad**.
+- Vuelve el **gráfico de barra semanal** de siete días, separando hechas y pendientes.
+- El clic derecho vuelve a abrir acciones en Tareas, Malla, Calendario, Notas, Periodos y
+  Sesiones.
+
 ### Calendario
 
 - Vuelve el motor de **mes, año y semestre** de Mimo Académics: grilla mensual de 42 celdas
@@ -34,8 +44,10 @@
   líneas sobre tarjetas, sin tramos colineales solapados y con el mismo trazado al repintar,
   a 1440 y 411 px.
 - Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana, 42 celdas, 12 meses,
-  18 semanas con estudio, navegación, corte y categorías, a 1440 y 411. La suite web pasa a
-  **29 compuertas**.
+  18 semanas con estudio, navegación, corte y categorías, a 1440 y 411.
+- Nueva `gate-tareas-tablero.py`: tablero inicial, filtros, barra semanal, completar/tachar,
+  prioridad en el menú, clic derecho en tres secciones y 411. La suite web pasa a
+  **30 compuertas**.
 - Se retiró la vista **Agenda**: los eventos siguen en mes, semana, semestre y detalle.
 
 ## 1.2.0-beta.6 — 2026-11-01

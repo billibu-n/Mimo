@@ -114,6 +114,8 @@ def main() -> int:
             page.locator("#tarea-titulo").fill("Preparar la reunión del lunes")
             page.locator("#modal-guardar").click()
             page.wait_for_timeout(100)
+            page.locator('[data-vista="arbol"]').click()
+            page.wait_for_timeout(100)
             exigir(page.locator(".tarea-fila").count() == 1, "tareas: crear una tarea", fallas)
             page.locator(".tarea-fila").first.click()
             page.wait_for_timeout(80)
