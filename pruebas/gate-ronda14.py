@@ -196,7 +196,7 @@ def main() -> int:
             page.evaluate("""(fecha) => {
               const s = MimoHost.snapshot();
               s.instalados = Array.from(new Set([...(s.instalados || []), "calificaciones", "estudio"]));
-              s.cursos = [{codigo:"T1", nombre:"Curso de prueba", creditos:6, nivel:1, requisitos:[]}];
+              s.cursos = [{codigo:"T1", nombre:"Curso de prueba", creditos:6, nivel:1, requisitos:[], enCurso:true}];
               s.califs = {T1:{categorias:[{nombre:"General",peso:100}],
                 componentes:[{nombre:"Control",categoria:"General",nota:null,fecha:fecha,peso:1}],
                 examen:{activo:false,peso:0,nota:null,reemplaza:null},

@@ -8,11 +8,15 @@ Mide el motor y la interfaz sobre app/index.html:
   3. examen al 40 % y al 50 % cambia la final;
   4. una condición de eximición cumplida usa la presentación;
   5. quitar un componente recalcula;
-  6. un curso sin nota de examen se puede cerrar con la presentación y reabrir;
-  7. el clic derecho abre la ficha, Malla, edición, identidad, cierre y borrado;
-  8. la lista solo muestra los ramos activos de Malla;
-  9. el panel Detalle muestra el resumen del ramo;
- 10. 411 sin desborde y consola limpia.
+  6. activo, disponible e historial son estados distintos; por defecto solo activos;
+  7. un disponible se añade desde el modal y un activo se retira sin borrar el ramo ni sus
+     notas, con confirmación y deshacer;
+  8. la nota final manual manda sobre el cálculo, pasa al Historial sin duplicar y persiste al
+     recargar; la escala 1.0–7.0 y el umbral 4.0 se explican;
+  9. un curso sin nota de examen se puede cerrar con la presentación y reabrir;
+ 10. el clic derecho abre la ficha, Malla, edición, identidad, alta/retiro, cierre y borrado;
+ 11. el panel Detalle muestra el resumen del ramo;
+ 12. 411 sin desborde y consola limpia.
 
 Uso: python3 pruebas/gate-calificaciones.py
 """
@@ -38,12 +42,15 @@ def instalar_academics(page) -> None:
     page.wait_for_timeout(80)
 
 
-def crear_ramo(page, codigo="MA1001", nombre="Cálculo I", creditos="6") -> None:
+def crear_ramo(page, codigo="MA1001", nombre="Cálculo I", creditos="6", activo=True) -> None:
     page.locator("#btn-nuevo-ramo").click()
     page.locator("#ramo-codigo").fill(codigo)
     page.locator("#ramo-nombre").fill(nombre)
     page.locator("#ramo-creditos").fill(creditos)
-    page.locator("#ramo-curso").check()
+    if activo:
+        page.locator("#ramo-curso").check()
+    else:
+        page.locator("#ramo-curso").uncheck()
     page.locator("#modal-guardar").click()
     page.wait_for_timeout(150)
 
@@ -80,8 +87,19 @@ def main() -> int:
             page.locator('#tabs .tab[data-ir="calificaciones"]').click()
             page.wait_for_timeout(250)
             exigir(page.locator(".calif-item").count() == 1, "calif: el ramo aparece en la lista", fallas)
-            exigir("en curso" in page.locator(".calif-resumen").inner_text(),
-                   "calif: sin notas el curso sigue en curso", fallas)
+            exigir("activo" in page.locator(".calif-resumen").inner_text(),
+                   "calif: sin notas el curso sigue activo", fallas)
+            exigir("Escala 1.0–7.0" in page.locator("#calif-detalle").inner_text() and
+                   "aprueba 4.0" in page.locator("#calif-detalle").inner_text(),
+                   "calif: la escala 1.0–7.0 y el umbral 4.0 se explican", fallas)
+
+            page.locator('#tabs .tab[data-ir="malla"]').click()
+            page.wait_for_timeout(100)
+            crear_ramo(page, "MA2001", "Álgebra", "6", activo=False)
+            page.locator('#tabs .tab[data-ir="calificaciones"]').click()
+            page.wait_for_timeout(200)
+            exigir(page.locator(".calif-item").count() == 1,
+                   "calif: por defecto solo lista el ramo activo", fallas)
 
             abrir_plegable(page, '[data-accion-calif="comp-add"]')
             page.locator('[data-accion-calif="comp-add"]').click()
@@ -105,8 +123,8 @@ def main() -> int:
             cambiar(page, '[data-comp-nota="1"]', "6.0")
             exigir(page.locator(".calif-resumen").inner_text().split("\n")[0].strip() == "5.5",
                    "calif: presentación 5.5 con dos categorías", fallas)
-            exigir("en curso" in page.locator(".calif-resumen").inner_text(),
-                   "calif: con examen pendiente el curso sigue en curso", fallas)
+            exigir("activo" in page.locator(".calif-resumen").inner_text(),
+                   "calif: con examen pendiente el curso sigue activo", fallas)
 
             # Cerrar aunque falte la nota del examen: usa la presentación y no
             # deja el curso atrapado en abierto (R114).
@@ -200,11 +218,95 @@ def main() -> int:
                    "calif: el clic derecho de la sección ofrece utilidades", fallas)
             page.keyboard.press("Escape")
 
+            # Disponible no es activo: se distingue, se añade y se retira sin
+            # borrar el ramo ni sus notas; el retiro se puede deshacer.
+            page.locator('[data-calif-filtro="disponibles"]').click()
+            page.wait_for_timeout(150)
+            exigir(page.locator(".calif-item").count() == 1 and
+                   "disponible" in page.locator(".calif-item").first.inner_text(),
+                   "calif: el ramo de la Malla sin cursar se ve como disponible", fallas)
+            page.locator(".calif-item").first.click()
+            page.wait_for_timeout(120)
+            exigir(page.locator('[data-accion-calif="activar"]').count() == 1 and
+                   not page.locator(".calif-resumen").is_visible(),
+                   "calif: el disponible ofrece añadirlo, sin notas a la vista", fallas)
+            page.locator('[data-accion-calif="activar"]').click()
+            page.wait_for_timeout(250)
+            exigir(page.locator(".calif-item").count() == 2,
+                   "calif: añadir el disponible lo vuelve activo", fallas)
+            antes_retiro = page.evaluate("""() => {
+              const e = JSON.parse(localStorage.getItem('mimo.shell.v1'));
+              return {cursos: e.cursos.length, califs: Object.keys(e.califs).sort()};
+            }""")
+            page.locator('[data-accion-calif="retirar"]').click()
+            page.wait_for_timeout(250)
+            exigir(page.locator(".calif-item").count() == 1,
+                   "calif: retirar saca el ramo de la lista", fallas)
+            despues_retiro = page.evaluate("""() => {
+              const e = JSON.parse(localStorage.getItem('mimo.shell.v1'));
+              const c = e.cursos.filter(x => x.codigo === 'MA2001')[0];
+              return {cursos: e.cursos.length, sigue: !!c, enCurso: c && c.enCurso,
+                      califs: Object.keys(e.califs).sort()};
+            }""")
+            exigir(despues_retiro["sigue"] and not despues_retiro["enCurso"] and
+                   despues_retiro["cursos"] == antes_retiro["cursos"] and
+                   despues_retiro["califs"] == antes_retiro["califs"],
+                   f"calif: retirar no borra el ramo ni sus notas — {despues_retiro}", fallas)
+            page.locator(".toast__accion").click()
+            page.wait_for_timeout(250)
+            exigir(page.locator(".calif-item").count() == 2,
+                   "calif: deshacer devuelve el ramo retirado", fallas)
+
+            page.locator('[data-accion-calif="retirar"]').click()
+            page.wait_for_timeout(250)
+            page.locator("#calif-anadir").click()
+            page.wait_for_timeout(150)
+            exigir(page.locator("#modal-editor").is_visible() and
+                   page.locator("[data-calif-add]").count() == 1,
+                   "calif: el modal de añadir lista los disponibles", fallas)
+            page.locator("[data-calif-add]").click()
+            page.wait_for_timeout(250)
+            exigir(page.locator(".calif-item").count() == 2 and
+                   not page.locator("#modal-editor").is_visible(),
+                   "calif: añadir desde el modal vuelve a activar el ramo", fallas)
+
+            # La nota final se puede fijar a mano, cerrar y ver en Historial;
+            # al recargar sigue ahí y no se duplica.
+            page.locator('.calif-item', has_text="MA1001").click()
+            page.wait_for_timeout(120)
+            cambiar(page, "[data-nota-final]", "6.5")
+            exigir("6.5" in page.locator(".calif-resumen").inner_text(),
+                   "calif: la nota final manual manda sobre el cálculo", fallas)
+            page.locator('[data-accion-calif="cerrar-curso"]').click()
+            page.wait_for_timeout(250)
+            exigir("Final 6.5" in page.locator(".calif-cierre").inner_text() and
+                   "6.5" in page.locator(".calif-item").first.inner_text(),
+                   "calif: la final manual pasa al Historial", fallas)
+            registro = page.evaluate("""() => {
+              const e = JSON.parse(localStorage.getItem('mimo.shell.v1'));
+              const c = e.cursos.filter(x => x.codigo === 'MA1001')[0];
+              return {cursos: e.cursos.length, notaCierre: c.notaCierre,
+                      manual: e.califs.MA1001.notaFinalManual};
+            }""")
+            exigir(registro["notaCierre"] == 6.5 and registro["manual"] == 6.5 and
+                   registro["cursos"] == 2,
+                   f"calif: la final se guarda una sola vez — {registro}", fallas)
+            limpia = page.url.split("?")[0]
+            page.goto(limpia, wait_until="load")
+            page.wait_for_timeout(300)
+            page.locator('#tabs .tab[data-ir="calificaciones"]').click()
+            page.wait_for_timeout(200)
+            page.locator('[data-calif-filtro="historial"]').click()
+            page.wait_for_timeout(180)
+            exigir(page.locator(".calif-item").count() == 1 and
+                   "Final 6.5" in page.locator(".calif-item").first.inner_text(),
+                   "calif: Historial conserva la final al reabrir", fallas)
+
             # Un ramo fuera de la Malla no es un ramo activo: deja de listarse.
             page.evaluate("""() => {
               const k = 'mimo.shell.v1';
               const e = JSON.parse(localStorage.getItem(k));
-              e.cursos[0].enMalla = false;
+              e.cursos.forEach(c => { c.enMalla = false; });
               localStorage.setItem(k, JSON.stringify(e));
             }""")
             limpia = page.url.split("?")[0]

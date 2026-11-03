@@ -644,7 +644,7 @@
         califSel = codCalif; estado.califSel = codCalif; estado.ramoSel = codCalif;
         estado.panel.calificaciones = "detalle";
       };
-      return { titulo: menuTitulo(L("Ramo", "Course", "课程"), cf.codigo + " — " + cf.nombre), items: [
+      var itemsCalif = [
         { accion: "calif-abrir", texto: L("Abrir ficha", "Open details", "打开详情"), run: function () {
           irACalif(); guardar(); pintarCalificaciones(); pintarPanel(); abrirPanel();
         } },
@@ -656,15 +656,23 @@
         } },
         { accion: "calif-identidad", texto: t("ident.abrir"), run: function () {
           irACalif(); abrirIdentidadCalif(codCalif);
-        } },
-        { sep: true },
-        { accion: "calif-estado", texto: cf.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () {
-          irACalif(); alternarRamo(codCalif);
-        } },
-        { accion: "calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () {
-          irACalif(); borrarRamo(codCalif);
         } }
-      ] };
+      ];
+      if (!cf.cerrado) {
+        itemsCalif.push({ accion: cf.enCurso ? "calif-retirar" : "calif-activar",
+          texto: cf.enCurso ? t("calif.retirar") : t("calif.agregar"), run: function () {
+            irACalif();
+            if (cf.enCurso) retirarCursoCalif(codCalif); else activarCursoCalif(codCalif);
+          } });
+      }
+      itemsCalif.push({ sep: true });
+      itemsCalif.push({ accion: "calif-estado", texto: cf.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () {
+        irACalif(); alternarRamo(codCalif);
+      } });
+      itemsCalif.push({ accion: "calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () {
+        irACalif(); borrarRamo(codCalif);
+      } });
+      return { titulo: menuTitulo(L("Ramo", "Course", "课程"), cf.codigo + " — " + cf.nombre), items: itemsCalif };
     }
 
     var rEl = el.closest("[data-ramo]");
@@ -810,6 +818,12 @@
           itemsCalif.push({ sep: true });
           itemsCalif.push({ accion: "zona-calif-editar", texto: L("Editar ramo", "Edit course", "编辑课程"), run: function () { abrirFormularioRamo(cSel); } });
           itemsCalif.push({ accion: "zona-calif-identidad", texto: t("ident.abrir"), run: function () { abrirIdentidadCalif(cSel.codigo); } });
+          if (!cSel.cerrado) {
+            itemsCalif.push({ accion: cSel.enCurso ? "zona-calif-retirar" : "zona-calif-activar",
+              texto: cSel.enCurso ? t("calif.retirar") : t("calif.agregar"), run: function () {
+                if (cSel.enCurso) retirarCursoCalif(cSel.codigo); else activarCursoCalif(cSel.codigo);
+              } });
+          }
           itemsCalif.push({ accion: "zona-calif-estado", texto: cSel.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () { alternarRamo(cSel.codigo); } });
           itemsCalif.push({ accion: "zona-calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () { borrarRamo(cSel.codigo); } });
         }
@@ -2471,7 +2485,7 @@
     var conCalif = instalado("calificaciones");
     var q = conCalif ? califDe(cod) : null;
     var P = q ? presentacionDe(q) : null, nf = q ? notaFinalDe(q) : null;
-    if (P === null) {
+    if (P === null && nf === null) {
       var pregunta = conCalif
         ? L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？")
         : L("Calificaciones no está instalado. ¿Cerrar \"" + c.codigo + "\" como aprobado manualmente?", "Grades is not installed. Close \"" + c.codigo + "\" as passed manually?", "成绩未安装。要手动将“" + c.codigo + "”关闭为通过吗？");
@@ -2494,6 +2508,7 @@
     c.notaCierre = nf === null ? null : Math.round(nf * 10) / 10;
     c.cerradoEn = selloLocal(); c.enCurso = false;
     notificarCurso(c);
+    califFiltro = "historial";
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
     if (nf === null) aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
     else aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
@@ -2504,6 +2519,7 @@
     c.cerrado = false; c.aprobado = false; c.resultado = "";
     c.notaCierre = null; c.cerradoEn = ""; c.enCurso = true;
     notificarCurso(c);
+    califFiltro = "activos";
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
     aviso(L("Curso reabierto. Sus notas siguen ahí.", "Course reopened. Its grades are still there.", "课程已重新打开。成绩仍然保留。"));
   }
@@ -2636,13 +2652,13 @@
     aviso(L("Malla exportada.", "Degree plan exported.", "课程规划已导出。"));
   }
 
-  var califSel = null;
+  var califSel = null, califFiltro = "activos";
   function califPorDefecto() {
     return {
       categorias: [{ nombre: L("General", "General", "常规"), peso: 100 }], componentes: [],
       examen: { activo: true, peso: 40, nota: null, reemplaza: null },
       eximicion: { activa: false, modo: "todas", condiciones: [] },
-      notaMin: 4, meta: 5
+      notaMin: 4, meta: 5, notaFinalManual: null
     };
   }
   function notaNum(v) {
@@ -2857,6 +2873,7 @@
       });
       q.notaMin = notaNum(q.notaMin) || 4;
       q.meta = notaNum(q.meta) || 5;
+      q.notaFinalManual = notaNum(q.notaFinalManual);
       estado.califs[cur.codigo] = q;
     });
   }
@@ -2917,6 +2934,7 @@
       sinDatos: detalle.some(function (d) { return d.actual === null; }) };
   }
   function notaFinalDe(c) {
+    if (c.notaFinalManual !== null && c.notaFinalManual !== undefined) return Number(c.notaFinalManual);
     var P = presentacionDe(c); if (P === null) return null;
     if (estadoEximicion(c).cumple) return P;
     if (!c.examen.activo) return P;
@@ -2924,10 +2942,14 @@
     return (1 - c.examen.peso / 100) * P + (c.examen.peso / 100) * c.examen.nota;
   }
   function estadoCalifDe(c, curso) {
-    if (!curso || !curso.cerrado) return { texto: L("en curso", "in progress", "进行中"), clase: "" };
-    return curso.aprobado
-      ? { texto: L("aprobado", "passed", "已通过"), clase: "pill-ok" }
-      : { texto: L("reprobado", "failed", "未通过"), clase: "pill-bad" };
+    if (!curso) return { texto: t("calif.estado.disponible"), clase: "pill-warn" };
+    if (curso.cerrado) {
+      return curso.aprobado
+        ? { texto: L("aprobado", "passed", "已通过"), clase: "pill-ok" }
+        : { texto: L("reprobado", "failed", "未通过"), clase: "pill-bad" };
+    }
+    if (curso.enCurso) return { texto: t("calif.estado.activo"), clase: "pill-ok" };
+    return { texto: t("calif.estado.disponible"), clase: "pill-warn" };
   }
   function necesarioDe(c, objetivo) {
     if (!c.examen.activo || c.examen.peso <= 0) return null;
@@ -2957,6 +2979,14 @@
   function htmlDetalleCalif(cur, q) {
     if (!cur) return '<p class="muted">' + esc(L("Selecciona un ramo.", "Select a course.", "选择一门课程。")) + '</p>';
     var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q, cur), ex = estadoEximicion(q);
+    var nfMostrar = q.notaFinalManual !== null && q.notaFinalManual !== undefined
+      ? q.notaFinalManual : (cur.cerrado && cur.notaCierre !== null ? cur.notaCierre : nf);
+    var disponible = !cur.cerrado && !cur.enCurso;
+    var bloqueDisponible = disponible
+      ? '<div class="calif-disponible"><div><b>' + esc(t("calif.disponibleTitulo")) + "</b><span>" +
+        esc(t("calif.disponibleTexto")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="activar">' +
+        esc(t("calif.agregar")) + "</button></div>"
+      : "";
     var necMin = necesarioDe(q, q.notaMin), necMeta = necesarioDe(q, q.meta);
     var filasCat = q.categorias.map(function (cat, i) {
       var p = promedioCategoria(q, cat);
@@ -3016,10 +3046,10 @@
     var cierre = cur.cerrado
       ? '<div class="calif-cierre calif-cierre--' + (cur.aprobado ? "ok" : "bad") + '"><div><b>Curso cerrado · ' +
         esc(cur.aprobado ? L("APROBADO", "PASSED", "已通过") : L("REPROBADO", "FAILED", "未通过")) + "</b><span>" + esc(L("Final ", "Final ", "最终 ")) +
-        fmtNota(cur.notaCierre !== null ? cur.notaCierre : nf) + (cur.cerradoEn ? " · " + esc(cur.cerradoEn) : "") +
+        fmtNota(nfMostrar) + (cur.cerradoEn ? " · " + esc(cur.cerradoEn) : "") +
         '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">' + esc(L("Reabrir curso", "Reopen course", "重新打开课程")) + '</button></div>'
-      : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div>';
-    return '<div class="card calif-card">' +
+      : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><div class="calif-cierre__acciones"><button class="btn btn--chico" type="button" data-accion-calif="retirar">' + esc(t("calif.retirar")) + '</button><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div></div>';
+    return '<div class="card calif-card' + (disponible ? " calif-card--disponible" : "") + '">' +
       '<div class="calif-cab"><div class="calif-cab__izq">' + iconoRamoHTML(cur, "ramo-ico--lg") +
         "<div><h2>" + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
         '<p class="muted">' + creditosDe(cur) + " " + esc(L("créditos", "credits", "学分")) + " · " + esc(etiquetaNivel(cur.nivel)) + " · " + esc(L("meta ", "goal ", "目标 ")) + fmtNota(q.meta) + "</p></div>" +
@@ -3030,16 +3060,20 @@
           esc(t("ident.abrir")) + '" aria-label="' + esc(t("ident.abrir")) + '">' +
           iconoRamoHTML(cur) + '<span>' + esc(L("Identidad", "Identity", "标识")) + '</span></button>' +
         '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div></div>" +
+      bloqueDisponible +
+      '<div class="calif-cuerpo"' + (disponible ? " hidden" : "") + ">" +
       '<div class="calif-resumen">' +
         '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>" + esc(L("Presentación", "Presentation", "平时成绩")) + "</span></div>" +
-        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
+        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nfMostrar) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
         '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>" + esc(L("Estado", "Status", "状态")) + "</span></div>" +
         '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? L("eximido", "exempt", "免考") : q.examen.activo ? textoNecesario(necMin) : L("sin examen", "no exam", "无考试")) + "</b><span>" + esc(L("Examen para ", "Exam for ", "考试目标 ")) + fmtNota(q.notaMin) + "</span></div>" +
       "</div>" + cierre +
       '<div class="calif-ajustes">' +
         '<label class="campo">' + esc(L("Nota mínima", "Minimum grade", "最低成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
         '<label class="campo">' + esc(L("Meta", "Goal", "目标")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
+        '<label class="campo" title="' + esc(t("calif.finalManualAyuda")) + '">' + esc(t("calif.finalManual")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-final value="' + (q.notaFinalManual === null ? "" : q.notaFinalManual) + '" placeholder="' + esc(t("calif.finalCalculada")) + '"></label>' +
         '<span class="muted">' + esc(L("Examen para la meta: ", "Exam for the goal: ", "达成目标的考试：")) + (q.examen.activo ? textoNecesario(necMeta) : L("sin examen", "no exam", "无考试")) + "</span>" +
+        '<span class="muted">' + esc(tf("calif.escala", { min: fmtNota(q.notaMin) })) + "</span>" +
       "</div>" +
       MimoPlegable.html({ id: "calif:" + cur.codigo + ":cats", abierto: true,
         titulo: L("Categorías", "Categories", "分类"),
@@ -3076,6 +3110,7 @@
         (filasCond || '<p class="muted">' + esc(L("Sin condiciones: mientras no haya ninguna, el ramo no se exime.", "No conditions: while there are none, the course is not exempted.", "没有条件：在添加条件前，课程不能免考。")) + '</p>') +
         '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">' + esc(L("+ Condición", "+ Condition", "+ 条件")) + '</button>' +
         '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p>" }) +
+      "</div>" +
       "</div>";
   }
   /* Identidad del ramo: color e icono, en la ventana única. El color se elige con
@@ -3189,34 +3224,118 @@
     var lista = $("#calif-lista"), det = $("#calif-detalle");
     if (!lista || !det) return;
     normalizarCursos(); normalizarCalifs();
-    var cursos = estado.cursos.filter(function (c) { return c.enMalla !== false && (estado.califs[c.codigo] || c.enCurso); });
+    var enMalla = estado.cursos.filter(function (c) { return c.enMalla !== false; });
+    var grupos = {
+      activos: enMalla.filter(function (c) { return c.enCurso && !c.cerrado; }),
+      disponibles: enMalla.filter(function (c) { return !c.enCurso && !c.cerrado; }),
+      historial: enMalla.filter(function (c) { return c.cerrado; })
+    };
+    if (!grupos[califFiltro]) califFiltro = "activos";
+    var cursos = grupos[califFiltro];
     var vacio = $("#calif-vacio"), layout = $("#calif-layout");
     var sinMalla = !instalado("malla");
     if ($("#btn-calif-malla")) $("#btn-calif-malla").hidden = sinMalla;
     if ($("#calif-crear-ramo")) $("#calif-crear-ramo").hidden = sinMalla;
     if ($("#btn-calif-curso")) $("#btn-calif-curso").hidden = !sinMalla;
+    if ($("#calif-anadir")) $("#calif-anadir").hidden = sinMalla;
     if ($("#calif-vacio-texto-malla")) $("#calif-vacio-texto-malla").hidden = sinMalla;
     if ($("#calif-vacio-texto-sola")) $("#calif-vacio-texto-sola").hidden = !sinMalla;
-    if (!cursos.length) {
+    $$("#calif-filtro [data-calif-filtro]").forEach(function (b) {
+      var on = b.getAttribute("data-calif-filtro") === califFiltro;
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    if (!enMalla.length) {
       if (vacio) vacio.hidden = false;
       if (layout) layout.hidden = true;
       return;
     }
     if (vacio) vacio.hidden = true;
     if (layout) layout.hidden = false;
+    if (!cursos.length) {
+      califSel = null; estado.califSel = null;
+      var mensaje = califFiltro === "disponibles" ? t("calif.sinDisponibles")
+        : califFiltro === "historial" ? t("calif.sinHistorial") : t("calif.sinActivos");
+      lista.innerHTML = '<p class="muted calif-sin">' + esc(mensaje) + "</p>";
+      det.innerHTML = htmlDetalleCalif(null, null);
+      return;
+    }
     var enLista = function (cod) { return cursos.some(function (c) { return c.codigo === cod; }); };
     if (!califSel || !ramoPorCodigo(califSel) || !enLista(califSel)) {
       califSel = estado.califSel && enLista(estado.califSel) ? estado.califSel : cursos[0].codigo;
     }
     estado.califSel = califSel; estado.ramoSel = califSel;
     lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
-      var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
+      var q = califFiltro === "disponibles" ? (estado.califs[cur.codigo] || califPorDefecto()) : califDe(cur.codigo);
+      var est = estadoCalifDe(q, cur);
+      var nfLista = q.notaFinalManual !== null && q.notaFinalManual !== undefined
+        ? q.notaFinalManual : (cur.cerrado && cur.notaCierre !== null ? cur.notaCierre : notaFinalDe(q));
+      var resumen = califFiltro === "disponibles"
+        ? esc(t("calif.notasGuardadas"))
+        : esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(nfLista);
       return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
         '<span class="calif-item__nom">' + iconoRamoHTML(cur) + "<b>" + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
-        '<small>' + esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(notaFinalDe(q)) + "</small>" +
+        '<small>' + resumen + "</small>" +
         '<em class="pill ' + est.clase + '">' + esc(est.texto) + "</em></button>";
     }).join("");
-    det.innerHTML = htmlDetalleCalif(ramoPorCodigo(califSel), califDe(califSel));
+    var qSel = califFiltro === "disponibles" ? (estado.califs[califSel] || califPorDefecto()) : califDe(califSel);
+    det.innerHTML = htmlDetalleCalif(ramoPorCodigo(califSel), qSel);
+  }
+  function activarCursoCalif(cod) {
+    var c = ramoPorCodigo(cod);
+    if (!c || c.cerrado || c.enCurso) return;
+    c.enCurso = true;
+    notificarCurso(c);
+    califFiltro = "activos"; califSel = cod; estado.califSel = cod; estado.ramoSel = cod;
+    estado.panel.calificaciones = "detalle";
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    aviso(tf("calif.agregado", { codigo: cod }));
+  }
+  function retirarCursoCalif(cod) {
+    var c = ramoPorCodigo(cod);
+    if (!c || !c.enCurso) return;
+    if (!window.confirm(tf("calif.retirarPregunta", { codigo: cod }))) return;
+    c.enCurso = false;
+    notificarCurso(c);
+    califSel = null; estado.califSel = null;
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    aviso(tf("calif.retirado", { codigo: cod }), function () {
+      var x = ramoPorCodigo(cod); if (!x) return;
+      x.enCurso = true; notificarCurso(x);
+      califFiltro = "activos"; califSel = cod; estado.califSel = cod; estado.ramoSel = cod;
+      guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    });
+  }
+  function abrirAgregarCalif() {
+    normalizarCursos();
+    var disponibles = estado.cursos.filter(function (c) {
+      return c.enMalla !== false && !c.enCurso && !c.cerrado;
+    }).sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; });
+    var html = !disponibles.length
+      ? '<p class="muted calif-sin">' + esc(t("calif.agregarVacio")) + "</p>"
+      : '<div class="calif-add__lista">' + disponibles.map(function (c) {
+          return '<button class="calif-add__item" type="button" data-calif-add="' + esc(c.codigo) + '">' +
+            '<span>' + iconoRamoHTML(c) + "<b>" + esc(c.codigo) + "</b> " + esc(c.nombre) +
+            "<small>" + esc(t("calif.estado.disponible")) + "</small></span>" +
+            '<span class="btn btn--chico">' + esc(t("calif.agregar")) + "</span></button>";
+        }).join("") + "</div>";
+    MimoModal.abrir({
+      id: "calif-add",
+      titulo: t("calif.agregarTitulo"),
+      sub: t("calif.agregarSub"),
+      html: html,
+      guardar: t("acc.cerrar"),
+      cancelar: t("acc.cerrar"),
+      onGuardar: function () { return true; },
+      despues: function (form) {
+        form.querySelectorAll("[data-calif-add]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var cod = b.getAttribute("data-calif-add");
+            MimoModal.cerrar("guardar");
+            activarCursoCalif(cod);
+          });
+        });
+      }
+    });
   }
   function cambioCalif(e) {
     var el = e.target, q = califDe(califSel); if (!q || !el) return;
@@ -3253,7 +3372,30 @@
       else cond.valor = notaNum(el.value) || 1;
     } else if (el.hasAttribute("data-nota-min")) q.notaMin = notaNum(el.value) || 4;
     else if (el.hasAttribute("data-meta")) q.meta = notaNum(el.value) || 5;
-    guardar(); pintarCalificaciones(); pintarPanel();
+    else if (el.hasAttribute("data-nota-final")) {
+      q.notaFinalManual = String(el.value).trim() === "" ? null : notaNum(el.value);
+      var curFinal = ramoPorCodigo(califSel);
+      if (curFinal && curFinal.cerrado) {
+        var nf2 = notaFinalDe(q);
+        curFinal.notaCierre = nf2;
+        if (nf2 !== null) {
+          curFinal.aprobado = nf2 >= q.notaMin;
+          curFinal.resultado = curFinal.aprobado ? "aprobado" : "reprobado";
+        }
+        notificarCurso(curFinal);
+      }
+    }
+    var curCierre = ramoPorCodigo(califSel);
+    if (curCierre && curCierre.cerrado && q.notaFinalManual === null) {
+      var nfCierre = notaFinalDe(q);
+      curCierre.notaCierre = nfCierre;
+      if (nfCierre !== null) {
+        curCierre.aprobado = nfCierre >= q.notaMin;
+        curCierre.resultado = curCierre.aprobado ? "aprobado" : "reprobado";
+      }
+      notificarCurso(curCierre);
+    }
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
   }
   function eventoCompId(codigo, i) { return "calif-" + codigo + "-" + i; }
   function fuenteCalificaciones() {
@@ -3275,12 +3417,14 @@
   }
   function accionCalif(e) {
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
-    var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "activar") { activarCursoCalif(califSel); return; }
+    if (accion === "retirar") { retirarCursoCalif(califSel); return; }
     if (accion === "editar") { abrirFormularioRamo(ramoPorCodigo(califSel)); return; }
     if (accion === "identidad") { abrirIdentidadCalif(califSel); return; }
     if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
+    var q = califDe(califSel); if (!q) return;
     if (accion === "comp-cal") {
       var comp = q.componentes[i];
       if (!comp || !comp.fecha) { aviso(L("Ponle una fecha al componente primero.", "Give the component a date first.", "请先给评分项设置日期。")); return; }
@@ -3298,10 +3442,16 @@
       q.categorias.splice(i, 1);
       q.componentes.forEach(function (x) { if (x.categoria === nombre) x.categoria = q.categorias[0].nombre; });
     } else if (accion === "comp-quitar") {
+      var compQuitar = q.componentes[i];
+      if (!compQuitar) return;
+      if (!window.confirm(tf("calif.quitarEvaluacion", { nombre: compQuitar.nombre }))) return;
       q.componentes.splice(i, 1);
       if (q.examen.reemplaza === i) q.examen.reemplaza = null;
       else if (q.examen.reemplaza > i) q.examen.reemplaza--;
-    } else if (accion === "cond-quitar") q.eximicion.condiciones.splice(i, 1);
+    } else if (accion === "cond-quitar") {
+      if (!window.confirm(t("calif.quitarCondicion"))) return;
+      q.eximicion.condiciones.splice(i, 1);
+    }
     guardar(); pintarCalificaciones(); pintarPanel();
   }
 
@@ -5032,7 +5182,13 @@
     });
     $("#calif-detalle").addEventListener("change", cambioCalif);
     $("#calif-detalle").addEventListener("click", accionCalif);
-
+    $("#calif-filtro").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-calif-filtro]"); if (!b) return;
+      califFiltro = b.getAttribute("data-calif-filtro");
+      califSel = null; estado.califSel = null;
+      pintarCalificaciones(); pintarPanel();
+    });
+    $("#calif-anadir").addEventListener("click", abrirAgregarCalif);
   }
   /* Registrar una sesión suelta: el mismo formulario de antes (ramo, fecha y
      duración), ahora en la ventana única en vez de en una tarjeta de la sección. */

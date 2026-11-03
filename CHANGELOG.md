@@ -27,13 +27,22 @@
 
 ### Calificaciones
 
-- La lista muestra solo los **ramos activos de la Malla**; un ramo retirado del plan deja de
-  aparecer aunque conserve notas.
+- Calificaciones distingue **activo**, **disponible** e **historial**. Por defecto muestra solo
+  los activos; el filtro deja ver los disponibles (en la Malla pero sin cursar) y los cerrados.
+  Un ramo disponible se añade con el botón o desde el modal, sin inventar notas.
+- **Retirar de Calificaciones** es desvincular, no borrar: pide confirmación, conserva el ramo y
+  sus notas, y ofrece **Deshacer**. El borrado destructivo queda como una acción aparte.
+- Las **notas se editan a mano** en la propia sección: categorías, componentes, examen y una
+  **nota final manual** que manda sobre el cálculo. La escala es 1.0–7.0 y el umbral de
+  aprobación sale de la nota mínima (4.0 por defecto); todo se guarda en `mimo.shell.v1` y se
+  recalcula al reabrir.
+- Al cerrar, la final (calculada o manual) pasa al **Historial** una sola vez y queda visible
+  en la lista y en el detalle; no se inventan notas ni se duplica el ramo.
 - **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la
   presentación como final provisional, se avisa del resultado y el ramo se puede reabrir.
 - Cada ramo ofrece **Editar** e **Identidad** en la cabecera. El clic derecho de la lista abre
-  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Cerrar/Reabrir y Borrar ramo; el clic
-  derecho de la sección añade Nuevo ramo y Ver Malla.
+  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Añadir/Retirar, Cerrar/Reabrir y Borrar
+  ramo; el clic derecho de la sección añade Nuevo ramo y Ver Malla.
 
 ### Calendario
 
@@ -57,8 +66,9 @@
   repintar, a 1440 y 411 px.
 - Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana, 42 celdas, 12 meses,
   18 semanas con estudio, navegación, corte y categorías, a 1440 y 411.
-- `gate-calificaciones.py` amplía el cierre sin nota de examen, el clic derecho de la lista y
-  de la sección, la edición desde el menú y el filtro de ramos activos.
+- `gate-calificaciones.py` amplía la distinción activo/disponible, el alta desde el modal, el
+  retiro no destructivo con deshacer, la nota final manual que pasa al Historial y persiste al
+  recargar, el cierre sin nota de examen, el clic derecho y el filtro de ramos de la Malla.
 - Nueva `gate-tareas-tablero.py`: tablero inicial, filtros, barra semanal, completar/tachar,
   prioridad en el menú, clic derecho en tres secciones y 411. La suite web pasa a
   **30 compuertas**.
@@ -76,13 +86,22 @@
 
 ### Calificaciones
 
-- La lista muestra solo los **ramos activos de la Malla**; un ramo retirado del plan deja de
-  aparecer aunque conserve notas.
+- Calificaciones distingue **activo**, **disponible** e **historial**. Por defecto muestra solo
+  los activos; el filtro deja ver los disponibles (en la Malla pero sin cursar) y los cerrados.
+  Un ramo disponible se añade con el botón o desde el modal, sin inventar notas.
+- **Retirar de Calificaciones** es desvincular, no borrar: pide confirmación, conserva el ramo y
+  sus notas, y ofrece **Deshacer**. El borrado destructivo queda como una acción aparte.
+- Las **notas se editan a mano** en la propia sección: categorías, componentes, examen y una
+  **nota final manual** que manda sobre el cálculo. La escala es 1.0–7.0 y el umbral de
+  aprobación sale de la nota mínima (4.0 por defecto); todo se guarda en `mimo.shell.v1` y se
+  recalcula al reabrir.
+- Al cerrar, la final (calculada o manual) pasa al **Historial** una sola vez y queda visible
+  en la lista y en el detalle; no se inventan notas ni se duplica el ramo.
 - **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la
   presentación como final provisional, se avisa del resultado y el ramo se puede reabrir.
 - Cada ramo ofrece **Editar** e **Identidad** en la cabecera. El clic derecho de la lista abre
-  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Cerrar/Reabrir y Borrar ramo; el clic
-  derecho de la sección añade Nuevo ramo y Ver Malla.
+  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Añadir/Retirar, Cerrar/Reabrir y Borrar
+  ramo; el clic derecho de la sección añade Nuevo ramo y Ver Malla.
 
 ### Calendario
 
