@@ -32,10 +32,11 @@
   Un ramo disponible se añade con el botón o desde el modal, sin inventar notas.
 - **Retirar de Calificaciones** es desvincular, no borrar: pide confirmación, conserva el ramo y
   sus notas, y ofrece **Deshacer**. El borrado destructivo queda como una acción aparte.
-- Las **notas se editan a mano** en la propia sección: categorías, componentes, examen y una
-  **nota final manual** que manda sobre el cálculo. La escala es 1.0–7.0 y el umbral de
-  aprobación sale de la nota mínima (4.0 por defecto); todo se guarda en `mimo.shell.v1` y se
-  recalcula al reabrir.
+- Las **notas se editan a mano** en la propia sección: categorías, componentes y examen. La
+  **nota final se edita en su propia caja** del resumen, con el mismo trato en sitio que el
+  reloj de Tiempo; no hay un control aparte. Manda sobre el cálculo, la escala es 1.0–7.0 y el
+  umbral de aprobación sale de la nota mínima (4.0 por defecto); todo se guarda en
+  `mimo.shell.v1` y se recalcula al reabrir.
 - Al cerrar, la final (calculada o manual) pasa al **Historial** una sola vez y queda visible
   en la lista y en el detalle; no se inventan notas ni se duplica el ramo.
 - **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la

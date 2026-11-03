@@ -3064,14 +3064,15 @@
       '<div class="calif-cuerpo"' + (disponible ? " hidden" : "") + ">" +
       '<div class="calif-resumen">' +
         '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>" + esc(L("Presentación", "Presentation", "平时成绩")) + "</span></div>" +
-        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nfMostrar) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
+        '<div class="calif-caja calif-caja--' + claseFinal + ' calif-caja--final">' +
+          '<input class="calif-final__valor" type="text" inputmode="decimal" maxlength="4" data-nota-final value="' + esc(fmtNota(nfMostrar)) + '" aria-label="' + esc(t("calif.finalManual")) + '" title="' + esc(t("calif.finalManualAyuda")) + '" autocomplete="off" spellcheck="false">' +
+          "<span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
         '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>" + esc(L("Estado", "Status", "状态")) + "</span></div>" +
         '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? L("eximido", "exempt", "免考") : q.examen.activo ? textoNecesario(necMin) : L("sin examen", "no exam", "无考试")) + "</b><span>" + esc(L("Examen para ", "Exam for ", "考试目标 ")) + fmtNota(q.notaMin) + "</span></div>" +
       "</div>" + cierre +
       '<div class="calif-ajustes">' +
         '<label class="campo">' + esc(L("Nota mínima", "Minimum grade", "最低成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
         '<label class="campo">' + esc(L("Meta", "Goal", "目标")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
-        '<label class="campo" title="' + esc(t("calif.finalManualAyuda")) + '">' + esc(t("calif.finalManual")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-final value="' + (q.notaFinalManual === null ? "" : q.notaFinalManual) + '" placeholder="' + esc(t("calif.finalCalculada")) + '"></label>' +
         '<span class="muted">' + esc(L("Examen para la meta: ", "Exam for the goal: ", "达成目标的考试：")) + (q.examen.activo ? textoNecesario(necMeta) : L("sin examen", "no exam", "无考试")) + "</span>" +
         '<span class="muted">' + esc(tf("calif.escala", { min: fmtNota(q.notaMin) })) + "</span>" +
       "</div>" +
@@ -5181,6 +5182,17 @@
       abrirPanel();
     });
     $("#calif-detalle").addEventListener("change", cambioCalif);
+    /* Mismo trato que el reloj de Tiempo: el texto se edita en el sitio, Enter
+       confirma y Escape devuelve lo que había. */
+    $("#calif-detalle").addEventListener("focusin", function (e) {
+      var inp = e.target.closest("[data-nota-final]");
+      if (inp) inp.select();
+    });
+    $("#calif-detalle").addEventListener("keydown", function (e) {
+      var inp = e.target.closest("[data-nota-final]"); if (!inp) return;
+      if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+      else if (e.key === "Escape") { inp.value = inp.defaultValue; inp.blur(); }
+    });
     $("#calif-detalle").addEventListener("click", accionCalif);
     $("#calif-filtro").addEventListener("click", function (e) {
       var b = e.target.closest("[data-calif-filtro]"); if (!b) return;

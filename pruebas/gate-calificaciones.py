@@ -11,8 +11,9 @@ Mide el motor y la interfaz sobre app/index.html:
   6. activo, disponible e historial son estados distintos; por defecto solo activos;
   7. un disponible se añade desde el modal y un activo se retira sin borrar el ramo ni sus
      notas, con confirmación y deshacer;
-  8. la nota final manual manda sobre el cálculo, pasa al Historial sin duplicar y persiste al
-     recargar; la escala 1.0–7.0 y el umbral 4.0 se explican;
+  8. la nota final se edita en su propia caja (sin control aparte), manda sobre el cálculo, pasa
+     al Historial sin duplicar y persiste al recargar; la escala 1.0–7.0 y el umbral 4.0 se
+     explican;
   9. un curso sin nota de examen se puede cerrar con la presentación y reabrir;
  10. el clic derecho abre la ficha, Malla, edición, identidad, alta/retiro, cierre y borrado;
  11. el panel Detalle muestra el resumen del ramo;
@@ -60,6 +61,10 @@ def cambiar(page, selector: str, valor: str) -> None:
     el.fill(valor)
     el.blur()
     page.wait_for_timeout(280)
+
+
+def final_en_caja(page) -> str:
+    return page.locator(".calif-caja--final [data-nota-final]").input_value()
 
 
 def main() -> int:
@@ -155,10 +160,10 @@ def main() -> int:
 
             abrir_plegable(page, "[data-exam-nota]")
             cambiar(page, "[data-exam-nota]", "6.0")
-            exigir("5.7" in page.locator(".calif-resumen").inner_text(),
+            exigir(final_en_caja(page) == "5.7",
                    "calif: final 5.7 con examen al 40 %", fallas)
             cambiar(page, "[data-exam-peso]", "50")
-            exigir("5.8" in page.locator(".calif-resumen").inner_text(),
+            exigir(final_en_caja(page) == "5.8",
                    "calif: final 5.8 con examen al 50 %", fallas)
 
             abrir_plegable(page, "[data-exim-activa]")
@@ -185,7 +190,7 @@ def main() -> int:
                    "calif: reabrir deja el curso abierto", fallas)
             page.locator("[data-exim-activa]").uncheck()
             page.wait_for_timeout(220)
-            exigir("5.8" in page.locator(".calif-resumen").inner_text(),
+            exigir(final_en_caja(page) == "5.8",
                    "calif: al desactivar la eximición vuelve el examen", fallas)
 
             cambiar(page, "[data-exam-nota]", "1.0")
@@ -274,8 +279,14 @@ def main() -> int:
             # al recargar sigue ahí y no se duplica.
             page.locator('.calif-item', has_text="MA1001").click()
             page.wait_for_timeout(120)
-            cambiar(page, "[data-nota-final]", "6.5")
-            exigir("6.5" in page.locator(".calif-resumen").inner_text(),
+            editable = page.locator(".calif-caja--final [data-nota-final]")
+            exigir(editable.count() == 1 and
+                   page.locator(".calif-ajustes [data-nota-final]").count() == 0,
+                   "calif: la final se edita en su propia caja, sin control aparte", fallas)
+            editable.fill("6.5")
+            editable.press("Enter")
+            page.wait_for_timeout(300)
+            exigir(page.locator(".calif-caja--final [data-nota-final]").input_value() == "6.5",
                    "calif: la nota final manual manda sobre el cálculo", fallas)
             page.locator('[data-accion-calif="cerrar-curso"]').click()
             page.wait_for_timeout(250)

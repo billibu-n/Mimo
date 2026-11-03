@@ -67,6 +67,16 @@
 .calif-caja--ok b{color:var(--ok)}
 .calif-caja--est b{color:var(--q)}
 .calif-caja--warn b{color:var(--warn)}
+/* La final se edita en su propia caja, como los dígitos del reloj de Tiempo:
+   sin borde hasta que se pasa el ratón o entra el foco. */
+.calif-resumen .calif-final__valor{display:block;width:100%;min-width:0;padding:0;border:0;border-bottom:2px solid transparent;border-radius:4px;background:transparent;color:inherit;font:inherit;font-size:var(--fs-lg);font-weight:700;line-height:1.2;outline:none}
+.calif-resumen .calif-final__valor:hover{border-bottom-color:var(--line2)}
+.calif-resumen .calif-final__valor:focus{border-bottom-color:var(--ac);background:var(--sup)}
+.calif-resumen .calif-final__valor:focus-visible{outline:none;box-shadow:none}
+.calif-caja--final:focus-within{box-shadow:inset 0 0 0 1px var(--ac)}
+.calif-caja--ok .calif-final__valor{color:var(--ok)}
+.calif-caja--warn .calif-final__valor{color:var(--warn)}
+.calif-caja--bad .calif-final__valor{color:var(--bad)}
 .calif-cierre{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);border:1px solid var(--line2);border-left:4px solid var(--warn);border-radius:var(--r-sm);background:color-mix(in srgb,var(--warn) 7%,var(--sup));padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3)}
 .calif-cierre b{display:block;font-size:var(--fs-sm)}
 .calif-cierre span{display:block;color:var(--muted);font-size:var(--fs-xs);line-height:1.4}
