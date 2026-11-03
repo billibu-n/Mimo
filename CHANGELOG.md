@@ -14,6 +14,9 @@
   sus aristas y los ramos vinculados; el resto se atenúa. Al deseleccionar vuelve la vista
   general.
 - Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha.
+- Al entrar a Malla desde la barra de secciones, el tablero aparece **sin selección**: no se
+  arrastra el ramo abierto en Calificaciones ni en otra vista. **Ver en Malla** y la búsqueda sí
+  abren el ramo concreto.
 
 ### Tareas
 

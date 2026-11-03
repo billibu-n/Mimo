@@ -649,7 +649,7 @@
           irACalif(); guardar(); pintarCalificaciones(); pintarPanel(); abrirPanel();
         } },
         { accion: "calif-malla", texto: L("Ver en Malla", "View in plan", "在规划中查看"), run: function () {
-          irACalif(); estado.panel.malla = "detalle"; guardar(); ir("malla"); pintarPanel(); abrirPanel();
+          irACalif(); estado.panel.malla = "detalle"; guardar(); ir("malla", true); pintarPanel(); abrirPanel();
         } },
         { accion: "calif-editar", texto: L("Editar ramo", "Edit course", "编辑课程"), run: function () {
           irACalif(); abrirFormularioRamo(cf);
@@ -1099,7 +1099,7 @@
     else if (id === "tiempo") pintarTiempo();
     else if (id === "ajustes") pintarAjustes();
   }
-  function ir(id) {
+  function ir(id, conservarSeleccion) {
     if (secciones().indexOf(id) === -1) return;
     montarHost(id);
     if (splitOn && Date.now() < splitNavHasta) {
@@ -1117,6 +1117,10 @@
       return;
     }
     pantalla = id;
+    /* Entrar a Malla por la barra de secciones deja el tablero limpio: la
+       selección de Calificaciones u otra vista no se arrastra. Los atajos que
+       abren un ramo concreto (Ver en Malla, buscar) pasan conservarSeleccion. */
+    if (id === "malla" && !conservarSeleccion) estado.ramoSel = null;
     mostrarPaneles();
     pintarTabs();
     pintarSeccion(id);
@@ -4567,7 +4571,7 @@
       out.push({ tipo: L("Ramo", "Course", "课程"), titulo: c.codigo + " — " + c.nombre, sub: creditosDe(c) + " cr · " + etiquetaEstado(estadoDeRamo(c)),
         run: function () {
           estado.ramoSel = c.codigo; estado.panel.malla = "detalle"; guardar();
-          ir("malla"); pintarMalla(); pintarPanel();
+          ir("malla", true); pintarMalla(); pintarPanel();
         } });
     });
     (estado.periodos || []).forEach(function (p) {

@@ -11,8 +11,9 @@ Mide lo que este encargo pide, no la impresión:
      de cada hueco de columna y la franja horizontal entre dos fichas, así que
      no se abre una pista nueva por arista;
   4. el trazado viaja por los huecos entre fichas y no atraviesa ninguna;
-  5. al seleccionar un ramo solo quedan visibles sus aristas y sus ramos
-     vinculados; el resto se atenúa; al deseleccionar vuelve la vista general;
+  5. al entrar por la barra el tablero arranca sin selección; al seleccionar un
+     ramo solo quedan visibles sus aristas y sus ramos vinculados, el resto se
+     atenúa y al deseleccionar vuelve la vista general;
   6. el mismo contrato se cumple a 1440 y 411 px y el trazado es estable al
      repintar.
 
@@ -281,6 +282,24 @@ def probar_seleccion(page, etiqueta, fallas):
     exigir("resto" in e["pista"].lower(), f"{etiqueta}: la pista explica que el resto se atenúa", fallas)
 
 
+def probar_entrada_limpia(page, etiqueta, fallas):
+    """Entrar a Malla por la barra no arrastra la selección de otra sección."""
+    page.locator('.ramo-card[data-ramo="G401"]').click()
+    page.wait_for_timeout(180)
+    e = estado_seleccion(page)
+    exigir(e["sel"] == 1, f"{etiqueta}: la ficha se selecciona al pulsarla", fallas)
+    page.locator('#tabs .tab[data-ir="calificaciones"]').click()
+    page.wait_for_timeout(250)
+    page.locator('#tabs .tab[data-ir="malla"]').click()
+    page.wait_for_timeout(300)
+    e = estado_seleccion(page)
+    exigir(not e["tablero"] and e["sel"] == 0 and e["vinculo"] == 0 and
+           e["apagada"] == 0 and e["tenue"] == 0,
+           f"{etiqueta}: al entrar a Malla no queda ninguna selección", fallas)
+    exigir(e["visibles"] == 39,
+           f"{etiqueta}: al entrar a Malla vuelven las 39 aristas — {e['visibles']}", fallas)
+
+
 def main() -> int:
     fallas: list[str] = []
     with Navegador() as nav:
@@ -288,6 +307,7 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             cargar_malla(page)
+            probar_entrada_limpia(page, "1440", fallas)
             medir(page, "1440", fallas)
             antes = paths_d(page)
             page.locator("#malla-filtro").select_option("bloqueados")
@@ -316,6 +336,7 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             cargar_malla(page)
+            probar_entrada_limpia(page, "411", fallas)
             medir(page, "411", fallas)
             probar_seleccion(page, "411", fallas)
             d = desborde(page)
