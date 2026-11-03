@@ -2,23 +2,34 @@
 .cal-layout{display:grid;grid-template-columns:var(--ancho-rail) minmax(0,1fr);gap:var(--sp-4);align-items:start}
 .cal-tarjeta{min-width:0}
 .cal-cab{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3)}
-.cal-cab h2{margin:0;font-size:var(--fs-lg);text-transform:capitalize}
+.cal-cab h2{flex:1;min-width:0;margin:0;font-size:var(--fs-lg);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--sp-1)}
 .cal-dow{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:center;padding:var(--sp-1) 0}
 .cal-dia{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);padding:var(--sp-1);font-size:var(--fs-xs);background:var(--sup)}
 .cal-dia.fuera{opacity:.42}
+.cal-grid--mes .cal-dia{min-height:96px;max-height:168px;overflow:hidden;display:flex;flex-direction:column;gap:2px;position:relative}
+.cal-grid--mes .cal-dia.fuera{background:var(--sup2);opacity:.55}
+.cal-grid--mes .cal-dia.sem-receso{background:color-mix(in srgb,var(--warn) 9%,var(--sup))}
+.cal-grid--mes .cal-dia.sem-examenes{background:color-mix(in srgb,var(--bad) 10%,var(--sup))}
+.cal-num{font-size:var(--fs-sm);font-weight:650;font-variant-numeric:tabular-nums;color:var(--fg)}
+.cal-dia.hoy .cal-num{color:var(--ac)}
+.cal-marca{display:inline-block;align-self:flex-start;border-radius:999px;padding:0 5px;font-size:calc(var(--fs-xs) * .85);font-weight:700;background:var(--info-bg);color:var(--ac)}
+.cal-marca-receso{background:var(--sup3);color:var(--warn)}
+.cal-marca-examenes{background:var(--pill-bad-bg);color:var(--bad)}
+.cal-evs{display:flex;flex-direction:column;gap:1px;overflow:hidden;min-height:0}
 .cal-dia.hoy{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
 .cal-dia b{font-size:var(--fs-sm);font-weight:600}
 .cal-grid--con-semana{grid-template-columns:2.1rem repeat(7,minmax(0,1fr))}
 .cal-dow--sem,.cal-sem-col{font-size:var(--fs-xs);color:var(--muted);text-align:center;display:flex;align-items:center;justify-content:center}
 .cal-sem-col{min-height:66px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);font-weight:700;letter-spacing:.02em}
+.cal-grid--mes .cal-sem-col{min-height:96px;max-height:168px}
 .cal-sem-col[title*="receso"],.cal-sem-col[title*="examen"]{color:var(--warn)}
 @media (max-width:520px){.cal-grid--con-semana{grid-template-columns:1.7rem repeat(7,minmax(0,1fr))}.cal-sem-col{min-height:calc(54px * var(--esc));font-size:var(--fs-xs)}}
 .cal-vacio{grid-column:1/-1}
 @media (max-width:900px){.cal-layout{grid-template-columns:1fr}}
 @media (max-width:520px){.cal-dia{min-height:54px}}
-.evento-chip{display:block;width:100%;text-align:left;border:0;border-radius:4px;background:var(--ac);color:var(--ac-txt);font:inherit;font-size:var(--fs-xs);line-height:1.25;padding:2px 4px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
-.evento-chip b{font-weight:700}
+.evento-chip{display:block;width:100%;text-align:left;border:0;border-left:3px solid var(--chip,var(--muted));border-radius:4px;background:color-mix(in srgb,var(--chip,var(--muted)) 14%,var(--sup));color:var(--fg);font:inherit;font-size:var(--fs-xs);line-height:1.25;padding:2px 4px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.evento-chip b{font-weight:700;color:var(--muted)}
 .cal-eventos{margin-top:2px}
 .cal-mas{font-size:var(--fs-xs);color:var(--muted)}
 .cal-grid--semana{grid-template-columns:repeat(7,minmax(0,1fr))}
@@ -59,3 +70,56 @@ body.split .cal-layout .rail{display:none}
 .cal-grid--mes .evento-chip{flex-wrap:wrap;row-gap:0}
 .cal-grid--mes .evento-chip__tit{flex:1 1 100%}
 .cal-grid--mes .evento-chip__tag{max-width:100%;margin-top:1px}
+
+/* ===== Vista AÑO: los 12 meses ===== */
+.cal-anio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3)}
+.cal-mes{background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);padding:var(--sp-2)}
+.cal-mes-tit{font-weight:700;font-size:var(--fs-sm);text-align:center;margin-bottom:var(--sp-1)}
+.cal-mes-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.cal-mes-cab{font-size:calc(var(--fs-xs) * .85);text-align:center;text-transform:uppercase;color:var(--muted2);padding:2px 0}
+.cal-mes-cel{position:relative;border:0;background:transparent;color:var(--muted);font:inherit;font-size:var(--fs-xs);text-align:center;padding:3px 0;border-radius:4px;min-height:18px;font-variant-numeric:tabular-nums;cursor:pointer}
+.cal-mes-cel.vacia{background:none;cursor:default}
+.cal-mes-cel.num{color:var(--fg)}
+.cal-mes-cel.con{background:var(--sup2)}
+.cal-mes-cel.sem-receso{background:color-mix(in srgb,var(--warn) 9%,var(--sup))}
+.cal-mes-cel.sem-examenes{background:color-mix(in srgb,var(--bad) 10%,var(--sup))}
+.cal-mes-cel .dot{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--ac)}
+@media (max-width:980px){.cal-anio{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.cal-anio{grid-template-columns:1fr}}
+
+/* ===== Vista SEMESTRE: la tabla de semanas ===== */
+.cal-semestre{min-width:0}
+.cal-sem-scroll{overflow-x:auto}
+.cal-sem{width:100%;min-width:760px;table-layout:fixed;border-collapse:collapse;background:var(--sup);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.cal-sem th{background:var(--sup2);font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--muted2);padding:var(--sp-2);text-align:center;border-bottom:1px solid var(--line)}
+.cal-sem th.cal-sem-bl{width:7.5rem;text-align:left;padding-left:var(--sp-2)}
+.cal-sem th.cal-sem-est{width:7rem}
+.cal-sem td{border-bottom:1px solid var(--line2);vertical-align:top;padding:var(--sp-1) 6px}
+.cal-sem td.cal-sem-bl{border-right:1px solid var(--line2);background:var(--sup);padding:var(--sp-1) var(--sp-2)}
+.cal-sem td.cal-sem-est{border-left:1px solid var(--line2);background:var(--sup);padding:var(--sp-1) var(--sp-2);font-size:var(--fs-xs)}
+.cal-sem tr.actual td.cal-sem-bl{box-shadow:inset 4px 0 0 var(--ac)}
+.cal-sem tr.actual td.cal-sem-bl b{color:var(--ac)}
+.cal-sem tr.pasada{opacity:.55}
+.cal-sem tr.tipo-receso td.cal-sem-bl b{color:var(--warn)}
+.cal-sem tr.tipo-examenes td.cal-sem-bl b{color:var(--bad)}
+.cal-sem-dia{min-height:4.5rem}
+.cal-sem-bl b{display:block;font-size:var(--fs-sm)}
+.cal-sem-rango{display:block;font-size:calc(var(--fs-xs) * .9);color:var(--muted);white-space:nowrap}
+.cal-sem-est b{display:block;font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+.cal-sem-est span{display:block;color:var(--muted);font-size:var(--fs-xs)}
+.cal-barra{display:flex;height:6px;border-radius:99px;background:var(--pista);overflow:hidden;margin-top:var(--sp-1)}
+.cal-barra i{display:block;height:100%}
+@media (max-width:900px){.cal-sem{min-width:720px}}
+
+/* En la tabla del semestre la celda es más estrecha que un día del mes: el
+   chip se apila (hora, título, categoría) en vez de partir las tres cosas. */
+.cal-sem .evento-chip{display:block;white-space:normal;overflow:visible;line-height:1.2}
+.cal-sem .evento-chip b{display:block;font-size:calc(var(--fs-xs) * .9)}
+.cal-sem .evento-chip__tit{display:block;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word}
+.cal-sem .evento-chip__tag{display:inline-block;max-width:100%;margin-top:2px;padding:0 2px;font-size:calc(var(--fs-xs) * .7);letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* La semana repite el apilado del semestre: en una columna de 120 px el
+   título no cabe junto a la hora y la categoría. */
+.cal-semana-dia .evento-chip{flex-wrap:wrap;row-gap:1px}
+.cal-semana-dia .evento-chip__tit{flex:1 1 100%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word}
+.cal-semana-dia .evento-chip__tag{max-width:100%}

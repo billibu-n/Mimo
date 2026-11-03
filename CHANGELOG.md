@@ -14,11 +14,25 @@
 - Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha, sin pasar
   por encima de las tarjetas.
 
+### Calendario
+
+- Vuelve el motor de **mes, año y semestre** de Mimo Académics: grilla mensual de 42 celdas
+  con número de día y marcas de la semana del periodo, los 12 meses del año con un punto por
+  día con eventos y la tabla de semanas con la columna de estudio.
+- Las vistas se navegan con las flechas (mes, año o periodo) y **Hoy** vuelve al periodo
+  actual. En el año, pulsar un día abre su mes. La tabla del semestre marca la semana actual
+  y mide las horas registradas por semana.
+- Los chips recuperan el tinte suave y el borde de color del ramo; la categoría del evento
+  sigue visible en mes, semana, semestre, agenda y detalle.
+
 ### Pruebas
 
 - Nueva `gate-malla-grafo.py`: 39 aristas del fixture, sin bezier, sin tramos inclinados, sin
   líneas sobre tarjetas, sin tramos colineales solapados y con el mismo trazado al repintar,
-  a 1440 y 411 px. La suite web pasa a **28 compuertas**.
+  a 1440 y 411 px.
+- Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana/Agenda, 42 celdas, 12 meses,
+  18 semanas con estudio, navegación y categorías, a 1440 y 411. La suite web pasa a
+  **29 compuertas**.
 
 ## 1.2.0-beta.6 — 2026-11-01
 
