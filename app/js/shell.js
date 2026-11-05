@@ -124,7 +124,7 @@
       { id: "tareas", nombre: "Tareas", tipo: "seccion", fija: true, orden: 20,
         origen: "nativo", naturaleza: "base", icono: "i-tareas", codigo: "02", tags: ["tareas", "proyectos"],
         detalle: { resumen: ["Proyectos y tareas; el progreso se calcula solo.", "Projects and tasks; progress is derived.", "项目和任务；进度自动计算。"],
-          queHace: [["Hoy, árbol y tablero.", "Today, tree and board.", "今天、树状和看板。"], ["Proyectos con subtareas.", "Projects with subtasks.", "带子任务的项目。"], ["Prioridad, fecha y contexto.", "Priority, date and context.", "优先级、日期和情境。"]],
+          queHace: [["Hoy, árbol y tablero.", "Today, tree and board.", "今天、树状和看板。"], ["Proyectos con subtareas.", "Projects with subtasks.", "带子任务的项目。"], ["Fecha opcional, descripción Markdown y repetición.", "Optional date, Markdown description and repeat.", "日期可选、Markdown 描述和重复。"]],
           datos: ["tareas"], notas: ["Los datos de Tareas no se borran al quitar otros bloques.", "Task data is not deleted when other blocks are removed.", "移除其他模块不会删除任务数据。"] },
         vista: window.MimoBloqueTareasVista, css: "tareas.css",
         pintar: pintarTareas },
@@ -541,8 +541,17 @@
     t.prioridad = ORDEN_PRIORIDAD[i];
     guardar(); pintarTareas(); pintarPanel();
   }
-  function alternarTarea(id) {
+  /* `fecha` llega del tablero (la ocurrencia concreta). En una serie no se toca
+     `hecha`: se marca esa fecha y las demás siguen pendientes. */
+  function alternarTarea(id, fecha) {
     var x = tareaPorId(id); if (!x) return;
+    if (esRecurrente(x)) {
+      var iso = fecha && MimoRecurrencia.ocurre(x.recurrencia, fecha) ? fecha : MimoRecurrencia.proximaPendiente(x.recurrencia, hoyISO());
+      if (!iso) return;
+      MimoRecurrencia.marcar(x.recurrencia, iso, !x.recurrencia.hechas[iso]);
+      guardar(); pintarTareas(); pintarPanel();
+      return;
+    }
     var marcar = !x.hecha;
     x.hecha = marcar; x.estado = marcar ? "hecha" : "pendiente";
     if (marcar && x.tipo === "proyecto") descendientes(x).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
@@ -737,7 +746,17 @@
       if (priIdx < ORDEN_PRIORIDAD.length - 1) it.push({ accion: "tarea-prioridad-sube", texto: t("tar.subirPrioridad"), run: function () { cambiarPrioridadTarea(tar.id, 1); } });
       if (priIdx > 0) it.push({ accion: "tarea-prioridad-baja", texto: t("tar.bajarPrioridad"), run: function () { cambiarPrioridadTarea(tar.id, -1); } });
       it.push({ sep: true });
-      it.push({ accion: "tarea-estado", texto: tar.hecha ? t("tar.reabrir") : t("tar.completar"), run: function () { alternarTarea(tar.id); } });
+      if (esRecurrente(tar)) {
+        var hoyHecha = MimoRecurrencia.ocurre(tar.recurrencia, hoyISO()) && !!tar.recurrencia.hechas[hoyISO()];
+        var hoyOcurre = MimoRecurrencia.ocurre(tar.recurrencia, hoyISO());
+        if (proximaPendienteDe(tar)) it.push({
+          accion: "tarea-estado",
+          texto: hoyOcurre ? (hoyHecha ? L("Reabrir hoy", "Reopen today", "重新打开今天") : L("Completar hoy", "Complete today", "完成今天")) : L("Completar la próxima", "Complete next", "完成下一次"),
+          run: function () { alternarTarea(tar.id, hoyOcurre ? hoyISO() : ""); }
+        });
+      } else {
+        it.push({ accion: "tarea-estado", texto: tar.hecha ? t("tar.reabrir") : t("tar.completar"), run: function () { alternarTarea(tar.id); } });
+      }
       it.push({ accion: "tarea-sub", texto: L("Agregar subtarea", "Add subtask", "添加子任务"), run: function () { abrirFormulario(null, tar.id); } });
       it.push({ sep: true });
       it.push({ accion: "tarea-borrar", texto: tar.tipo === "proyecto" ? L("Borrar proyecto y sus tareas", "Delete project and its tasks", "删除项目及其任务") : L("Borrar tarea", "Delete task", "删除任务"), peligro: true,
@@ -1693,6 +1712,13 @@
   function normalizarTareas() {
     estado.tareas = (estado.tareas || []).map(function (t, i) {
       var e = t.estado || (t.hecha ? "hecha" : "pendiente");
+      var rec = null;
+      if (window.MimoRecurrencia && t.recurrencia && typeof t.recurrencia === "object") {
+        rec = MimoRecurrencia.normalizar(Object.assign({}, t.recurrencia, {
+          desde: t.recurrencia.desde || t.fecha || ""
+        }));
+        if (rec && !rec.desde) rec = null;
+      }
       return conservar({
         id: t.id || "t" + i,
         titulo: t.titulo || "Sin título",
@@ -1704,12 +1730,42 @@
         fecha: t.fecha || "",
         contexto: t.contexto || "",
         nota: t.nota || "",
+        recurrencia: rec,
         orden: typeof t.orden === "number" ? t.orden : i,
         creada: t.creada || ""
       }, t);
     });
   }
   function tareaPorId(id) { return estado.tareas.filter(function (t) { return t.id === id; })[0] || null; }
+  /* ---- motor de repetición: la tarea es la serie; cada fecha es una ocurrencia ---- */
+  function esRecurrente(t) { return !!(t && t.recurrencia && t.recurrencia.frecuencia && window.MimoRecurrencia); }
+  function itemDe(t, fecha) {
+    if (!t) return null;
+    var rec = esRecurrente(t);
+    var iso = fecha || (rec ? "" : t.fecha || "");
+    return { t: t, fecha: iso, hecha: rec ? !!(t.recurrencia.hechas && t.recurrencia.hechas[iso]) : !!t.hecha, serie: rec };
+  }
+  /* Todas las ocurrencias que caen entre dos fechas, incluidas las de una serie.
+     Es la única puerta que usan el tablero, la barra y «Hoy». */
+  function itemsEntre(desde, hasta, tareas) {
+    var out = [];
+    (tareas || estado.tareas || []).forEach(function (t) {
+      if (esRecurrente(t)) {
+        MimoRecurrencia.ocurrenciasEntre(t.recurrencia, desde, hasta).forEach(function (iso) { out.push(itemDe(t, iso)); });
+      } else if (t.fecha && t.fecha >= desde && t.fecha <= hasta) {
+        out.push(itemDe(t, t.fecha));
+      }
+    });
+    return out.sort(function (a, b) {
+      return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : ((a.t.orden || 0) - (b.t.orden || 0));
+    });
+  }
+  function proximaDe(t) {
+    return esRecurrente(t) ? MimoRecurrencia.proxima(t.recurrencia, hoyISO()) : (t.fecha || "");
+  }
+  function proximaPendienteDe(t) {
+    return esRecurrente(t) ? MimoRecurrencia.proximaPendiente(t.recurrencia, hoyISO()) : (t.fecha || "");
+  }
   function hijosDe(id) { return estado.tareas.filter(function (t) { return t.padre_id === id; }); }
   function raicesTareas() {
     return estado.tareas.filter(function (t) { return !t.padre_id || !tareaPorId(t.padre_id); });
@@ -1741,25 +1797,33 @@
     var p = f.split("-");
     return p.length === 3 ? p[2] + "/" + p[1] : f;
   }
-  function filaTarea(t, nivel) {
-    var p = progreso(t), hijos = hijosDe(t.id);
+  function filaTarea(t, nivel, item) {
+    var p = progreso(t), hijos = hijosDe(t.id), rec = esRecurrente(t);
+    var prox = rec ? proximaPendienteDe(t) : (t.fecha || "");
+    var fechaItem = item ? item.fecha : (rec ? (prox || "") : (t.fecha || ""));
+    var hecho = item ? item.hecha : (rec ? !!(fechaItem && t.recurrencia.hechas[fechaItem]) : !!t.hecha);
+    var puedeMarcar = !rec || !!prox;
+    var fechaTxt = rec ? (prox ? fechaCorta(prox) : L("serie terminada", "series ended", "系列已结束")) : fechaCorta(t.fecha);
+    var serieBadge = rec
+      ? ' <small class="tarea-serie" title="' + esc(resumenRecurrencia(t.recurrencia)) + '">↻ ' + esc(etiquetaCortaRecurrencia(t.recurrencia)) + "</small>"
+      : "";
     var sub = t.tipo === "proyecto"
       ? '<span class="tarea-progreso" title="' + esc(L(p.hechas + " de " + p.total, p.hechas + " of " + p.total, p.hechas + "/" + p.total)) + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
       : "";
-    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
-      '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + esc(t.hecha ? L("Marcar abierta", "Mark open", "标为未完成") : L("Marcar hecha", "Mark done", "标为完成")) + '">' + (t.hecha ? "✓" : "") + "</button>" +
-      '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">' + esc(L("proyecto", "project", "项目")) + '</small>' : "") + "</span>" +
-      '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
+    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" data-fecha="' + esc(fechaItem) + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
+      '<button class="tarea-check' + (hecho ? " hecha" : "") + '" type="button" data-check="' + t.id + '" data-fecha="' + esc(fechaItem) + '"' + (puedeMarcar ? "" : " disabled") + ' aria-label="' + esc(hecho ? L("Marcar abierta", "Mark open", "标为未完成") : L("Marcar hecha", "Mark done", "标为完成")) + '">' + (hecho ? "✓" : "") + "</button>" +
+      '<span class="tarea-nom' + (hecho ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">' + esc(L("proyecto", "project", "项目")) + '</small>' : "") + serieBadge + "</span>" +
+      '<span class="tarea-meta">' + esc(fechaTxt) + "</span>" +
       '<span class="pill pill--' + esc(t.prioridad) + '">' + esc(etiquetaPrioridad(t.prioridad)) + "</span>" + sub +
       '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="' + esc(L("Agregar una tarea dentro", "Add a task inside", "添加子任务")) + '">+</button></div>';
     if (hijos.length) html += hijos.map(function (h) { return filaTarea(h, nivel + 1); }).join("");
     return html;
   }
-  function tarjetaTablero(tar) {
-    var p = progreso(tar);
-    return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (tar.hecha ? " hecha" : "") + '" data-tarea="' + tar.id + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
-      '<button class="tarea-check' + (tar.hecha ? " hecha" : "") + '" type="button" data-check="' + tar.id + '" aria-label="' + esc(tar.hecha ? t("tar.reabrir") : t("tar.completar")) + '">' + (tar.hecha ? "✓" : "") + "</button>" +
-      '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + "</b><small>" + esc(fechaCorta(tar.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+  function tarjetaTablero(item) {
+    var tar = item.t, p = progreso(tar);
+    return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (item.hecha ? " hecha" : "") + '" data-tarea="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
+      '<button class="tarea-check' + (item.hecha ? " hecha" : "") + '" type="button" data-check="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" aria-label="' + esc(item.hecha ? t("tar.reabrir") : t("tar.completar")) + '">' + (item.hecha ? "✓" : "") + "</button>" +
+      '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + (item.serie ? ' <small class="tarea-serie">↻ ' + esc(etiquetaCortaRecurrencia(tar.recurrencia)) + "</small>" : "") + "</b><small>" + esc(fechaCorta(item.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
       (tar.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</span></div>";
   }
   function bindTareas() {
@@ -1779,12 +1843,7 @@
     $$("#tareas-lista [data-check]").forEach(function (b) {
       b.addEventListener("click", function (ev) {
         ev.stopPropagation();
-        var t = tareaPorId(b.getAttribute("data-check"));
-        if (!t) return;
-        var marcar = !t.hecha;
-        t.hecha = marcar; t.estado = marcar ? "hecha" : "pendiente";
-        if (marcar && t.tipo === "proyecto") descendientes(t).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
-        guardar(); pintarTareas(); pintarPanel();
+        alternarTarea(b.getAttribute("data-check"), b.getAttribute("data-fecha") || "");
       });
     });
     $$("#tareas-lista [data-add-sub]").forEach(function (b) {
@@ -1795,23 +1854,25 @@
       });
     });
   }
-  function _pasaFiltroTareas(t, filtro) {
-    if (filtro === "pendientes") return !t.hecha;
-    if (filtro === "hoy") return t.fecha === hoyISO();
-    if (filtro === "ramos") return !!cursoDeContexto(t.contexto);
-    if (filtro === "personal") return !cursoDeContexto(t.contexto);
+  function _pasaFiltroTareas(item, filtro) {
+    if (filtro === "pendientes") return !item.hecha;
+    if (filtro === "hoy") return item.fecha === hoyISO();
+    if (filtro === "ramos") return !!cursoDeContexto(item.t.contexto);
+    if (filtro === "personal") return !cursoDeContexto(item.t.contexto);
     return true;
   }
   function _pintarBarraTareas(tareas) {
     var caja = $("#tareas-barra"); if (!caja) return;
     var lunes = lunesDe(new Date()), dias = _calDiasLunes(), hoy = hoyISO();
+    var fin = new Date(lunes.getTime()); fin.setDate(fin.getDate() + 6);
+    var semana = itemsEntre(isoFecha(lunes), isoFecha(fin), tareas);
     var cuentas = [], max = 1, hechas = 0, pend = 0;
     for (var i = 0; i < 7; i++) {
       var f = new Date(lunes.getTime()); f.setDate(f.getDate() + i);
       var iso = isoFecha(f), h = 0, p = 0;
-      tareas.forEach(function (tar) {
-        if (tar.fecha !== iso) return;
-        if (tar.hecha) h++; else p++;
+      semana.forEach(function (it) {
+        if (it.fecha !== iso) return;
+        if (it.hecha) h++; else p++;
       });
       hechas += h; pend += p; max = Math.max(max, h + p);
       cuentas.push({ h: h, p: p, iso: iso });
@@ -1830,9 +1891,11 @@
   function pintarTareas() {
     normalizarTareas();
     var lista = $("#tareas-lista"), vacio = $("#tareas-vacio"), tareas = estado.tareas;
-    var hoy = tareas.filter(function (t) { return !t.hecha && t.fecha === hoyISO(); });
-    var abiertas = tareas.filter(function (t) { return !t.hecha; });
-    var hechas = tareas.filter(function (t) { return t.hecha; });
+    /* Una serie cuenta una vez en «abiertas»/«hechas»: se cierra cuando ya no
+       tiene próxima ocurrencia (fin por fecha o por número de veces). */
+    var hoy = itemsEntre(hoyISO(), hoyISO(), tareas).filter(function (i) { return !i.hecha; });
+    var abiertas = tareas.filter(function (t) { return esRecurrente(t) ? !!proximaPendienteDe(t) : !t.hecha; });
+    var hechas = tareas.filter(function (t) { return esRecurrente(t) ? !proximaPendienteDe(t) : t.hecha; });
     $("#kpi-hoy").textContent = String(hoy.length);
     $("#kpi-abiertas").textContent = String(abiertas.length);
     $("#kpi-hechas").textContent = String(hechas.length);
@@ -1845,7 +1908,8 @@
     $$("#tareas-filtros [data-filtro]").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-filtro") === filtroTareas);
     });
-    var cuenta = { todas: tareas.length, pendientes: abiertas.length, hoy: tareas.filter(function (t) { return t.fecha === hoyISO(); }).length,
+    var cuenta = { todas: tareas.length, pendientes: abiertas.length,
+      hoy: itemsEntre(hoyISO(), hoyISO(), tareas).length,
       ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
       personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
     Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
@@ -1858,17 +1922,24 @@
       var lunes = lunesDe(new Date()), domingo = new Date(lunes.getTime());
       domingo.setDate(domingo.getDate() + 6);
       var lunesIso = isoFecha(lunes), domingoIso = isoFecha(domingo);
-      var visibles = tareas.filter(function (t) { return _pasaFiltroTareas(t, filtroTareas); });
-      var colHoy = visibles.filter(function (t) { return !t.hecha && t.fecha === hoyISO(); });
-      var colSemana = visibles.filter(function (t) { return !t.hecha && t.fecha > hoyISO() && t.fecha <= domingoIso; });
-      var colHechas = visibles.filter(function (t) { return t.hecha && t.fecha >= lunesIso && t.fecha <= domingoIso; });
+      var visibles = itemsEntre(lunesIso, domingoIso, tareas).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+      var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha === hoyISO(); });
+      var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoIso; });
+      var colHechas = visibles.filter(function (i) { return i.hecha && i.fecha >= lunesIso && i.fecha <= domingoIso; });
       var col = function (titulo, items, clave) {
         return '<div class="tablero-col"><h3>' + esc(titulo) + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(t(clave)) + '</p>') + "</div>";
       };
-      lista.innerHTML = '<div class="tablero">' + col(t("tar.col.hoy"), colHoy, "tar.vacio.hoy") + col(t("tar.col.semana"), colSemana, "tar.vacio.semana") + col(t("tar.col.hechas"), colHechas, "tar.vacio.hechas") + "</div>";
+      /* Las tareas sin fecha no caben en ninguna columna: tienen su propia tira. */
+      var sinFecha = tareas.filter(function (t) { return !esRecurrente(t) && !t.fecha; })
+        .map(function (t) { return itemDe(t, ""); })
+        .filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+      lista.innerHTML = '<div class="tablero">' + col(t("tar.col.hoy"), colHoy, "tar.vacio.hoy") + col(t("tar.col.semana"), colSemana, "tar.vacio.semana") + col(t("tar.col.hechas"), colHechas, "tar.vacio.hechas") + "</div>" +
+        (sinFecha.length ? '<div class="tablero-sin-fecha"><h3>' + esc(L("Sin fecha", "No date", "无日期")) + " <span>" + sinFecha.length + '</span></h3><div class="tablero-sin-fecha__lista">' + sinFecha.map(tarjetaTablero).join("") + "</div></div>" : "");
     } else {
-      var v = tareas.filter(function (t) { return !t.hecha && t.fecha && t.fecha <= hoyISO(); });
-      lista.innerHTML = v.length ? v.map(function (t) { return filaTarea(t, 0); }).join("") : '<p class="muted">' + esc(L("Nada para hoy. Cambia a Árbol o Tablero.", "Nothing for today. Switch to Tree or Board.", "今天没有任务。请切换到树状或看板。")) + '</p>';
+      var v = tareas.filter(function (t) { return !esRecurrente(t) && !t.hecha && t.fecha && t.fecha <= hoyISO(); }).map(function (t) { return itemDe(t, t.fecha); });
+      hoy.forEach(function (i) { if (i.serie) v.push(i); });
+      v.sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0; });
+      lista.innerHTML = v.length ? v.map(function (i) { return filaTarea(i.t, 0, i); }).join("") : '<p class="muted">' + esc(L("Nada para hoy. Cambia a Árbol o Tablero.", "Nothing for today. Switch to Tree or Board.", "今天没有任务。请切换到树状或看板。")) + '</p>';
     }
     bindTareas();
   }
@@ -1885,33 +1956,290 @@
     });
     return out;
   }
+  /* ---- ventana de tarea: fecha opcional, descripción Markdown y recurrencia ---- */
+  var formRec = null;
+
+  function sumarDiasISO(iso, n) {
+    var d = new Date((iso || hoyISO()) + "T12:00:00");
+    d.setDate(d.getDate() + n);
+    return isoFecha(d);
+  }
+  function fechaLarga(iso) {
+    if (!iso) return "";
+    var d = new Date(iso + "T12:00:00");
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString(localeActual(), { weekday: "short", day: "numeric", month: "short" });
+  }
+  function nombresDias() { return DIAS_SEMANA[idioma()] || DIAS_SEMANA.es; }
+  function rangoDias(dias, nombres) {
+    var d = (dias || []).slice().sort(function (a, b) { return a - b; });
+    if (!d.length || d.length === 7) return L("todos los días", "every day", "每天");
+    if (d.join(",") === "1,2,3,4,5") return L("L–V", "Mon–Fri", "周一至周五");
+    if (d.join(",") === "0,6") return L("fin de semana", "weekends", "周末");
+    return d.map(function (n) { return nombres[n]; }).join(", ");
+  }
+  function resumenRecurrencia(rec) {
+    if (!rec || !rec.frecuencia) return L("No se repite", "Does not repeat", "不重复");
+    var nombres = nombresDias();
+    var cada;
+    if (rec.frecuencia === "diaria") {
+      cada = rec.intervalo === 1 ? L("Cada día", "Every day", "每天")
+        : L("Cada " + rec.intervalo + " días", "Every " + rec.intervalo + " days", "每" + rec.intervalo + "天");
+    } else if (rec.frecuencia === "semanal") {
+      cada = rec.intervalo === 1 ? L("Cada semana", "Every week", "每周")
+        : L("Cada " + rec.intervalo + " semanas", "Every " + rec.intervalo + " weeks", "每" + rec.intervalo + "周");
+      var dias = rec.dias.length ? rec.dias : [new Date((rec.desde || hoyISO()) + "T12:00:00").getDay()];
+      cada += " · " + rangoDias(dias, nombres);
+    } else if (rec.frecuencia === "mensual") {
+      cada = rec.intervalo === 1 ? L("Cada mes", "Every month", "每月")
+        : L("Cada " + rec.intervalo + " meses", "Every " + rec.intervalo + " months", "每" + rec.intervalo + "个月");
+      if (rec.desde) cada += L(" · día ", " · day ", " · 第 ") + parseInt(rec.desde.slice(8), 10);
+    } else {
+      cada = rec.intervalo === 1 ? L("Cada año", "Every year", "每年")
+        : L("Cada " + rec.intervalo + " años", "Every " + rec.intervalo + " years", "每" + rec.intervalo + "年");
+    }
+    if (rec.frecuencia === "diaria" && rec.dias.length && rec.dias.length < 7) {
+      cada += " · " + rangoDias(rec.dias, nombres);
+    }
+    var fin;
+    if (rec.fin === "fecha" && rec.hasta) fin = L("hasta " + fechaLarga(rec.hasta), "until " + fechaLarga(rec.hasta), "至 " + fechaLarga(rec.hasta));
+    else if (rec.fin === "cuenta") fin = L(rec.veces + " veces", rec.veces + " times", rec.veces + " 次");
+    else fin = L("sin fin", "no end", "无结束");
+    return cada + " · " + fin;
+  }
+  function etiquetaCortaRecurrencia(rec) {
+    if (!rec || !rec.frecuencia) return "";
+    var nombres = nombresDias();
+    if (rec.frecuencia === "diaria") {
+      return rec.dias.length && rec.dias.length < 7 ? rangoDias(rec.dias, nombres) : L("diaria", "daily", "每日");
+    }
+    if (rec.frecuencia === "semanal") {
+      var dias = rec.dias.length ? rec.dias : [new Date((rec.desde || hoyISO()) + "T12:00:00").getDay()];
+      return rangoDias(dias, nombres);
+    }
+    return rec.frecuencia === "mensual" ? L("mensual", "monthly", "每月") : L("anual", "yearly", "每年");
+  }
+
+  function campoFechaHTML(valor) {
+    return '<div class="campo"><span>' + esc(L("Fecha", "Date", "日期")) + "</span>" +
+      '<div class="fila fecha-fila"><input class="entrada" id="tarea-fecha" type="date" value="' + esc(valor || "") + '" aria-label="' + esc(L("Fecha (opcional)", "Date (optional)", "日期（可选）")) + '">' +
+      '<button class="btn btn--chico" type="button" data-fecha-rapida="hoy">' + esc(L("Hoy", "Today", "今天")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-fecha-rapida="manana">' + esc(L("Mañana", "Tomorrow", "明天")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-fecha-rapida="sin">' + esc(L("Sin fecha", "No date", "无日期")) + "</button></div>" +
+      '<small class="muted">' + esc(L("Opcional: sin fecha queda en «Sin fecha»; si se repite, empieza hoy.", "Optional: with no date it stays under “No date”; if it repeats, it starts today.", "可选：没有日期时留在“无日期”；若重复，从今天开始。")) + "</small></div>";
+  }
+
+  function recurrenciaHTML(rec) {
+    var frec = rec ? rec.frecuencia : "";
+    var intervalo = rec ? rec.intervalo : 1;
+    var fin = rec ? rec.fin : "nunca";
+    var dias = rec ? rec.dias : [];
+    var nombres = nombresDias();
+    var orden = [1, 2, 3, 4, 5, 6, 0];
+    var frecs = [
+      ["", L("No se repite", "Does not repeat", "不重复")],
+      ["diaria", L("Diaria", "Daily", "每天")],
+      ["semanal", L("Semanal", "Weekly", "每周")],
+      ["mensual", L("Mensual", "Monthly", "每月")],
+      ["anual", L("Anual", "Yearly", "每年")]
+    ];
+    var botones = frecs.map(function (f) {
+      return '<button class="btn btn--chico' + (freqON(f[0], frec) ? " on" : "") + '" type="button" data-rec-frec="' + f[0] + '" aria-pressed="' + (freqON(f[0], frec) ? "true" : "false") + '">' + esc(f[1]) + "</button>";
+    }).join("");
+    var diasBotones = orden.map(function (n) {
+      var on = dias.indexOf(n) !== -1;
+      return '<button class="rec-dia' + (on ? " on" : "") + '" type="button" data-dia="' + n + '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(nombres[n]) + '">' + esc(nombres[n]) + "</button>";
+    }).join("");
+    return '<div class="campo rec" id="tarea-rec"><span>' + esc(L("Repetición", "Repeat", "重复")) + "</span>" +
+      '<div class="rec-frec" role="group" aria-label="' + esc(L("Frecuencia de la tarea", "Task frequency", "任务频率")) + '">' + botones + "</div>" +
+      '<div class="rec-cuerpo" id="tarea-rec-cuerpo"' + (frec ? "" : " hidden") + ">" +
+      '<div class="rec-linea"><label class="rec-cada">' + esc(L("Cada", "Every", "每")) +
+      ' <input class="entrada" id="tarea-rec-intervalo" type="number" min="1" max="99" value="' + intervalo + '" aria-label="' + esc(L("Intervalo", "Interval", "间隔")) + '">' +
+      ' <span id="tarea-rec-unidad">' + esc(L("días", "days", "天")) + "</span></label>" +
+      '<label class="rec-fin">' + esc(L("Termina", "Ends", "结束")) + ' <select class="entrada" id="tarea-rec-fin">' +
+      '<option value="nunca"' + (fin === "nunca" ? " selected" : "") + ">" + esc(L("nunca", "never", "从不")) + "</option>" +
+      '<option value="fecha"' + (fin === "fecha" ? " selected" : "") + ">" + esc(L("el día", "on date", "日期")) + "</option>" +
+      '<option value="cuenta"' + (fin === "cuenta" ? " selected" : "") + ">" + esc(L("después de", "after", "次数后")) + "</option>" +
+      '</select></label><input class="entrada" id="tarea-rec-hasta" type="date" value="' + esc(rec && rec.hasta ? rec.hasta : "") + '"' + (fin === "fecha" ? "" : " hidden") + ">" +
+      '<label class="rec-veces" id="tarea-rec-veces-caja"' + (fin === "cuenta" ? "" : " hidden") + '><input class="entrada" id="tarea-rec-veces" type="number" min="1" max="999" value="' + (rec ? rec.veces : 10) + '"> ' + esc(L("veces", "times", "次")) + "</label></div>" +
+      '<div class="rec-dias" id="tarea-rec-dias"' + (frec === "mensual" || frec === "anual" ? " hidden" : "") + '><span>' + esc(L("Días", "Days", "星期")) + "</span>" + diasBotones +
+      '<span class="rec-atajos"><button class="btn btn--chico" type="button" data-rec-atajo="laborables">' + esc(L("L–V", "Mon–Fri", "周一至周五")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-rec-atajo="todos">' + esc(L("Todos", "All", "全部")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-rec-atajo="finde">' + esc(L("Fin de semana", "Weekend", "周末")) + "</button></span></div>" +
+      '<p class="rec-resumen muted" id="tarea-rec-resumen"></p>' +
+      '<p class="rec-proximas muted" id="tarea-rec-proximas"></p></div></div>';
+  }
+  function freqON(a, b) { return String(a) === String(b || ""); }
+
+  function leerRecurrenciaForm() {
+    var caja = $("#tarea-rec");
+    if (!caja || !window.MimoRecurrencia) return null;
+    var b = caja.querySelector("[data-rec-frec].on");
+    var frec = b ? b.getAttribute("data-rec-frec") : "";
+    if (!frec) return null;
+    var fecha = $("#tarea-fecha");
+    var desde = (fecha && fecha.value) || hoyISO();
+    var dias = $$("#tarea-rec-dias [data-dia].on").map(function (x) { return parseInt(x.getAttribute("data-dia"), 10); });
+    var fin = $("#tarea-rec-fin") ? $("#tarea-rec-fin").value : "nunca";
+    var hasta = $("#tarea-rec-hasta") ? $("#tarea-rec-hasta").value : "";
+    var veces = $("#tarea-rec-veces") ? parseInt($("#tarea-rec-veces").value, 10) : 10;
+    return MimoRecurrencia.normalizar({
+      frecuencia: frec,
+      intervalo: $("#tarea-rec-intervalo") ? parseInt($("#tarea-rec-intervalo").value, 10) : 1,
+      dias: dias, desde: desde, fin: fin, hasta: hasta, veces: veces,
+      hechas: formRec && formRec.hechas ? formRec.hechas : {}
+    });
+  }
+
+  function montarFormularioTarea(form, t, rec) {
+    formRec = rec || null;
+    if (window.MimoEditorMD) {
+      MimoEditorMD.montar(form, { id: "tarea-nota", L: L, valor: t ? (t.nota || "") : "" });
+    }
+    var caja = $("#tarea-rec");
+    if (!caja) return;
+
+    function actualizar() {
+      var activa = caja.querySelector("[data-rec-frec].on");
+      var frecuencia = activa ? activa.getAttribute("data-rec-frec") : "";
+      var cuerpo = $("#tarea-rec-cuerpo");
+      if (!cuerpo) return;
+      if (!frecuencia) { cuerpo.hidden = true; return; }
+      cuerpo.hidden = false;
+      var u = {
+        diaria: [L("día", "day", "天"), L("días", "days", "天")],
+        semanal: [L("semana", "week", "周"), L("semanas", "weeks", "周")],
+        mensual: [L("mes", "month", "个月"), L("meses", "months", "个月")],
+        anual: [L("año", "year", "年"), L("años", "years", "年")]
+      }[frecuencia] || ["", ""];
+      var intervaloEl = $("#tarea-rec-intervalo");
+      var n = intervaloEl ? Math.max(1, parseInt(intervaloEl.value, 10) || 1) : 1;
+      if ($("#tarea-rec-unidad")) $("#tarea-rec-unidad").textContent = n === 1 ? u[0] : u[1];
+      var fin = $("#tarea-rec-fin") ? $("#tarea-rec-fin").value : "nunca";
+      if ($("#tarea-rec-hasta")) $("#tarea-rec-hasta").hidden = fin !== "fecha";
+      if ($("#tarea-rec-veces-caja")) $("#tarea-rec-veces-caja").hidden = fin !== "cuenta";
+      var diasCaja = $("#tarea-rec-dias");
+      if (diasCaja) diasCaja.hidden = !(frecuencia === "diaria" || frecuencia === "semanal");
+      var r = leerRecurrenciaForm();
+      if (!r) return;
+      if ($("#tarea-rec-resumen")) $("#tarea-rec-resumen").textContent = resumenRecurrencia(r);
+      if ($("#tarea-rec-proximas")) {
+        var desde = ($("#tarea-fecha") && $("#tarea-fecha").value) || hoyISO();
+        var fechas = [], iso = desde, guarda = 0;
+        while (fechas.length < 5 && guarda++ < 400) {
+          if (MimoRecurrencia.ocurre(r, iso)) fechas.push(iso);
+          iso = sumarDiasISO(iso, 1);
+        }
+        $("#tarea-rec-proximas").textContent = fechas.length
+          ? L("Próximas: ", "Next: ", "接下来：") + fechas.map(fechaLarga).join(" · ")
+          : L("Sin próximas fechas con esta regla.", "No upcoming dates with this rule.", "该规则没有接下来的日期。");
+      }
+    }
+
+    function marcarDias(lista) {
+      $$("#tarea-rec-dias [data-dia]").forEach(function (b) {
+        var on = lista.indexOf(parseInt(b.getAttribute("data-dia"), 10)) !== -1;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      actualizar();
+    }
+
+    caja.querySelectorAll("[data-rec-frec]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        caja.querySelectorAll("[data-rec-frec]").forEach(function (x) {
+          x.classList.toggle("on", x === b);
+          x.setAttribute("aria-pressed", x === b ? "true" : "false");
+        });
+        if (b.getAttribute("data-rec-frec") === "semanal" && !$$("#tarea-rec-dias [data-dia].on").length) {
+          var iso = ($("#tarea-fecha") && $("#tarea-fecha").value) || hoyISO();
+          var d = new Date(iso + "T12:00:00").getDay();
+          marcarDias([d]);
+          return;
+        }
+        actualizar();
+      });
+    });
+    caja.querySelectorAll("#tarea-rec-dias [data-dia]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var dias = $$("#tarea-rec-dias [data-dia].on").map(function (x) { return parseInt(x.getAttribute("data-dia"), 10); });
+        if (b.classList.contains("on")) marcarDias(dias.filter(function (n) { return n !== parseInt(b.getAttribute("data-dia"), 10); }));
+        else marcarDias(dias.concat([parseInt(b.getAttribute("data-dia"), 10)]));
+      });
+    });
+    caja.querySelectorAll("[data-rec-atajo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var atajo = b.getAttribute("data-rec-atajo");
+        marcarDias(atajo === "laborables" ? [1, 2, 3, 4, 5] : atajo === "finde" ? [6, 0] : [0, 1, 2, 3, 4, 5, 6]);
+      });
+    });
+    if ($("#tarea-rec-fin")) $("#tarea-rec-fin").addEventListener("change", actualizar);
+    if ($("#tarea-rec-intervalo")) $("#tarea-rec-intervalo").addEventListener("input", actualizar);
+    if ($("#tarea-rec-hasta")) $("#tarea-rec-hasta").addEventListener("change", actualizar);
+    if ($("#tarea-rec-veces")) $("#tarea-rec-veces").addEventListener("input", actualizar);
+    form.querySelectorAll("[data-fecha-rapida]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = $("#tarea-fecha"); if (!f) return;
+        var v = b.getAttribute("data-fecha-rapida");
+        f.value = v === "hoy" ? hoyISO() : v === "manana" ? sumarDiasISO(hoyISO(), 1) : "";
+        actualizar();
+      });
+    });
+    if ($("#tarea-fecha")) $("#tarea-fecha").addEventListener("change", actualizar);
+    actualizar();
+  }
+
   function abrirFormulario(t, padreId) {
     normalizarTareas();
     formEditId = t ? t.id : null;
+    var rec = t && t.recurrencia ? MimoRecurrencia.normalizar(t.recurrencia) : null;
+    formRec = rec;
     MimoModal.abrir({
       id: "tarea",
+      ancho: "ancho",
+      columnas: true,
       titulo: t ? L("Editar tarea", "Edit task", "编辑任务") : L("Nueva tarea", "New task", "新建任务"),
       sub: t ? L("Cambia lo que haga falta; se guarda al confirmar.", "Change what you need; it is saved when you confirm.", "按需修改，确认后保存。")
-              : L("Una tarea puede ser un proyecto: dentro caben otras tareas.", "A task can be a project: other tasks fit inside.", "任务可以是项目，里面可以放其他任务。"),
+              : L("Fecha opcional, descripción en Markdown y repetición si hace falta.", "Optional date, Markdown description and a repeat rule if needed.", "日期可选、描述用 Markdown，需要时设置重复。"),
       campos: [
-        { id: "tarea-titulo", etiqueta: L("Qué hay que hacer", "What needs doing", "要做什么"), valor: t ? t.titulo : "", ph: L("¿Qué hay que hacer?", "What needs doing?", "要做什么？") },
-        { id: "tarea-tipo", etiqueta: L("Tipo", "Type", "类型"), tipo: "select", valor: t ? t.tipo : "tarea",
+        { id: "tarea-titulo", ancho: "todo", etiqueta: L("Qué hay que hacer", "What needs doing", "要做什么"), valor: t ? t.titulo : "", ph: L("¿Qué hay que hacer?", "What needs doing?", "要做什么？") },
+        { id: "tarea-tipo", ancho: "mitad", etiqueta: L("Tipo", "Type", "类型"), tipo: "select", valor: t ? t.tipo : "tarea",
           opciones: [{ v: "tarea", t: L("Tarea", "Task", "任务") }, { v: "proyecto", t: L("Proyecto", "Project", "项目") }] },
-        { id: "tarea-padre", etiqueta: L("Dentro de", "Inside", "所属"), tipo: "select", valor: t ? (t.padre_id || "") : (padreId || ""), opciones: opcionesPadre(t) },
-        { id: "tarea-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: t ? t.fecha : hoyISO() },
-        { id: "tarea-prioridad", etiqueta: L("Prioridad", "Priority", "优先级"), tipo: "select", valor: t ? t.prioridad : "media",
+        { id: "tarea-padre", ancho: "mitad", etiqueta: L("Dentro de", "Inside", "所属"), tipo: "select", valor: t ? (t.padre_id || "") : (padreId || ""), opciones: opcionesPadre(t) },
+        { tipo: "html", ancho: "mitad", html: campoFechaHTML(t ? t.fecha : "") },
+        { id: "tarea-prioridad", ancho: "mitad", etiqueta: L("Prioridad", "Priority", "优先级"), tipo: "select", valor: t ? t.prioridad : "media",
           opciones: [{ v: "alta", t: L("Alta", "High", "高") }, { v: "media", t: L("Media", "Medium", "中") }, { v: "baja", t: L("Baja", "Low", "低") }] },
-        { id: "tarea-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: t ? t.contexto : "", ph: L("Contexto (opcional)", "Context (optional)", "情境（可选）") }
+        { id: "tarea-contexto", ancho: "todo", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: t ? t.contexto : "", ph: L("Contexto (opcional)", "Context (optional)", "情境（可选）") },
+        { tipo: "html", ancho: "todo", html: recurrenciaHTML(rec) },
+        { tipo: "html", ancho: "todo", html: window.MimoEditorMD ? MimoEditorMD.campoHTML({ id: "tarea-nota", L: L, filas: 4 }) : "" }
       ],
       guardar: t ? L("Guardar", "Save", "保存") : L("Crear tarea", "Create task", "创建任务"),
+      despues: function (form) { montarFormularioTarea(form, t, rec); },
       onGuardar: guardarTareaDesdeVentana
     });
   }
   function guardarTareaDesdeVentana() {
     var titulo = $("#tarea-titulo").value.trim();
     if (!titulo) { $("#tarea-titulo").focus(); return false; }
+    var editando = !!formEditId;
     var tipo = $("#tarea-tipo").value === "proyecto" ? "proyecto" : "tarea";
     var padre = $("#tarea-padre").value || null;
+    var rec = leerRecurrenciaForm();
+    if (rec && $("#tarea-rec-fin") && $("#tarea-rec-fin").value === "fecha" && !$("#tarea-rec-hasta").value) {
+      aviso(L("Pon el día en que termina la repetición.", "Set the day the repeat ends.", "请选择重复结束的日期。"));
+      $("#tarea-rec-hasta").focus();
+      return false;
+    }
+    var fecha = $("#tarea-fecha").value || "";
+    if (rec) {
+      if (!fecha) fecha = rec.desde || hoyISO();
+      rec.desde = fecha;
+      if (rec.fin === "fecha" && rec.hasta && rec.hasta < fecha) {
+        aviso(L("La repetición no puede terminar antes de empezar.", "The repeat cannot end before it starts.", "重复结束日期不能早于开始日期。"));
+        $("#tarea-rec-hasta").focus();
+        return false;
+      }
+    }
     var t;
     if (formEditId) {
       t = tareaPorId(formEditId);
@@ -1924,27 +2252,35 @@
     t.titulo = titulo;
     t.tipo = tipo;
     t.padre_id = padre;
-    t.fecha = $("#tarea-fecha").value || "";
+    t.fecha = fecha;
     t.prioridad = $("#tarea-prioridad").value;
     t.contexto = $("#tarea-contexto").value.trim();
-    t.nota = t.nota || "";
+    t.nota = $("#tarea-nota") ? $("#tarea-nota").value : (t.nota || "");
+    t.recurrencia = rec;
+    if (rec) { t.hecha = false; t.estado = "pendiente"; }
     if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
     estado.tareaSel = t.id;
     estado.panel[pantalla] = "detalle";
     formEditId = null;
+    formRec = null;
     if (vistaTareas === "hoy") {
       vistaTareas = "arbol";
       estado.vistaTareas = "arbol";
       $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === "arbol"); });
     }
     guardar(); pintarTareas(); pintarPanel();
-    aviso(tipo === "proyecto" ? L("Proyecto creado. Añade tareas dentro.", "Project created. Add tasks inside.", "项目已创建。可在其中添加任务。") : L("Tarea creada.", "Task created.", "任务已创建。"));
+    if (rec) aviso(L("Guardado. " + resumenRecurrencia(rec) + ".", "Saved. " + resumenRecurrencia(rec) + ".", "已保存。" + resumenRecurrencia(rec) + "。"));
+    else if (editando) aviso(L("Tarea guardada.", "Task saved.", "任务已保存。"));
+    else aviso(tipo === "proyecto" ? L("Proyecto creado. Añade tareas dentro.", "Project created. Add tasks inside.", "项目已创建。可在其中添加任务。") : L("Tarea creada.", "Task created.", "任务已创建。"));
     return true;
   }
   function borrarTarea(id) {
     var t = tareaPorId(id); if (!t) return;
     var familia = [t.id].concat(descendientes(t).map(function (x) { return x.id; }));
-    if (!window.confirm(L("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？"))) return;
+    var texto = esRecurrente(t)
+      ? L("¿Borrar la serie \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete the series \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除系列“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？")
+      : L("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？");
+    if (!window.confirm(texto)) return;
     estado.tareas = estado.tareas.filter(function (x) { return familia.indexOf(x.id) === -1; });
     if (familia.indexOf(estado.tareaSel) !== -1) estado.tareaSel = null;
     guardar(); pintarTareas(); pintarPanel(); aviso(L("Tarea borrada.", "Task deleted.", "任务已删除。"));
@@ -4194,18 +4530,28 @@
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
       } else if (pantalla === "tareas" && tareaP) {
         var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
+        var tareaRec = esRecurrente(tareaP), prox = tareaRec ? proximaPendienteDe(tareaP) : "";
+        var hoyOcurre = tareaRec && MimoRecurrencia.ocurre(tareaP.recurrencia, hoyISO());
+        var hechaHoy = tareaRec && !!(tareaP.recurrencia.hechas && tareaP.recurrencia.hechas[hoyISO()]);
+        var estadoTxt = tareaRec ? L("Se repite", "Repeats", "重复") : t(tareaP.hecha ? "panel.hecha" : "panel.abierta");
+        var toggleTxt = tareaRec
+          ? (hoyOcurre ? (hechaHoy ? L("Reabrir hoy", "Reopen today", "重新打开今天") : L("Completar hoy", "Complete today", "完成今天")) : L("Completar la próxima", "Complete next", "完成下一次"))
+          : t(tareaP.hecha ? "panel.reabrir" : "panel.marcarHecha");
         html = "<h2>" + esc(t(tareaP.tipo === "proyecto" ? "panel.proyecto" : "panel.tarea")) + "</h2><h3>" + esc(tareaP.titulo) + "</h3>" +
-          '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(t(tareaP.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>" +
-          '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(estadoTxt) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(tareaRec ? L("Desde", "Since", "开始") : t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
+          (tareaRec ? '<div class="panel__bloque"><span>' + esc(L("Repetición", "Repeat", "重复")) + '</span><small>' + esc(resumenRecurrencia(tareaP.recurrencia)) + "</small></div>" +
+            '<div class="panel__bloque"><span>' + esc(L("Próxima", "Next", "下次")) + '</span><small>' + esc(prox ? fechaLarga(prox) : L("sin próxima", "none", "无")) + "</small></div>" +
+            '<div class="panel__bloque"><span>' + esc(L("Cumplidas", "Completed", "已完成")) + '</span><small>' + MimoRecurrencia.cumplidas(tareaP.recurrencia) + "</small></div>" : "") +
           '<div class="panel__bloque"><span>' + esc(t("panel.prioridad")) + '</span><small>' + esc(etiquetaPrioridad(tareaP.prioridad)) + "</small></div>" +
           (tareaP.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(tareaP.contexto) + "</small></div>" : "") +
           (padre ? '<div class="panel__bloque"><span>' + esc(t("panel.dentroDe")) + '</span><small>' + esc(padre.titulo) + "</small></div>" : "") +
           (tareaP.tipo === "proyecto" ? '<h2>' + esc(t("panel.progreso")) + '</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + esc(tf("panel.progresoTareas", { hechas: p.hechas, total: p.total })) + "</p>" +
             '<h2>' + esc(t("panel.subtareas")) + '</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + esc(t(h.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>"; }).join("") : '<p class="panel__nota">' + esc(t("panel.sinSubtareas")) + '</p>') : "") +
-          (tareaP.nota ? '<h2>' + esc(t("panel.nota")) + '</h2><p class="panel__nota">' + esc(tareaP.nota) + "</p>" : "") +
+          (tareaP.nota ? '<h2>' + esc(L("Descripción", "Description", "描述")) + '</h2><div class="panel__nota panel__nota--md">' + (window.MimoEditorMD ? MimoEditorMD.renderMarkdown(tareaP.nota) : esc(tareaP.nota)) + "</div>" : "") +
           bloqueNotasEnlazadas("tarea", tareaP.id) +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + tareaP.id + '">' + esc(t("acc.editar")) + '</button>' +
-          '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '">' + esc(t(tareaP.hecha ? "panel.reabrir" : "panel.marcarHecha")) + "</button>" +
+          (tareaRec && !prox ? "" : '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '" data-fecha="' + esc(tareaRec ? (hoyOcurre ? hoyISO() : prox) : "") + '">' + esc(toggleTxt) + "</button>") +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + tareaP.id + '">' + esc(t("acc.borrar")) + "</button></div>";
 
       } else if (pantalla === "notas" && n) {
@@ -4249,11 +4595,7 @@
       b.addEventListener("click", function () { abrirFormulario(tareaPorId(b.getAttribute("data-editar-tarea"))); });
     });
     $$("#panel-cuerpo [data-toggle-tarea]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var x = tareaPorId(b.getAttribute("data-toggle-tarea")); if (!x) return;
-        x.hecha = !x.hecha; x.estado = x.hecha ? "hecha" : "pendiente";
-        guardar(); pintarTareas(); pintarPanel();
-      });
+      b.addEventListener("click", function () { alternarTarea(b.getAttribute("data-toggle-tarea"), b.getAttribute("data-fecha") || ""); });
     });
     $$("#panel-cuerpo [data-borrar-tarea]").forEach(function (b) {
       b.addEventListener("click", function () { borrarTarea(b.getAttribute("data-borrar-tarea")); });
@@ -4567,7 +4909,9 @@
     }
     (estado.tareas || []).forEach(function (t) {
       if (!tiene(t.titulo, t.contexto, t.nota)) return;
-      out.push({ tipo: L("Tarea", "Task", "任务"), titulo: t.titulo, sub: (t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务")) + (t.fecha ? " · " + fechaCorta(t.fecha) : "") + (t.contexto ? " · " + t.contexto : ""),
+      var proxT = proximaPendienteDe(t);
+      out.push({ tipo: L("Tarea", "Task", "任务"), titulo: t.titulo, sub: (t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务")) +
+        (esRecurrente(t) ? " · ↻ " + etiquetaCortaRecurrencia(t.recurrencia) + (proxT ? " · " + fechaCorta(proxT) : "") : (t.fecha ? " · " + fechaCorta(t.fecha) : "")) + (t.contexto ? " · " + t.contexto : ""),
         run: function () { abrirTarea(t.id); } });
     });
     (estado.notas || []).forEach(function (n) {

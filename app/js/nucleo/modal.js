@@ -35,6 +35,9 @@
     var ayuda = c.ayuda ? '<small class="muted">' + esc(c.ayuda) + "</small>" : "";
     var tipo = c.tipo || "text";
 
+    /* Un campo puede traer su propio HTML (el editor Markdown, la fecha con
+       atajos, el bloque de recurrencia). El modal solo lo coloca. */
+    if (tipo === "html") return c.html || "";
     if (tipo === "check") {
       return '<label class="check"><input type="checkbox" id="' + id + '"' + (val ? " checked" : "") + "> <span>" + et + "</span></label>";
     }
@@ -105,7 +108,13 @@
     tituloEl.textContent = conf.titulo || "";
     subEl.textContent = conf.sub || "";
     subEl.hidden = !conf.sub;
-    campos.innerHTML = conf.campos ? conf.campos.map(campoHTML).join("") : (conf.html || "");
+    campos.innerHTML = conf.campos ? conf.campos.map(function (c) {
+      var html = campoHTML(c);
+      if (!c.ancho) return html;
+      return '<div class="campo-celda' + (c.ancho === "todo" ? " campo-celda--todo" : " campo-celda--mitad") + '">' + html + "</div>";
+    }).join("") : (conf.html || "");
+    campos.classList.toggle("modal-campos--dos", !!conf.columnas);
+    caja.classList.toggle("modal-editor-caja--ancho", conf.ancho === "ancho");
     btnGuardar.textContent = conf.guardar || TEXTOS.guardar;
     btnCancelar.textContent = conf.cancelar || TEXTOS.cancelar;
     btnBorrar.hidden = !conf.borrar;
@@ -129,6 +138,8 @@
     capa.setAttribute("data-editor", "");
     document.body.classList.remove("modal-abierto");
     campos.innerHTML = "";
+    campos.classList.remove("modal-campos--dos");
+    caja.classList.remove("modal-editor-caja--ancho");
     if (focoPrevio && document.contains(focoPrevio) && focoPrevio.focus) focoPrevio.focus();
     focoPrevio = null;
     if (motivo === "cancelar" && c && typeof c.onCancelar === "function") c.onCancelar();

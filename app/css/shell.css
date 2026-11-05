@@ -87,6 +87,13 @@ body.split #contenido-b{display:block}
 /* la ventana de edición: los campos se declaran como datos y la ventana los pinta,
    así todos los editores se ven igual sin repetir la plantilla en cada vista */
 .modal-editor-caja{width:min(520px,100%)}
+/* El editor de tareas necesita aire: descripción y recurrencia a lo ancho. */
+.modal-editor-caja--ancho{width:min(780px,100%);padding-bottom:0}
+.modal-editor-caja--ancho .modal__cab{position:sticky;top:0;z-index:2;padding-bottom:var(--sp-2);background:var(--bg);border-bottom:1px solid var(--line2)}
+.modal-editor-caja--ancho .modal-pie{position:sticky;bottom:0;z-index:2;margin-top:var(--sp-3);padding:var(--sp-3) 0;background:var(--bg);border-top:1px solid var(--line2)}
+.modal-campos.modal-campos--dos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2) var(--sp-3);align-items:start}
+.modal-campos--dos .campo-celda{min-width:0}
+.modal-campos--dos .campo-celda--todo{grid-column:1/-1}
 .modal-campos{display:flex;flex-direction:column;gap:var(--sp-3);margin-top:var(--sp-4)}
 .modal-campos .campo{display:flex;flex-direction:column;gap:var(--sp-1)}
 .modal-campos .campo>span{font-size:var(--fs-sm);color:var(--muted)}
@@ -227,6 +234,8 @@ body.split #contenido-b{display:block}
   .panel{width:100%}
   .modal{padding:var(--sp-2)}
   .modal__caja{padding:var(--sp-3)}
+  .modal-campos--dos{grid-template-columns:1fr}
+  .modal-campos--dos .campo-celda--todo{grid-column:auto}
 }
 
 .navbar .tabs{flex:1;min-width:0}

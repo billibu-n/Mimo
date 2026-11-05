@@ -27,6 +27,16 @@
 - Vuelve el **gráfico de barra semanal** de siete días, separando hechas y pendientes.
 - El clic derecho vuelve a abrir acciones en Tareas, Malla, Calendario, Notas, Periodos y
   Sesiones.
+- El **modal de tarea** deja la fecha **opcional** (nace vacía, con atajos Hoy/Mañana/Sin
+  fecha) y las tareas sin fecha se ven en su propia tira del tablero. La **descripción** usa
+  el mismo editor Markdown de Notas —barra de formato, vista previa, tablas, KaTeX y saneado—
+  y el panel la pinta con ese motor.
+- Las tareas pueden ser **series**: frecuencia diaria, semanal, mensual o anual; intervalo;
+  días de la semana; fin por fecha o por número de veces. Cada fecha de la serie es una
+  ocurrencia: el tablero, la barra semanal, «Hoy» y el árbol la muestran, y completar una
+  ocurrencia no cierra la serie. «Diaria + L–V» configura en dos clics «correr 30 minutos de
+  lunes a viernes». La regla se guarda en `recurrencia` con las ocurrencias cumplidas en
+  `hechas`.
 
 ### Calificaciones
 

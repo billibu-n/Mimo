@@ -55,3 +55,60 @@
 .tarjeta-cuerpo{min-width:0;flex:1}
 .tarjeta-tarea.hecha b{text-decoration:line-through;color:var(--muted)}
 .tarjeta-tarea.hecha{opacity:.72}
+
+/* ---- ventana de tarea: descripción Markdown, fecha opcional y recurrencia ---- */
+.modal-campos .editor-md .nota-cuerpo{min-height:120px;max-height:42vh;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);resize:vertical}
+.modal-campos .editor-md .nota-preview{min-height:140px;max-height:42vh;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);overflow:auto}
+.editor-md__pie{align-items:center;justify-content:space-between;gap:var(--sp-2)}
+.modal-campos .editor-md__pie .muted{font-size:var(--fs-xs)}
+
+.fecha-fila{flex-wrap:wrap}
+.fecha-fila .entrada{flex:1 1 140px;min-width:120px}
+
+.rec-frec{display:flex;flex-wrap:wrap;gap:2px;padding:2px;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup)}
+.rec-frec .btn{border:0;background:transparent;color:var(--muted);min-height:var(--sp-6);padding:0 var(--sp-2);border-radius:calc(var(--r-sm) - 2px)}
+.rec-frec .btn:hover{color:var(--fg)}
+.rec-frec .btn.on{background:var(--ac);color:var(--ac-txt);font-weight:600}
+.rec-cuerpo{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-2);padding:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2)}
+.rec-cuerpo[hidden]{display:none}
+.rec-linea{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center;font-size:var(--fs-sm);color:var(--muted)}
+.rec-linea .entrada{width:auto}
+.rec-linea input[type="number"]{width:64px}
+.rec-fin{display:inline-flex;align-items:center;gap:4px}
+.rec-veces{display:inline-flex;align-items:center;gap:4px}
+.rec-veces[hidden]{display:none}
+.rec-dias{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:var(--fs-sm);color:var(--muted)}
+.rec-dias[hidden]{display:none}
+.rec-dia{min-width:36px;min-height:26px;padding:0 6px;border:1px solid var(--line);border-radius:999px;background:var(--sup);color:var(--muted);font:inherit;font-size:var(--fs-xs);cursor:pointer}
+.rec-dia:hover{border-color:var(--ac);color:var(--fg)}
+.rec-dia.on{background:var(--ac);border-color:var(--ac);color:var(--ac-txt);font-weight:600}
+.rec-atajos{display:inline-flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.rec-resumen{margin:0;font-size:var(--fs-sm)}
+.rec-proximas{margin:0;font-size:var(--fs-xs)}
+
+/* Una serie se ve una vez en el árbol y lleva su regla al lado. */
+.tarea-serie{color:var(--muted);font-size:var(--fs-xs);font-weight:400;white-space:nowrap}
+.tarjeta-tarea b .tarea-serie{font-weight:400}
+
+/* Las tareas sin fecha no desaparecen: tienen su tira bajo el tablero. */
+.tablero-sin-fecha{margin-top:var(--sp-3);padding:var(--sp-2);border:1px dashed var(--line);border-radius:var(--r-md);background:var(--sup2)}
+.tablero-sin-fecha h3{margin:0 0 var(--sp-2);font-size:var(--fs-sm);display:flex;justify-content:space-between;color:var(--muted)}
+.tablero-sin-fecha h3 span{font-weight:400}
+.tablero-sin-fecha__lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--sp-1)}
+
+/* La descripción de la tarea se lee como la nota, dentro del panel. */
+.panel__nota--md{color:var(--fg);overflow-wrap:anywhere}
+.panel__nota--md>:first-child{margin-top:0}
+.panel__nota--md>:last-child{margin-bottom:0}
+.panel__nota--md p{margin:0 0 var(--sp-2);color:var(--fg)}
+.panel__nota--md h1,.panel__nota--md h2,.panel__nota--md h3,.panel__nota--md h4{margin:var(--sp-2) 0 var(--sp-1);font-size:var(--fs-md);color:var(--fg)}
+.panel__nota--md ul,.panel__nota--md ol{margin:0 0 var(--sp-2);padding-left:1.3em;color:var(--fg)}
+.panel__nota--md code{padding:1px 4px;border-radius:4px;background:var(--sup2);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em}
+.panel__nota--md pre{margin:0 0 var(--sp-2);padding:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup2);overflow:auto}
+.panel__nota--md pre code{padding:0;background:none}
+.panel__nota--md table{width:100%;border-collapse:collapse;margin:0 0 var(--sp-2);font-size:var(--fs-xs)}
+.panel__nota--md th,.panel__nota--md td{border:1px solid var(--line);padding:4px 6px;text-align:left}
+.panel__nota--md blockquote{margin:0 0 var(--sp-2);padding:var(--sp-1) var(--sp-2);border-left:3px solid var(--ac);background:var(--sup2)}
+.panel__nota--md .katex{font-size:1em}
+.tarea-check:disabled{opacity:.45;cursor:default}
+.panel__nota--md{overflow-x:auto}
