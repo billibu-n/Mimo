@@ -133,6 +133,11 @@
   function cerrar(motivo) {
     if (!abierto()) return;
     var c = conf;
+    /* La sincronización mueve su formulario dentro de la ventana y lo devuelve
+       a su sitio al cerrar: el gancho corre antes de vaciar los campos. */
+    if (c && typeof c.antesDeCerrar === "function") {
+      try { c.antesDeCerrar(); } catch (e) {}
+    }
     conf = null;
     capa.classList.remove("on");
     capa.setAttribute("data-editor", "");

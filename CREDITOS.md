@@ -66,6 +66,7 @@ SOFTWARE.
 | [KaTeX](https://katex.org) | Fórmulas en Notas | MIT | `app/vendor/katex/LICENSE` |
 | [marked](https://marked.js.org) | Markdown de Notas | MIT | `app/vendor/marked/LICENSE.md` |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | Saneado del HTML | Apache-2.0 / MPL-2.0 | `app/vendor/dompurify/LICENSE` |
+| [jsQR](https://github.com/cozmo/jsQR) | Leer el QR de sincronización en el cliente | Apache-2.0 | `app/vendor/jsqr/LICENSE` |
 | [Comfortaa](https://fonts.google.com/specimen/Comfortaa) | Wordmark | SIL Open Font License 1.1 | `app/vendor/fonts/comfortaa-semibold.woff2` |
 
 ## Desarrollo

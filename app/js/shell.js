@@ -469,6 +469,9 @@
     }
   }
   function abrirEnSync() {
+    /* La configuración vive en una ventana con paneles: no hace falta ir a Ajustes
+       para pegar el enlace ni para el respaldo manual. */
+    if (window.MimoSync && typeof MimoSync.abrir === "function") { MimoSync.abrir(); return; }
     try { ir("ajustes"); } catch (e) {}
     var c = $("#sync-card");
     if (c && c.scrollIntoView) c.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -4730,6 +4733,7 @@
     pintarSplit();
     pintarAjustes();
     pintarPie();
+    if (window.MimoSync && typeof MimoSync.pintar === "function") { try { MimoSync.pintar(); } catch (e) {} }
     if ($("#modal").classList.contains("on")) pintarCatalogo();
     // La ventana de edición toma sus botones del idioma vigente (los campos y el
     // título llegan ya traducidos desde cada editor).

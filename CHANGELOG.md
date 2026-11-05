@@ -2,6 +2,22 @@
 
 ## Sin publicar
 
+### Sincronización
+
+- La tarjeta de Sincronización y el pie abren una **ventana única** (`modal.js`) con cuatro
+  paneles desplegables: Enlace o QR, Conexión manual, Cifrado y Enlace y sincronización. El
+  flujo manual de siempre queda como respaldo dentro del mismo modal.
+- Se puede **pegar el texto completo** de la página o **subir/arrastrar una imagen con QR**;
+  el lector local **jsQR 1.4.0** (Apache-2.0, en `app/vendor/jsqr/`) lo decodifica en el
+  cliente, sin servidor. Si el navegador ofrece cámara, también se puede capturar.
+- El motor `app/js/dominio/sync-enlace.js` desarma `nc://onetime-login/user:…&password:…&server:…`
+  (y el texto que lo rodea, las etiquetas o una URL WebDAV) en servidor, usuario, contraseña de
+  aplicación y ruta; muestra el resultado antes de confirmar y lo normaliza a los campos que
+  ya usaba la sincronización.
+- El enlace resultante se muestra enmascarado, se puede revelar, copiar completo y descomponer
+  en sus partes (servidor, usuario, contraseña, ruta WebDAV, carpeta y archivo). Al cerrar se
+  borra el texto pegado para no dejar la contraseña de aplicación en Ajustes.
+
 ### Malla
 
 - El grafo de requisitos se dibuja con **tramos ortogonales y esquinas redondeadas**
