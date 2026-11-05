@@ -21,7 +21,7 @@ APP = RAIZ / "app"
 SHELL = (APP / "js" / "shell.js").read_text(encoding="utf-8")
 INDICE = (APP / "index.html").read_text(encoding="utf-8")
 REGISTRO = (APP / "js" / "nucleo" / "registro.js").read_text(encoding="utf-8")
-DOMINIO = [APP / "js" / "dominio" / "cursos.js", APP / "js" / "dominio" / "sesiones.js"]
+DOMINIO = [APP / "js" / "dominio" / "cursos.js", APP / "js" / "dominio" / "sesiones.js", APP / "js" / "dominio" / "recurrencia.js"]
 FALLAS: list[str] = []
 
 
