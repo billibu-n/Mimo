@@ -1,6 +1,6 @@
 # Maintainer: Billibu <billibu@localhost>
 # Paquete de Arch Linux para Mimo. La fuente es el tarball del tag de GitHub.
-# Antes de enviarlo a AUR: publicar el tag y reemplazar SKIP por su sha256.
+# El sha256 está fijado al tarball del tag v1.2.0-beta.7.
 pkgname=mimo
 pkgver=1.2.0beta.7
 pkgrel=1
@@ -14,7 +14,7 @@ depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'openssl' 'cairo' 'pango'
 makedepends=('rust' 'cargo' 'python' 'pkgconf')
 install=mimo.install
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.7.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('6b7220a51eb08f27c137cdc849d58f639111296f59bbd1b458ec3d0fce0c47f0')
 _archivo="Mimo-1.2.0-beta.7"
 
 build() {

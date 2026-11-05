@@ -1,7 +1,7 @@
 # Mimo 1.2.0-beta.7
 
-Estado: **web beta.7 publicada en GitHub Pages** el 2026-11-05. Los instaladores de escritorio
-siguen siendo los de la beta.6; la beta.7 todavía no tiene tag ni assets de release.
+Estado: **pre-release publicada** el 2026-11-05. Incluye la app web en GitHub Pages y los
+instaladores de escritorio de la misma versión.
 
 Esta beta cierra el corte que empezó en la beta.6: el modal de tareas, la sincronización por QR
 o texto, el tablero de Tareas y la puesta a punto de Malla, Calificaciones, Estudio y Calendario.
@@ -48,22 +48,37 @@ No cambia el formato de los datos: los respaldos de la beta.6 se abren tal cual.
 - **Interfaz**: 10 temas, chino simplificado, i18n de las ocho secciones y una sola ventana de
   edición.
 
+## Descargas
+
+| Sistema | Archivo |
+|---|---|
+| Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.7-1.x86_64.rpm` |
+| Debian 13 / Ubuntu 24.04+ amd64 | `Mimo_1.2.0-beta.7_amd64.deb` |
+| Arch Linux x86_64 | `mimo-1.2.0beta.7-1-x86_64.pkg.tar.zst` |
+| Windows 10/11 x64 | `Mimo_1.2.0-beta.7_x64-setup.exe` |
+
+La release incluye además `tutorial.json`, `LICENSE`, `LEEME.md`, `SHA256SUMS`, `beta.json` y
+las firmas `.sig` de los paquetes que usa el actualizador.
+
 ## Verificación
 
 - **32 compuertas web** en verde con `python3 pruebas/correr-gates.py`.
 - `gate-tareas-tablero` mide el tablero sin barras y el criterio de **Al día**; `gate-tareas-modal`
   mide fecha opcional, descripción Markdown, series y 411; `gate-sync-enlace` mide texto, QR,
   enlace y partes, saneado y 411.
+- `gate-release` valida los paquetes Linux, las firmas `.sig` y el manifiesto del actualizador;
+  `gate-tauri` abre el binario Linux real y mide persistencia, WebDAV nativo y carpeta nativa.
+- `SHA256SUMS` se verifica sobre los assets descargados de la release.
 - La app web publicada en <https://billibu-n.github.io/Mimo/> muestra `1.2.0-beta.7` en la
   cabecera y en Ajustes.
 
 ## Límites de esta beta
 
-- Los **instaladores** de escritorio siguen en la beta.6: no hay tag, assets ni paquetes de la
-  beta.7 en este corte. La beta.7 se prueba como **app web**.
+- El instalador de Windows no tiene Authenticode; SmartScreen puede avisar.
 - La cámara del QR solo se probó en el navegador con la API disponible; no con hardware real.
 - La sincronización no se probó contra una cuenta real de Nextcloud en este corte; el motor de
   lectura sí se probó con el QR real del dueño.
-- Arch no se actualiza desde la app; macOS, iOS y Android no están preparados.
+- Arch no se actualiza desde la app: avisa y abre la release. Se instala con `pacman -U`.
+- macOS, iOS y Android no están preparados.
 
 El código, las pruebas y las instrucciones de compilación están en el repositorio. Licencia MIT.

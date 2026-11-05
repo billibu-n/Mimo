@@ -46,19 +46,19 @@ compara la versión firmada con la del manifiesto.
 
 ## Publicar
 
-Con los paquetes y las firmas en `publicacion/`:
+Con los paquetes y las firmas en `publicacion/beta.7/`:
 
 ```bash
 python3 scripts/updates/generar-manifiesto.py \
-  --version 1.2.0-beta.4 \
-  --tag v1.2.0-beta.4 \
-  --dir publicacion \
-  --out publicacion/beta.json
+  --version 1.2.0-beta.7 \
+  --tag v1.2.0-beta.7 \
+  --dir publicacion/beta.7 \
+  --out publicacion/beta.7/beta.json
 
 git switch updates
-cp ../publicacion/beta.json beta.json
+cp ../publicacion/beta.7/beta.json beta.json
 git add beta.json
-git commit -m "updates: beta 1.2.0-beta.4"
+git commit -m "updates: beta 1.2.0-beta.7"
 git push origin updates
 ```
 

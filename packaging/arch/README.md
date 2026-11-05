@@ -12,8 +12,8 @@ makepkg -si
 
 ## Antes de publicar en AUR
 
-El `sha256sums` está en `SKIP` porque el tag todavía no existe. Cuando se publique
-`v1.2.0-beta.7`:
+El `sha256sums` está fijado al tarball de `v1.2.0-beta.7`. Para recalcularlo cuando cambie el
+tag:
 
 ```bash
 cd packaging/arch

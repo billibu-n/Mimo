@@ -19,8 +19,8 @@ copia intermedia ni paso de preparación: la app universal es la única fuente.
 
 El binario suelto queda en `release/mimo`. `CARGO_TARGET_DIR` saca la compilación de `~/sede`;
 `release/` está ignorado en git y es un enlace a `~/sede/respaldos/mimo-1.2.0-release` para no
-gastar el presupuesto de la casa. Los paquetes **no están firmados**; se declara como hueco hasta
-que haya claves de firma.
+gastar el presupuesto de la casa. El RPM lleva firma GPG y todos los paquetes del actualizador
+llevan firma minisign (`.sig`); el instalador de Windows no tiene Authenticode.
 
 ## Windows y Arch
 

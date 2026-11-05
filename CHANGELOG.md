@@ -4,10 +4,11 @@
 
 ### Publicación
 
-- La beta.7 se publica como **app web en GitHub Pages** (`https://billibu-n.github.io/Mimo/`)
-  con la versión `1.2.0-beta.7` en la app, el escritorio y las pruebas. Los instaladores siguen
-  siendo los de la beta.6 hasta que se empaquete la beta.7.
-- **32 compuertas web** en verde.
+- La beta.7 se publica como **app web en GitHub Pages** (`https://billibu-n.github.io/Mimo/`) y
+  como **pre-release de escritorio** con tag `v1.2.0-beta.7`: RPM para Fedora/RHEL, DEB para
+  Debian/Ubuntu, NSIS para Windows y paquete para Arch Linux.
+- **32 compuertas web** en verde, más `gate-release` sobre los paquetes y `gate-tauri` sobre el
+  binario Linux; `beta.json` queda en la rama `updates`.
 
 ### Sincronización
 
