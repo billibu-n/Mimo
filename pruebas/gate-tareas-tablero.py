@@ -4,12 +4,13 @@
 
 Mide lo que el encargo pide:
   1. Tablero es la vista inicial y trae los cinco filtros de la referencia;
-  2. la barra semanal pinta siete días y separa hechas de pendientes;
+  2. el gráfico de barras ya no existe;
   3. una tarea se completa desde la tarjeta, se tacha y pasa a Hechas;
   4. el menú contextual sube y baja la prioridad y también trae Completar;
   5. el clic derecho abre acciones en Tareas, Malla y Calendario;
   6. los filtros Todas/Pendientes/Hoy/Ramos/Personales recortan el tablero;
-  7. el estado sobrevive a reabrir y a 411 no desborda.
+  7. «Al día» muestra vencidas, de hoy y sin fecha, una vez, sin futuras ni hechas;
+  8. el estado sobrevive a reabrir y a 411 no desborda.
 """
 from __future__ import annotations
 
@@ -45,13 +46,14 @@ def crear_ramo(page, codigo: str, nombre: str) -> None:
     page.wait_for_timeout(150)
 
 
-def crear_tarea(page, titulo: str, fecha: str, prioridad: str, contexto: str = "") -> None:
+def crear_tarea(page, titulo: str, fecha: str | None, prioridad: str, contexto: str = "") -> None:
     page.locator('#tabs [data-ir="tareas"]').click()
     page.wait_for_timeout(100)
     page.locator("#btn-nueva-tarea").click()
     page.wait_for_timeout(100)
     page.locator("#tarea-titulo").fill(titulo)
-    page.locator("#tarea-fecha").fill(fecha)
+    if fecha is not None:
+        page.locator("#tarea-fecha").fill(fecha)
     page.locator("#tarea-prioridad").select_option(prioridad)
     if contexto:
         page.locator("#tarea-contexto").fill(contexto)
@@ -81,8 +83,8 @@ def main() -> int:
                    f"tablero: es la vista inicial — {page.locator('#vista-tareas .on').inner_text()}", fallas)
             exigir(page.locator("#tareas-filtros").is_visible() and page.locator(".tareas-filtro").count() == 5,
                    f"tablero: cinco filtros visibles — {page.locator('.tareas-filtro').count()}", fallas)
-            exigir(page.locator(".tareas-barra-dia").count() == 7,
-                   f"barra: siete días — {page.locator('.tareas-barra-dia').count()}", fallas)
+            exigir(page.locator("#tareas-barra-card, .tareas-barra, .tareas-barra-dia").count() == 0,
+                   "tareas: el gráfico de barras ya no está", fallas)
             if page.locator(".tareas-filtro").count() != 5 or page.locator("#vista-tareas .on").get_attribute("data-vista") != "tablero":
                 return salir("gate-tareas-tablero", fallas)
 
@@ -101,10 +103,6 @@ def main() -> int:
                    "tablero: dos tareas para hoy", fallas)
             exigir(page.locator(".tablero-col").nth(1).locator(".tarjeta-tarea").count() == 2,
                    "tablero: dos tareas esta semana", fallas)
-            exigir(page.locator(".tareas-barra-pila i").count() >= 2,
-                   f"barra: hechas y pendientes se apilan — {page.locator('.tareas-barra-pila i').count()}", fallas)
-            exigir("pendientes" in page.locator("#tareas-barra-resumen").inner_text(),
-                   f"barra: resumen de la semana — {page.locator('#tareas-barra-resumen').inner_text()}", fallas)
             filtros = page.locator(".tareas-filtro").all_inner_texts()
             exigir("Ramos\n2" in filtros and "Personales\n2" in filtros and "Hoy\n2" in filtros,
                    f"filtros: cuentas por contexto — {filtros}", fallas)
@@ -201,14 +199,58 @@ def main() -> int:
         finally:
             ctx.close()
 
+        # «Al día»: vencidas, de hoy y sin fecha, una sola vez; ni futuras ni hechas.
+        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        page.on("dialog", lambda d: d.accept())
+        try:
+            page.locator('#tabs [data-ir="tareas"]').click()
+            page.wait_for_timeout(150)
+            ayer = (hoy - timedelta(days=2)).isoformat()
+            crear_tarea(page, "Vencida", ayer, "media")
+            crear_tarea(page, "Hoy", hoy.isoformat(), "media")
+            crear_tarea(page, "Sin fecha", None, "media")
+            crear_tarea(page, "Futura", manana, "media")
+            crear_tarea(page, "Hecha hoy", hoy.isoformat(), "media")
+            page.locator('.tarjeta-tarea', has_text="Hecha hoy").first.locator("[data-check]").click()
+            page.wait_for_timeout(220)
+            page.locator('#vista-tareas [data-vista="hoy"]').click()
+            page.wait_for_timeout(220)
+            exigir(page.locator('#vista-tareas [data-vista="hoy"]').inner_text().strip() == "Al día",
+                   f"al día: la etiqueta — {page.locator('#vista-tareas [data-vista="hoy"]').inner_text()}", fallas)
+            filas = page.locator("#tareas-lista .tarea-fila")
+            exigir(filas.count() == 3,
+                   f"al día: tres accionables — {filas.count()}", fallas)
+            titulos = [f.locator(".tarea-nom").inner_text().strip() for f in filas.all()]
+            exigir(titulos == ["Vencida", "Hoy", "Sin fecha"],
+                   f"al día: vencida, hoy y sin fecha, en orden y una vez — {titulos}", fallas)
+            ids = page.evaluate("[...document.querySelectorAll('#tareas-lista .tarea-fila')].map(e => e.getAttribute('data-tarea'))")
+            exigir(len(ids) == len(set(ids)) == 3,
+                   f"al día: sin duplicados — {ids}", fallas)
+            texto = page.locator("#tareas-lista").inner_text()
+            exigir("Futura" not in texto and "Hecha hoy" not in texto,
+                   f"al día: fuera futuras y hechas — {texto[:120]}", fallas)
+            page.locator(".tarea-fila", has_text="Hoy").first.locator("[data-check]").click()
+            page.wait_for_timeout(220)
+            restantes = page.locator("#tareas-lista .tarea-fila")
+            exigir(restantes.count() == 2 and "Hoy" not in page.locator("#tareas-lista .tarea-nom").all_inner_texts(),
+                   f"al día: completar quita la tarea — {restantes.count()}", fallas)
+            exigir(not errores, f"al día: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+
         ctx, page, errores = nav.abrir(APP, 411, 900)
         try:
             page.locator('#tabs [data-ir="tareas"]').click()
             page.wait_for_timeout(200)
             exigir(page.locator("#vista-tareas .on").get_attribute("data-vista") == "tablero",
                    "411: tablero por defecto", fallas)
-            exigir(page.locator(".tareas-filtro").count() == 5 and page.locator(".tareas-barra-dia").count() == 7,
-                   "411: filtros y barra se pintan", fallas)
+            exigir(page.locator(".tareas-filtro").count() == 5 and
+                   page.locator("#tareas-barra-card, .tareas-barra").count() == 0,
+                   "411: filtros sin barra", fallas)
+            page.locator('#vista-tareas [data-vista="hoy"]').click()
+            page.wait_for_timeout(150)
+            exigir(page.locator('#vista-tareas [data-vista="hoy"]').inner_text().strip() == "Al día",
+                   "411: la etiqueta Al día se pinta", fallas)
             d = desborde(page)
             exigir(d == 0, f"411: tareas sin desborde — {d}px", fallas)
             exigir(not errores, f"411: consola limpia — {errores[:3]}", fallas)

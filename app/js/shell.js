@@ -1864,33 +1864,6 @@
     if (filtro === "personal") return !cursoDeContexto(item.t.contexto);
     return true;
   }
-  function _pintarBarraTareas(tareas) {
-    var caja = $("#tareas-barra"); if (!caja) return;
-    var lunes = lunesDe(new Date()), dias = _calDiasLunes(), hoy = hoyISO();
-    var fin = new Date(lunes.getTime()); fin.setDate(fin.getDate() + 6);
-    var semana = itemsEntre(isoFecha(lunes), isoFecha(fin), tareas);
-    var cuentas = [], max = 1, hechas = 0, pend = 0;
-    for (var i = 0; i < 7; i++) {
-      var f = new Date(lunes.getTime()); f.setDate(f.getDate() + i);
-      var iso = isoFecha(f), h = 0, p = 0;
-      semana.forEach(function (it) {
-        if (it.fecha !== iso) return;
-        if (it.hecha) h++; else p++;
-      });
-      hechas += h; pend += p; max = Math.max(max, h + p);
-      cuentas.push({ h: h, p: p, iso: iso });
-    }
-    caja.innerHTML = cuentas.map(function (c, i) {
-      var total = c.h + c.p, alto = total ? Math.max(4, Math.round(total / max * 100)) : 0;
-      var hh = total ? (c.h / total * 100) : 0, pp = total ? (c.p / total * 100) : 0;
-      return '<div class="tareas-barra-dia' + (c.iso === hoy ? " hoy" : "") + '" title="' + esc(c.iso + " · " + c.h + " " + t("tar.hechas") + " · " + c.p + " " + t("tar.pendientes")) + '">' +
-        '<div class="tareas-barra-pila" style="height:' + alto + '%">' +
-        (c.h ? '<i class="hecha" style="height:' + hh.toFixed(1) + '%"></i>' : "") +
-        (c.p ? '<i class="pend" style="height:' + pp.toFixed(1) + '%"></i>' : "") + "</div>" +
-        '<span>' + esc(dias[i]) + "</span></div>";
-    }).join("");
-    if ($("#tareas-barra-resumen")) $("#tareas-barra-resumen").textContent = tf("tar.barraResumen", { h: hechas, p: pend });
-  }
   function pintarTareas() {
     normalizarTareas();
     var lista = $("#tareas-lista"), vacio = $("#tareas-vacio"), tareas = estado.tareas;
@@ -1916,7 +1889,6 @@
       ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
       personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
     Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
-    _pintarBarraTareas(tareas);
     if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; return; }
     vacio.hidden = true;
     if (vistaTareas === "arbol") {
@@ -1939,10 +1911,27 @@
       lista.innerHTML = '<div class="tablero">' + col(t("tar.col.hoy"), colHoy, "tar.vacio.hoy") + col(t("tar.col.semana"), colSemana, "tar.vacio.semana") + col(t("tar.col.hechas"), colHechas, "tar.vacio.hechas") + "</div>" +
         (sinFecha.length ? '<div class="tablero-sin-fecha"><h3>' + esc(L("Sin fecha", "No date", "无日期")) + " <span>" + sinFecha.length + '</span></h3><div class="tablero-sin-fecha__lista">' + sinFecha.map(tarjetaTablero).join("") + "</div></div>" : "");
     } else {
-      var v = tareas.filter(function (t) { return !esRecurrente(t) && !t.hecha && t.fecha && t.fecha <= hoyISO(); }).map(function (t) { return itemDe(t, t.fecha); });
+      /* «Al día»: lo accionable de hoy, una sola vez. Entran las tareas
+         vencidas, las de hoy y las que no tienen fecha; quedan fuera las
+         futuras y las hechas. Una serie entra solo con su ocurrencia de hoy. */
+      var v = tareas.filter(function (t) {
+        return !esRecurrente(t) && !t.hecha && (!t.fecha || t.fecha <= hoyISO());
+      }).map(function (t) { return itemDe(t, t.fecha || ""); });
       hoy.forEach(function (i) { if (i.serie) v.push(i); });
-      v.sort(function (a, b) { return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0; });
-      lista.innerHTML = v.length ? v.map(function (i) { return filaTarea(i.t, 0, i); }).join("") : '<p class="muted">' + esc(L("Nada para hoy. Cambia a Árbol o Tablero.", "Nothing for today. Switch to Tree or Board.", "今天没有任务。请切换到树状或看板。")) + '</p>';
+      var vistos = {};
+      v = v.filter(function (i) {
+        var clave = i.t.id + "|" + i.fecha;
+        if (vistos[clave]) return false;
+        vistos[clave] = 1;
+        return true;
+      });
+      v.sort(function (a, b) {
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0;
+      });
+      lista.innerHTML = v.length ? v.map(function (i) { return filaTarea(i.t, 0, i); }).join("") : '<p class="muted">' + esc(L("Nada pendiente. Cambia a Árbol o Tablero.", "Nothing pending. Switch to Tree or Board.", "没有待办。请切换到树状或看板。")) + '</p>';
     }
     bindTareas();
   }
