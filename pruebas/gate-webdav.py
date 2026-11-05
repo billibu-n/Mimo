@@ -49,12 +49,18 @@ def abrir_contexto(nav, reset=True):
 def configurar(page, srv, clave=CLAVE, guardar_clave=True):
     page.locator('#tabs [data-ir="ajustes"]').click()
     page.wait_for_timeout(150)
+    if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
+        page.locator("#sync-panel-manual > summary").click()
+        page.wait_for_timeout(120)
     page.locator("#sync-proveedor").select_option("webdav")
     page.locator("#sync-webdav-url").fill(srv.url)
     page.locator("#sync-webdav-usuario").fill("mimo")
     page.locator("#sync-webdav-clave-acceso").fill("prueba")
     page.locator("#sync-webdav-carpeta").fill("Mimo")
     if clave is not None:
+        if not page.locator("#sync-panel-cifrado").evaluate("e => e.open"):
+            page.locator("#sync-panel-cifrado > summary").click()
+            page.wait_for_timeout(120)
         page.locator("#sync-webdav-clave").fill(clave)
     if guardar_clave and clave is not None:
         page.locator("#sync-webdav-guardar-clave").click()
@@ -109,6 +115,9 @@ def main() -> int:
                 exigir("PUT" not in srv.metodos(), "webdav: sin clave no hay PUT", fallas)
                 exigir(RUTA not in srv.datos, "webdav: sin clave el servidor no tiene archivo de datos", fallas)
 
+                if not a.locator("#sync-panel-cifrado").evaluate("e => e.open"):
+                    a.locator("#sync-panel-cifrado > summary").click()
+                    a.wait_for_timeout(120)
                 a.locator("#sync-webdav-clave").fill(CLAVE)
                 a.locator("#sync-webdav-guardar-clave").click()
                 a.wait_for_timeout(400)
@@ -249,6 +258,9 @@ def main() -> int:
                     nota(n, "Nota Nextcloud", "por el conector")
                     n.locator('#tabs [data-ir="ajustes"]').click()
                     n.wait_for_timeout(150)
+                    if not n.locator("#sync-panel-manual").evaluate("e => e.open"):
+                        n.locator("#sync-panel-manual > summary").click()
+                        n.wait_for_timeout(120)
                     n.locator("#sync-proveedor").select_option("nextcloud")
                     n.locator("#sync-nc-url").fill(srv.url)
                     n.locator("#sync-nc-usuario").fill("mimo")
@@ -264,6 +276,9 @@ def main() -> int:
                     exigir(not n.locator("#sync-webdav-conexion").is_visible(),
                            "nextcloud: no pide la URL de WebDAV a mano", fallas)
 
+                    if not n.locator("#sync-panel-cifrado").evaluate("e => e.open"):
+                        n.locator("#sync-panel-cifrado > summary").click()
+                        n.wait_for_timeout(120)
                     n.locator("#sync-webdav-clave").fill(CLAVE)
                     n.locator("#sync-webdav-guardar-clave").click()
                     n.wait_for_timeout(400)
@@ -273,6 +288,9 @@ def main() -> int:
                     exigir("/remote.php/dav/files/mimo/Mimo/mimo-sync.json.enc" in srv.datos,
                            "nextcloud: el archivo llega a la carpeta DAV correcta", fallas)
 
+                    if not n.locator("#sync-panel-manual").evaluate("e => e.open"):
+                        n.locator("#sync-panel-manual > summary").click()
+                        n.wait_for_timeout(120)
                     n.locator("#sync-proveedor").select_option("nextcloud")
                     n.locator("#sync-nc-usuario").fill("mimo")
                     n.locator("#sync-nc-clave").fill("otra-cosa")
@@ -290,6 +308,9 @@ def main() -> int:
                     nota(l, "Nota Autorizada", "por login flow")
                     l.locator('#tabs [data-ir="ajustes"]').click()
                     l.wait_for_timeout(150)
+                    if not l.locator("#sync-panel-manual").evaluate("e => e.open"):
+                        l.locator("#sync-panel-manual > summary").click()
+                        l.wait_for_timeout(120)
                     l.locator("#sync-proveedor").select_option("nextcloud")
                     l.locator("#sync-nc-url").fill(srv.url)
                     l.locator("#sync-nc-navegador").click()
@@ -300,6 +321,9 @@ def main() -> int:
                            f"login flow: arma la ruta DAV con el servidor autorizado — {(meta_l.get('webdav') or {}).get('url')}", fallas)
                     exigir(any(p[0] == "POST" and p[1] == "/login/v2/poll" for p in srv.peticiones),
                            "login flow: sondea hasta que el usuario concede el acceso", fallas)
+                    if not l.locator("#sync-panel-cifrado").evaluate("e => e.open"):
+                        l.locator("#sync-panel-cifrado > summary").click()
+                        l.wait_for_timeout(120)
                     l.locator("#sync-webdav-clave").fill(CLAVE)
                     l.locator("#sync-webdav-guardar-clave").click()
                     l.wait_for_timeout(400)

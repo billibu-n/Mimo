@@ -1,5 +1,67 @@
 # Cambios
 
+## 1.2.0-beta.8 — en curso
+
+### Rendimiento
+
+- Las órdenes nativas del espejo de estado (`estado_guardar`, `estado_leer` y los respaldos)
+  pasan a ejecutarse en el runtime asíncrono de Tauri, no en el hilo principal. Un guardado
+  lento ya no puede bloquear el repintado de la ventana.
+
+### Tipografía
+
+- Ajustes estrena **Tipo de letra**: la opción predeterminada es la pila clásica de Mimo, que
+  ahora nombra **Noto Sans antes de Helvetica** para que WebKitGTK no caiga en Nimbus Sans y la
+  app de escritorio pinte la misma letra que el navegador. Se puede cambiar a la **fuente del
+  sistema**, a **monoespaciada** o escribir el nombre de una **fuente instalada**; la elección
+  se guarda y sobrevive a recargar.
+- La pila personalizada se limpia antes de aplicarse: no admite llaves, `url()` ni `var()`,
+  y cae en la clásica si el nombre queda vacío.
+- `gate-fuente` mide la pila, el cambio, la persistencia, el campo libre y 411.
+
+### Tareas
+
+- Tareas incluye un **anillo semanal** junto a los cuatro KPI: hechas y pendientes de la
+  semana, porcentaje pendiente en el centro y leyenda con el total. Cuenta ocurrencias, no
+  tareas, así una serie con tres días suma tres; al completar una tarea el anillo se mueve sin
+  recargar.
+- El anillo no depende del filtro y se mantiene en Tablero, «Al día» y Árbol. `gate-tareas-anillo`
+  mide las cuentas, el centro, la leyenda, el estado vacío y 411.
+
+### Tiempo
+
+- La sección se reordena en tres piezas: reloj con controles de colores e iconos, registro con
+  ramo, tarea, semana y día, y sesiones a la derecha con altura propia y desplazamiento interno.
+- La lista prioriza la semana actual, separa por días, pone lo más reciente arriba y permite
+  editar cada sesión: duración en `1:00:00`, día, ramo, tarea y semana. Una sesión puede quedar
+  sin ramo y sin tarea.
+- La tarea elegida en el registro se guarda en la sesión y se puede corregir después.
+
+### Identidad de los ramos
+
+- El color y el icono son **opcionales**: la identidad ofrece «Sin color» y «Sin icono» y guarda
+  la ausencia como una decisión del usuario, sin inventar un valor automático.
+- Un ramo sin identidad sigue apareciendo por su código en Malla, Estudio, Calificaciones,
+  Tiempo, Calendario y Tareas; el icono y el punto simplemente no se pintan.
+- `gate-identidad-opcional` mide el guardado vacío, la persistencia y que no se invente un icono.
+
+### Calendario y vínculos
+
+- La barra lateral lista los **ramos como categorías automáticas**, con su tinte e icono y su
+  cuenta de eventos; no hay que crear una categoría por ramo. Un ramo sin color se identifica
+  igual por su código y su marca.
+- Cada ramo se puede ocultar o mostrar; el filtro se aplica a las cinco vistas y a los totales.
+- La descripción Markdown del evento vuelve a la ventana y al panel de detalle.
+- La tarea gana hora opcional y «Mostrar en el calendario»; sus datos no se duplican: el
+  calendario lee la tarea viva y el chip abre Tareas.
+- Un evento nuevo se puede guardar como evento o como tarea desde su propia ventana. Las
+  evaluaciones con fecha siguen entrando al calendario con el contexto del ramo.
+
+### Sincronización
+
+- Los cuatro paneles de la sección nacen cerrados; se abren al pulsarlos. La tarjeta queda más
+  corta y sin ruido visual.
+
 ## 1.2.0-beta.7 — 2026-11-05
 
 ### Publicación

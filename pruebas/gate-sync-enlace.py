@@ -60,8 +60,12 @@ def main() -> int:
                    "modal: el formulario se mueve dentro de la ventana", fallas)
             exigir(page.locator("#sync-formulario .sync-panel").count() == 4,
                    f"modal: cuatro paneles — {page.locator('#sync-formulario .sync-panel').count()}", fallas)
+            abiertos = page.evaluate("[...document.querySelectorAll('#sync-formulario .sync-panel')].filter(d => d.open).length")
+            exigir(abiertos == 0, f"modal: los cuatro paneles nacen cerrados — {abiertos} abiertos", fallas)
+            page.locator("#sync-panel-entrada > summary").click()
+            page.wait_for_timeout(120)
             exigir(page.locator("#sync-panel-entrada").evaluate("e => e.open"),
-                   "modal: el panel de entrada nace abierto", fallas)
+                   "modal: el panel de entrada se abre al pulsarlo", fallas)
             exigir(page.locator("#sync-entrada-texto").is_visible(), "entrada: el texto está a la vista", fallas)
             exigir(page.evaluate("typeof window.jsQR") == "function",
                    "qr: jsQR está cargado en local", fallas)
@@ -92,6 +96,9 @@ def main() -> int:
             exigir(page.locator("#sync-webdav-url").input_value() == DAV,
                    "guardar: el campo manual refleja la ruta", fallas)
 
+            if not page.locator("#sync-panel-acciones").evaluate("e => e.open"):
+                page.locator("#sync-panel-acciones > summary").click()
+                page.wait_for_timeout(120)
             enlace = page.locator("#sync-enlace-completo").inner_text()
             exigir(enlace.startswith("nc://onetime-login/") and CLAVE not in enlace,
                    f"enlace: se ve el enlace resuelto con la clave enmascarada — {enlace}", fallas)
@@ -162,6 +169,9 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             abrir_modal(page)
+            if not page.locator("#sync-panel-entrada").evaluate("e => e.open"):
+                page.locator("#sync-panel-entrada > summary").click()
+                page.wait_for_timeout(120)
             page.locator("#sync-qr-archivo").set_input_files(str(FIXTURE))
             page.wait_for_timeout(800)
             exigir(page.locator("#sync-detectado").is_visible(),
@@ -186,6 +196,9 @@ def main() -> int:
         page.on("dialog", lambda d: d.accept())
         try:
             abrir_modal(page)
+            if not page.locator("#sync-panel-entrada").evaluate("e => e.open"):
+                page.locator("#sync-panel-entrada > summary").click()
+                page.wait_for_timeout(120)
             page.locator("#sync-entrada-texto").fill(
                 "nc://onetime-login/user:x&password:y&server:javascript:alert(1)")
             page.locator("#sync-detectar").click()
@@ -216,8 +229,10 @@ def main() -> int:
             abrir_modal(page)
             ancho = page.evaluate("document.querySelector('#modal-editor .modal__caja').getBoundingClientRect().width")
             exigir(ancho <= 411, f"411: la ventana cabe — {ancho:.0f}px", fallas)
+            page.locator("#sync-panel-entrada > summary").click()
+            page.wait_for_timeout(120)
             exigir(page.locator("#sync-entrada-texto").is_visible(),
-                   "411: la entrada sigue visible", fallas)
+                   "411: la entrada se abre al pulsar el acordeón", fallas)
             d = desborde(page)
             exigir(d == 0, f"411: sin desborde — {d}px", fallas)
             exigir(not errores, f"411: consola limpia — {errores[:3]}", fallas)

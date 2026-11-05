@@ -6,7 +6,7 @@ impresión: cada uno devuelve 0/1 y cita su medida.
 ## Correr
 
 ```bash
-python3 pruebas/correr-gates.py     # los 32 gates web, resumen al final
+python3 pruebas/correr-gates.py     # los 36 gates web, resumen al final
 ```
 
 El binario de escritorio se mide aparte, porque compila. El gate lo arranca en modo headless
@@ -41,10 +41,14 @@ Un gate que no discrimina es un gate roto.
 | `gate-tutorial` | `app/tutorial.json` es un `mimo.backup` con la versión de la app, el proyecto Mimo, 11 tareas y la nota con Markdown | JSON inválido, versión distinta, sin proyecto o sin la nota |
 | `gate-calificaciones` | notas por categoría, examen y eximición; escala 1.0–7.0 y umbral 4.0, nota final editable en su propia caja que pasa al Historial y persiste al recargar, activo/disponible/historial, alta desde el modal, retiro no destructivo con deshacer, cierre sin nota de examen, clic derecho y 411 | disponible confundido con activo, retiro que borra datos, final duplicada o inventada, curso atrapado en abierto o menú sin edición |
 | `gate-malla-grafo` | grafo de Malla: entrada sin selección, 39 aristas ortogonales con arcos de radio 6, corredores compartidos (5 carriles para 6 columnas y 3 franjas para 13 saltos), trazo que no baja de las tarjetas ni entra en una ficha, selección con 3 aristas y 26 tarjetas atenuadas, estable al repintar, a 1440 y 411 | curva bezier, tramo inclinado, banda inferior, un carril por arista, línea sobre una ficha o selección que no atenúa el resto |
-| `gate-tareas-tablero` | Tablero inicial con cinco filtros, barra semanal de siete días, completar y tachar desde la tarjeta, prioridad arriba/abajo en el menú contextual, clic derecho en Tareas/Malla/Calendario, persistencia y 411 | vista inicial Hoy, sin filtros ni barra, sin completar desde tarjeta o sin prioridad en el menú |
+| `gate-tareas-tablero` | Tablero inicial con cinco filtros, anillo semanal, completar y tachar desde la tarjeta, prioridad arriba/abajo en el menú contextual, clic derecho en Tareas/Malla/Calendario, persistencia y 411 | vista inicial Hoy, sin filtros ni barra, sin completar desde tarjeta o sin prioridad en el menú |
+| `gate-tareas-anillo` | anillo semanal de Tareas: ocurrencias hechas/pendientes, centro con el porcentaje pendiente, leyenda 2/1/3, completar lo mueve sin recargar, sigue en «Al día», vacío en 0 % y 411 sin desborde | sin anillo, cuentas de tareas en vez de ocurrencias, porcentaje o leyenda que no cambian al completar, o desborde |
+| `gate-fuente` | tipografía: pila clásica de Mimo con Noto Sans antes de Helvetica, «Sistema del equipo», «Otra fuente…» con nombre aplicado, persistencia al recargar y 411 | sin control, pila que deja Helvetica delante, elección que no se guarda o campo que no aparece |
 | `gate-sync-enlace` | la sección de sincronización abre la ventana única con cuatro paneles; el texto completo con prosa y el QR local (jsQR) se desarman en servidor, usuario, contraseña y ruta WebDAV; el enlace resultante se muestra enmascarado, se revela y se copia, y las partes se ven; el formulario manual sigue en el modal; javascript: se rechaza; el texto pegado no queda al cerrar; 411 | no abre la ventana, no lee el QR, no extrae, guarda una URL peligrosa o deja la contraseña en el formulario |
 | `gate-tareas-modal` | modal de tarea: fecha vacía por defecto y tarea sin fecha en su tira, descripción con la barra y el renderizado de Notas (incluido KaTeX y saneado), panel que pinta el Markdown, recurrencia Diaria + L–V en dos clics con ocurrencias solo laborables, completar una ocurrencia sin cerrar la serie, persistencia y 411 | fecha obligatoria, campo plano, sin recurrencia, fin de semana dentro de L–V o serie que se cierra al completar una ocurrencia |
 | `gate-calendario-motor` | cuatro vistas (Mes, Año, Semestre, Semana), 42 celdas de mes, 12 meses de año, 18 semanas con estudio, navegación por flechas/Hoy, salto de año a mes, corte desde la semana actual y categorías en mes/semana/semestre/detalle, a 1440 y 411 | motor sin Año/Semestre, mes sin 42 celdas, año sin 12 meses, corte ausente o categoría perdida |
+| `gate-calendario-ramos` | ramos como categorías automáticas, con tinte e icono; un ramo sin color ni icono se identifica por su código; el interruptor filtra; tarea con «Mostrar en el calendario» y descripción Markdown del evento; evento→tarea; 411 | sin ramos, sin filtro, chip que pierde el código, tarea que no entra o descripción que se ignora |
+| `gate-identidad-opcional` | la identidad permite «Sin color» y «Sin icono»; guarda vacío, no inventa un icono en la lista ni en Malla, el código sigue, persiste y 411 | controles ausentes, valores automáticos guardados, icono inventado o pérdida al recargar |
 | `gate-categorias` | categorías de evento sueltas: creación desde la ventana y desde el carril, etiqueta en mes/semana/detalle, color estable, persistencia y 411 | sin `MimoIdentidad` la etiqueta pierde el color |
 
 ## Fixtures

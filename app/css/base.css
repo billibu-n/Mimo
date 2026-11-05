@@ -7,6 +7,18 @@
    ============================================================================ */
 
 *{box-sizing:border-box}
+/* La letra de la app. `clasica` es la pila de Mimo: en WebKit (el motor del
+   escritorio) la pila caia en Helvetica/Nimbus Sans porque `-apple-system` y
+   `Segoe UI` no existen en Linux; por eso se nombra Noto Sans antes de
+   Helvetica. Asi el escritorio pinta la misma letra que el navegador.
+   `sistema` deja que el motor elija la fuente nativa del equipo, y `mono` es la
+   variante de ancho fijo para quien la prefiera. */
+:root{
+  --fuente-clasica:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Adwaita Sans",Cantarell,Helvetica,Arial,sans-serif;
+  --fuente-sistema:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",sans-serif;
+  --fuente-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --fuente:var(--fuente-clasica);
+}
 html{background:var(--bg);color-scheme:light;height:100%}
 /* Los controles nativos (select, date, checkbox) siguen el tema; sin esto,
    WebKit y Firefox pueden pintar texto oscuro sobre fondo oscuro. */
@@ -17,7 +29,7 @@ html{background:var(--bg);color-scheme:light;height:100%}
 body{
   height:100%;display:flex;flex-direction:column;
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  font-family:var(--fuente);
   font-size:var(--fs-md);
   line-height:var(--linea);
   color:var(--fg);

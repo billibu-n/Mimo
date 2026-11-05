@@ -101,7 +101,7 @@ fn motivo_limpio(motivo: &str) -> String {
     }
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn estado_guardar(app: tauri::AppHandle, texto: String) -> Result<GuardadoInfo, String> {
     if texto.trim().is_empty() {
         return Err("El estado está vacío.".into());
@@ -120,7 +120,7 @@ pub fn estado_guardar(app: tauri::AppHandle, texto: String) -> Result<GuardadoIn
     })
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn estado_leer(app: tauri::AppHandle) -> Result<Option<LeidoInfo>, String> {
     let destino = datos(&app)?.join("estado").join("mimo-estado.json");
     if !destino.exists() {
@@ -133,7 +133,7 @@ pub fn estado_leer(app: tauri::AppHandle) -> Result<Option<LeidoInfo>, String> {
     }))
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn respaldo_crear(
     app: tauri::AppHandle,
     motivo: String,
@@ -183,7 +183,7 @@ pub fn respaldo_crear(
     })
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn respaldo_listar(app: tauri::AppHandle) -> Result<Vec<RespaldoInfo>, String> {
     let dir = datos(&app)?.join("backups");
     if !dir.exists() {
