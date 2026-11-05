@@ -124,7 +124,7 @@
       { id: "tareas", nombre: "Tareas", tipo: "seccion", fija: true, orden: 20,
         origen: "nativo", naturaleza: "base", icono: "i-tareas", codigo: "02", tags: ["tareas", "proyectos"],
         detalle: { resumen: ["Proyectos y tareas; el progreso se calcula solo.", "Projects and tasks; progress is derived.", "项目和任务；进度自动计算。"],
-          queHace: [["Hoy, árbol y tablero.", "Today, tree and board.", "今天、树状和看板。"], ["Proyectos con subtareas.", "Projects with subtasks.", "带子任务的项目。"], ["Prioridad, fecha y contexto.", "Priority, date and context.", "优先级、日期和情境。"]],
+          queHace: [["Hoy, árbol y tablero.", "Today, tree and board.", "今天、树状和看板。"], ["Proyectos con subtareas.", "Projects with subtasks.", "带子任务的项目。"], ["Fecha opcional, descripción Markdown y repetición.", "Optional date, Markdown description and repeat.", "日期可选、Markdown 描述和重复。"]],
           datos: ["tareas"], notas: ["Los datos de Tareas no se borran al quitar otros bloques.", "Task data is not deleted when other blocks are removed.", "移除其他模块不会删除任务数据。"] },
         vista: window.MimoBloqueTareasVista, css: "tareas.css",
         pintar: pintarTareas },
@@ -254,8 +254,9 @@
   var estado = leer();
   textoGuardado = JSON.stringify(estado);
   var pantalla = "calendario";
-  var vistaTareas = estado.vistaTareas || "hoy";
-  var vistaCalendario = estado.vistaCalendario || "mes";
+  var vistaTareas = ["tablero", "hoy", "arbol"].indexOf(estado.vistaTareas) >= 0 ? estado.vistaTareas : "tablero";
+  var filtroTareas = ["todas", "pendientes", "hoy", "ramos", "personal"].indexOf(estado.filtroTareas) >= 0 ? estado.filtroTareas : "todas";
+  var vistaCalendario = ["mes", "anio", "semestre", "semana"].indexOf(estado.vistaCalendario) >= 0 ? estado.vistaCalendario : "mes";
   var calCursor = new Date();
   var formEventoId = null;
   var formPeriodoId = null;
@@ -468,6 +469,9 @@
     }
   }
   function abrirEnSync() {
+    /* La configuración vive en una ventana con paneles: no hace falta ir a Ajustes
+       para pegar el enlace ni para el respaldo manual. */
+    if (window.MimoSync && typeof MimoSync.abrir === "function") { MimoSync.abrir(); return; }
     try { ir("ajustes"); } catch (e) {}
     var c = $("#sync-card");
     if (c && c.scrollIntoView) c.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -531,9 +535,29 @@
     if (pantalla !== "calendario") ir("calendario"); else { pintarCalendario(); pintarPanel(); }
     abrirPanel();
   }
-  function alternarTarea(id) {
+  var ORDEN_PRIORIDAD = ["baja", "media", "alta"];
+  function cambiarPrioridadTarea(id, delta) {
+    var t = tareaPorId(id); if (!t) return;
+    var i = ORDEN_PRIORIDAD.indexOf(t.prioridad || "media");
+    if (i < 0) i = 1;
+    i = Math.max(0, Math.min(ORDEN_PRIORIDAD.length - 1, i + delta));
+    t.prioridad = ORDEN_PRIORIDAD[i];
+    guardar(); pintarTareas(); pintarPanel();
+  }
+  /* `fecha` llega del tablero (la ocurrencia concreta). En una serie no se toca
+     `hecha`: se marca esa fecha y las demás siguen pendientes. */
+  function alternarTarea(id, fecha) {
     var x = tareaPorId(id); if (!x) return;
-    x.hecha = !x.hecha; x.estado = x.hecha ? "hecha" : "pendiente";
+    if (esRecurrente(x)) {
+      var iso = fecha && MimoRecurrencia.ocurre(x.recurrencia, fecha) ? fecha : MimoRecurrencia.proximaPendiente(x.recurrencia, hoyISO());
+      if (!iso) return;
+      MimoRecurrencia.marcar(x.recurrencia, iso, !x.recurrencia.hechas[iso]);
+      guardar(); pintarTareas(); pintarPanel();
+      return;
+    }
+    var marcar = !x.hecha;
+    x.hecha = marcar; x.estado = marcar ? "hecha" : "pendiente";
+    if (marcar && x.tipo === "proyecto") descendientes(x).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
     guardar(); pintarTareas(); pintarPanel();
   }
   function crearEventoEn(fecha) {
@@ -623,6 +647,46 @@
   }
   function menuTitulo(tipo, texto) { return tipo + " · " + (texto || L("Sin título", "Untitled", "无标题")); }
   function menuDeContexto(el) {
+    var cfEl = el.closest("[data-calif]");
+    if (cfEl) {
+      var codCalif = cfEl.getAttribute("data-calif");
+      var cf = ramoPorCodigo(codCalif);
+      if (!cf) return null;
+      var irACalif = function () {
+        califSel = codCalif; estado.califSel = codCalif; estado.ramoSel = codCalif;
+        estado.panel.calificaciones = "detalle";
+      };
+      var itemsCalif = [
+        { accion: "calif-abrir", texto: L("Abrir ficha", "Open details", "打开详情"), run: function () {
+          irACalif(); guardar(); pintarCalificaciones(); pintarPanel(); abrirPanel();
+        } },
+        { accion: "calif-malla", texto: L("Ver en Malla", "View in plan", "在规划中查看"), run: function () {
+          irACalif(); estado.panel.malla = "detalle"; guardar(); ir("malla", true); pintarPanel(); abrirPanel();
+        } },
+        { accion: "calif-editar", texto: L("Editar ramo", "Edit course", "编辑课程"), run: function () {
+          irACalif(); abrirFormularioRamo(cf);
+        } },
+        { accion: "calif-identidad", texto: t("ident.abrir"), run: function () {
+          irACalif(); abrirIdentidadCalif(codCalif);
+        } }
+      ];
+      if (!cf.cerrado) {
+        itemsCalif.push({ accion: cf.enCurso ? "calif-retirar" : "calif-activar",
+          texto: cf.enCurso ? t("calif.retirar") : t("calif.agregar"), run: function () {
+            irACalif();
+            if (cf.enCurso) retirarCursoCalif(codCalif); else activarCursoCalif(codCalif);
+          } });
+      }
+      itemsCalif.push({ sep: true });
+      itemsCalif.push({ accion: "calif-estado", texto: cf.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () {
+        irACalif(); alternarRamo(codCalif);
+      } });
+      itemsCalif.push({ accion: "calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () {
+        irACalif(); borrarRamo(codCalif);
+      } });
+      return { titulo: menuTitulo(L("Ramo", "Course", "课程"), cf.codigo + " — " + cf.nombre), items: itemsCalif };
+    }
+
     var rEl = el.closest("[data-ramo]");
     if (rEl) {
       var r = ramoPorCodigo(rEl.getAttribute("data-ramo"));
@@ -675,17 +739,32 @@
 
     var tEl = el.closest("[data-tarea]");
     if (tEl) {
-      var t = tareaPorId(tEl.getAttribute("data-tarea"));
-      if (!t) return null;
-      return { titulo: menuTitulo(t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务"), t.titulo), items: [
-        { accion: "tarea-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirTarea(t.id); } },
-        { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(t); } },
-        { accion: "tarea-estado", texto: t.hecha ? L("Reabrir", "Reopen", "重新打开") : L("Marcar hecha", "Mark done", "标为完成"), run: function () { alternarTarea(t.id); } },
-        { accion: "tarea-sub", texto: L("Agregar subtarea", "Add subtask", "添加子任务"), run: function () { abrirFormulario(null, t.id); } },
-        { sep: true },
-        { accion: "tarea-borrar", texto: t.tipo === "proyecto" ? L("Borrar proyecto y sus tareas", "Delete project and its tasks", "删除项目及其任务") : L("Borrar tarea", "Delete task", "删除任务"), peligro: true,
-          run: function () { borrarTarea(t.id); } }
-      ] };
+      var tar = tareaPorId(tEl.getAttribute("data-tarea"));
+      if (!tar) return null;
+      var it = [
+        { accion: "tarea-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirTarea(tar.id); } },
+        { accion: "tarea-editar", texto: "Editar", run: function () { abrirFormulario(tar); } }
+      ];
+      var priIdx = ORDEN_PRIORIDAD.indexOf(tar.prioridad || "media");
+      if (priIdx < ORDEN_PRIORIDAD.length - 1) it.push({ accion: "tarea-prioridad-sube", texto: t("tar.subirPrioridad"), run: function () { cambiarPrioridadTarea(tar.id, 1); } });
+      if (priIdx > 0) it.push({ accion: "tarea-prioridad-baja", texto: t("tar.bajarPrioridad"), run: function () { cambiarPrioridadTarea(tar.id, -1); } });
+      it.push({ sep: true });
+      if (esRecurrente(tar)) {
+        var hoyHecha = MimoRecurrencia.ocurre(tar.recurrencia, hoyISO()) && !!tar.recurrencia.hechas[hoyISO()];
+        var hoyOcurre = MimoRecurrencia.ocurre(tar.recurrencia, hoyISO());
+        if (proximaPendienteDe(tar)) it.push({
+          accion: "tarea-estado",
+          texto: hoyOcurre ? (hoyHecha ? L("Reabrir hoy", "Reopen today", "重新打开今天") : L("Completar hoy", "Complete today", "完成今天")) : L("Completar la próxima", "Complete next", "完成下一次"),
+          run: function () { alternarTarea(tar.id, hoyOcurre ? hoyISO() : ""); }
+        });
+      } else {
+        it.push({ accion: "tarea-estado", texto: tar.hecha ? t("tar.reabrir") : t("tar.completar"), run: function () { alternarTarea(tar.id); } });
+      }
+      it.push({ accion: "tarea-sub", texto: L("Agregar subtarea", "Add subtask", "添加子任务"), run: function () { abrirFormulario(null, tar.id); } });
+      it.push({ sep: true });
+      it.push({ accion: "tarea-borrar", texto: tar.tipo === "proyecto" ? L("Borrar proyecto y sus tareas", "Delete project and its tasks", "删除项目及其任务") : L("Borrar tarea", "Delete task", "删除任务"), peligro: true,
+        run: function () { borrarTarea(tar.id); } });
+      return { titulo: menuTitulo(tar.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务"), tar.titulo), items: it };
     }
 
     var pEl = el.closest("[data-periodo-item]");
@@ -748,6 +827,29 @@
           { accion: "zona-ramo", texto: L("Nuevo ramo", "New course", "新建课程"), run: function () { abrirFormularioRamo(null); } },
           { accion: "zona-importar-malla", texto: L("Importar malla", "Import plan", "导入规划"), run: function () { $("#archivo-malla").click(); } }
         ] };
+      }
+      if (zona === "calificaciones") {
+        var cSel = ramoPorCodigo(califSel);
+        var itemsCalif = [
+          { accion: "zona-calif-nuevo", texto: L("Nuevo ramo", "New course", "新建课程"), run: function () {
+            if (instalado("malla")) abrirFormularioRamo(null); else abrirCursoCalif();
+          } }
+        ];
+        if (instalado("malla")) itemsCalif.push({ accion: "zona-calif-malla", texto: L("Ver Malla", "View plan", "查看规划"), run: function () { ir("malla"); } });
+        if (cSel) {
+          itemsCalif.push({ sep: true });
+          itemsCalif.push({ accion: "zona-calif-editar", texto: L("Editar ramo", "Edit course", "编辑课程"), run: function () { abrirFormularioRamo(cSel); } });
+          itemsCalif.push({ accion: "zona-calif-identidad", texto: t("ident.abrir"), run: function () { abrirIdentidadCalif(cSel.codigo); } });
+          if (!cSel.cerrado) {
+            itemsCalif.push({ accion: cSel.enCurso ? "zona-calif-retirar" : "zona-calif-activar",
+              texto: cSel.enCurso ? t("calif.retirar") : t("calif.agregar"), run: function () {
+                if (cSel.enCurso) retirarCursoCalif(cSel.codigo); else activarCursoCalif(cSel.codigo);
+              } });
+          }
+          itemsCalif.push({ accion: "zona-calif-estado", texto: cSel.cerrado ? L("Reabrir curso", "Reopen course", "重新打开课程") : L("Cerrar curso", "Close course", "关闭课程"), run: function () { alternarRamo(cSel.codigo); } });
+          itemsCalif.push({ accion: "zona-calif-borrar", texto: L("Borrar ramo", "Delete course", "删除课程"), peligro: true, run: function () { borrarRamo(cSel.codigo); } });
+        }
+        return { titulo: L("Calificaciones", "Grades", "成绩"), items: itemsCalif };
       }
     }
     return null;
@@ -1019,7 +1121,7 @@
     else if (id === "tiempo") pintarTiempo();
     else if (id === "ajustes") pintarAjustes();
   }
-  function ir(id) {
+  function ir(id, conservarSeleccion) {
     if (secciones().indexOf(id) === -1) return;
     montarHost(id);
     if (splitOn && Date.now() < splitNavHasta) {
@@ -1037,6 +1139,10 @@
       return;
     }
     pantalla = id;
+    /* Entrar a Malla por la barra de secciones deja el tablero limpio: la
+       selección de Calificaciones u otra vista no se arrastra. Los atajos que
+       abren un ramo concreto (Ver en Malla, buscar) pasan conservarSeleccion. */
+    if (id === "malla" && !conservarSeleccion) estado.ramoSel = null;
     mostrarPaneles();
     pintarTabs();
     pintarSeccion(id);
@@ -1231,10 +1337,10 @@
   }
   function chipEvento(e) {
     var col = colorDeContexto(e.contexto);
-    var estilo = col ? ' style="background:' + col + ';color:' + textoSobre(col) + '"' : "";
+    var estilo = col ? ' style="--chip:' + col + '"' : "";
     var tipo = tipoEvento(e.tipo);
-    var etiqueta = tipo ? '<span class="evento-chip__tag" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
-    return '<button class="evento-chip" type="button" data-evento="' + esc(e.id) + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
+    var etiqueta = tipo ? '<span class="evento-chip__tag" title="' + esc(tipo.nombre) + '" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
+    return '<button class="evento-chip' + (col ? " evento-chip--color" : "") + '" type="button" data-evento="' + esc(e.id) + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b>" : "") +
       '<span class="evento-chip__tit">' + esc(e.titulo) + "</span>" + etiqueta + "</button>";
   }
@@ -1253,11 +1359,195 @@
     dl.innerHTML = cursosEnCurso()
       .map(function (c) { return '<option value="' + esc(c.codigo) + '">' + esc(c.nombre) + "</option>"; }).join("");
   }
+  function _calTituloMes(y, m) {
+    var nombre = new Date(y, m, 1).toLocaleDateString(localeActual(), { month: "long" });
+    nombre = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+    return idioma() === "zh" ? y + "年" + (m + 1) + "月" : nombre + " " + y;
+  }
+  function _calDiasLunes() {
+    var d = (DIAS_SEMANA[idioma()] || DIAS_SEMANA.es).slice();
+    d.push(d.shift()); // la semana del periodo empieza en lunes
+    return d;
+  }
+  function _calPeriodoDeFecha(iso) {
+    return (estado.periodos || []).filter(function (p) {
+      return (p.semanas || []).some(function (w) { return iso >= w.desde && iso <= w.hasta; });
+    })[0] || null;
+  }
+  function _calEtiquetaSemana(w) {
+    if (!w) return "—";
+    if (w.tipo === "receso") return "REC";
+    if (w.tipo === "examenes") return "EX";
+    return "S" + w.n;
+  }
+  function _calSemanaActualDe(p) {
+    if (!p || !Array.isArray(p.semanas)) return null;
+    return p.semanas.filter(function (w) { return hoyISO() >= w.desde && hoyISO() <= w.hasta; })[0] || null;
+  }
+  function _calSemanasVisibles(p) {
+    if (!p || !Array.isArray(p.semanas) || !p.corteActual) return p ? (p.semanas || []) : [];
+    var actual = _calSemanaActualDe(p);
+    if (!actual) return p.semanas;
+    var i = p.semanas.indexOf(actual);
+    return i > 0 ? p.semanas.slice(i) : p.semanas;
+  }
+  function _calSemanaCortada(p, sem) {
+    if (!p || !p.corteActual || !sem) return false;
+    var actual = _calSemanaActualDe(p);
+    return !!(actual && sem.desde < actual.desde);
+  }
+  function _calMinutosSemana(w) {
+    var total = 0;
+    sesionesActuales(estado.sesiones).forEach(function (s) {
+      if (s.fecha >= w.desde && s.fecha <= w.hasta) total += Number(s.minutos) || 0;
+    });
+    return total;
+  }
+  function _calBarraSemana(w, total, maximo) {
+    if (!total) return "";
+    var por = {};
+    sesionesActuales(estado.sesiones).forEach(function (s) {
+      if (s.fecha >= w.desde && s.fecha <= w.hasta) {
+        var k = s.ramo || "_";
+        por[k] = (por[k] || 0) + (Number(s.minutos) || 0);
+      }
+    });
+    var segs = Object.keys(por).map(function (k) {
+      var c = k === "_" ? null : ramoPorCodigo(k);
+      var color = c ? colorDeRamo(c) : "var(--muted)";
+      return '<i style="width:' + (por[k] / total * 100).toFixed(2) + "%;background:" + color + '"></i>';
+    }).join("");
+    return '<div class="cal-barra" style="width:' + Math.max(8, total / Math.max(1, maximo) * 100).toFixed(1) + '%">' + segs + "</div>";
+  }
+  function _calMoverPeriodo(delta) {
+    var ps = estado.periodos || [];
+    if (ps.length < 2) return;
+    var i = ps.map(function (p) { return p.id; }).indexOf(estado.periodoActivo);
+    if (i < 0) i = 0;
+    estado.periodoActivo = ps[(i + delta + ps.length) % ps.length].id;
+    guardar(); pintarPeriodo();
+  }
+  function _calAlternarCorte() {
+    var p = periodoActivoObj();
+    if (!p) return;
+    p.corteActual = !p.corteActual;
+    guardar(); pintarCalendario();
+  }
+  function _calMover(delta) {
+    if (vistaCalendario === "anio") calCursor.setFullYear(calCursor.getFullYear() + delta);
+    else if (vistaCalendario === "semestre") _calMoverPeriodo(delta);
+    else if (vistaCalendario === "semana") calCursor.setDate(calCursor.getDate() + delta * 7);
+    else calCursor.setMonth(calCursor.getMonth() + delta);
+    pintarCalendario();
+  }
+  function _calIrHoy() {
+    calCursor = new Date();
+    if (vistaCalendario === "semestre") {
+      var p = _calPeriodoDeFecha(hoyISO());
+      if (p && p.id !== estado.periodoActivo) { estado.periodoActivo = p.id; guardar(); pintarPeriodo(); }
+      else pintarCalendario();
+      var actual = document.querySelector("#cal-semestre tr.actual");
+      if (actual && actual.scrollIntoView) actual.scrollIntoView({ block: "center" });
+      return;
+    }
+    pintarCalendario();
+  }
+  function _calMesHTML() {
+    var y = calCursor.getFullYear(), m = calCursor.getMonth();
+    var primero = new Date(y, m, 1);
+    var domingo = (estado.prefs || {}).inicioSemana === "domingo";
+    var offset = domingo ? primero.getDay() : (primero.getDay() + 6) % 7;
+    var inicio = new Date(y, m, 1 - offset);
+    var dias = diasSemana(), periodoCal = periodoActivoObj();
+    var conSemana = !!(periodoCal && Array.isArray(periodoCal.semanas) && periodoCal.semanas.length);
+    var visibles = 0;
+    var html = (conSemana ? '<div class="cal-dow cal-dow--sem">' + esc(t("cal.semana")) + "</div>" : "") +
+      dias.map(function (d) { return '<div class="cal-dow">' + esc(d) + "</div>"; }).join("");
+    for (var i = 0; i < 42; i++) {
+      var f = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
+      var iso = isoFecha(f);
+      var sem = semanaDePeriodo(iso) || semanaDePeriodo(isoFecha(new Date(f.getTime() + 3 * 86400000)));
+      if (sem && _calSemanaCortada(periodoCal, sem)) sem = null;
+      if (i % 7 === 0 && conSemana) {
+        if (sem) {
+          var titulo = sem.numero ? tf("cal.tituloSemana", { n: sem.numero }) : sem.tipo === "receso" ? t("cal.tituloReceso") : t("cal.tituloExamenes");
+          html += '<button class="cal-sem-col tipo-' + sem.tipo + '" type="button" data-semana="' + esc(sem.desde) + '" title="' + esc(titulo + ". " + t("cal.clicTipo")) + '">' + _calEtiquetaSemana(sem) + "</button>";
+        } else {
+          html += '<div class="cal-sem-col" title="' + esc(t("cal.fueraPeriodo")) + '">—</div>';
+        }
+      }
+      var evs = eventosDe(iso);
+      if (f.getMonth() === m) visibles += evs.length;
+      var marca = "";
+      if (sem && (sem.tipo === "receso" || sem.tipo === "examenes")) {
+        marca = '<span class="cal-marca cal-marca-' + sem.tipo + '">' + esc(sem.tipo === "receso" ? t("cal.receso") : t("cal.examenes")) + "</span>";
+      }
+      html += '<div class="cal-dia' + (f.getMonth() !== m ? " fuera" : "") + (iso === hoyISO() ? " hoy" : "") +
+        (sem ? " sem-" + sem.tipo : "") + '" data-cal-dia="' + iso + '"><span class="cal-num">' + f.getDate() + "</span>" + marca +
+        '<div class="cal-evs">' + evs.map(chipEvento).join("") + "</div></div>";
+    }
+    return { html: html, visibles: visibles, clase: "cal-grid cal-grid--mes" + (conSemana ? " cal-grid--con-semana" : "") };
+  }
+  function _calAnioHTML() {
+    var y = calCursor.getFullYear(), total = 0, periodoAnio = periodoActivoObj();
+    var html = "";
+    for (var m = 0; m < 12; m++) {
+      var primero = new Date(y, m, 1);
+      var domingo = (estado.prefs || {}).inicioSemana === "domingo";
+      var offset = domingo ? primero.getDay() : (primero.getDay() + 6) % 7;
+      var diasEnMes = new Date(y, m + 1, 0).getDate();
+      html += '<section class="cal-mes"><div class="cal-mes-tit">' + esc(_calTituloMes(y, m)) + '</div><div class="cal-mes-grid">' +
+        diasSemana().map(function (d) { return '<span class="cal-mes-cab">' + esc(d.slice(0, 2)) + "</span>"; }).join("");
+      for (var i = 0; i < offset; i++) html += '<span class="cal-mes-cel vacia"></span>';
+      for (var d = 1; d <= diasEnMes; d++) {
+        var f = new Date(y, m, d), iso = isoFecha(f), evs = eventosDe(iso), sem = semanaDePeriodo(iso);
+        if (sem && _calSemanaCortada(periodoAnio, sem)) sem = null;
+        if (evs.length) total += evs.length;
+        html += '<button class="cal-mes-cel num' + (evs.length ? " con" : "") + (sem ? " sem-" + sem.tipo : "") +
+          '" type="button" data-cal-dia="' + iso + '" title="' + esc(t("cal.verMes") + " " + iso) + '">' + d +
+          (evs.length ? '<i class="dot"></i>' : "") + "</button>";
+      }
+      html += "</div></section>";
+    }
+    return { html: html, visibles: total };
+  }
+  function _calSemestreHTML() {
+    var p = periodoActivoObj();
+    if (!p || !Array.isArray(p.semanas) || !p.semanas.length) {
+      return { html: '<p class="empty">' + esc(t("cal.sinPeriodo")) + "</p>", visibles: 0 };
+    }
+    var dias = _calDiasLunes(), filas = [], maximo = 0, total = 0;
+    var semanas = _calSemanasVisibles(p);
+    semanas.forEach(function (w) {
+      var min = _calMinutosSemana(w);
+      maximo = Math.max(maximo, min);
+      var celdas = [];
+      for (var k = 0; k < 7; k++) {
+        var f = new Date(w.desde + "T12:00:00");
+        f.setDate(f.getDate() + k);
+        var iso = isoFecha(f), evs = eventosDe(iso);
+        total += evs.length;
+        celdas.push('<td class="cal-sem-dia">' + evs.map(chipEvento).join("") + "</td>");
+      }
+      var rango = new Date(w.desde + "T12:00:00").toLocaleDateString(localeActual(), { day: "2-digit", month: "short" }) +
+        " – " + new Date(w.hasta + "T12:00:00").toLocaleDateString(localeActual(), { day: "2-digit", month: "short" });
+      var actual = hoyISO() >= w.desde && hoyISO() <= w.hasta;
+      var pasada = hoyISO() > w.hasta;
+      filas.push('<tr class="' + (actual ? "actual " : "") + (pasada ? "pasada " : "") + 'tipo-' + (w.tipo || "clases") + '">' +
+        '<td class="cal-sem-bl"><b>' + _calEtiquetaSemana(w) + '</b><span class="cal-sem-rango">' + esc(rango) + "</span></td>" +
+        celdas.join("") + '<td class="cal-sem-est"><b>' + esc(fmtHoras(min)) + "</b><span>" + esc(t("cal.estudio")) + "</span>" +
+        _calBarraSemana(w, min, maximo) + "</td></tr>");
+    });
+    var tabla = '<div class="cal-sem-scroll"><table class="cal-sem"><thead><tr><th class="cal-sem-bl">' + esc(t("cal.semanaLarga")) + "</th>" +
+      dias.map(function (d) { return "<th>" + esc(d) + "</th>"; }).join("") +
+      '<th class="cal-sem-est">' + esc(t("cal.estudio")) + "</th></tr></thead><tbody>" + filas.join("") + "</tbody></table></div>";
+    return { html: tabla, visibles: total };
+  }
   function pintarCalendario() {
     normalizarEventos();
     pintarContextosCursos();
     pintarTiposCalendario();
-    var hoy = new Date(), y = calCursor.getFullYear(), m = calCursor.getMonth();
+    var y = calCursor.getFullYear(), m = calCursor.getMonth();
     var total = eventosTodos().length;
     $("#kpi-eventos").textContent = String(total);
     $("#kpi-tareas").textContent = String(estado.tareas.filter(function (t) { return t.fecha; }).length);
@@ -1266,28 +1556,25 @@
     $$("#vista-calendario button").forEach(function (b) {
       b.classList.toggle("on", b.getAttribute("data-cal-vista") === vistaCalendario);
     });
-    var grid = $("#cal-grid"), agenda = $("#cal-agenda");
-    agenda.hidden = vistaCalendario !== "agenda";
-    grid.hidden = vistaCalendario === "agenda";
+    var grid = $("#cal-grid"), anio = $("#cal-anio"), semestre = $("#cal-semestre");
+    var esMes = vistaCalendario === "mes", esSemana = vistaCalendario === "semana";
+    var esAnio = vistaCalendario === "anio", esSemestre = vistaCalendario === "semestre";
+    grid.hidden = !(esMes || esSemana);
+    anio.hidden = !esAnio;
+    semestre.hidden = !esSemestre;
     var visibles = 0;
-    if (vistaCalendario === "agenda") {
-      var orden = eventosTodos().slice().sort(function (a, b) {
-        return (a.fecha + " " + (a.hora || "")) < (b.fecha + " " + (b.hora || "")) ? -1 : 1;
-      });
-      visibles = orden.length;
-      $("#cal-mes-titulo").textContent = t("cal.agenda");
-      agenda.innerHTML = orden.length ? orden.map(function (e) {
-        var col = colorDeContexto(e.contexto);
-        var estilo = col ? ' style="box-shadow:inset 4px 0 0 ' + col + '"' : "";
-        var tipoAgenda = tipoEvento(e.tipo);
-        var tagAgenda = tipoAgenda ? '<span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoAgenda.id) + '">' + esc(tipoAgenda.nombre) + "</span>" : "";
-        return '<button class="cal-agenda__item" type="button" data-evento="' + esc(e.id) + '" title="' + esc(t("cal.clicDerecho")) + '"' + estilo + '><span class="cal-agenda__cuerpo"><span class="cal-agenda__tit">' + iconoContexto(e.contexto) + "<b>" + esc(e.titulo) + "</b>" + tagAgenda + '</span><small>' + esc(e.fecha) + (e.hora ? " · " + esc(horaTexto(e.hora)) : "") + (e.contexto ? " · " + esc(e.contexto) : "") + '</small></span><span class="pill">' + esc(e.fecha >= hoyISO() ? t("cal.proximo") : t("cal.pasado")) + "</span></button>";
-      }).join("") : '<p class="empty">' + esc(t("cal.sinEventos")) + '</p>';
-    } else if (vistaCalendario === "semana") {
+    if (esAnio) {
+      var a = _calAnioHTML();
+      anio.innerHTML = a.html; visibles = a.visibles;
+      $("#cal-mes-titulo").textContent = idioma() === "zh" ? y + "年" : String(y);
+    } else if (esSemestre) {
+      var sm = _calSemestreHTML(), p = periodoActivoObj();
+      semestre.innerHTML = sm.html; visibles = sm.visibles;
+      $("#cal-mes-titulo").textContent = p ? p.nombre : t("cal.sinPeriodo");
+    } else if (esSemana) {
       var lunes = new Date(calCursor.getFullYear(), calCursor.getMonth(), calCursor.getDate());
       var domingo = (estado.prefs || {}).inicioSemana === "domingo";
       lunes.setDate(lunes.getDate() - (domingo ? lunes.getDay() : ((lunes.getDay() + 6) % 7)));
-      var domingo = (estado.prefs || {}).inicioSemana === "domingo";
       var dias = diasSemana();
       grid.className = "cal-grid cal-grid--semana";
       var semSemana = semanaDePeriodo(isoFecha(lunes)) || semanaDePeriodo(isoFecha(new Date(lunes.getTime() + 3 * 86400000)));
@@ -1295,53 +1582,41 @@
       $("#cal-mes-titulo").textContent = t("cal.semanaDel") + " " + lunes.getDate() + "/" + (lunes.getMonth() + 1) + rotuloSemana;
       grid.innerHTML = dias.map(function (d, i) {
         var f = new Date(lunes.getFullYear(), lunes.getMonth(), lunes.getDate() + i);
-        var iso = f.getFullYear() + "-" + String(f.getMonth() + 1).padStart(2, "0") + "-" + String(f.getDate()).padStart(2, "0");
-        var evs = eventosDe(iso); visibles += evs.length;
-        return '<div class="cal-semana-dia' + (iso === hoyISO() ? " hoy" : "") + '" data-cal-dia="' + iso + '"><b>' + d + " " + f.getDate() + "</b>" +
+        var iso = isoFecha(f), evs = eventosDe(iso); visibles += evs.length;
+        return '<div class="cal-semana-dia' + (iso === hoyISO() ? " hoy" : "") + '" data-cal-dia="' + iso + '"><b>' + esc(d) + " " + f.getDate() + "</b>" +
           (evs.length ? evs.map(chipEvento).join("") : '<span class="cal-vacio-dia">—</span>') + "</div>";
       }).join("");
     } else {
-      var primero = new Date(y, m, 1);
-      var domingo = (estado.prefs || {}).inicioSemana === "domingo";
-      var offset = domingo ? primero.getDay() : (primero.getDay() + 6) % 7;
-      var inicio = new Date(y, m, 1 - offset);
-      var dias2 = diasSemana();
-      var periodoCal = periodoActivoObj();
-      var conSemana = !!(periodoCal && Array.isArray(periodoCal.semanas) && periodoCal.semanas.length);
-      grid.className = "cal-grid cal-grid--mes" + (conSemana ? " cal-grid--con-semana" : "");
-      $("#cal-mes-titulo").textContent = new Date(y, m, 1).toLocaleDateString(localeActual(), { month: "long", year: "numeric" });
-      var html = (conSemana ? '<div class="cal-dow cal-dow--sem">' + t("cal.semana") + "</div>" : "") +
-        dias2.map(function (d) { return '<div class="cal-dow">' + d + "</div>"; }).join("");
-      for (var i = 0; i < 42; i++) {
-        var f2 = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + i);
-        var iso2 = isoFecha(f2);
-        if (i % 7 === 0) {
-          if (conSemana) {
-            var sem = semanaDePeriodo(iso2) || semanaDePeriodo(isoFecha(new Date(f2.getTime() + 3 * 86400000)));
-            var etiqueta = sem ? (sem.numero ? "S" + sem.numero : sem.tipo === "receso" ? "REC" : sem.tipo === "examenes" ? "EX" : "—") : "—";
-            var titulo = sem ? (sem.numero ? tf("cal.tituloSemana", { n: sem.numero }) : sem.tipo === "receso" ? t("cal.tituloReceso") : t("cal.tituloExamenes")) : t("cal.fueraPeriodo");
-            if (sem) {
-              html += '<button class="cal-sem-col tipo-' + sem.tipo + '" type="button" data-semana="' + sem.desde + '" title="' + esc(titulo) + '. ' + esc(t("cal.clicTipo")) + '">' + etiqueta + "</button>";
-            } else {
-              html += '<div class="cal-sem-col" title="' + esc(titulo) + '">' + etiqueta + "</div>";
-            }
-          }
-        }
-        var evs2 = eventosDe(iso2); if (f2.getMonth() === m) visibles += evs2.length;
-        html += '<div class="cal-dia' + (f2.getMonth() !== m ? " fuera" : "") + (iso2 === hoyISO() ? " hoy" : "") + '" data-cal-dia="' + iso2 + '"><b>' + f2.getDate() + "</b>" +
-          (evs2.length ? '<div class="cal-eventos">' + evs2.slice(0, 2).map(chipEvento).join("") + (evs2.length > 2 ? '<span class="cal-mas">+' + (evs2.length - 2) + "</span>" : "") + "</div>" : "") + "</div>";
-      }
-      grid.innerHTML = html;
-      $$("#cal-grid [data-semana]").forEach(function (b) {
-        b.addEventListener("click", function (e) {
-          e.stopPropagation();
-          cambiarTipoSemanaCalendario(b.getAttribute("data-semana"));
-        });
-      });
+      var mes = _calMesHTML();
+      grid.className = mes.clase; grid.innerHTML = mes.html; visibles = mes.visibles;
+      $("#cal-mes-titulo").textContent = _calTituloMes(y, m);
     }
     $("#cal-cuenta").textContent = visibles + " " + t(visibles === 1 ? "cal.evento" : "cal.eventos");
+    if ($("#btn-hoy")) $("#btn-hoy").setAttribute("title", esAnio ? t("cal.esteAnio") : esSemestre ? t("cal.esteSemestre") : esSemana ? t("cal.estaSemana") : t("cal.esteMes"));
+    var pActivo = periodoActivoObj(), btnCorte = $("#cal-corte");
+    if (btnCorte) {
+      var cortado = !!(pActivo && pActivo.corteActual);
+      btnCorte.setAttribute("aria-pressed", cortado ? "true" : "false");
+      btnCorte.classList.toggle("on", cortado);
+      btnCorte.disabled = !pActivo;
+      btnCorte.title = pActivo ? t("cal.corteAyuda") : t("cal.sinPeriodo");
+    }
     $("#cal-vacio").hidden = visibles > 0;
-    $$("#cal-grid [data-evento], #cal-agenda [data-evento]").forEach(function (b) {
+    $$("#cal-grid [data-semana]").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        cambiarTipoSemanaCalendario(b.getAttribute("data-semana"));
+      });
+    });
+    $$("#cal-anio [data-cal-dia]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var iso = b.getAttribute("data-cal-dia");
+        calCursor = new Date(iso + "T12:00:00");
+        vistaCalendario = "mes"; estado.vistaCalendario = "mes";
+        guardar(); pintarCalendario();
+      });
+    });
+    $$("#cal-grid [data-evento], #cal-anio [data-evento], #cal-semestre [data-evento]").forEach(function (b) {
       b.addEventListener("click", function () {
         estado.eventoSel = b.getAttribute("data-evento");
         var ctx = ctxDe(b);
@@ -1440,6 +1715,13 @@
   function normalizarTareas() {
     estado.tareas = (estado.tareas || []).map(function (t, i) {
       var e = t.estado || (t.hecha ? "hecha" : "pendiente");
+      var rec = null;
+      if (window.MimoRecurrencia && t.recurrencia && typeof t.recurrencia === "object") {
+        rec = MimoRecurrencia.normalizar(Object.assign({}, t.recurrencia, {
+          desde: t.recurrencia.desde || t.fecha || ""
+        }));
+        if (rec && !rec.desde) rec = null;
+      }
       return conservar({
         id: t.id || "t" + i,
         titulo: t.titulo || "Sin título",
@@ -1451,12 +1733,42 @@
         fecha: t.fecha || "",
         contexto: t.contexto || "",
         nota: t.nota || "",
+        recurrencia: rec,
         orden: typeof t.orden === "number" ? t.orden : i,
         creada: t.creada || ""
       }, t);
     });
   }
   function tareaPorId(id) { return estado.tareas.filter(function (t) { return t.id === id; })[0] || null; }
+  /* ---- motor de repetición: la tarea es la serie; cada fecha es una ocurrencia ---- */
+  function esRecurrente(t) { return !!(t && t.recurrencia && t.recurrencia.frecuencia && window.MimoRecurrencia); }
+  function itemDe(t, fecha) {
+    if (!t) return null;
+    var rec = esRecurrente(t);
+    var iso = fecha || (rec ? "" : t.fecha || "");
+    return { t: t, fecha: iso, hecha: rec ? !!(t.recurrencia.hechas && t.recurrencia.hechas[iso]) : !!t.hecha, serie: rec };
+  }
+  /* Todas las ocurrencias que caen entre dos fechas, incluidas las de una serie.
+     Es la única puerta que usan el tablero, la barra y «Hoy». */
+  function itemsEntre(desde, hasta, tareas) {
+    var out = [];
+    (tareas || estado.tareas || []).forEach(function (t) {
+      if (esRecurrente(t)) {
+        MimoRecurrencia.ocurrenciasEntre(t.recurrencia, desde, hasta).forEach(function (iso) { out.push(itemDe(t, iso)); });
+      } else if (t.fecha && t.fecha >= desde && t.fecha <= hasta) {
+        out.push(itemDe(t, t.fecha));
+      }
+    });
+    return out.sort(function (a, b) {
+      return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : ((a.t.orden || 0) - (b.t.orden || 0));
+    });
+  }
+  function proximaDe(t) {
+    return esRecurrente(t) ? MimoRecurrencia.proxima(t.recurrencia, hoyISO()) : (t.fecha || "");
+  }
+  function proximaPendienteDe(t) {
+    return esRecurrente(t) ? MimoRecurrencia.proximaPendiente(t.recurrencia, hoyISO()) : (t.fecha || "");
+  }
   function hijosDe(id) { return estado.tareas.filter(function (t) { return t.padre_id === id; }); }
   function raicesTareas() {
     return estado.tareas.filter(function (t) { return !t.padre_id || !tareaPorId(t.padre_id); });
@@ -1488,25 +1800,34 @@
     var p = f.split("-");
     return p.length === 3 ? p[2] + "/" + p[1] : f;
   }
-  function filaTarea(t, nivel) {
-    var p = progreso(t), hijos = hijosDe(t.id);
+  function filaTarea(t, nivel, item) {
+    var p = progreso(t), hijos = hijosDe(t.id), rec = esRecurrente(t);
+    var prox = rec ? proximaPendienteDe(t) : (t.fecha || "");
+    var fechaItem = item ? item.fecha : (rec ? (prox || "") : (t.fecha || ""));
+    var hecho = item ? item.hecha : (rec ? !!(fechaItem && t.recurrencia.hechas[fechaItem]) : !!t.hecha);
+    var puedeMarcar = !rec || !!prox;
+    var fechaTxt = rec ? (prox ? fechaCorta(prox) : L("serie terminada", "series ended", "系列已结束")) : fechaCorta(t.fecha);
+    var serieBadge = rec
+      ? ' <small class="tarea-serie" title="' + esc(resumenRecurrencia(t.recurrencia)) + '">↻ ' + esc(etiquetaCortaRecurrencia(t.recurrencia)) + "</small>"
+      : "";
     var sub = t.tipo === "proyecto"
       ? '<span class="tarea-progreso" title="' + esc(L(p.hechas + " de " + p.total, p.hechas + " of " + p.total, p.hechas + "/" + p.total)) + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
       : "";
-    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
-      '<button class="tarea-check' + (t.hecha ? " hecha" : "") + '" type="button" data-check="' + t.id + '" aria-label="' + esc(t.hecha ? L("Marcar abierta", "Mark open", "标为未完成") : L("Marcar hecha", "Mark done", "标为完成")) + '">' + (t.hecha ? "✓" : "") + "</button>" +
-      '<span class="tarea-nom' + (t.hecha ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">' + esc(L("proyecto", "project", "项目")) + '</small>' : "") + "</span>" +
-      '<span class="tarea-meta">' + esc(fechaCorta(t.fecha)) + "</span>" +
+    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" data-fecha="' + esc(fechaItem) + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
+      '<button class="tarea-check' + (hecho ? " hecha" : "") + '" type="button" data-check="' + t.id + '" data-fecha="' + esc(fechaItem) + '"' + (puedeMarcar ? "" : " disabled") + ' aria-label="' + esc(hecho ? L("Marcar abierta", "Mark open", "标为未完成") : L("Marcar hecha", "Mark done", "标为完成")) + '">' + (hecho ? "✓" : "") + "</button>" +
+      '<span class="tarea-nom' + (hecho ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">' + esc(L("proyecto", "project", "项目")) + '</small>' : "") + serieBadge + "</span>" +
+      '<span class="tarea-meta">' + esc(fechaTxt) + "</span>" +
       '<span class="pill pill--' + esc(t.prioridad) + '">' + esc(etiquetaPrioridad(t.prioridad)) + "</span>" + sub +
       '<button class="tarea-add" type="button" data-add-sub="' + t.id + '" title="' + esc(L("Agregar una tarea dentro", "Add a task inside", "添加子任务")) + '">+</button></div>';
     if (hijos.length) html += hijos.map(function (h) { return filaTarea(h, nivel + 1); }).join("");
     return html;
   }
-  function tarjetaTablero(t) {
-    var p = progreso(t);
-    return '<button class="tarjeta-tarea' + (estado.tareaSel === t.id ? " sel" : "") + '" type="button" data-tarea="' + t.id + '" title="' + esc(tr("cal.clicDerecho")) + '">' +
-      '<b>' + esc(t.titulo) + "</b><small>" + esc(fechaCorta(t.fecha)) + " · " + marcaContexto(t.contexto) + esc(t.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
-      (t.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</button>";
+  function tarjetaTablero(item) {
+    var tar = item.t, p = progreso(tar);
+    return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (item.hecha ? " hecha" : "") + '" data-tarea="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
+      '<button class="tarea-check' + (item.hecha ? " hecha" : "") + '" type="button" data-check="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" aria-label="' + esc(item.hecha ? t("tar.reabrir") : t("tar.completar")) + '">' + (item.hecha ? "✓" : "") + "</button>" +
+      '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + (item.serie ? ' <small class="tarea-serie">↻ ' + esc(etiquetaCortaRecurrencia(tar.recurrencia)) + "</small>" : "") + "</b><small>" + esc(fechaCorta(item.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+      (tar.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</span></div>";
   }
   function bindTareas() {
     $$("#tareas-lista [data-tarea]").forEach(function (fila) {
@@ -1525,12 +1846,7 @@
     $$("#tareas-lista [data-check]").forEach(function (b) {
       b.addEventListener("click", function (ev) {
         ev.stopPropagation();
-        var t = tareaPorId(b.getAttribute("data-check"));
-        if (!t) return;
-        var marcar = !t.hecha;
-        t.hecha = marcar; t.estado = marcar ? "hecha" : "pendiente";
-        if (marcar && t.tipo === "proyecto") descendientes(t).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
-        guardar(); pintarTareas(); pintarPanel();
+        alternarTarea(b.getAttribute("data-check"), b.getAttribute("data-fecha") || "");
       });
     });
     $$("#tareas-lista [data-add-sub]").forEach(function (b) {
@@ -1541,34 +1857,81 @@
       });
     });
   }
+  function _pasaFiltroTareas(item, filtro) {
+    if (filtro === "pendientes") return !item.hecha;
+    if (filtro === "hoy") return item.fecha === hoyISO();
+    if (filtro === "ramos") return !!cursoDeContexto(item.t.contexto);
+    if (filtro === "personal") return !cursoDeContexto(item.t.contexto);
+    return true;
+  }
   function pintarTareas() {
     normalizarTareas();
     var lista = $("#tareas-lista"), vacio = $("#tareas-vacio"), tareas = estado.tareas;
-    var hoy = tareas.filter(function (t) { return !t.hecha && t.fecha === hoyISO(); });
-    var abiertas = tareas.filter(function (t) { return !t.hecha; });
-    var hechas = tareas.filter(function (t) { return t.hecha; });
+    /* Una serie cuenta una vez en «abiertas»/«hechas»: se cierra cuando ya no
+       tiene próxima ocurrencia (fin por fecha o por número de veces). */
+    var hoy = itemsEntre(hoyISO(), hoyISO(), tareas).filter(function (i) { return !i.hecha; });
+    var abiertas = tareas.filter(function (t) { return esRecurrente(t) ? !!proximaPendienteDe(t) : !t.hecha; });
+    var hechas = tareas.filter(function (t) { return esRecurrente(t) ? !proximaPendienteDe(t) : t.hecha; });
     $("#kpi-hoy").textContent = String(hoy.length);
     $("#kpi-abiertas").textContent = String(abiertas.length);
     $("#kpi-hechas").textContent = String(hechas.length);
     $("#kpi-progreso").textContent = (tareas.length ? Math.round(hechas.length / tareas.length * 100) : 0) + " %";
+    $$("#vista-tareas button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-vista") === vistaTareas);
+    });
+    var filtros = $("#tareas-filtros");
+    if (filtros) filtros.hidden = vistaTareas !== "tablero";
+    $$("#tareas-filtros [data-filtro]").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-filtro") === filtroTareas);
+    });
+    var cuenta = { todas: tareas.length, pendientes: abiertas.length,
+      hoy: itemsEntre(hoyISO(), hoyISO(), tareas).length,
+      ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
+      personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
+    Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
     if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; return; }
     vacio.hidden = true;
     if (vistaTareas === "arbol") {
       lista.innerHTML = raicesTareas().map(function (t) { return filaTarea(t, 0); }).join("");
     } else if (vistaTareas === "tablero") {
-      var lunes = new Date(); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
-      var domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6);
-      var iso = function (d) { return d.toISOString().slice(0, 10); };
-      var colHoy = tareas.filter(function (t) { return !t.hecha && (!t.fecha || t.fecha <= hoyISO()); });
-      var colSemana = tareas.filter(function (t) { return !t.hecha && t.fecha > hoyISO(); });
-      var colHechas = tareas.filter(function (t) { return t.hecha; });
-      var col = function (titulo, items) {
-        return '<div class="tablero-col"><h3>' + titulo + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(L("Nada.", "Nothing.", "没有。")) + '</p>') + "</div>";
+      var lunes = lunesDe(new Date()), domingo = new Date(lunes.getTime());
+      domingo.setDate(domingo.getDate() + 6);
+      var lunesIso = isoFecha(lunes), domingoIso = isoFecha(domingo);
+      var visibles = itemsEntre(lunesIso, domingoIso, tareas).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+      var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha === hoyISO(); });
+      var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoIso; });
+      var colHechas = visibles.filter(function (i) { return i.hecha && i.fecha >= lunesIso && i.fecha <= domingoIso; });
+      var col = function (titulo, items, clave) {
+        return '<div class="tablero-col"><h3>' + esc(titulo) + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(t(clave)) + '</p>') + "</div>";
       };
-      lista.innerHTML = '<div class="tablero">' + col(L("Hoy / atrasadas", "Today / overdue", "今天 / 逾期"), colHoy) + col(L("Próximas", "Upcoming", "即将到来"), colSemana) + col(L("Hechas", "Done", "已完成"), colHechas) + "</div>";
+      /* Las tareas sin fecha no caben en ninguna columna: tienen su propia tira. */
+      var sinFecha = tareas.filter(function (t) { return !esRecurrente(t) && !t.fecha; })
+        .map(function (t) { return itemDe(t, ""); })
+        .filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+      lista.innerHTML = '<div class="tablero">' + col(t("tar.col.hoy"), colHoy, "tar.vacio.hoy") + col(t("tar.col.semana"), colSemana, "tar.vacio.semana") + col(t("tar.col.hechas"), colHechas, "tar.vacio.hechas") + "</div>" +
+        (sinFecha.length ? '<div class="tablero-sin-fecha"><h3>' + esc(L("Sin fecha", "No date", "无日期")) + " <span>" + sinFecha.length + '</span></h3><div class="tablero-sin-fecha__lista">' + sinFecha.map(tarjetaTablero).join("") + "</div></div>" : "");
     } else {
-      var v = tareas.filter(function (t) { return !t.hecha && t.fecha && t.fecha <= hoyISO(); });
-      lista.innerHTML = v.length ? v.map(function (t) { return filaTarea(t, 0); }).join("") : '<p class="muted">' + esc(L("Nada para hoy. Cambia a Árbol o Tablero.", "Nothing for today. Switch to Tree or Board.", "今天没有任务。请切换到树状或看板。")) + '</p>';
+      /* «Al día»: lo accionable de hoy, una sola vez. Entran las tareas
+         vencidas, las de hoy y las que no tienen fecha; quedan fuera las
+         futuras y las hechas. Una serie entra solo con su ocurrencia de hoy. */
+      var v = tareas.filter(function (t) {
+        return !esRecurrente(t) && !t.hecha && (!t.fecha || t.fecha <= hoyISO());
+      }).map(function (t) { return itemDe(t, t.fecha || ""); });
+      hoy.forEach(function (i) { if (i.serie) v.push(i); });
+      var vistos = {};
+      v = v.filter(function (i) {
+        var clave = i.t.id + "|" + i.fecha;
+        if (vistos[clave]) return false;
+        vistos[clave] = 1;
+        return true;
+      });
+      v.sort(function (a, b) {
+        if (!a.fecha && !b.fecha) return 0;
+        if (!a.fecha) return 1;
+        if (!b.fecha) return -1;
+        return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : 0;
+      });
+      lista.innerHTML = v.length ? v.map(function (i) { return filaTarea(i.t, 0, i); }).join("") : '<p class="muted">' + esc(L("Nada pendiente. Cambia a Árbol o Tablero.", "Nothing pending. Switch to Tree or Board.", "没有待办。请切换到树状或看板。")) + '</p>';
     }
     bindTareas();
   }
@@ -1585,33 +1948,290 @@
     });
     return out;
   }
+  /* ---- ventana de tarea: fecha opcional, descripción Markdown y recurrencia ---- */
+  var formRec = null;
+
+  function sumarDiasISO(iso, n) {
+    var d = new Date((iso || hoyISO()) + "T12:00:00");
+    d.setDate(d.getDate() + n);
+    return isoFecha(d);
+  }
+  function fechaLarga(iso) {
+    if (!iso) return "";
+    var d = new Date(iso + "T12:00:00");
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString(localeActual(), { weekday: "short", day: "numeric", month: "short" });
+  }
+  function nombresDias() { return DIAS_SEMANA[idioma()] || DIAS_SEMANA.es; }
+  function rangoDias(dias, nombres) {
+    var d = (dias || []).slice().sort(function (a, b) { return a - b; });
+    if (!d.length || d.length === 7) return L("todos los días", "every day", "每天");
+    if (d.join(",") === "1,2,3,4,5") return L("L–V", "Mon–Fri", "周一至周五");
+    if (d.join(",") === "0,6") return L("fin de semana", "weekends", "周末");
+    return d.map(function (n) { return nombres[n]; }).join(", ");
+  }
+  function resumenRecurrencia(rec) {
+    if (!rec || !rec.frecuencia) return L("No se repite", "Does not repeat", "不重复");
+    var nombres = nombresDias();
+    var cada;
+    if (rec.frecuencia === "diaria") {
+      cada = rec.intervalo === 1 ? L("Cada día", "Every day", "每天")
+        : L("Cada " + rec.intervalo + " días", "Every " + rec.intervalo + " days", "每" + rec.intervalo + "天");
+    } else if (rec.frecuencia === "semanal") {
+      cada = rec.intervalo === 1 ? L("Cada semana", "Every week", "每周")
+        : L("Cada " + rec.intervalo + " semanas", "Every " + rec.intervalo + " weeks", "每" + rec.intervalo + "周");
+      var dias = rec.dias.length ? rec.dias : [new Date((rec.desde || hoyISO()) + "T12:00:00").getDay()];
+      cada += " · " + rangoDias(dias, nombres);
+    } else if (rec.frecuencia === "mensual") {
+      cada = rec.intervalo === 1 ? L("Cada mes", "Every month", "每月")
+        : L("Cada " + rec.intervalo + " meses", "Every " + rec.intervalo + " months", "每" + rec.intervalo + "个月");
+      if (rec.desde) cada += L(" · día ", " · day ", " · 第 ") + parseInt(rec.desde.slice(8), 10);
+    } else {
+      cada = rec.intervalo === 1 ? L("Cada año", "Every year", "每年")
+        : L("Cada " + rec.intervalo + " años", "Every " + rec.intervalo + " years", "每" + rec.intervalo + "年");
+    }
+    if (rec.frecuencia === "diaria" && rec.dias.length && rec.dias.length < 7) {
+      cada += " · " + rangoDias(rec.dias, nombres);
+    }
+    var fin;
+    if (rec.fin === "fecha" && rec.hasta) fin = L("hasta " + fechaLarga(rec.hasta), "until " + fechaLarga(rec.hasta), "至 " + fechaLarga(rec.hasta));
+    else if (rec.fin === "cuenta") fin = L(rec.veces + " veces", rec.veces + " times", rec.veces + " 次");
+    else fin = L("sin fin", "no end", "无结束");
+    return cada + " · " + fin;
+  }
+  function etiquetaCortaRecurrencia(rec) {
+    if (!rec || !rec.frecuencia) return "";
+    var nombres = nombresDias();
+    if (rec.frecuencia === "diaria") {
+      return rec.dias.length && rec.dias.length < 7 ? rangoDias(rec.dias, nombres) : L("diaria", "daily", "每日");
+    }
+    if (rec.frecuencia === "semanal") {
+      var dias = rec.dias.length ? rec.dias : [new Date((rec.desde || hoyISO()) + "T12:00:00").getDay()];
+      return rangoDias(dias, nombres);
+    }
+    return rec.frecuencia === "mensual" ? L("mensual", "monthly", "每月") : L("anual", "yearly", "每年");
+  }
+
+  function campoFechaHTML(valor) {
+    return '<div class="campo"><span>' + esc(L("Fecha", "Date", "日期")) + "</span>" +
+      '<div class="fila fecha-fila"><input class="entrada" id="tarea-fecha" type="date" value="' + esc(valor || "") + '" aria-label="' + esc(L("Fecha (opcional)", "Date (optional)", "日期（可选）")) + '">' +
+      '<button class="btn btn--chico" type="button" data-fecha-rapida="hoy">' + esc(L("Hoy", "Today", "今天")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-fecha-rapida="manana">' + esc(L("Mañana", "Tomorrow", "明天")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-fecha-rapida="sin">' + esc(L("Sin fecha", "No date", "无日期")) + "</button></div>" +
+      '<small class="muted">' + esc(L("Opcional: sin fecha queda en «Sin fecha»; si se repite, empieza hoy.", "Optional: with no date it stays under “No date”; if it repeats, it starts today.", "可选：没有日期时留在“无日期”；若重复，从今天开始。")) + "</small></div>";
+  }
+
+  function recurrenciaHTML(rec) {
+    var frec = rec ? rec.frecuencia : "";
+    var intervalo = rec ? rec.intervalo : 1;
+    var fin = rec ? rec.fin : "nunca";
+    var dias = rec ? rec.dias : [];
+    var nombres = nombresDias();
+    var orden = [1, 2, 3, 4, 5, 6, 0];
+    var frecs = [
+      ["", L("No se repite", "Does not repeat", "不重复")],
+      ["diaria", L("Diaria", "Daily", "每天")],
+      ["semanal", L("Semanal", "Weekly", "每周")],
+      ["mensual", L("Mensual", "Monthly", "每月")],
+      ["anual", L("Anual", "Yearly", "每年")]
+    ];
+    var botones = frecs.map(function (f) {
+      return '<button class="btn btn--chico' + (freqON(f[0], frec) ? " on" : "") + '" type="button" data-rec-frec="' + f[0] + '" aria-pressed="' + (freqON(f[0], frec) ? "true" : "false") + '">' + esc(f[1]) + "</button>";
+    }).join("");
+    var diasBotones = orden.map(function (n) {
+      var on = dias.indexOf(n) !== -1;
+      return '<button class="rec-dia' + (on ? " on" : "") + '" type="button" data-dia="' + n + '" aria-pressed="' + (on ? "true" : "false") + '" title="' + esc(nombres[n]) + '">' + esc(nombres[n]) + "</button>";
+    }).join("");
+    return '<div class="campo rec" id="tarea-rec"><span>' + esc(L("Repetición", "Repeat", "重复")) + "</span>" +
+      '<div class="rec-frec" role="group" aria-label="' + esc(L("Frecuencia de la tarea", "Task frequency", "任务频率")) + '">' + botones + "</div>" +
+      '<div class="rec-cuerpo" id="tarea-rec-cuerpo"' + (frec ? "" : " hidden") + ">" +
+      '<div class="rec-linea"><label class="rec-cada">' + esc(L("Cada", "Every", "每")) +
+      ' <input class="entrada" id="tarea-rec-intervalo" type="number" min="1" max="99" value="' + intervalo + '" aria-label="' + esc(L("Intervalo", "Interval", "间隔")) + '">' +
+      ' <span id="tarea-rec-unidad">' + esc(L("días", "days", "天")) + "</span></label>" +
+      '<label class="rec-fin">' + esc(L("Termina", "Ends", "结束")) + ' <select class="entrada" id="tarea-rec-fin">' +
+      '<option value="nunca"' + (fin === "nunca" ? " selected" : "") + ">" + esc(L("nunca", "never", "从不")) + "</option>" +
+      '<option value="fecha"' + (fin === "fecha" ? " selected" : "") + ">" + esc(L("el día", "on date", "日期")) + "</option>" +
+      '<option value="cuenta"' + (fin === "cuenta" ? " selected" : "") + ">" + esc(L("después de", "after", "次数后")) + "</option>" +
+      '</select></label><input class="entrada" id="tarea-rec-hasta" type="date" value="' + esc(rec && rec.hasta ? rec.hasta : "") + '"' + (fin === "fecha" ? "" : " hidden") + ">" +
+      '<label class="rec-veces" id="tarea-rec-veces-caja"' + (fin === "cuenta" ? "" : " hidden") + '><input class="entrada" id="tarea-rec-veces" type="number" min="1" max="999" value="' + (rec ? rec.veces : 10) + '"> ' + esc(L("veces", "times", "次")) + "</label></div>" +
+      '<div class="rec-dias" id="tarea-rec-dias"' + (frec === "mensual" || frec === "anual" ? " hidden" : "") + '><span>' + esc(L("Días", "Days", "星期")) + "</span>" + diasBotones +
+      '<span class="rec-atajos"><button class="btn btn--chico" type="button" data-rec-atajo="laborables">' + esc(L("L–V", "Mon–Fri", "周一至周五")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-rec-atajo="todos">' + esc(L("Todos", "All", "全部")) + "</button>" +
+      '<button class="btn btn--chico" type="button" data-rec-atajo="finde">' + esc(L("Fin de semana", "Weekend", "周末")) + "</button></span></div>" +
+      '<p class="rec-resumen muted" id="tarea-rec-resumen"></p>' +
+      '<p class="rec-proximas muted" id="tarea-rec-proximas"></p></div></div>';
+  }
+  function freqON(a, b) { return String(a) === String(b || ""); }
+
+  function leerRecurrenciaForm() {
+    var caja = $("#tarea-rec");
+    if (!caja || !window.MimoRecurrencia) return null;
+    var b = caja.querySelector("[data-rec-frec].on");
+    var frec = b ? b.getAttribute("data-rec-frec") : "";
+    if (!frec) return null;
+    var fecha = $("#tarea-fecha");
+    var desde = (fecha && fecha.value) || hoyISO();
+    var dias = $$("#tarea-rec-dias [data-dia].on").map(function (x) { return parseInt(x.getAttribute("data-dia"), 10); });
+    var fin = $("#tarea-rec-fin") ? $("#tarea-rec-fin").value : "nunca";
+    var hasta = $("#tarea-rec-hasta") ? $("#tarea-rec-hasta").value : "";
+    var veces = $("#tarea-rec-veces") ? parseInt($("#tarea-rec-veces").value, 10) : 10;
+    return MimoRecurrencia.normalizar({
+      frecuencia: frec,
+      intervalo: $("#tarea-rec-intervalo") ? parseInt($("#tarea-rec-intervalo").value, 10) : 1,
+      dias: dias, desde: desde, fin: fin, hasta: hasta, veces: veces,
+      hechas: formRec && formRec.hechas ? formRec.hechas : {}
+    });
+  }
+
+  function montarFormularioTarea(form, t, rec) {
+    formRec = rec || null;
+    if (window.MimoEditorMD) {
+      MimoEditorMD.montar(form, { id: "tarea-nota", L: L, valor: t ? (t.nota || "") : "" });
+    }
+    var caja = $("#tarea-rec");
+    if (!caja) return;
+
+    function actualizar() {
+      var activa = caja.querySelector("[data-rec-frec].on");
+      var frecuencia = activa ? activa.getAttribute("data-rec-frec") : "";
+      var cuerpo = $("#tarea-rec-cuerpo");
+      if (!cuerpo) return;
+      if (!frecuencia) { cuerpo.hidden = true; return; }
+      cuerpo.hidden = false;
+      var u = {
+        diaria: [L("día", "day", "天"), L("días", "days", "天")],
+        semanal: [L("semana", "week", "周"), L("semanas", "weeks", "周")],
+        mensual: [L("mes", "month", "个月"), L("meses", "months", "个月")],
+        anual: [L("año", "year", "年"), L("años", "years", "年")]
+      }[frecuencia] || ["", ""];
+      var intervaloEl = $("#tarea-rec-intervalo");
+      var n = intervaloEl ? Math.max(1, parseInt(intervaloEl.value, 10) || 1) : 1;
+      if ($("#tarea-rec-unidad")) $("#tarea-rec-unidad").textContent = n === 1 ? u[0] : u[1];
+      var fin = $("#tarea-rec-fin") ? $("#tarea-rec-fin").value : "nunca";
+      if ($("#tarea-rec-hasta")) $("#tarea-rec-hasta").hidden = fin !== "fecha";
+      if ($("#tarea-rec-veces-caja")) $("#tarea-rec-veces-caja").hidden = fin !== "cuenta";
+      var diasCaja = $("#tarea-rec-dias");
+      if (diasCaja) diasCaja.hidden = !(frecuencia === "diaria" || frecuencia === "semanal");
+      var r = leerRecurrenciaForm();
+      if (!r) return;
+      if ($("#tarea-rec-resumen")) $("#tarea-rec-resumen").textContent = resumenRecurrencia(r);
+      if ($("#tarea-rec-proximas")) {
+        var desde = ($("#tarea-fecha") && $("#tarea-fecha").value) || hoyISO();
+        var fechas = [], iso = desde, guarda = 0;
+        while (fechas.length < 5 && guarda++ < 400) {
+          if (MimoRecurrencia.ocurre(r, iso)) fechas.push(iso);
+          iso = sumarDiasISO(iso, 1);
+        }
+        $("#tarea-rec-proximas").textContent = fechas.length
+          ? L("Próximas: ", "Next: ", "接下来：") + fechas.map(fechaLarga).join(" · ")
+          : L("Sin próximas fechas con esta regla.", "No upcoming dates with this rule.", "该规则没有接下来的日期。");
+      }
+    }
+
+    function marcarDias(lista) {
+      $$("#tarea-rec-dias [data-dia]").forEach(function (b) {
+        var on = lista.indexOf(parseInt(b.getAttribute("data-dia"), 10)) !== -1;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      actualizar();
+    }
+
+    caja.querySelectorAll("[data-rec-frec]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        caja.querySelectorAll("[data-rec-frec]").forEach(function (x) {
+          x.classList.toggle("on", x === b);
+          x.setAttribute("aria-pressed", x === b ? "true" : "false");
+        });
+        if (b.getAttribute("data-rec-frec") === "semanal" && !$$("#tarea-rec-dias [data-dia].on").length) {
+          var iso = ($("#tarea-fecha") && $("#tarea-fecha").value) || hoyISO();
+          var d = new Date(iso + "T12:00:00").getDay();
+          marcarDias([d]);
+          return;
+        }
+        actualizar();
+      });
+    });
+    caja.querySelectorAll("#tarea-rec-dias [data-dia]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var dias = $$("#tarea-rec-dias [data-dia].on").map(function (x) { return parseInt(x.getAttribute("data-dia"), 10); });
+        if (b.classList.contains("on")) marcarDias(dias.filter(function (n) { return n !== parseInt(b.getAttribute("data-dia"), 10); }));
+        else marcarDias(dias.concat([parseInt(b.getAttribute("data-dia"), 10)]));
+      });
+    });
+    caja.querySelectorAll("[data-rec-atajo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var atajo = b.getAttribute("data-rec-atajo");
+        marcarDias(atajo === "laborables" ? [1, 2, 3, 4, 5] : atajo === "finde" ? [6, 0] : [0, 1, 2, 3, 4, 5, 6]);
+      });
+    });
+    if ($("#tarea-rec-fin")) $("#tarea-rec-fin").addEventListener("change", actualizar);
+    if ($("#tarea-rec-intervalo")) $("#tarea-rec-intervalo").addEventListener("input", actualizar);
+    if ($("#tarea-rec-hasta")) $("#tarea-rec-hasta").addEventListener("change", actualizar);
+    if ($("#tarea-rec-veces")) $("#tarea-rec-veces").addEventListener("input", actualizar);
+    form.querySelectorAll("[data-fecha-rapida]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = $("#tarea-fecha"); if (!f) return;
+        var v = b.getAttribute("data-fecha-rapida");
+        f.value = v === "hoy" ? hoyISO() : v === "manana" ? sumarDiasISO(hoyISO(), 1) : "";
+        actualizar();
+      });
+    });
+    if ($("#tarea-fecha")) $("#tarea-fecha").addEventListener("change", actualizar);
+    actualizar();
+  }
+
   function abrirFormulario(t, padreId) {
     normalizarTareas();
     formEditId = t ? t.id : null;
+    var rec = t && t.recurrencia ? MimoRecurrencia.normalizar(t.recurrencia) : null;
+    formRec = rec;
     MimoModal.abrir({
       id: "tarea",
+      ancho: "ancho",
+      columnas: true,
       titulo: t ? L("Editar tarea", "Edit task", "编辑任务") : L("Nueva tarea", "New task", "新建任务"),
       sub: t ? L("Cambia lo que haga falta; se guarda al confirmar.", "Change what you need; it is saved when you confirm.", "按需修改，确认后保存。")
-              : L("Una tarea puede ser un proyecto: dentro caben otras tareas.", "A task can be a project: other tasks fit inside.", "任务可以是项目，里面可以放其他任务。"),
+              : L("Fecha opcional, descripción en Markdown y repetición si hace falta.", "Optional date, Markdown description and a repeat rule if needed.", "日期可选、描述用 Markdown，需要时设置重复。"),
       campos: [
-        { id: "tarea-titulo", etiqueta: L("Qué hay que hacer", "What needs doing", "要做什么"), valor: t ? t.titulo : "", ph: L("¿Qué hay que hacer?", "What needs doing?", "要做什么？") },
-        { id: "tarea-tipo", etiqueta: L("Tipo", "Type", "类型"), tipo: "select", valor: t ? t.tipo : "tarea",
+        { id: "tarea-titulo", ancho: "todo", etiqueta: L("Qué hay que hacer", "What needs doing", "要做什么"), valor: t ? t.titulo : "", ph: L("¿Qué hay que hacer?", "What needs doing?", "要做什么？") },
+        { id: "tarea-tipo", ancho: "mitad", etiqueta: L("Tipo", "Type", "类型"), tipo: "select", valor: t ? t.tipo : "tarea",
           opciones: [{ v: "tarea", t: L("Tarea", "Task", "任务") }, { v: "proyecto", t: L("Proyecto", "Project", "项目") }] },
-        { id: "tarea-padre", etiqueta: L("Dentro de", "Inside", "所属"), tipo: "select", valor: t ? (t.padre_id || "") : (padreId || ""), opciones: opcionesPadre(t) },
-        { id: "tarea-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: t ? t.fecha : hoyISO() },
-        { id: "tarea-prioridad", etiqueta: L("Prioridad", "Priority", "优先级"), tipo: "select", valor: t ? t.prioridad : "media",
+        { id: "tarea-padre", ancho: "mitad", etiqueta: L("Dentro de", "Inside", "所属"), tipo: "select", valor: t ? (t.padre_id || "") : (padreId || ""), opciones: opcionesPadre(t) },
+        { tipo: "html", ancho: "mitad", html: campoFechaHTML(t ? t.fecha : "") },
+        { id: "tarea-prioridad", ancho: "mitad", etiqueta: L("Prioridad", "Priority", "优先级"), tipo: "select", valor: t ? t.prioridad : "media",
           opciones: [{ v: "alta", t: L("Alta", "High", "高") }, { v: "media", t: L("Media", "Medium", "中") }, { v: "baja", t: L("Baja", "Low", "低") }] },
-        { id: "tarea-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: t ? t.contexto : "", ph: L("Contexto (opcional)", "Context (optional)", "情境（可选）") }
+        { id: "tarea-contexto", ancho: "todo", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: t ? t.contexto : "", ph: L("Contexto (opcional)", "Context (optional)", "情境（可选）") },
+        { tipo: "html", ancho: "todo", html: recurrenciaHTML(rec) },
+        { tipo: "html", ancho: "todo", html: window.MimoEditorMD ? MimoEditorMD.campoHTML({ id: "tarea-nota", L: L, filas: 4 }) : "" }
       ],
       guardar: t ? L("Guardar", "Save", "保存") : L("Crear tarea", "Create task", "创建任务"),
+      despues: function (form) { montarFormularioTarea(form, t, rec); },
       onGuardar: guardarTareaDesdeVentana
     });
   }
   function guardarTareaDesdeVentana() {
     var titulo = $("#tarea-titulo").value.trim();
     if (!titulo) { $("#tarea-titulo").focus(); return false; }
+    var editando = !!formEditId;
     var tipo = $("#tarea-tipo").value === "proyecto" ? "proyecto" : "tarea";
     var padre = $("#tarea-padre").value || null;
+    var rec = leerRecurrenciaForm();
+    if (rec && $("#tarea-rec-fin") && $("#tarea-rec-fin").value === "fecha" && !$("#tarea-rec-hasta").value) {
+      aviso(L("Pon el día en que termina la repetición.", "Set the day the repeat ends.", "请选择重复结束的日期。"));
+      $("#tarea-rec-hasta").focus();
+      return false;
+    }
+    var fecha = $("#tarea-fecha").value || "";
+    if (rec) {
+      if (!fecha) fecha = rec.desde || hoyISO();
+      rec.desde = fecha;
+      if (rec.fin === "fecha" && rec.hasta && rec.hasta < fecha) {
+        aviso(L("La repetición no puede terminar antes de empezar.", "The repeat cannot end before it starts.", "重复结束日期不能早于开始日期。"));
+        $("#tarea-rec-hasta").focus();
+        return false;
+      }
+    }
     var t;
     if (formEditId) {
       t = tareaPorId(formEditId);
@@ -1624,27 +2244,35 @@
     t.titulo = titulo;
     t.tipo = tipo;
     t.padre_id = padre;
-    t.fecha = $("#tarea-fecha").value || "";
+    t.fecha = fecha;
     t.prioridad = $("#tarea-prioridad").value;
     t.contexto = $("#tarea-contexto").value.trim();
-    t.nota = t.nota || "";
+    t.nota = $("#tarea-nota") ? $("#tarea-nota").value : (t.nota || "");
+    t.recurrencia = rec;
+    if (rec) { t.hecha = false; t.estado = "pendiente"; }
     if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
     estado.tareaSel = t.id;
     estado.panel[pantalla] = "detalle";
     formEditId = null;
+    formRec = null;
     if (vistaTareas === "hoy") {
       vistaTareas = "arbol";
       estado.vistaTareas = "arbol";
       $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === "arbol"); });
     }
     guardar(); pintarTareas(); pintarPanel();
-    aviso(tipo === "proyecto" ? L("Proyecto creado. Añade tareas dentro.", "Project created. Add tasks inside.", "项目已创建。可在其中添加任务。") : L("Tarea creada.", "Task created.", "任务已创建。"));
+    if (rec) aviso(L("Guardado. " + resumenRecurrencia(rec) + ".", "Saved. " + resumenRecurrencia(rec) + ".", "已保存。" + resumenRecurrencia(rec) + "。"));
+    else if (editando) aviso(L("Tarea guardada.", "Task saved.", "任务已保存。"));
+    else aviso(tipo === "proyecto" ? L("Proyecto creado. Añade tareas dentro.", "Project created. Add tasks inside.", "项目已创建。可在其中添加任务。") : L("Tarea creada.", "Task created.", "任务已创建。"));
     return true;
   }
   function borrarTarea(id) {
     var t = tareaPorId(id); if (!t) return;
     var familia = [t.id].concat(descendientes(t).map(function (x) { return x.id; }));
-    if (!window.confirm(L("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？"))) return;
+    var texto = esRecurrente(t)
+      ? L("¿Borrar la serie \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete the series \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除系列“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？")
+      : L("¿Borrar \"" + t.titulo + "\" y sus " + (familia.length - 1) + " tareas dentro?", "Delete \"" + t.titulo + "\" and its " + (familia.length - 1) + " tasks inside?", "删除“" + t.titulo + "”及其中的 " + (familia.length - 1) + " 个任务？");
+    if (!window.confirm(texto)) return;
     estado.tareas = estado.tareas.filter(function (x) { return familia.indexOf(x.id) === -1; });
     if (familia.indexOf(estado.tareaSel) !== -1) estado.tareaSel = null;
     guardar(); pintarTareas(); pintarPanel(); aviso(L("Tarea borrada.", "Task deleted.", "任务已删除。"));
@@ -1841,16 +2469,20 @@
       if (detalle) { detalle.hidden = true; detalle.innerHTML = ""; }
       cols.innerHTML = "";
       var svg0 = $("#malla-lineas"); if (svg0) svg0.innerHTML = "";
+      if ($("#malla-tablero")) $("#malla-tablero").classList.remove("malla--sel");
       return;
     }
     if (vacio) vacio.hidden = true;
     if (scroll) scroll.hidden = false;
     if (detalle) detalle.hidden = false;
     if (estado.ramoSel && !ramoPorCodigo(estado.ramoSel)) estado.ramoSel = null;
+    var tablero = $("#malla-tablero");
+    if (tablero) tablero.classList.toggle("malla--sel", !!estado.ramoSel);
+    var vinculados = _mallaVinculos(estado.ramoSel);
     if ($("#malla-quitar-sel")) $("#malla-quitar-sel").hidden = !estado.ramoSel;
     if ($("#malla-pista")) $("#malla-pista").textContent = estado.ramoSel
-      ? L("Ves solo las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. Vuelve a presionarlo para quitar la selección.", "You only see this course's lines: blue what it needs, orange what it unlocks. Press it again to clear the selection.", "只显示这门课程的线：蓝色是所需，橙色是解锁。再次按下可清除选择。")
-      : L("Las líneas muestran los requisitos. Elige un ramo para ver qué necesitas y qué desbloqueas.", "Lines show requirements. Pick a course to see what it needs and what it unlocks.", "线条显示要求。选择一门课程，查看需要什么、能解锁什么。");
+      ? t("malla.pistaSel")
+      : t("malla.pista");
     var q = mallaBusqueda.toLowerCase();
     var visibles = cursos.filter(function (c) {
       var e = estadoDeRamo(c);
@@ -1876,7 +2508,8 @@
         '<div class="malla-col__nodos">' + lista.map(function (c) {
           var e = estadoDeRamo(c), req = requisitosTexto(c), faltan = faltantesDe(c);
           var titulo = c.nombre + (req ? " · " + L("requiere ", "requires ", "需要 ") + req : "") + (faltan.length ? " · " + L("faltan: ", "missing: ", "缺少：") + faltan.join(", ") : "");
-          return '<button class="ramo-card ramo-card--' + e + (c.codigo === estado.ramoSel ? ' sel' : '') + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
+          var claseSel = estado.ramoSel ? (c.codigo === estado.ramoSel ? " sel" : (vinculados[c.codigo] ? " malla-card--vinculo" : " malla-card--apagada")) : "";
+          return '<button class="ramo-card ramo-card--' + e + claseSel + '" type="button" data-ramo="' + esc(c.codigo) + '" title="' + esc(titulo) + '">' +
             '<span class="ramo-card__top"><b>' + marcaRamo(c) + esc(c.codigo) + '</b><span class="ramo-card__ico">' + iconoRamoHTML(c) + "</span></span>" +
             '<span class="ramo-card__nom">' + esc(c.nombre) + "</span>" +
             '<span class="ramo-card__meta">' + creditosDe(c) + " cr</span>" +
@@ -1911,16 +2544,41 @@
   function limpiarSeleccionMalla() {
     estado.ramoSel = null; guardar(); pintarMalla(); pintarPanel();
   }
-  function dibujarLineasMalla() {
-    var cont = $("#malla-tablero"), svg = $("#malla-lineas");
-    if (!cont || !svg) return;
-    var ancho = Math.max(cont.scrollWidth, cont.clientWidth), alto = Math.max(cont.scrollHeight, cont.clientHeight);
-    if (!ancho || !alto) return;
-    svg.setAttribute("viewBox", "0 0 " + ancho + " " + alto);
-    svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
-    var caja = cont.getBoundingClientRect(), nodos = {};
-    $$("#malla-cols [data-ramo]").forEach(function (el) { nodos[el.getAttribute("data-ramo")] = el; });
-    var sel = estado.ramoSel, partes = [];
+  /* ---------------------------------------------------------------------
+     Grafo de Malla: trazado compacto por los huecos entre fichas.
+
+     Cada arista sale del borde derecho de su ramo y viaja por los huecos de
+     columna y por las franjas libres entre dos fichas. Las aristas comparten
+     carril vertical y franja horizontal: no se abre uno nuevo por cada cruce
+     ni se baja a una banda inferior. La selección atenúa el resto y deja
+     limpias solo las líneas del ramo elegido.
+     --------------------------------------------------------------------- */
+  function _mallaToken(el, nombre, porDefecto) {
+    var v = window.getComputedStyle(el).getPropertyValue(nombre).trim();
+    var n = parseFloat(v);
+    return isFinite(n) ? n : porDefecto;
+  }
+  function _mallaGeo(cont) {
+    var caja = cont.getBoundingClientRect();
+    var cols = [], indice = {}, nodos = {};
+    $$("#malla-cols .malla-col").forEach(function (colEl) {
+      var r = colEl.getBoundingClientRect();
+      indice[String(colEl.getAttribute("data-nivel"))] = cols.length;
+      cols.push({ nivel: String(colEl.getAttribute("data-nivel")), left: r.left - caja.left, right: r.right - caja.left, top: r.top - caja.top, bottom: r.bottom - caja.top });
+    });
+    $$("#malla-cols [data-ramo]").forEach(function (el) {
+      var r = el.getBoundingClientRect(), col = el.closest(".malla-col");
+      var clave = el.getAttribute("data-ramo");
+      nodos[clave] = {
+        codigo: clave, el: el, col: indice[String(col && col.getAttribute("data-nivel"))],
+        left: r.left - caja.left, right: r.right - caja.left,
+        top: r.top - caja.top, bottom: r.bottom - caja.top, height: r.height
+      };
+    });
+    return { caja: caja, cols: cols, nodos: nodos };
+  }
+  function _mallaAristas(nodos) {
+    var vistos = {}, aristas = [];
     estado.cursos.forEach(function (c) {
       var destino = nodos[c.codigo]; if (!destino) return;
       var reqs = (c.requisitos || []).slice();
@@ -1929,16 +2587,218 @@
       });
       reqs.forEach(function (req) {
         var origen = nodos[req]; if (!origen) return;
-        var clase = sel ? (c.codigo === sel ? "req" : req === sel ? "des" : "tenue") : "tenue";
-        var a = origen.getBoundingClientRect(), b = destino.getBoundingClientRect();
-        var x1 = a.right - caja.left, y1 = a.top + a.height / 2 - caja.top;
-        var x2 = b.left - caja.left, y2 = b.top + b.height / 2 - caja.top;
-        var dx = Math.max(18, Math.abs(x2 - x1) * 0.45);
-        var d = "M" + x1.toFixed(1) + " " + y1.toFixed(1) + " C" + (x1 + dx).toFixed(1) + " " + y1.toFixed(1) + " " +
-          (x2 - dx).toFixed(1) + " " + y2.toFixed(1) + " " + x2.toFixed(1) + " " + y2.toFixed(1);
-        partes.push('<path class="malla-linea malla-linea--' + clase + '" d="' + d + '"/>');
+        if (origen.col > destino.col) return; // hacia atrás no hay carril
+        var clave = req + ">" + c.codigo;
+        if (vistos[clave]) return;
+        vistos[clave] = 1;
+        aristas.push({ de: req, a: c.codigo, oi: origen.col, di: destino.col, src: origen, dst: destino });
       });
     });
+    return aristas.sort(function (a, b) {
+      return (a.oi - b.oi) || (a.src.top - b.src.top) || (a.di - b.di) || (a.dst.top - b.dst.top) ||
+        (a.de < b.de ? -1 : a.de > b.de ? 1 : 0) || (a.a < b.a ? -1 : a.a > b.a ? 1 : 0);
+    });
+  }
+  function _mallaReparto(aristas) {
+    var salida = {}, entrada = {};
+    aristas.forEach(function (e) {
+      (salida[e.de] = salida[e.de] || []).push(e);
+      (entrada[e.a] = entrada[e.a] || []).push(e);
+    });
+    /* Las salidas usan la mitad superior del borde y las entradas la inferior:
+       así una línea que sale y otra que entra en la misma fila no comparten
+       altura ni se pisan en el corredor. */
+    function punto(nodo, i, n, salida) {
+      var medio = nodo.top + nodo.height / 2;
+      var min = salida ? nodo.top + 6 : medio + 1.5;
+      var max = salida ? medio - 1.5 : nodo.bottom - 6;
+      if (max <= min) return medio + (salida ? -1.5 : 1.5);
+      if (n <= 1) return (min + max) / 2;
+      return min + (max - min) * (i + 1) / (n + 1);
+    }
+    Object.keys(salida).forEach(function (cod) {
+      salida[cod].sort(function (a, b) { return (a.di - b.di) || (a.dst.top - b.dst.top) || (a.a < b.a ? -1 : 1); });
+      salida[cod].forEach(function (e, i) { e.y1 = punto(e.src, i, salida[cod].length, true); });
+    });
+    Object.keys(entrada).forEach(function (cod) {
+      entrada[cod].sort(function (a, b) { return (a.oi - b.oi) || (a.src.top - b.src.top) || (a.de < b.de ? -1 : 1); });
+      entrada[cod].forEach(function (e, i) { e.y2 = punto(e.dst, i, entrada[cod].length, false); });
+    });
+  }
+  /* Un solo carril por hueco de columna. Todos los cables que cruzan ese
+     hueco comparten la misma x: el trazado no abre un carril por arista. */
+  function _mallaLane(geo, g, aire) {
+    var izq = geo.cols[g] ? geo.cols[g].right : 0;
+    var der = geo.cols[g + 1] ? geo.cols[g + 1].left : izq + 80;
+    return { g: g, x: izq + Math.max(aire, (der - izq) / 2) };
+  }
+  /* Huecos horizontales libres entre las fichas de las columnas intermedias.
+     Se comparten: varias aristas pueden usar la misma franja. */
+  function _mallaHuecos(geo, columnas, radio) {
+    var ocupados = [];
+    columnas.forEach(function (col) {
+      Object.keys(geo.nodos).forEach(function (cod) {
+        var n = geo.nodos[cod];
+        if (n.col === col) ocupados.push([n.top, n.bottom]);
+      });
+    });
+    if (!ocupados.length) return [];
+    ocupados.sort(function (a, b) { return a[0] - b[0]; });
+    var out = [], prev = null;
+    ocupados.forEach(function (iv) {
+      if (prev === null) { prev = iv[1]; return; }
+      if (iv[0] - prev >= 2 * radio + 2) out.push((prev + iv[0]) / 2);
+      prev = Math.max(prev, iv[1]);
+    });
+    return out;
+  }
+  /* Huecos de una sola columna, para la ruta escalonada cuando no hay una
+     franja común. Incluye el aire sobre la primera ficha y bajo la última. */
+  function _mallaHuecosCol(geo, col, fondo, radio) {
+    var ivs = [];
+    Object.keys(geo.nodos).forEach(function (cod) {
+      var n = geo.nodos[cod];
+      if (n.col === col) ivs.push([n.top, n.bottom]);
+    });
+    if (!ivs.length) return [];
+    ivs.sort(function (a, b) { return a[0] - b[0]; });
+    var out = [], arriba = ivs[0][0] - radio - 1;
+    if (arriba > radio) out.push(arriba);
+    for (var i = 0; i + 1 < ivs.length; i++) {
+      if (ivs[i + 1][0] - ivs[i][1] >= 2 * radio + 2) out.push((ivs[i][1] + ivs[i + 1][0]) / 2);
+    }
+    var abajo = ivs[ivs.length - 1][1] + radio + 1;
+    if (abajo < fondo - radio) out.push(abajo);
+    return out;
+  }
+  function _mallaCercano(lista, y) {
+    var elegido = null, dist = Infinity;
+    lista.forEach(function (v) {
+      var d = Math.abs(v - y);
+      if (d < dist) { dist = d; elegido = v; }
+    });
+    return elegido;
+  }
+  function _mallaSinDuplicados(puntos) {
+    return puntos.filter(function (p, i) {
+      var q = puntos[i - 1];
+      return i === 0 || Math.abs(p.x - q.x) > 0.01 || Math.abs(p.y - q.y) > 0.01;
+    });
+  }
+  /* Ruta ortogonal por los huecos entre fichas. Los ramos largos buscan una
+     franja común entre las columnas intermedias; si no existe, escalonan por
+     el hueco de cada columna. Nunca entran en una ficha y no bajan del
+     tablero. */
+  function _mallaRecorrido(geo, e, fondo, radio, aire) {
+    var laneS = _mallaLane(geo, e.oi, aire);
+    if (e.di === e.oi) {
+      return { puntos: _mallaSinDuplicados([
+        { x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 },
+        { x: laneS.x, y: e.y2 }, { x: e.dst.right, y: e.y2 }
+      ]), track: null, g: e.oi };
+    }
+    if (e.di === e.oi + 1) {
+      return { puntos: _mallaSinDuplicados([
+        { x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 },
+        { x: laneS.x, y: e.y2 }, { x: e.dst.left, y: e.y2 }
+      ]), track: null, g: e.oi };
+    }
+    var laneD = _mallaLane(geo, e.di - 1, aire);
+    var intermedias = [];
+    for (var k = e.oi + 1; k < e.di; k++) intermedias.push(k);
+    var medio = (e.y1 + e.y2) / 2;
+    var comunes = _mallaHuecos(geo, intermedias, radio);
+    if (comunes.length) {
+      var yTrack = _mallaCercano(comunes, medio);
+      return { puntos: _mallaSinDuplicados([
+        { x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 },
+        { x: laneS.x, y: yTrack }, { x: laneD.x, y: yTrack },
+        { x: laneD.x, y: e.y2 }, { x: e.dst.left, y: e.y2 }
+      ]), track: yTrack, g: e.di - 1 };
+    }
+    var puntos = [{ x: e.src.right, y: e.y1 }, { x: laneS.x, y: e.y1 }];
+    var prevX = laneS.x, prevY = e.y1, primerTrack = null;
+    for (var j = e.oi + 1; j < e.di; j++) {
+      var ys = _mallaHuecosCol(geo, j, fondo, radio);
+      var yk = _mallaCercano(ys, medio);
+      if (yk === null) yk = prevY;
+      if (primerTrack === null) primerTrack = yk;
+      puntos.push({ x: prevX, y: yk });
+      var lane = _mallaLane(geo, j, aire);
+      puntos.push({ x: lane.x, y: yk });
+      prevX = lane.x; prevY = yk;
+    }
+    puntos.push({ x: prevX, y: e.y2 });
+    puntos.push({ x: e.dst.left, y: e.y2 });
+    return { puntos: _mallaSinDuplicados(puntos), track: primerTrack, g: e.di - 1 };
+  }
+  function _mallaVinculos(cod) {
+    var out = {};
+    if (!cod) return out;
+    var c = ramoPorCodigo(cod);
+    if (!c) return out;
+    out[cod] = 1;
+    (c.requisitos || []).forEach(function (r) { out[r] = 1; });
+    (c.requisitos_o || []).forEach(function (g) { g.forEach(function (r) { out[r] = 1; }); });
+    desbloqueaDe(cod).forEach(function (x) { out[x.codigo] = 1; });
+    return out;
+  }
+  function _mallaCamino(puntos, radio) {
+    function n(v) { return Number(v.toFixed(2)); }
+    var d = "M" + n(puntos[0].x) + " " + n(puntos[0].y);
+    for (var i = 1; i < puntos.length - 1; i++) {
+      var prev = puntos[i - 1], p = puntos[i], sig = puntos[i + 1];
+      var ux = Math.sign(p.x - prev.x), uy = Math.sign(p.y - prev.y);
+      var vx = Math.sign(sig.x - p.x), vy = Math.sign(sig.y - p.y);
+      var dentro = Math.abs(p.x - prev.x) + Math.abs(p.y - prev.y);
+      var fuera = Math.abs(sig.x - p.x) + Math.abs(sig.y - p.y);
+      var r = Math.min(radio, dentro / 2, fuera / 2);
+      if (r < 0.5) { d += " L" + n(p.x) + " " + n(p.y); continue; }
+      var a = { x: p.x - ux * r, y: p.y - uy * r };
+      var b = { x: p.x + vx * r, y: p.y + vy * r };
+      var sweep = (ux * vy - uy * vx) > 0 ? 1 : 0;
+      d += " L" + n(a.x) + " " + n(a.y) + " A" + n(r) + " " + n(r) + " 0 0 " + sweep + " " + n(b.x) + " " + n(b.y);
+    }
+    var fin = puntos[puntos.length - 1];
+    d += " L" + n(fin.x) + " " + n(fin.y);
+    return d;
+  }
+  function dibujarLineasMalla() {
+    var cont = $("#malla-tablero"), svg = $("#malla-lineas"), colsEl = $("#malla-cols");
+    if (!cont || !svg || !colsEl) return;
+    colsEl.style.removeProperty("--malla-sep");
+    cont.style.removeProperty("padding-bottom");
+    cont.style.removeProperty("padding-right");
+    var radio = _mallaToken(cont, "--malla-radio", 6);
+    var aire = _mallaToken(cont, "--malla-aire", 8);
+    var geo = _mallaGeo(cont);
+    var aristas = _mallaAristas(geo.nodos);
+    if (!aristas.length) {
+      svg.innerHTML = "";
+      svg.setAttribute("width", 0); svg.setAttribute("height", 0);
+      return;
+    }
+    _mallaReparto(aristas);
+    var fondo = 0;
+    Object.keys(geo.nodos).forEach(function (cod) { fondo = Math.max(fondo, geo.nodos[cod].bottom); });
+    var sel = estado.ramoSel, partes = [], maxX = 0, maxY = fondo;
+    aristas.forEach(function (e) {
+      var ruta = _mallaRecorrido(geo, e, fondo, radio, aire);
+      ruta.puntos.forEach(function (p) { maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y); });
+      var clase = sel ? (e.a === sel ? "req" : e.de === sel ? "des" : "tenue") : "";
+      var clases = "malla-linea" + (clase ? " malla-linea--" + clase : "");
+      var track = ruta.track === null ? "" : ' data-malla-track="' + Number(ruta.track.toFixed(2)) + '"';
+      partes.push('<path class="' + clases + '" d="' + _mallaCamino(ruta.puntos, radio) +
+        '" data-malla-de="' + esc(e.de) + '" data-malla-a="' + esc(e.a) + '" data-malla-span="' + (e.di - e.oi) +
+        '" data-malla-corredor="' + ruta.g + '"' + track + "/>");
+    });
+    var anchoNatural = Math.max(cont.scrollWidth, cont.clientWidth);
+    var extraDer = Math.max(0, maxX + 10 - anchoNatural);
+    cont.style.paddingRight = extraDer > 0 ? (2 + extraDer) + "px" : "";
+    var ancho = Math.max(cont.scrollWidth, cont.clientWidth);
+    var alto = Math.max(cont.scrollHeight, fondo + 12, maxY + 8);
+    svg.setAttribute("viewBox", "0 0 " + ancho + " " + alto);
+    svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
     svg.innerHTML = partes.join("");
   }
   function alternarRamo(cod) {
@@ -1948,16 +2808,16 @@
   }
   /* Cerrar un curso es una sola acción venga de Malla, del panel o de
      Calificaciones. Si no hay notas, se pide confirmación y se cierra como
-     aprobado manualmente, igual que antes desde Malla: así un curso que se
-     reabrió para elegir su icono se puede volver a cerrar desde donde se
-     esté mirando. */
+     aprobado manualmente. Si falta la nota del examen, usa la presentación
+     como final provisional: un curso reabierto para editar su identidad no
+     queda atrapado en abierto. */
   function cerrarCurso(cod) {
     var c = ramoPorCodigo(cod); if (!c) return;
     if (c.cerrado) { aviso(L("El curso ya está cerrado.", "The course is already closed.", "课程已关闭。")); return; }
     var conCalif = instalado("calificaciones");
     var q = conCalif ? califDe(cod) : null;
     var P = q ? presentacionDe(q) : null, nf = q ? notaFinalDe(q) : null;
-    if (P === null) {
+    if (P === null && nf === null) {
       var pregunta = conCalif
         ? L("\"" + c.codigo + "\" no tiene notas. ¿Marcarlo como aprobado manualmente y cerrar el curso?", "\"" + c.codigo + "\" has no grades. Mark it as passed manually and close the course?", "“" + c.codigo + "”没有成绩。要手动标为已通过并关闭课程吗？")
         : L("Calificaciones no está instalado. ¿Cerrar \"" + c.codigo + "\" como aprobado manualmente?", "Grades is not installed. Close \"" + c.codigo + "\" as passed manually?", "成绩未安装。要手动将“" + c.codigo + "”关闭为通过吗？");
@@ -1965,7 +2825,12 @@
       marcarCierreCurso(c, "aprobado", null);
       return;
     }
-    if (nf === null) { aviso(L("Falta la nota del examen o la eximición para cerrar el curso.", "The exam grade or the exemption is missing to close the course.", "缺少考试或免考成绩，无法关闭课程。")); return; }
+    if (nf === null) {
+      var resProv = P >= q.notaMin ? "aprobado" : "reprobado";
+      if (!window.confirm(tf("calif.cierreSinExamen", { nota: fmtNota(P), resultado: etiquetaEstado(resProv) }))) return;
+      marcarCierreCurso(c, resProv, P);
+      return;
+    }
     var res = nf >= q.notaMin ? "aprobado" : "reprobado";
     if (!window.confirm(L("¿Cerrar \"" + c.codigo + " — " + c.nombre + "\" con final " + fmtNota(nf) + "? Quedará " + res.toUpperCase() + ".", "Close \"" + c.codigo + " — " + c.nombre + "\" with a final grade of " + fmtNota(nf) + "? It will be " + res.toUpperCase() + ".", "以 " + fmtNota(nf) + " 的最终成绩关闭“" + c.codigo + " — " + c.nombre + "”？结果将为 " + res.toUpperCase() + "。"))) return;
     marcarCierreCurso(c, res, nf);
@@ -1975,6 +2840,7 @@
     c.notaCierre = nf === null ? null : Math.round(nf * 10) / 10;
     c.cerradoEn = selloLocal(); c.enCurso = false;
     notificarCurso(c);
+    califFiltro = "historial";
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
     if (nf === null) aviso(c.codigo + L(" cerrado como aprobado (sin notas).", " closed as passed (no grades).", " 已关闭为通过（无成绩）。"));
     else aviso(L("Curso cerrado: ", "Course closed: ", "课程已关闭：") + etiquetaEstado(res) + " · " + fmtNota(nf));
@@ -1985,6 +2851,7 @@
     c.cerrado = false; c.aprobado = false; c.resultado = "";
     c.notaCierre = null; c.cerradoEn = ""; c.enCurso = true;
     notificarCurso(c);
+    califFiltro = "activos";
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
     aviso(L("Curso reabierto. Sus notas siguen ahí.", "Course reopened. Its grades are still there.", "课程已重新打开。成绩仍然保留。"));
   }
@@ -2028,7 +2895,9 @@
       notificarCurso(x);
     });
     if (estado.ramoSel === cod) estado.ramoSel = null;
-    guardar(); pintarMalla(); pintarPanel(); aviso(L("Ramo borrado.", "Course deleted.", "课程已删除。"));
+    if (estado.califSel === cod) estado.califSel = null;
+    if (califSel === cod) califSel = null;
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel(); aviso(L("Ramo borrado.", "Course deleted.", "课程已删除。"));
   }
   function cursosDesdeDoc(doc) {
     var raw = [], aprob = {}, enCurso = {};
@@ -2115,13 +2984,13 @@
     aviso(L("Malla exportada.", "Degree plan exported.", "课程规划已导出。"));
   }
 
-  var califSel = null;
+  var califSel = null, califFiltro = "activos";
   function califPorDefecto() {
     return {
       categorias: [{ nombre: L("General", "General", "常规"), peso: 100 }], componentes: [],
       examen: { activo: true, peso: 40, nota: null, reemplaza: null },
       eximicion: { activa: false, modo: "todas", condiciones: [] },
-      notaMin: 4, meta: 5
+      notaMin: 4, meta: 5, notaFinalManual: null
     };
   }
   function notaNum(v) {
@@ -2336,6 +3205,7 @@
       });
       q.notaMin = notaNum(q.notaMin) || 4;
       q.meta = notaNum(q.meta) || 5;
+      q.notaFinalManual = notaNum(q.notaFinalManual);
       estado.califs[cur.codigo] = q;
     });
   }
@@ -2396,6 +3266,7 @@
       sinDatos: detalle.some(function (d) { return d.actual === null; }) };
   }
   function notaFinalDe(c) {
+    if (c.notaFinalManual !== null && c.notaFinalManual !== undefined) return Number(c.notaFinalManual);
     var P = presentacionDe(c); if (P === null) return null;
     if (estadoEximicion(c).cumple) return P;
     if (!c.examen.activo) return P;
@@ -2403,10 +3274,14 @@
     return (1 - c.examen.peso / 100) * P + (c.examen.peso / 100) * c.examen.nota;
   }
   function estadoCalifDe(c, curso) {
-    if (!curso || !curso.cerrado) return { texto: L("en curso", "in progress", "进行中"), clase: "" };
-    return curso.aprobado
-      ? { texto: L("aprobado", "passed", "已通过"), clase: "pill-ok" }
-      : { texto: L("reprobado", "failed", "未通过"), clase: "pill-bad" };
+    if (!curso) return { texto: t("calif.estado.disponible"), clase: "pill-warn" };
+    if (curso.cerrado) {
+      return curso.aprobado
+        ? { texto: L("aprobado", "passed", "已通过"), clase: "pill-ok" }
+        : { texto: L("reprobado", "failed", "未通过"), clase: "pill-bad" };
+    }
+    if (curso.enCurso) return { texto: t("calif.estado.activo"), clase: "pill-ok" };
+    return { texto: t("calif.estado.disponible"), clase: "pill-warn" };
   }
   function necesarioDe(c, objetivo) {
     if (!c.examen.activo || c.examen.peso <= 0) return null;
@@ -2436,6 +3311,14 @@
   function htmlDetalleCalif(cur, q) {
     if (!cur) return '<p class="muted">' + esc(L("Selecciona un ramo.", "Select a course.", "选择一门课程。")) + '</p>';
     var P = presentacionDe(q), nf = notaFinalDe(q), est = estadoCalifDe(q, cur), ex = estadoEximicion(q);
+    var nfMostrar = q.notaFinalManual !== null && q.notaFinalManual !== undefined
+      ? q.notaFinalManual : (cur.cerrado && cur.notaCierre !== null ? cur.notaCierre : nf);
+    var disponible = !cur.cerrado && !cur.enCurso;
+    var bloqueDisponible = disponible
+      ? '<div class="calif-disponible"><div><b>' + esc(t("calif.disponibleTitulo")) + "</b><span>" +
+        esc(t("calif.disponibleTexto")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="activar">' +
+        esc(t("calif.agregar")) + "</button></div>"
+      : "";
     var necMin = necesarioDe(q, q.notaMin), necMeta = necesarioDe(q, q.meta);
     var filasCat = q.categorias.map(function (cat, i) {
       var p = promedioCategoria(q, cat);
@@ -2495,21 +3378,27 @@
     var cierre = cur.cerrado
       ? '<div class="calif-cierre calif-cierre--' + (cur.aprobado ? "ok" : "bad") + '"><div><b>Curso cerrado · ' +
         esc(cur.aprobado ? L("APROBADO", "PASSED", "已通过") : L("REPROBADO", "FAILED", "未通过")) + "</b><span>" + esc(L("Final ", "Final ", "最终 ")) +
-        fmtNota(cur.notaCierre !== null ? cur.notaCierre : nf) + (cur.cerradoEn ? " · " + esc(cur.cerradoEn) : "") +
+        fmtNota(nfMostrar) + (cur.cerradoEn ? " · " + esc(cur.cerradoEn) : "") +
         '</span></div><button class="btn btn--chico" type="button" data-accion-calif="reabrir-curso">' + esc(L("Reabrir curso", "Reopen course", "重新打开课程")) + '</button></div>'
-      : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div>';
-    return '<div class="card calif-card">' +
+      : '<div class="calif-cierre"><div><b>' + esc(L("Curso abierto", "Course open", "课程开放")) + '</b><span>' + esc(L("La final es provisional. Al cerrar, el resultado se fija con las notas, el examen y la eximición.", "The final grade is provisional. When you close it, the result is fixed with the grades, the exam and the exemption.", "最终成绩为暂定。关闭时，结果将由成绩、考试和免考共同确定。")) + '</span></div><div class="calif-cierre__acciones"><button class="btn btn--chico" type="button" data-accion-calif="retirar">' + esc(t("calif.retirar")) + '</button><button class="btn btn-primario btn--chico" type="button" data-accion-calif="cerrar-curso">' + esc(L("Cerrar curso", "Close course", "关闭课程")) + '</button></div></div>';
+    return '<div class="card calif-card' + (disponible ? " calif-card--disponible" : "") + '">' +
       '<div class="calif-cab"><div class="calif-cab__izq">' + iconoRamoHTML(cur, "ramo-ico--lg") +
         "<div><h2>" + esc(cur.codigo) + " — " + esc(cur.nombre) + "</h2>" +
         '<p class="muted">' + creditosDe(cur) + " " + esc(L("créditos", "credits", "学分")) + " · " + esc(etiquetaNivel(cur.nivel)) + " · " + esc(L("meta ", "goal ", "目标 ")) + fmtNota(q.meta) + "</p></div>" +
         '</div>' +
-        '<div class="calif-cab__der"><button class="btn btn--chico calif-ident" type="button" data-accion-calif="identidad" title="' +
+        '<div class="calif-cab__der"><button class="btn btn--chico" type="button" data-accion-calif="editar">' +
+          esc(L("Editar", "Edit", "编辑")) + '</button>' +
+        '<button class="btn btn--chico calif-ident" type="button" data-accion-calif="identidad" title="' +
           esc(t("ident.abrir")) + '" aria-label="' + esc(t("ident.abrir")) + '">' +
           iconoRamoHTML(cur) + '<span>' + esc(L("Identidad", "Identity", "标识")) + '</span></button>' +
         '<span class="pill ' + est.clase + '">' + esc(est.texto) + "</span></div></div>" +
+      bloqueDisponible +
+      '<div class="calif-cuerpo"' + (disponible ? " hidden" : "") + ">" +
       '<div class="calif-resumen">' +
         '<div class="calif-caja calif-caja--ac"><b>' + fmtNota(P) + "</b><span>" + esc(L("Presentación", "Presentation", "平时成绩")) + "</span></div>" +
-        '<div class="calif-caja calif-caja--' + claseFinal + '"><b>' + fmtNota(nf) + "</b><span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
+        '<div class="calif-caja calif-caja--' + claseFinal + ' calif-caja--final">' +
+          '<input class="calif-final__valor" type="text" inputmode="decimal" maxlength="4" data-nota-final value="' + esc(fmtNota(nfMostrar)) + '" aria-label="' + esc(t("calif.finalManual")) + '" title="' + esc(t("calif.finalManualAyuda")) + '" autocomplete="off" spellcheck="false">' +
+          "<span>" + (cur.cerrado ? L("Final", "Final", "最终") : L("Final provisional", "Provisional final", "暂定最终")) + "</span></div>" +
         '<div class="calif-caja calif-caja--est"><b>' + esc(est.texto) + "</b><span>" + esc(L("Estado", "Status", "状态")) + "</span></div>" +
         '<div class="calif-caja calif-caja--warn"><b>' + (ex.cumple ? L("eximido", "exempt", "免考") : q.examen.activo ? textoNecesario(necMin) : L("sin examen", "no exam", "无考试")) + "</b><span>" + esc(L("Examen para ", "Exam for ", "考试目标 ")) + fmtNota(q.notaMin) + "</span></div>" +
       "</div>" + cierre +
@@ -2517,6 +3406,7 @@
         '<label class="campo">' + esc(L("Nota mínima", "Minimum grade", "最低成绩")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-nota-min value="' + q.notaMin + '"></label>' +
         '<label class="campo">' + esc(L("Meta", "Goal", "目标")) + ' <input class="entrada calif-num" type="number" min="1" max="7" step="0.1" data-meta value="' + q.meta + '"></label>' +
         '<span class="muted">' + esc(L("Examen para la meta: ", "Exam for the goal: ", "达成目标的考试：")) + (q.examen.activo ? textoNecesario(necMeta) : L("sin examen", "no exam", "无考试")) + "</span>" +
+        '<span class="muted">' + esc(tf("calif.escala", { min: fmtNota(q.notaMin) })) + "</span>" +
       "</div>" +
       MimoPlegable.html({ id: "calif:" + cur.codigo + ":cats", abierto: true,
         titulo: L("Categorías", "Categories", "分类"),
@@ -2553,6 +3443,7 @@
         (filasCond || '<p class="muted">' + esc(L("Sin condiciones: mientras no haya ninguna, el ramo no se exime.", "No conditions: while there are none, the course is not exempted.", "没有条件：在添加条件前，课程不能免考。")) + '</p>') +
         '<button class="btn btn--chico" type="button" data-accion-calif="cond-add">' + esc(L("+ Condición", "+ Condition", "+ 条件")) + '</button>' +
         '<p class="calif-exim-estado ' + (ex.cumple ? "ok" : "") + '">' + esc(textoExim) + "</p>" }) +
+      "</div>" +
       "</div>";
   }
   /* Identidad del ramo: color e icono, en la ventana única. El color se elige con
@@ -2666,31 +3557,118 @@
     var lista = $("#calif-lista"), det = $("#calif-detalle");
     if (!lista || !det) return;
     normalizarCursos(); normalizarCalifs();
-    var cursos = estado.cursos.filter(function (c) { return estado.califs[c.codigo] || c.enCurso; });
+    var enMalla = estado.cursos.filter(function (c) { return c.enMalla !== false; });
+    var grupos = {
+      activos: enMalla.filter(function (c) { return c.enCurso && !c.cerrado; }),
+      disponibles: enMalla.filter(function (c) { return !c.enCurso && !c.cerrado; }),
+      historial: enMalla.filter(function (c) { return c.cerrado; })
+    };
+    if (!grupos[califFiltro]) califFiltro = "activos";
+    var cursos = grupos[califFiltro];
     var vacio = $("#calif-vacio"), layout = $("#calif-layout");
     var sinMalla = !instalado("malla");
     if ($("#btn-calif-malla")) $("#btn-calif-malla").hidden = sinMalla;
     if ($("#calif-crear-ramo")) $("#calif-crear-ramo").hidden = sinMalla;
     if ($("#btn-calif-curso")) $("#btn-calif-curso").hidden = !sinMalla;
+    if ($("#calif-anadir")) $("#calif-anadir").hidden = sinMalla;
     if ($("#calif-vacio-texto-malla")) $("#calif-vacio-texto-malla").hidden = sinMalla;
     if ($("#calif-vacio-texto-sola")) $("#calif-vacio-texto-sola").hidden = !sinMalla;
-    if (!cursos.length) {
+    $$("#calif-filtro [data-calif-filtro]").forEach(function (b) {
+      var on = b.getAttribute("data-calif-filtro") === califFiltro;
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+    if (!enMalla.length) {
       if (vacio) vacio.hidden = false;
       if (layout) layout.hidden = true;
       return;
     }
     if (vacio) vacio.hidden = true;
     if (layout) layout.hidden = false;
-    if (!califSel || !ramoPorCodigo(califSel)) califSel = estado.califSel && ramoPorCodigo(estado.califSel) ? estado.califSel : cursos[0].codigo;
+    if (!cursos.length) {
+      califSel = null; estado.califSel = null;
+      var mensaje = califFiltro === "disponibles" ? t("calif.sinDisponibles")
+        : califFiltro === "historial" ? t("calif.sinHistorial") : t("calif.sinActivos");
+      lista.innerHTML = '<p class="muted calif-sin">' + esc(mensaje) + "</p>";
+      det.innerHTML = htmlDetalleCalif(null, null);
+      return;
+    }
+    var enLista = function (cod) { return cursos.some(function (c) { return c.codigo === cod; }); };
+    if (!califSel || !ramoPorCodigo(califSel) || !enLista(califSel)) {
+      califSel = estado.califSel && enLista(estado.califSel) ? estado.califSel : cursos[0].codigo;
+    }
     estado.califSel = califSel; estado.ramoSel = califSel;
     lista.innerHTML = cursos.slice().sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; }).map(function (cur) {
-      var q = califDe(cur.codigo), est = estadoCalifDe(q, cur);
+      var q = califFiltro === "disponibles" ? (estado.califs[cur.codigo] || califPorDefecto()) : califDe(cur.codigo);
+      var est = estadoCalifDe(q, cur);
+      var nfLista = q.notaFinalManual !== null && q.notaFinalManual !== undefined
+        ? q.notaFinalManual : (cur.cerrado && cur.notaCierre !== null ? cur.notaCierre : notaFinalDe(q));
+      var resumen = califFiltro === "disponibles"
+        ? esc(t("calif.notasGuardadas"))
+        : esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(nfLista);
       return '<button class="calif-item' + (cur.codigo === califSel ? " on" : "") + '" type="button" data-calif="' + esc(cur.codigo) + '">' +
         '<span class="calif-item__nom">' + iconoRamoHTML(cur) + "<b>" + esc(cur.codigo) + "</b> " + esc(cur.nombre) + "</span>" +
-        '<small>' + esc(L("P ", "P ", "平时 ")) + fmtNota(presentacionDe(q)) + " · " + esc(L("Final ", "Final ", "最终 ")) + fmtNota(notaFinalDe(q)) + "</small>" +
+        '<small>' + resumen + "</small>" +
         '<em class="pill ' + est.clase + '">' + esc(est.texto) + "</em></button>";
     }).join("");
-    det.innerHTML = htmlDetalleCalif(ramoPorCodigo(califSel), califDe(califSel));
+    var qSel = califFiltro === "disponibles" ? (estado.califs[califSel] || califPorDefecto()) : califDe(califSel);
+    det.innerHTML = htmlDetalleCalif(ramoPorCodigo(califSel), qSel);
+  }
+  function activarCursoCalif(cod) {
+    var c = ramoPorCodigo(cod);
+    if (!c || c.cerrado || c.enCurso) return;
+    c.enCurso = true;
+    notificarCurso(c);
+    califFiltro = "activos"; califSel = cod; estado.califSel = cod; estado.ramoSel = cod;
+    estado.panel.calificaciones = "detalle";
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    aviso(tf("calif.agregado", { codigo: cod }));
+  }
+  function retirarCursoCalif(cod) {
+    var c = ramoPorCodigo(cod);
+    if (!c || !c.enCurso) return;
+    if (!window.confirm(tf("calif.retirarPregunta", { codigo: cod }))) return;
+    c.enCurso = false;
+    notificarCurso(c);
+    califSel = null; estado.califSel = null;
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    aviso(tf("calif.retirado", { codigo: cod }), function () {
+      var x = ramoPorCodigo(cod); if (!x) return;
+      x.enCurso = true; notificarCurso(x);
+      califFiltro = "activos"; califSel = cod; estado.califSel = cod; estado.ramoSel = cod;
+      guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
+    });
+  }
+  function abrirAgregarCalif() {
+    normalizarCursos();
+    var disponibles = estado.cursos.filter(function (c) {
+      return c.enMalla !== false && !c.enCurso && !c.cerrado;
+    }).sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; });
+    var html = !disponibles.length
+      ? '<p class="muted calif-sin">' + esc(t("calif.agregarVacio")) + "</p>"
+      : '<div class="calif-add__lista">' + disponibles.map(function (c) {
+          return '<button class="calif-add__item" type="button" data-calif-add="' + esc(c.codigo) + '">' +
+            '<span>' + iconoRamoHTML(c) + "<b>" + esc(c.codigo) + "</b> " + esc(c.nombre) +
+            "<small>" + esc(t("calif.estado.disponible")) + "</small></span>" +
+            '<span class="btn btn--chico">' + esc(t("calif.agregar")) + "</span></button>";
+        }).join("") + "</div>";
+    MimoModal.abrir({
+      id: "calif-add",
+      titulo: t("calif.agregarTitulo"),
+      sub: t("calif.agregarSub"),
+      html: html,
+      guardar: t("acc.cerrar"),
+      cancelar: t("acc.cerrar"),
+      onGuardar: function () { return true; },
+      despues: function (form) {
+        form.querySelectorAll("[data-calif-add]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var cod = b.getAttribute("data-calif-add");
+            MimoModal.cerrar("guardar");
+            activarCursoCalif(cod);
+          });
+        });
+      }
+    });
   }
   function cambioCalif(e) {
     var el = e.target, q = califDe(califSel); if (!q || !el) return;
@@ -2727,7 +3705,30 @@
       else cond.valor = notaNum(el.value) || 1;
     } else if (el.hasAttribute("data-nota-min")) q.notaMin = notaNum(el.value) || 4;
     else if (el.hasAttribute("data-meta")) q.meta = notaNum(el.value) || 5;
-    guardar(); pintarCalificaciones(); pintarPanel();
+    else if (el.hasAttribute("data-nota-final")) {
+      q.notaFinalManual = String(el.value).trim() === "" ? null : notaNum(el.value);
+      var curFinal = ramoPorCodigo(califSel);
+      if (curFinal && curFinal.cerrado) {
+        var nf2 = notaFinalDe(q);
+        curFinal.notaCierre = nf2;
+        if (nf2 !== null) {
+          curFinal.aprobado = nf2 >= q.notaMin;
+          curFinal.resultado = curFinal.aprobado ? "aprobado" : "reprobado";
+        }
+        notificarCurso(curFinal);
+      }
+    }
+    var curCierre = ramoPorCodigo(califSel);
+    if (curCierre && curCierre.cerrado && q.notaFinalManual === null) {
+      var nfCierre = notaFinalDe(q);
+      curCierre.notaCierre = nfCierre;
+      if (nfCierre !== null) {
+        curCierre.aprobado = nfCierre >= q.notaMin;
+        curCierre.resultado = curCierre.aprobado ? "aprobado" : "reprobado";
+      }
+      notificarCurso(curCierre);
+    }
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
   }
   function eventoCompId(codigo, i) { return "calif-" + codigo + "-" + i; }
   function fuenteCalificaciones() {
@@ -2749,11 +3750,14 @@
   }
   function accionCalif(e) {
     var b = e.target.closest("[data-accion-calif]"); if (!b) return;
-    var q = califDe(califSel); if (!q) return;
     var accion = b.getAttribute("data-accion-calif"), i = parseInt(b.getAttribute("data-i"), 10);
+    if (accion === "activar") { activarCursoCalif(califSel); return; }
+    if (accion === "retirar") { retirarCursoCalif(califSel); return; }
+    if (accion === "editar") { abrirFormularioRamo(ramoPorCodigo(califSel)); return; }
     if (accion === "identidad") { abrirIdentidadCalif(califSel); return; }
     if (accion === "cerrar-curso") { cerrarCurso(califSel); return; }
     if (accion === "reabrir-curso") { reabrirCurso(califSel); return; }
+    var q = califDe(califSel); if (!q) return;
     if (accion === "comp-cal") {
       var comp = q.componentes[i];
       if (!comp || !comp.fecha) { aviso(L("Ponle una fecha al componente primero.", "Give the component a date first.", "请先给评分项设置日期。")); return; }
@@ -2771,10 +3775,16 @@
       q.categorias.splice(i, 1);
       q.componentes.forEach(function (x) { if (x.categoria === nombre) x.categoria = q.categorias[0].nombre; });
     } else if (accion === "comp-quitar") {
+      var compQuitar = q.componentes[i];
+      if (!compQuitar) return;
+      if (!window.confirm(tf("calif.quitarEvaluacion", { nombre: compQuitar.nombre }))) return;
       q.componentes.splice(i, 1);
       if (q.examen.reemplaza === i) q.examen.reemplaza = null;
       else if (q.examen.reemplaza > i) q.examen.reemplaza--;
-    } else if (accion === "cond-quitar") q.eximicion.condiciones.splice(i, 1);
+    } else if (accion === "cond-quitar") {
+      if (!window.confirm(t("calif.quitarCondicion"))) return;
+      q.eximicion.condiciones.splice(i, 1);
+    }
     guardar(); pintarCalificaciones(); pintarPanel();
   }
 
@@ -2827,13 +3837,6 @@
   }
   function marcaContexto(ctx) { var c = cursoDeContexto(ctx); return c ? marcaRamo(c) : ""; }
   function iconoContexto(ctx) { var c = cursoDeContexto(ctx); return c ? iconoRamoHTML(c) : ""; }
-  function textoSobre(hex) {
-    var h = String(hex || "").replace("#", "");
-    if (h.length === 3) h = h.split("").map(function (x) { return x + x; }).join("");
-    var r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
-    if (!isFinite(r) || !isFinite(g) || !isFinite(b)) return "#fff";
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 160 ? "#111" : "#fff";
-  }
   function fmtHoras(min) {
     min = Number(min) || 0;
     if (min <= 0) return "0 h";
@@ -2890,7 +3893,15 @@
     var hist = (estado.estudio && estado.estudio.minutosSemana) || {};
     var semanas = semanasEstudio();
     var meta = Number(estado.estudio.metaSemanal) || 0;
+    /* La meta del gráfico es la suma de las metas semanales de los ramos; si
+       todavía no hay ninguna, se conserva la meta global como respaldo. */
+    var metaRamo = cursos.reduce(function (a, c) {
+      return a + Math.max(0, Number(estado.estudio.metasRamo[c.codigo]) || 0);
+    }, 0);
+    var metaGrafico = metaRamo || meta;
     if ($("#est-meta")) $("#est-meta").value = meta;
+    /* Con metas de ramo, el campo global sobra: la meta se edita en la tabla. */
+    if ($("#est-meta-campo")) $("#est-meta-campo").hidden = metaRamo > 0;
     var sel = $("#est-ramo");
     if (sel) {
       var val = sel.value;
@@ -2931,11 +3942,9 @@
         totalRamo[k] = (totalRamo[k] || 0) + m;
       });
     });
-    function metaDeSemana(w) {
-      var ms = estado.estudio.metasSemana || {};
-      return Object.prototype.hasOwnProperty.call(ms, w.desde) ? Math.max(0, Number(ms[w.desde]) || 0) : meta;
-    }
-    var sobre = semanas.filter(function (w) { return porSemana[w.desde] > metaDeSemana(w) * 60 && metaDeSemana(w) > 0; }).length;
+    var sobre = metaGrafico > 0 ? semanas.filter(function (w) {
+      return porSemana[w.desde] > metaGrafico * 60;
+    }).length : 0;
     var conDatos = semanas.filter(function (w) { return porSemana[w.desde] > 0; });
     var prom = conDatos.length ? conDatos.reduce(function (a, w) { return a + porSemana[w.desde]; }, 0) / conDatos.length : 0;
     if ($("#est-k-horas")) $("#est-k-horas").textContent = fmtHoras(totalMin);
@@ -2946,11 +3955,18 @@
       ? L("Periodo ", "Term ", "学期 ") + periodoActivoObj().nombre + " · " + semanas.length + " " + L("semanas", "weeks", "周")
       : L("Últimas ", "Last ", "最近 ") + semanas.length + " " + L("semanas", "weeks", "周");
     if ($("#est-resumen")) $("#est-resumen").textContent = ses.length || histMin
-      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + (histMin ? " · " + L("incluye histórico semanal", "includes weekly history", "含每周历史记录") : "") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(meta * 60) + " " + L("por semana.", "per week.", "每周。")
+      ? ses.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(totalMin) + " " + L("registradas", "logged", "已记录") + (histMin ? " · " + L("incluye histórico semanal", "includes weekly history", "含每周历史记录") : "") + " · " + L("meta ", "goal ", "目标 ") + fmtHoras(metaGrafico * 60) + " " + L("por semana.", "per week.", "每周。")
       : L("Sin sesiones todavía. Registra una o usa el cronómetro de Tiempo.", "No sessions yet. Log one or use the Time stopwatch.", "还没有会话。记录一次，或使用时间的秒表。");
-    var max = Math.max(meta * 60, 1);
-    semanas.forEach(function (w) { max = Math.max(max, porSemana[w.desde]); });
-    max *= 1.15;
+    /* El techo sale de la semana actual: su total manda si supera la meta; las
+       semanas anteriores no arrastran el máximo. Si la semana actual no tiene
+       horas, la meta sigue siendo el techo. */
+    var hoyIso = isoDeFecha(new Date());
+    var semanaActual = semanas.filter(function (w) {
+      return hoyIso >= w.desde && hoyIso <= w.hasta;
+    })[0] || semanas[semanas.length - 1];
+    var maxSemana = semanaActual ? porSemana[semanaActual.desde] : 0;
+    var max = Math.max(metaGrafico * 60, maxSemana, 1);
+    var porCursoActual = null;
     var cols = semanas.map(function (w) {
       var total = porSemana[w.desde], pct = Math.min(100, total / max * 100);
       var segs = Object.keys(totalRamo).length ? "" : "";
@@ -2968,40 +3984,41 @@
         if (!m) return;
         porCurso[k] = (porCurso[k] || 0) + m;
       });
+      if (w === semanaActual) porCursoActual = porCurso;
       var barras = Object.keys(porCurso).map(function (k) {
         return '<i style="flex:' + porCurso[k] + ';background:' + colorEstudio(k) + '" title="' +
           esc(k === "_" ? L("Sin ramo", "No course", "无课程") : k) + ": " + fmtHoras(porCurso[k]) + '"></i>';
       }).join("");
-      return '<div class="est-col" title="' + esc(w.etiqueta) + " · " + fmtHoras(total) + '">' +
+      return '<div class="est-col" style="--alto:' + pct + '%" title="' + esc(w.etiqueta) + " · " + fmtHoras(total) + '">' +
         '<span class="est-total">' + (total ? fmtHoras(total) : "") + "</span>" +
-        '<div class="est-pila" style="height:' + pct + '%">' + barras + "</div>" +
+        '<div class="est-pila">' + barras + "</div>" +
         '<span class="est-etq">' + esc(w.etiqueta) + "</span></div>";
     }).join("");
-    $("#est-grafico").innerHTML = totalMin || meta
-      ? '<div class="est-plot"><div class="est-meta-line" style="bottom:' + Math.min(98, meta * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
-        fmtHoras(meta * 60) + '</span></div><div class="est-cols">' + cols + "</div></div>"
+    $("#est-grafico").innerHTML = totalMin || metaGrafico
+      ? '<div class="est-plot"><div class="est-cols"><div class="est-meta-line" style="bottom:' + Math.min(98, metaGrafico * 60 / max * 100) + '%"><span>' + esc(L("meta ", "goal ", "目标 ")) +
+        fmtHoras(metaGrafico * 60) + '</span></div>' + cols + "</div></div>"
       : '<p class="empty">' + esc(L("Sin horas todavía. Registra una sesión para ver el gráfico.", "No hours yet. Log a session to see the chart.", "还没有小时记录。记录一次会话即可查看图表。")) + '</p>';
     var leyenda = cursos.filter(function (c) { return totalRamo[c.codigo]; }).map(function (c) {
       return '<span>' + marcaRamo(c) + esc(c.codigo) + " " + fmtHoras(totalRamo[c.codigo]) + "</span>";
     });
     if (totalRamo._) leyenda.push('<span><i style="background:var(--muted)"></i>' + esc(L("Sin ramo ", "No course ", "无课程 ")) + fmtHoras(totalRamo._) + "</span>");
     $("#est-leyenda").innerHTML = leyenda.join("");
-    if ($("#est-metas-semana")) {
-      $("#est-metas-semana").innerHTML = '<span class="muted">' + esc(L("Meta por semana:", "Goal per week:", "每周目标：")) + '</span>' + semanas.map(function (w) {
-        var v = metaDeSemana(w);
-        return '<label class="est-meta-sem">' + esc(w.etiqueta) + ' <input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-semana="' + esc(w.desde) + '" value="' + v + '"> h</label>';
-      }).join("");
+    if ($("#est-meta-ramo")) {
+      $("#est-meta-ramo").innerHTML = esc(L("Meta semanal", "Weekly goal", "每周目标")) + ' <b>' + fmtHoras(metaGrafico * 60) + "</b>";
     }
     var filas = cursos.map(function (c) {
-      var h = totalRamo[c.codigo] || 0, m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
-      var pct = m ? Math.min(100, Math.round(h / (m * 60 * Math.max(1, semanas.length)) * 100)) : 0;
+      /* La tabla también es semanal: horas de la semana actual y avance contra
+         la meta semanal del ramo, sin multiplicar por las semanas del período. */
+      var h = (porCursoActual && porCursoActual[c.codigo]) || 0;
+      var m = Number(estado.estudio.metasRamo[c.codigo]) || 0;
+      var pct = m ? Math.min(100, Math.round(h / (m * 60) * 100)) : 0;
       return '<tr><td><span class="est-ramo">' + iconoRamoHTML(c) + esc(c.codigo) + " — " + esc(c.nombre) + "</span></td>" +
         '<td class="num">' + fmtHoras(h) + "</td>" +
         '<td class="num"><input class="entrada est-num" type="number" min="0" max="40" step="0.5" data-est-meta-ramo="' + esc(c.codigo) + '" value="' + m + '"> h</td>' +
-        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + (m * semanas.length) + " h" : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
+        '<td><div class="est-barra"><i style="width:' + pct + '%"></i></div><small>' + (m ? pct + " % " + L("de ", "of ", "共 ") + fmtHoras(m * 60) : L("sin meta", "no goal", "无目标")) + "</small></td></tr>";
     }).join("");
-    if (totalRamo._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>' + esc(L("Sin ramo", "No course", "无课程")) + '</td><td class="num">' +
-      fmtHoras(totalRamo._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
+    if (porCursoActual && porCursoActual._) filas += '<tr><td><i class="est-punto" style="background:var(--muted)"></i>' + esc(L("Sin ramo", "No course", "无课程")) + '</td><td class="num">' +
+      fmtHoras(porCursoActual._) + '</td><td class="num">—</td><td class="muted">' + esc(L("Asigna un ramo para medirlo", "Assign a course to measure it", "分配课程以便统计")) + '</td></tr>';
     $("#est-tabla").innerHTML = filas || '<tr><td colspan="4" class="muted">' + esc(L("Sin ramos. Crea uno en Malla.", "No courses. Create one in the plan.", "没有课程。请在课程规划中创建。")) + '</td></tr>';
     var recientes = ses.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.fecha < b.s.fecha ? 1 : -1; }).slice(0, 12);
     var grupos = agruparPorRamo(recientes.map(function (x) { return x.s; }));
@@ -3505,18 +4522,28 @@
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
       } else if (pantalla === "tareas" && tareaP) {
         var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
+        var tareaRec = esRecurrente(tareaP), prox = tareaRec ? proximaPendienteDe(tareaP) : "";
+        var hoyOcurre = tareaRec && MimoRecurrencia.ocurre(tareaP.recurrencia, hoyISO());
+        var hechaHoy = tareaRec && !!(tareaP.recurrencia.hechas && tareaP.recurrencia.hechas[hoyISO()]);
+        var estadoTxt = tareaRec ? L("Se repite", "Repeats", "重复") : t(tareaP.hecha ? "panel.hecha" : "panel.abierta");
+        var toggleTxt = tareaRec
+          ? (hoyOcurre ? (hechaHoy ? L("Reabrir hoy", "Reopen today", "重新打开今天") : L("Completar hoy", "Complete today", "完成今天")) : L("Completar la próxima", "Complete next", "完成下一次"))
+          : t(tareaP.hecha ? "panel.reabrir" : "panel.marcarHecha");
         html = "<h2>" + esc(t(tareaP.tipo === "proyecto" ? "panel.proyecto" : "panel.tarea")) + "</h2><h3>" + esc(tareaP.titulo) + "</h3>" +
-          '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(t(tareaP.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>" +
-          '<div class="panel__bloque"><span>' + esc(t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(estadoTxt) + "</small></div>" +
+          '<div class="panel__bloque"><span>' + esc(tareaRec ? L("Desde", "Since", "开始") : t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
+          (tareaRec ? '<div class="panel__bloque"><span>' + esc(L("Repetición", "Repeat", "重复")) + '</span><small>' + esc(resumenRecurrencia(tareaP.recurrencia)) + "</small></div>" +
+            '<div class="panel__bloque"><span>' + esc(L("Próxima", "Next", "下次")) + '</span><small>' + esc(prox ? fechaLarga(prox) : L("sin próxima", "none", "无")) + "</small></div>" +
+            '<div class="panel__bloque"><span>' + esc(L("Cumplidas", "Completed", "已完成")) + '</span><small>' + MimoRecurrencia.cumplidas(tareaP.recurrencia) + "</small></div>" : "") +
           '<div class="panel__bloque"><span>' + esc(t("panel.prioridad")) + '</span><small>' + esc(etiquetaPrioridad(tareaP.prioridad)) + "</small></div>" +
           (tareaP.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(tareaP.contexto) + "</small></div>" : "") +
           (padre ? '<div class="panel__bloque"><span>' + esc(t("panel.dentroDe")) + '</span><small>' + esc(padre.titulo) + "</small></div>" : "") +
           (tareaP.tipo === "proyecto" ? '<h2>' + esc(t("panel.progreso")) + '</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + esc(tf("panel.progresoTareas", { hechas: p.hechas, total: p.total })) + "</p>" +
             '<h2>' + esc(t("panel.subtareas")) + '</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + esc(t(h.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>"; }).join("") : '<p class="panel__nota">' + esc(t("panel.sinSubtareas")) + '</p>') : "") +
-          (tareaP.nota ? '<h2>' + esc(t("panel.nota")) + '</h2><p class="panel__nota">' + esc(tareaP.nota) + "</p>" : "") +
+          (tareaP.nota ? '<h2>' + esc(L("Descripción", "Description", "描述")) + '</h2><div class="panel__nota panel__nota--md">' + (window.MimoEditorMD ? MimoEditorMD.renderMarkdown(tareaP.nota) : esc(tareaP.nota)) + "</div>" : "") +
           bloqueNotasEnlazadas("tarea", tareaP.id) +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + tareaP.id + '">' + esc(t("acc.editar")) + '</button>' +
-          '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '">' + esc(t(tareaP.hecha ? "panel.reabrir" : "panel.marcarHecha")) + "</button>" +
+          (tareaRec && !prox ? "" : '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '" data-fecha="' + esc(tareaRec ? (hoyOcurre ? hoyISO() : prox) : "") + '">' + esc(toggleTxt) + "</button>") +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + tareaP.id + '">' + esc(t("acc.borrar")) + "</button></div>";
 
       } else if (pantalla === "notas" && n) {
@@ -3560,11 +4587,7 @@
       b.addEventListener("click", function () { abrirFormulario(tareaPorId(b.getAttribute("data-editar-tarea"))); });
     });
     $$("#panel-cuerpo [data-toggle-tarea]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var x = tareaPorId(b.getAttribute("data-toggle-tarea")); if (!x) return;
-        x.hecha = !x.hecha; x.estado = x.hecha ? "hecha" : "pendiente";
-        guardar(); pintarTareas(); pintarPanel();
-      });
+      b.addEventListener("click", function () { alternarTarea(b.getAttribute("data-toggle-tarea"), b.getAttribute("data-fecha") || ""); });
     });
     $$("#panel-cuerpo [data-borrar-tarea]").forEach(function (b) {
       b.addEventListener("click", function () { borrarTarea(b.getAttribute("data-borrar-tarea")); });
@@ -3699,6 +4722,7 @@
     pintarSplit();
     pintarAjustes();
     pintarPie();
+    if (window.MimoSync && typeof MimoSync.pintar === "function") { try { MimoSync.pintar(); } catch (e) {} }
     if ($("#modal").classList.contains("on")) pintarCatalogo();
     // La ventana de edición toma sus botones del idioma vigente (los campos y el
     // título llegan ya traducidos desde cada editor).
@@ -3878,7 +4902,9 @@
     }
     (estado.tareas || []).forEach(function (t) {
       if (!tiene(t.titulo, t.contexto, t.nota)) return;
-      out.push({ tipo: L("Tarea", "Task", "任务"), titulo: t.titulo, sub: (t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务")) + (t.fecha ? " · " + fechaCorta(t.fecha) : "") + (t.contexto ? " · " + t.contexto : ""),
+      var proxT = proximaPendienteDe(t);
+      out.push({ tipo: L("Tarea", "Task", "任务"), titulo: t.titulo, sub: (t.tipo === "proyecto" ? L("Proyecto", "Project", "项目") : L("Tarea", "Task", "任务")) +
+        (esRecurrente(t) ? " · ↻ " + etiquetaCortaRecurrencia(t.recurrencia) + (proxT ? " · " + fechaCorta(proxT) : "") : (t.fecha ? " · " + fechaCorta(t.fecha) : "")) + (t.contexto ? " · " + t.contexto : ""),
         run: function () { abrirTarea(t.id); } });
     });
     (estado.notas || []).forEach(function (n) {
@@ -3896,7 +4922,7 @@
       out.push({ tipo: L("Ramo", "Course", "课程"), titulo: c.codigo + " — " + c.nombre, sub: creditosDe(c) + " cr · " + etiquetaEstado(estadoDeRamo(c)),
         run: function () {
           estado.ramoSel = c.codigo; estado.panel.malla = "detalle"; guardar();
-          ir("malla"); pintarMalla(); pintarPanel();
+          ir("malla", true); pintarMalla(); pintarPanel();
         } });
     });
     (estado.periodos || []).forEach(function (p) {
@@ -4437,7 +5463,7 @@
     if (!original) estado.cursos.push(c);
     notificarCurso(c);
     estado.ramoSel = c.codigo; estado.panel.malla = "detalle";
-    guardar(); pintarMalla(); pintarPanel(); abrirPanel();
+    guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel(); abrirPanel();
     aviso(original ? L("Ramo guardado.", "Course saved.", "课程已保存。") : L("Ramo creado.", "Course created.", "课程已创建。"));
     return true;
   }
@@ -4511,8 +5537,25 @@
       abrirPanel();
     });
     $("#calif-detalle").addEventListener("change", cambioCalif);
+    /* Mismo trato que el reloj de Tiempo: el texto se edita en el sitio, Enter
+       confirma y Escape devuelve lo que había. */
+    $("#calif-detalle").addEventListener("focusin", function (e) {
+      var inp = e.target.closest("[data-nota-final]");
+      if (inp) inp.select();
+    });
+    $("#calif-detalle").addEventListener("keydown", function (e) {
+      var inp = e.target.closest("[data-nota-final]"); if (!inp) return;
+      if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+      else if (e.key === "Escape") { inp.value = inp.defaultValue; inp.blur(); }
+    });
     $("#calif-detalle").addEventListener("click", accionCalif);
-
+    $("#calif-filtro").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-calif-filtro]"); if (!b) return;
+      califFiltro = b.getAttribute("data-calif-filtro");
+      califSel = null; estado.califSel = null;
+      pintarCalificaciones(); pintarPanel();
+    });
+    $("#calif-anadir").addEventListener("click", abrirAgregarCalif);
   }
   /* Registrar una sesión suelta: el mismo formulario de antes (ramo, fecha y
      duración), ahora en la ventana única en vez de en una tarjeta de la sección. */
@@ -4556,12 +5599,6 @@
       var el = e.target.closest("[data-est-meta-ramo]"); if (!el) return;
       normalizarEstudio();
       estado.estudio.metasRamo[el.getAttribute("data-est-meta-ramo")] = Math.max(0, Number(el.value) || 0);
-      guardar(); pintarEstudio();
-    });
-    $("#est-metas-semana").addEventListener("change", function (e) {
-      var el = e.target.closest("[data-est-meta-semana]"); if (!el) return;
-      normalizarEstudio();
-      estado.estudio.metasSemana[el.getAttribute("data-est-meta-semana")] = Math.max(0, Number(el.value) || 0);
       guardar(); pintarEstudio();
     });
     $("#est-sesiones").addEventListener("click", function (e) {
@@ -4857,13 +5894,20 @@
       b.addEventListener("click", function () {
         vistaTareas = b.getAttribute("data-vista");
         estado.vistaTareas = vistaTareas;
-        $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x === b); });
+        guardar(); pintarTareas();
+      });
+    });
+    $$("#tareas-filtros [data-filtro]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        filtroTareas = b.getAttribute("data-filtro");
+        estado.filtroTareas = filtroTareas;
         guardar(); pintarTareas();
       });
     });
     $("#btn-nueva-tarea").addEventListener("click", function () { abrirFormulario(null); });
     $("#tareas-crear").addEventListener("click", function () { abrirFormulario(null); });
-    $("#btn-hoy").addEventListener("click", function () { calCursor = new Date(); pintarCalendario(); });
+    $("#btn-hoy").addEventListener("click", _calIrHoy);
+    if ($("#cal-corte")) $("#cal-corte").addEventListener("click", _calAlternarCorte);
     $("#btn-periodo").addEventListener("click", abrirPeriodo);
     $("#periodo-x").addEventListener("click", cerrarPeriodo);
     $("#periodo-cancelar").addEventListener("click", cerrarPeriodo);
@@ -4932,16 +5976,8 @@
         guardar(); pintarCalendario();
       });
     });
-    $("#cal-ant").addEventListener("click", function () {
-      if (vistaCalendario === "semana") calCursor.setDate(calCursor.getDate() - 7);
-      else calCursor.setMonth(calCursor.getMonth() - 1);
-      pintarCalendario();
-    });
-    $("#cal-sig").addEventListener("click", function () {
-      if (vistaCalendario === "semana") calCursor.setDate(calCursor.getDate() + 7);
-      else calCursor.setMonth(calCursor.getMonth() + 1);
-      pintarCalendario();
-    });
+    $("#cal-ant").addEventListener("click", function () { _calMover(-1); });
+    $("#cal-sig").addEventListener("click", function () { _calMover(1); });
     document.addEventListener("keydown", function (e) {
       if (e.key === "F5") { e.preventDefault(); refrescarVista(); return; }
       if ((e.ctrlKey || e.metaKey) && !e.altKey) {

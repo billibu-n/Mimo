@@ -1,6 +1,6 @@
 # Mimo
 
-[![Versión](https://img.shields.io/github/v/release/billibu-n/mimo?include_prereleases&label=versi%C3%B3n&color=16a34a)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.6)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-1.2.0--beta.7-16a34a)](https://billibu-n.github.io/Mimo/)
 [![Plataforma](https://img.shields.io/badge/plataforma-Linux%20%7C%20Windows-2563eb)](#descargar)
 [![Licencia](https://img.shields.io/badge/licencia-MIT-3da639)](LICENSE)
 
@@ -10,9 +10,16 @@ decides qué bloques usar: la interfaz se adapta a ti, no al revés.
 
 No hay cuenta, no hay nube propia y no se envía nada a un servidor. Tus datos viven en tu equipo.
 
+## Probar en el navegador
+
+La **beta.7** está publicada en **GitHub Pages**: <https://billibu-n.github.io/Mimo/>. Es la app
+web completa, sin instalación. Los instaladores de escritorio siguen en la beta.6 hasta que se
+empaquete la beta.7.
+
 ## Descargar
 
-[![Descargar la última versión](https://img.shields.io/badge/Descargar_la_%C3%BAltima_versi%C3%B3n-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.6)
+[![Abrir la beta.7 en el navegador](https://img.shields.io/badge/Abrir_la_beta.7_en_el_navegador-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://billibu-n.github.io/Mimo/)
+[![Descargar la beta.6](https://img.shields.io/badge/Descargar_la_beta.6-2563eb?style=for-the-badge&logo=github&logoColor=white)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.6)
 
 **Descarga → instala → abre.** No necesitas cuenta ni configurar nada para empezar.
 

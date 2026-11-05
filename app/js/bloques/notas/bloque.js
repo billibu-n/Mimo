@@ -91,101 +91,10 @@
     });
   }
 
-  function marcarInline(txt) {
-    var s = C.esc(txt);
-    s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
-    s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
-    s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    return s;
-  }
-
-  function renderMathHTML(html) {
-    if (typeof window.renderMathInElement !== "function") return html;
-    var cont = document.createElement("div");
-    cont.innerHTML = html;
-    try {
-      window.renderMathInElement(cont, {
-        delimiters: [
-          { left: "$$", right: "$$", display: true },
-          { left: "\\[", right: "\\]", display: true },
-          { left: "$", right: "$", display: false },
-          { left: "\\(", right: "\\)", display: false }
-        ],
-        throwOnError: false,
-        errorColor: "#b91c1c",
-        ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
-      });
-    } catch (e) { /* si KaTeX falla, la nota sigue en texto plano */ }
-    return cont.innerHTML;
-  }
-
-  function renderMarkdownBasico(txt) {
-    var guardados = [];
-    var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
-      guardados.push(m);
-      return "@@MATH" + (guardados.length - 1) + "@@";
-    });
-    var lineas = fuente.split("\n"), out = [], lista = false;
-    function cerrar() { if (lista) { out.push("</ul>"); lista = false; } }
-    lineas.forEach(function (l) {
-      var x = l.trim();
-      if (!x) { cerrar(); return; }
-      if (/^###\s+/.test(x)) { cerrar(); out.push("<h3>" + marcarInline(x.slice(4)) + "</h3>"); return; }
-      if (/^##\s+/.test(x)) { cerrar(); out.push("<h2>" + marcarInline(x.slice(3)) + "</h2>"); return; }
-      if (/^#\s+/.test(x)) { cerrar(); out.push("<h1>" + marcarInline(x.slice(2)) + "</h1>"); return; }
-      if (/^[-*]\s+\[[ xX]\]\s+/.test(x)) {
-        if (!lista) { out.push("<ul>"); lista = true; }
-        var m = x.match(/^[-*]\s+\[([ xX])\]\s+(.*)$/);
-        out.push('<li class="check-item"><input type="checkbox" disabled ' + (m[1].toLowerCase() === "x" ? "checked" : "") + "> " + marcarInline(m[2]) + "</li>");
-        return;
-      }
-      if (/^[-*]\s+/.test(x)) {
-        if (!lista) { out.push("<ul>"); lista = true; }
-        out.push("<li>" + marcarInline(x.slice(2)) + "</li>");
-        return;
-      }
-      cerrar();
-      out.push("<p>" + marcarInline(x) + "</p>");
-    });
-    cerrar();
-    var html = out.join("").replace(/@@MATH(\d+)@@/g, function (_, i) {
-      return C.esc(guardados[parseInt(i, 10)] || "");
-    });
-    return renderMathHTML(html);
-  }
-
+  /* El motor Markdown vive en nucleo/editor-md.js: Notas y Tareas renderizan
+     exactamente igual (mismo marked, mismo saneado, mismo KaTeX). */
   function renderMarkdown(txt) {
-    if (!window.marked || !window.DOMPurify) return renderMarkdownBasico(txt);
-    var guardados = [];
-    var fuente = String(txt || "").replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\)/g, function (m) {
-      guardados.push(m);
-      return "@@MATH" + (guardados.length - 1) + "@@";
-    });
-    fuente = fuente.replace(/^([ \t]*)([-*+])\s+\[([ xX])\]\s+(.+)$/gm, function (_, ind, bullet, ch, texto) {
-      return ind + bullet + ' <input type="checkbox" disabled' + (ch.toLowerCase() === "x" ? " checked" : "") + "> " + texto;
-    });
-    var renderer = new marked.Renderer();
-    renderer.link = function (href, title, text) {
-      var h = String(href || "").trim();
-      if (!/^(https?:\/\/|mailto:|#)/i.test(h)) h = "#";
-      return '<a href="' + C.esc(h) + '" target="_blank" rel="noopener noreferrer"' +
-        (title ? ' title="' + C.esc(title) + '"' : "") + ">" + text + "</a>";
-    };
-    var html;
-    try {
-      html = marked.parse(fuente, { gfm: true, breaks: false, headerIds: false, mangle: false, renderer: renderer });
-    } catch (e) {
-      return renderMarkdownBasico(txt);
-    }
-    html = DOMPurify.sanitize(html, {
-      ADD_ATTR: ["target", "rel", "checked", "disabled", "type", "class"],
-      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|data:image\/)|#|\/|\.{1,2}\/|[^:]*$)/i
-    });
-    html = html.replace(/@@MATH(\d+)@@/g, function (_, i) {
-      return C.esc(guardados[parseInt(i, 10)] || "");
-    });
-    return renderMathHTML(html);
+    return window.MimoEditorMD ? MimoEditorMD.renderMarkdown(txt) : "";
   }
 
   function lista(destino, conClick) {
@@ -221,62 +130,7 @@
     if (!C) return;
     var ta = q("#nota-cuerpo");
     if (!ta || ta.disabled || !actual()) return;
-    var ini = ta.selectionStart, fin = ta.selectionEnd, val = ta.value, sel = val.slice(ini, fin);
-    function cambiar(a, b, texto, cIni, cFin) {
-      ta.value = val.slice(0, a) + texto + val.slice(b);
-      ta.focus();
-      ta.setSelectionRange(cIni, cFin);
-      ta.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    var par = { negrita: ["**", "**"], cursiva: ["*", "*"], subrayado: ["<u>", "</u>"], tachado: ["~~", "~~"] }[tipo];
-    if (par) {
-      var pre = par[0], post = par[1];
-      if (sel.length >= pre.length + post.length && sel.indexOf(pre) === 0 && sel.slice(-post.length) === post) {
-        var dentro = sel.slice(pre.length, sel.length - post.length);
-        cambiar(ini, fin, dentro, ini, ini + dentro.length);
-      } else {
-        var texto = sel || L("texto", "text", "文本");
-        cambiar(ini, fin, pre + texto + post, ini + pre.length, ini + pre.length + texto.length);
-      }
-      return;
-    }
-    if (tipo === "codigo") {
-      if (sel.indexOf("\n") !== -1) {
-        var bloque = "```\n" + sel + "\n```";
-        cambiar(ini, fin, bloque, ini + 4, ini + 4 + sel.length);
-      } else {
-        var cod = sel || L("código", "code", "代码");
-        cambiar(ini, fin, "`" + cod + "`", ini + 1, ini + 1 + cod.length);
-      }
-      return;
-    }
-    if (tipo === "h1" || tipo === "h2" || tipo === "h3") {
-      var marca = { h1: "# ", h2: "## ", h3: "### " }[tipo];
-      var linea = val.lastIndexOf("\n", ini - 1) + 1;
-      if (val.slice(linea, linea + marca.length) === marca) {
-        cambiar(linea, linea + marca.length, "", Math.max(linea, ini - marca.length), Math.max(linea, fin - marca.length));
-      } else {
-        cambiar(linea, linea, marca, ini + marca.length, fin + marca.length);
-      }
-      return;
-    }
-    if (tipo === "cita" || tipo === "lista" || tipo === "tarea") {
-      var pref = tipo === "cita" ? "> " : tipo === "tarea" ? "- [ ] " : "- ";
-      var desde = val.lastIndexOf("\n", ini - 1) + 1;
-      var hasta = fin;
-      if (desde === hasta) { hasta = val.indexOf("\n", fin); if (hasta < 0) hasta = val.length; }
-      var lineas = val.slice(desde, hasta).split("\n").map(function (l) {
-        return l.indexOf(pref) === 0 ? l.slice(pref.length) : pref + l;
-      });
-      var nuevo = lineas.join("\n");
-      cambiar(desde, hasta, nuevo, desde, desde + nuevo.length);
-      return;
-    }
-    if (tipo === "tabla") {
-      var col = L("Columna", "Column", "列"), celda = L("Texto", "Text", "文本");
-      var tabla = "| " + col + " | " + col + " |\n| --- | --- |\n| " + celda + " | " + celda + " |\n";
-      cambiar(ini, fin, tabla, ini + tabla.length, ini + tabla.length);
-    }
+    if (window.MimoEditorMD) MimoEditorMD.aplicarFormato(ta, tipo, L);
   }
 
   function pintar() {

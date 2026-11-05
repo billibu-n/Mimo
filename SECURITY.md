@@ -2,7 +2,7 @@
 
 ## Versiones con soporte
 
-Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.6` es una pre-release.
+Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.7` es la app web publicada en GitHub Pages; los instaladores de escritorio son de la `1.2.0-beta.6`.
 
 ## Cómo reportar
 

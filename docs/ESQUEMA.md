@@ -62,6 +62,38 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
 Campos obligatorios del sobre: `schema`, `version`, `datos`. `app`, `appVersion`, `exportado` y
 `extensiones` son informativos y aditivos.
 
+### Tareas y series
+
+Cada entrada de `datos.tareas` conserva los campos de siempre (`titulo`, `tipo`, `padre_id`,
+`prioridad`, `contexto`, `fecha`, `nota`, `orden`). `fecha` es opcional: `""` deja la tarea en
+la tira **Sin fecha** del tablero. `nota` es la descripción en Markdown; se pinta con el mismo
+motor de Notas.
+
+Una tarea que se repite añade `recurrencia` (o `null`):
+
+```json
+"recurrencia": {
+  "frecuencia": "diaria",
+  "intervalo": 1,
+  "dias": [1, 2, 3, 4, 5],
+  "desde": "2026-11-05",
+  "fin": "nunca",
+  "hasta": "",
+  "veces": 10,
+  "hechas": {"2026-11-05": true}
+}
+```
+
+- `frecuencia`: `diaria`, `semanal`, `mensual` o `anual`.
+- `intervalo`: cada cuántas unidades (1 = todos).
+- `dias`: días ISO 0 (domingo) a 6 (sábado) para diaria y semanal. Vacío en diaria = todos;
+  vacío en semanal = el día de `desde`. El caso «lunes a viernes» es `[1,2,3,4,5]`.
+- `desde`: ancla de la serie. Si la tarea no tenía fecha al crearla, es el día de alta.
+- `fin`: `nunca`, `fecha` (con `hasta`) o `cuenta` (con `veces`).
+- `hechas`: ocurrencias cumplidas, por fecha ISO. No se duplica la tarea por ocurrencia: la
+  serie se calcula al pintar y solo se guarda lo cumplido. Completar una fecha no pone
+  `hecha` en la tarea; `hecha` sigue describiendo una tarea suelta.
+
 ## 3. Malla
 
 ```json

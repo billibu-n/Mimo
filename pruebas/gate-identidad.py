@@ -255,12 +255,14 @@ def main() -> int:
             page.wait_for_timeout(350)
             exigir(page.evaluate("""() => {
                 const chip = document.querySelector('#cal-grid .evento-chip');
-                return !!chip && getComputedStyle(chip).backgroundColor === 'rgb(220, 38, 38)';
-            }"""), "calendario: el chip usa el color del ramo", fallas)
-            page.locator("#vista-calendario [data-cal-vista='agenda']").click()
-            page.wait_for_timeout(300)
-            exigir(page.locator('.cal-agenda__item .ramo-ico use[href="#i-ramo-libro"]').count() >= 1,
-                   "calendario: la agenda lleva el icono del ramo", fallas)
+                if (!chip) return false;
+                const cs = getComputedStyle(chip);
+                // El chip tintado conserva el color del ramo en el borde izquierdo;
+                // el fondo ya no es el color plano, sino su mezcla con la superficie.
+                return cs.borderLeftColor === 'rgb(220, 38, 38)' &&
+                       cs.borderLeftWidth === '3px' &&
+                       (chip.getAttribute('style') || '').indexOf('--chip:#dc2626') !== -1;
+            }"""), "calendario: el chip usa el color del ramo en el borde", fallas)
             page.locator('#tabs [data-ir="tareas"]').click()
             page.wait_for_timeout(300)
             page.locator('#vista-tareas [data-vista="tablero"]').click()

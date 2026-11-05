@@ -64,9 +64,6 @@ def main() -> int:
                 "getComputedStyle(document.querySelector('.cal-layout')).gridTemplateColumns.split(' ').length")
             exigir(columnas_cal >= 2,
                    f"calendario: rail y calendario en dos columnas — {columnas_cal}", fallas)
-            page.locator('[data-cal-vista="agenda"]').click()
-            page.wait_for_timeout(80)
-            exigir(page.locator(".cal-agenda__item").count() == 1, "calendario: la agenda lista el evento", fallas)
             page.locator('[data-cal-vista="mes"]').click()
             page.wait_for_timeout(80)
 
@@ -116,6 +113,8 @@ def main() -> int:
             page.locator("#btn-nueva-tarea").click()
             page.locator("#tarea-titulo").fill("Preparar la reunión del lunes")
             page.locator("#modal-guardar").click()
+            page.wait_for_timeout(100)
+            page.locator('[data-vista="arbol"]').click()
             page.wait_for_timeout(100)
             exigir(page.locator(".tarea-fila").count() == 1, "tareas: crear una tarea", fallas)
             page.locator(".tarea-fila").first.click()

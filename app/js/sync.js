@@ -25,6 +25,12 @@
   var FORMATO_CIFRADO = "mimo-sync-cifrado";
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
   function L(es, en, zh) { return window.MimoI18n ? window.MimoI18n.L(es, en, zh) : es; }
   /* La contraseña de aplicación de WebDAV se guarda en este equipo, cifrada con la
      misma clave derivada que protege la copia (AES-GCM). No es un secreto frente a
@@ -849,6 +855,8 @@
     else texto = L("Listo para sincronizar.", "Ready to sync.", "可以同步。");
     est.textContent = texto;
     est.className = clase;
+    var estM = $("#sync-estado-modal");
+    if (estM) { estM.textContent = texto; estM.className = clase; }
     var sel = $("#sync-proveedor"); if (sel) sel.value = meta.provider === "webdav" && meta.nc ? "nextcloud" : (meta.provider || "");
     var w = $("#sync-webdav"); if (w) w.hidden = meta.provider !== "webdav" || !!meta.nc;
     var cw = $("#sync-webdav-conexion"); if (cw) cw.hidden = !!meta.nc;
@@ -894,6 +902,7 @@
     var vc = $("#sync-ver-copia");
     if (vc) vc.hidden = !meta.provider;
     pintarClave();
+    pintarEnlace();
     try { document.dispatchEvent(new CustomEvent("mimo:sync")); } catch (e) {}
   }
 
@@ -1099,6 +1108,347 @@
     }
   }
 
+  /* ---- entrada por QR o texto ----
+     El QR de Nextcloud y el texto de su página traen el mismo enlace
+     nc://onetime-login/user:...&password:...&server:...; el lector local lo
+     convierte a servidor, usuario, contraseña de aplicación y ruta WebDAV. */
+  var enlacePendiente = null, mostrarEnlace = false, camaraStream = null;
+
+  function decirEntrada(texto, mal) {
+    var e = $("#sync-entrada-estado");
+    if (!e) return;
+    e.textContent = texto || "";
+    e.className = "sync-pista" + (mal ? " err" : "");
+  }
+  function filaDato(etiqueta, valor) {
+    return '<div class="sync-dato"><b>' + esc(etiqueta) + "</b><span>" + esc(valor || "—") + "</span></div>";
+  }
+  function etiquetaAviso(k) {
+    return {
+      http: L("El servidor usa http, no https.", "The server uses http, not https.", "服务器使用 http，而非 https。"),
+      sin_clave: L("Falta la contraseña de aplicación.", "The app password is missing.", "缺少应用密码。"),
+      sin_esquema: L("No venía como enlace nc://, pero se reconoció igual.", "It did not come as an nc:// link, but it was recognised anyway.", "不是 nc:// 链接，但仍已识别。"),
+      esquema_login: L("El esquema era nc://login/; se normalizó a onetime-login.", "The scheme was nc://login/; it was normalised to onetime-login.", "原方案为 nc://login/，已规范为 onetime-login。"),
+      servidor_invalido: L("La dirección del servidor no es válida.", "The server address is not valid.", "服务器地址无效。"),
+      vacio: L("No hay texto que leer.", "There is no text to read.", "没有可读取的文本。")
+    }[k] || k;
+  }
+  function enlaceVisible(a) {
+    if (!a || !a.servidor || !a.usuario) return "";
+    var clave = a.clave ? MimoSyncEntrada.enmascarar(a.clave) : "";
+    return MimoSyncEntrada.componer({ servidor: a.servidor, usuario: a.usuario, clave: clave });
+  }
+  function pintarDeteccion(a, origen) {
+    var caja = $("#sync-detectado-datos");
+    if (!caja || !a) return;
+    var clave = a.clave ? MimoSyncEntrada.enmascarar(a.clave) : L("(sin contraseña)", "(no password)", "（无密码）");
+    var html = filaDato(L("Servidor", "Server", "服务器"), a.servidor) +
+      filaDato(L("Usuario", "User", "用户"), a.usuario) +
+      filaDato(L("Contraseña", "Password", "密码"), clave) +
+      filaDato(L("Ruta WebDAV", "WebDAV path", "WebDAV 路径"), a.urlWebDAV) +
+      filaDato(L("Enlace", "Link", "链接"), enlaceVisible(a));
+    if (a.faltan.length) {
+      html += filaDato(L("Falta", "Missing", "缺少"), a.faltan.map(function (k) {
+        return { servidor: L("servidor", "server", "服务器"), usuario: L("usuario", "user", "用户"), clave: L("contraseña", "password", "密码") }[k] || k;
+      }).join(", "));
+    }
+    if (a.avisos.length) html += filaDato(L("Aviso", "Notice", "提示"), a.avisos.map(etiquetaAviso).join(" "));
+    caja.innerHTML = html;
+    var origenEl = $("#sync-detectado-origen");
+    if (origenEl) origenEl.textContent = origen === "qr"
+      ? L("Desde la imagen", "From the image", "来自图片")
+      : L("Desde el texto", "From the text", "来自文本");
+    var cajaDet = $("#sync-detectado"); if (cajaDet) cajaDet.hidden = false;
+    var usar = $("#sync-usar"); if (usar) usar.disabled = !a.servidor;
+  }
+  function analizarEntrada(origen) {
+    if (!window.MimoSyncEntrada) { decirEntrada(L("Falta el lector de enlaces.", "The link reader is missing.", "缺少链接读取器。"), true); return; }
+    var campo = $("#sync-entrada-texto");
+    var a = MimoSyncEntrada.analizar(campo ? campo.value : "");
+    enlacePendiente = a;
+    if (!a.servidor) {
+      var caja = $("#sync-detectado"); if (caja) caja.hidden = true;
+      decirEntrada(a.avisos.indexOf("servidor_invalido") !== -1
+        ? L("No se reconoce una dirección de servidor válida.", "No valid server address was recognised.", "未识别到有效的服务器地址。")
+        : L("No se reconoce el enlace. Pega el texto completo o sube el QR.", "The link was not recognised. Paste the full text or upload the QR.", "无法识别链接。请粘贴完整文本或上传二维码。"), true);
+      return;
+    }
+    pintarDeteccion(a, origen || "texto");
+    if (a.completo) decirEntrada(L("Revisa el resultado y pulsa «Usar este enlace».", "Check the result and press “Use this link”.", "请检查结果并按“使用此链接”。"));
+    else if (!a.usuario) decirEntrada(L("Se detectó el servidor; falta el usuario. Puedes completarlo a mano en el panel 2.", "The server was detected; the user is missing. You can complete it manually in panel 2.", "已检测到服务器，但缺少用户。可在面板 2 中手动填写。"), true);
+    else if (!a.clave) decirEntrada(L("Se detectó el servidor y el usuario; falta la contraseña de aplicación. Añádela en el panel 2.", "The server and user were detected; the app password is missing. Add it in panel 2.", "已检测到服务器和用户，但缺少应用密码。请在面板 2 中添加。"), true);
+    else decirEntrada(L("Enlace reconocido.", "Link recognised.", "已识别链接。"));
+  }
+  function limpiarDeteccion() {
+    enlacePendiente = null;
+    var caja = $("#sync-detectado"); if (caja) caja.hidden = true;
+    var campo = $("#sync-entrada-texto"); if (campo) campo.value = "";
+    decirEntrada("");
+  }
+  async function usarDeteccion() {
+    var a = enlacePendiente;
+    if (!a && window.MimoSyncEntrada) {
+      var campo = $("#sync-entrada-texto");
+      a = MimoSyncEntrada.analizar(campo ? campo.value : "");
+      enlacePendiente = a;
+    }
+    if (!a || !a.servidor) {
+      decirEntrada(L("Primero detecta un enlace con servidor.", "First detect a link with a server.", "请先检测包含服务器的链接。"), true);
+      return;
+    }
+    var carpeta = meta.webdav.carpeta || "Mimo";
+    meta.provider = "webdav";
+    meta.nc = !!(a.usuario && a.servidor);
+    meta.ncUrl = a.servidor;
+    meta.webdav.url = a.urlWebDAV || "";
+    meta.webdav.usuario = a.usuario || "";
+    meta.webdav.carpeta = carpeta;
+    meta.lastRemoteRev = ""; meta.lastRemoteVersion = 0;
+    meta.lastLocalHash = ""; meta.lastSyncAt = ""; meta.ultimoCambio = "";
+    ultimoError = "";
+    if (a.clave) {
+      claveAcceso = a.clave;
+      try { sessionStorage.setItem("mimo.sync.clave.sesion", claveAcceso); } catch (e) {}
+    } else {
+      /* Un enlace sin contraseña no hereda la del destino anterior. */
+      claveAcceso = "";
+      try { sessionStorage.removeItem("mimo.sync.clave.sesion"); } catch (e) {}
+      borrarAcceso();
+      meta.accesoEn = "";
+      var accesoViejo = $("#sync-webdav-clave-acceso"); if (accesoViejo) accesoViejo.value = "";
+    }
+    guardarMeta();
+    cargarCamposWebDAV();
+    if (a.clave) {
+      ponerClaveAcceso(a.clave);
+      var ncClave = $("#sync-nc-clave"); if (ncClave) ncClave.value = a.clave;
+      guardarAcceso();
+    }
+    limpiarCola();
+    pintarUI();
+    pintarEnlace();
+    var extra = "";
+    if (a.clave && !meta.cifrado.activo) {
+      extra = " " + L("La contraseña de aplicación queda solo en esta sesión hasta que guardes una contraseña de cifrado en el panel 3.", "The app password stays only in this session until you save an encryption password in panel 3.", "在面板 3 中保存加密密码之前，应用密码仅保留在本会话。");
+    }
+    var texto = a.completo
+      ? L("Enlace aplicado. Revisa el destino y pulsa «Probar conexión» o «Sincronizar ahora».", "Link applied. Check the destination and press “Test connection” or “Sync now”.", "链接已应用。请检查目标并按“测试连接”或“立即同步”。")
+      : L("Enlace aplicado a medias: completa el usuario y la contraseña en el panel 2.", "Link partly applied: complete the user and password in panel 2.", "链接已部分应用：请在面板 2 中补全用户和密码。");
+    decirEntrada(texto + extra, !a.completo);
+    avisar(texto + extra);
+  }
+  function decodificarImagen(file) {
+    return new Promise(function (resolve, reject) {
+      if (!window.jsQR) {
+        reject(new Error(L("Falta el lector de QR local (jsQR).", "The local QR reader (jsQR) is missing.", "缺少本地二维码读取器（jsQR）。")));
+        return;
+      }
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        try {
+          var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+          URL.revokeObjectURL(url);
+          /* Un QR pequeño a veces pide un poco de escala; se prueba sin suavizar
+             para no emborronar los módulos. */
+          var escalas = [1, 2, 3];
+          for (var i = 0; i < escalas.length; i++) {
+            var f = Math.min(escalas[i], 1600 / Math.max(w, h));
+            var c = document.createElement("canvas");
+            c.width = Math.max(1, Math.round(w * f)); c.height = Math.max(1, Math.round(h * f));
+            var ctx = c.getContext("2d", { willReadFrequently: true });
+            ctx.imageSmoothingEnabled = false;
+            /* Fondo blanco: un PNG con transparencia no debe volverse negro. */
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            var data = ctx.getImageData(0, 0, c.width, c.height);
+            var r = window.jsQR(data.data, c.width, c.height, { inversionAttempts: "attemptBoth" });
+            if (r && r.data) { resolve(r.data); return; }
+          }
+          resolve(null);
+        } catch (e) { reject(e); }
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error(L("No se pudo leer la imagen.", "The image could not be read.", "无法读取图片。"))); };
+      img.src = url;
+    });
+  }
+  function procesarArchivo(file) {
+    if (!file) return;
+    /* Algunos navegadores/archivos llegan sin MIME; se intenta igual. */
+    if (file.type && !/^image\//i.test(file.type)) {
+      decirEntrada(L("Ese archivo no es una imagen.", "That file is not an image.", "该文件不是图片。"), true);
+      return;
+    }
+    decirEntrada(L("Leyendo la imagen…", "Reading the image…", "正在读取图片…"));
+    decodificarImagen(file).then(function (texto) {
+      if (!texto) { decirEntrada(L("No se encontró un QR legible en la imagen.", "No readable QR was found in the image.", "图片中没有可识别的二维码。"), true); return; }
+      var campo = $("#sync-entrada-texto"); if (campo) campo.value = texto;
+      analizarEntrada("qr");
+    }).catch(function (e) { decirEntrada(e && e.message ? e.message : L("No se pudo leer el QR.", "The QR could not be read.", "无法读取二维码。"), true); });
+  }
+  function soportaCamara() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+  function pararCamara() {
+    if (camaraStream) {
+      try { camaraStream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+      camaraStream = null;
+    }
+    var v = $("#sync-qr-video"); if (v) { try { v.srcObject = null; } catch (e) {} }
+    var caja = $("#sync-qr-camara-caja"); if (caja) caja.hidden = true;
+    var cap = $("#sync-qr-capturar"); if (cap) cap.hidden = true;
+    var par = $("#sync-qr-parar"); if (par) par.hidden = true;
+    var boton = $("#sync-qr-camara"); if (boton) boton.hidden = !soportaCamara();
+  }
+  async function iniciarCamara() {
+    if (!soportaCamara()) {
+      decirEntrada(L("Este navegador no ofrece cámara.", "This browser does not offer a camera.", "此浏览器不提供摄像头。"), true);
+      return;
+    }
+    pararCamara();
+    try {
+      camaraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      var v = $("#sync-qr-video");
+      if (v) { v.srcObject = camaraStream; try { await v.play(); } catch (e) {} }
+      var caja = $("#sync-qr-camara-caja"); if (caja) caja.hidden = false;
+      var cap = $("#sync-qr-capturar"); if (cap) cap.hidden = false;
+      var par = $("#sync-qr-parar"); if (par) par.hidden = false;
+      var boton = $("#sync-qr-camara"); if (boton) boton.hidden = true;
+      decirEntrada(L("Apunta al QR y pulsa «Capturar».", "Point at the QR and press “Capture”.", "对准二维码并按“拍摄”。"));
+    } catch (e) {
+      pararCamara();
+      decirEntrada(L("No se pudo abrir la cámara. Revisa el permiso o usa una imagen.", "The camera could not be opened. Check the permission or use an image.", "无法打开摄像头。请检查权限或使用图片。"), true);
+    }
+  }
+  function capturarCamara() {
+    var v = $("#sync-qr-video");
+    if (!v || !camaraStream) return;
+    var w = v.videoWidth || 640, h = v.videoHeight || 480;
+    try {
+      var c = document.createElement("canvas"); c.width = w; c.height = h;
+      var ctx = c.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(v, 0, 0, w, h);
+      var data = ctx.getImageData(0, 0, w, h);
+      var r = window.jsQR ? window.jsQR(data.data, w, h, { inversionAttempts: "attemptBoth" }) : null;
+      if (!r || !r.data) { decirEntrada(L("No se ve un QR; acerca la cámara e inténtalo otra vez.", "No QR is visible; move the camera closer and try again.", "看不到二维码；请靠近后重试。"), true); return; }
+      var campo = $("#sync-entrada-texto"); if (campo) campo.value = r.data;
+      analizarEntrada("qr");
+      pararCamara();
+    } catch (e) {
+      decirEntrada(L("No se pudo capturar el QR.", "The QR could not be captured.", "无法拍摄二维码。"), true);
+    }
+  }
+
+  function enlaceActual() {
+    if (!window.MimoSyncEntrada) return null;
+    var servidor = meta.ncUrl || "";
+    var usuario = meta.webdav.usuario || "";
+    if (!servidor && meta.webdav.url) {
+      var n = MimoSyncEntrada.normalizarServidor(meta.webdav.url);
+      if (n) { servidor = n.servidor; usuario = usuario || n.usuario || ""; }
+    }
+    if (!servidor) return null;
+    var carpeta = meta.webdav.carpeta || "Mimo";
+    var partes = MimoSyncEntrada.descomponer({ servidor: servidor, usuario: usuario, clave: claveAcceso, carpeta: carpeta });
+    var datos = {};
+    partes.forEach(function (p) { datos[p.clave] = p.valor; });
+    return {
+      servidor: servidor, usuario: usuario, clave: claveAcceso || "", carpeta: carpeta,
+      partes: partes, urlWebDAV: datos.webdav || "", urlArchivo: datos.archivo || "",
+      enlace: servidor && usuario ? MimoSyncEntrada.componer({ servidor: servidor, usuario: usuario, clave: claveAcceso || "" }) : ""
+    };
+  }
+  function pintarEnlace() {
+    var texto = $("#sync-enlace-completo");
+    var caja = $("#sync-enlace-partes");
+    if (!texto || !caja) return;
+    var act = enlaceActual();
+    var ver = $("#sync-enlace-ver"), copiar = $("#sync-enlace-copiar"), destino = $("#sync-enlace-copiar-destino");
+    if (!act) {
+      texto.textContent = L("Sin enlace resuelto.", "No resolved link.", "尚无解析链接。");
+      caja.innerHTML = "";
+      if (ver) { ver.disabled = true; ver.textContent = L("Mostrar contraseña", "Show password", "显示密码"); }
+      if (copiar) copiar.disabled = true;
+      if (destino) destino.disabled = true;
+      return;
+    }
+    var visible = act.clave ? (mostrarEnlace ? act.clave : MimoSyncEntrada.enmascarar(act.clave)) : "";
+    var mostrar = act.enlace ? MimoSyncEntrada.componer({ servidor: act.servidor, usuario: act.usuario, clave: visible })
+      : L("Falta el usuario para componer el enlace.", "The user is missing to compose the link.", "缺少用户，无法组成链接。");
+    texto.textContent = mostrar;
+    var etiquetas = {
+      esquema: L("Esquema", "Scheme", "方案"),
+      servidor: L("Servidor", "Server", "服务器"),
+      usuario: L("Usuario", "User", "用户"),
+      clave: L("Contraseña", "Password", "密码"),
+      webdav: L("Ruta WebDAV", "WebDAV path", "WebDAV 路径"),
+      carpeta: L("Carpeta", "Folder", "文件夹"),
+      archivo: L("Archivo", "File", "文件")
+    };
+    caja.innerHTML = act.partes.filter(function (p) { return p.clave !== "enlace"; }).map(function (p) {
+      var v = p.valor || "—";
+      if (p.secreto) v = act.clave ? (mostrarEnlace ? act.clave : MimoSyncEntrada.enmascarar(act.clave)) : "—";
+      return '<div class="sync-parte"><b>' + esc(etiquetas[p.clave] || p.clave) + "</b><span>" + esc(v) + "</span></div>";
+    }).join("");
+    if (ver) {
+      ver.disabled = !act.clave;
+      ver.textContent = mostrarEnlace ? L("Ocultar contraseña", "Hide password", "隐藏密码") : L("Mostrar contraseña", "Show password", "显示密码");
+    }
+    if (copiar) copiar.disabled = !act.enlace;
+    if (destino) destino.disabled = !act.urlArchivo;
+  }
+  function copiarTexto(valor, mensaje) {
+    if (!valor) return;
+    function listo() { avisar(mensaje); }
+    function respaldo() {
+      var ta = document.createElement("textarea");
+      ta.value = valor; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); listo(); }
+      catch (e) { avisar(L("No se pudo copiar. Selecciona el texto a mano.", "Could not copy. Select the text manually.", "无法复制。请手动选择文本。")); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(valor).then(listo).catch(respaldo);
+    } else respaldo();
+  }
+
+  function abrir() {
+    if (!window.MimoModal) return;
+    if (window.MimoModal.estaAbierto()) return;
+    var form = $("#sync-formulario"), hueco = $("#sync-hueco");
+    if (!form) return;
+    window.MimoModal.abrir({
+      id: "sync",
+      ancho: "ancho",
+      titulo: L("Sincronización", "Sync", "同步"),
+      sub: L("Un enlace o un QR para conectar; la conexión manual sigue disponible como respaldo.", "A link or QR to connect; the manual connection is still available as a fallback.", "用链接或二维码连接；手动连接仍作为备用。"),
+      html: '<p class="muted sync-estado" id="sync-estado-modal"></p><div id="sync-modal-host"></div>',
+      guardar: L("Listo", "Done", "完成"),
+      cancelar: L("Cerrar", "Close", "关闭"),
+      despues: function () {
+        var hostM = $("#sync-modal-host");
+        if (hostM) hostM.appendChild(form);
+        pintarUI();
+        pintarEnlace();
+        var campo = $("#sync-entrada-texto"); if (campo) campo.focus();
+      },
+      antesDeCerrar: function () {
+        pararCamara();
+        mostrarEnlace = false;
+        enlacePendiente = null;
+        /* El texto pegado puede llevar la contraseña de aplicación: no se queda
+           en el formulario de Ajustes al cerrar la ventana. */
+        var campoEntrada = $("#sync-entrada-texto"); if (campoEntrada) campoEntrada.value = "";
+        var det = $("#sync-detectado"); if (det) det.hidden = true;
+        var ncClave = $("#sync-nc-clave"); if (ncClave) ncClave.value = "";
+        decirEntrada("");
+        if (hueco && form) hueco.appendChild(form);
+      },
+      onGuardar: function () { return true; }
+    });
+  }
+
   /* ---- configuración ---- */
   async function elegirCarpeta() {
     try {
@@ -1269,6 +1619,73 @@
     sel.addEventListener("change", cambiarProveedor);
     enlazarCamposWebDAV();
     cargarCamposWebDAV();
+
+    /* Entrada por QR o texto y ventana de sincronización. */
+    var abrirBtn = $("#sync-abrir");
+    if (abrirBtn) abrirBtn.addEventListener("click", abrir);
+    var tarjeta = $("#sync-card");
+    if (tarjeta) tarjeta.addEventListener("click", function (e) {
+      if (e.target.closest("#sync-formulario, button, a, input, select, textarea, summary, label")) return;
+      abrir();
+    });
+    var detectar = $("#sync-detectar");
+    if (detectar) detectar.addEventListener("click", function () { analizarEntrada("texto"); });
+    var entradaTexto = $("#sync-entrada-texto");
+    if (entradaTexto) entradaTexto.addEventListener("keydown", function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); analizarEntrada("texto"); }
+    });
+    var usar = $("#sync-usar"); if (usar) usar.addEventListener("click", usarDeteccion);
+    var descartar = $("#sync-descartar"); if (descartar) descartar.addEventListener("click", limpiarDeteccion);
+    var elegirQr = $("#sync-qr-elegir");
+    if (elegirQr) elegirQr.addEventListener("click", function () { var f = $("#sync-qr-archivo"); if (f) f.click(); });
+    var archivoQr = $("#sync-qr-archivo");
+    if (archivoQr) archivoQr.addEventListener("change", function () {
+      var f = archivoQr.files && archivoQr.files[0];
+      archivoQr.value = "";
+      if (f) procesarArchivo(f);
+    });
+    var zona = $("#sync-qr-zona");
+    if (zona) {
+      zona.addEventListener("click", function () { var f = $("#sync-qr-archivo"); if (f) f.click(); });
+      zona.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); var f = $("#sync-qr-archivo"); if (f) f.click(); }
+      });
+      ["dragenter", "dragover"].forEach(function (ev) {
+        zona.addEventListener(ev, function (e) { e.preventDefault(); zona.classList.add("drag"); });
+      });
+      ["dragleave", "dragend"].forEach(function (ev) {
+        zona.addEventListener(ev, function () { zona.classList.remove("drag"); });
+      });
+      zona.addEventListener("drop", function (e) {
+        e.preventDefault(); zona.classList.remove("drag");
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) { procesarArchivo(f); return; }
+        var t = e.dataTransfer ? e.dataTransfer.getData("text/plain") : "";
+        if (t) { var campo = $("#sync-entrada-texto"); if (campo) campo.value = t; analizarEntrada("texto"); }
+      });
+    }
+    var botonCamara = $("#sync-qr-camara");
+    if (botonCamara) {
+      botonCamara.hidden = !soportaCamara();
+      botonCamara.addEventListener("click", iniciarCamara);
+    }
+    var capturar = $("#sync-qr-capturar"); if (capturar) capturar.addEventListener("click", capturarCamara);
+    var parar = $("#sync-qr-parar"); if (parar) parar.addEventListener("click", pararCamara);
+    var enlaceVer = $("#sync-enlace-ver");
+    if (enlaceVer) enlaceVer.addEventListener("click", function () { mostrarEnlace = !mostrarEnlace; pintarEnlace(); });
+    var enlaceCopiar = $("#sync-enlace-copiar");
+    if (enlaceCopiar) enlaceCopiar.addEventListener("click", function () {
+      var a = enlaceActual();
+      if (!a || !a.enlace) return;
+      copiarTexto(a.enlace, a.clave
+        ? L("Enlace copiado. Incluye la contraseña de aplicación.", "Link copied. It includes the app password.", "链接已复制，包含应用密码。")
+        : L("Enlace copiado sin contraseña.", "Link copied without a password.", "已复制不含密码的链接。"));
+    });
+    var enlaceDestino = $("#sync-enlace-copiar-destino");
+    if (enlaceDestino) enlaceDestino.addEventListener("click", function () {
+      var a = enlaceActual();
+      if (a && a.urlArchivo) copiarTexto(a.urlArchivo, L("Destino WebDAV copiado.", "WebDAV destination copied.", "WebDAV 目标已复制。"));
+    });
     var ncc = $("#sync-nc-conectar"); if (ncc) ncc.addEventListener("click", conectarNextcloud);
     var ncn = $("#sync-nc-navegador"); if (ncn) ncn.addEventListener("click", autorizarEnNavegador);
     var ncx = $("#sync-nc-cancelar");
@@ -1300,7 +1717,7 @@
     var vc = $("#sync-ver-copia");
     if (vc) vc.addEventListener("click", verCopia);
     $("#btn-sync").addEventListener("click", function () {
-      if (!meta.provider) { host().ir("ajustes"); avisar(L("Elige un modo de sincronización.", "Choose a sync mode.", "请选择同步方式。")); return; }
+      if (!meta.provider) { abrir(); return; }
       sincronizar(false);
     });
 
@@ -1312,6 +1729,7 @@
     window.addEventListener("offline", function () { pintarUI(); });
 
     pintarUI();
+    pintarEnlace();
     setTimeout(function () {
       recalcularCambios().then(function () {
         if (esNube() && cambios && !conflicto) marcarPendiente("cambios locales al abrir", !navigator.onLine);
@@ -1320,7 +1738,7 @@
     setTimeout(function () {
       if (esNube()) leerClave(meta.cifrado.sal).then(function (k) {
         if (!k && meta.cifrado.activo) { meta.cifrado.activo = false; guardarMeta(); pintarUI(); }
-        if (esWebDAV()) recuperarAcceso();
+        if (esWebDAV()) recuperarAcceso().then(function () { pintarEnlace(); });
       });
     }, 200);
     if (esNube() && cola.pendiente && cola.reintentar && navigator.onLine) programarReintento(2500);
@@ -1349,6 +1767,11 @@
       };
     },
     probarCon: probarCon,
+    abrir: abrir,
+    pintar: pintarUI,
+    pararCamara: pararCamara,
+    enlace: enlaceActual,
+    analizar: function (texto) { return window.MimoSyncEntrada ? MimoSyncEntrada.analizar(texto) : null; },
     _hash: hashTexto
   };
 

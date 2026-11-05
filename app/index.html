@@ -238,7 +238,7 @@
 <header class="topbar">
   <button class="icono-btn" id="btn-secciones" type="button" title="Ocultar las secciones" aria-controls="tabs" aria-expanded="true"><svg class="icono" aria-hidden="true"><use href="#i-menu"/></svg></button>
   <button class="marca" id="btn-mimo" type="button" title="Mimo" aria-label="Mimo"><img id="mimo-ic" src="img/icon-64.png" alt="" width="28" height="28"><span class="wordmark" aria-hidden="true">M<span class="wm-i">ı</span>mo</span></button>
-  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0-beta.6</span>
+  <span class="badge" title="Versión" data-i18n-title="top.version">v1.2.0-beta.7</span>
   <span class="crece"></span>
   <button class="buscador" id="btn-buscar" type="button" title="Buscar (Ctrl+K)" data-i18n-title="top.buscar"><svg class="icono" aria-hidden="true"><use href="#i-lupa"/></svg><span data-i18n="top.buscar">Buscar</span><kbd>Ctrl K</kbd></button>
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
@@ -331,6 +331,45 @@
           <h2><svg class="icono" aria-hidden="true"><use href="#i-sync"/></svg><span data-i18n="aj.sync">Sincronización</span></h2>
           <p class="muted sync-estado" id="sync-estado">Sin configurar. Elige un modo para llevar tus datos a otro equipo.</p>
 
+          <div class="sync-entrada-acciones">
+            <button class="btn btn-primario" type="button" id="sync-abrir" data-l10n-es="Configurar sincronización" data-l10n-en="Set up sync" data-l10n-zh="设置同步">Configurar sincronización</button>
+            <span class="sync-pista" data-l10n-es="Se abre en una ventana con los pasos." data-l10n-en="Opens in a window with the steps." data-l10n-zh="在带步骤的窗口中打开。">Se abre en una ventana con los pasos.</span>
+          </div>
+
+          <div id="sync-hueco"><div id="sync-formulario">
+          <details class="sync-panel" id="sync-panel-entrada" open>
+            <summary><span data-l10n-es="1. Enlace o QR" data-l10n-en="1. Link or QR" data-l10n-zh="1. 链接或二维码">1. Enlace o QR</span><span class="sync-panel__pista" data-l10n-es="Lo más rápido" data-l10n-en="Fastest" data-l10n-zh="最快">Lo más rápido</span></summary>
+            <div class="sync-panel__cuerpo">
+              <p class="sync-nota" data-l10n-es="Pega el texto completo que te dio la página o sube una imagen con el QR. Mimo separa servidor, usuario y contraseña de aplicación y te los muestra antes de guardar." data-l10n-en="Paste the full text the page gave you or upload a QR image. Mimo splits server, user and app password and shows them before saving." data-l10n-zh="粘贴页面给出的完整文本或上传二维码图片。Mimo 会分离服务器、用户和应用密码，并在保存前显示。">Pega el texto completo que te dio la página o sube una imagen con el QR. Mimo separa servidor, usuario y contraseña de aplicación y te los muestra antes de guardar.</p>
+              <label class="sync-campo"><span data-l10n-es="Texto completo o enlace" data-l10n-en="Full text or link" data-l10n-zh="完整文本或链接">Texto completo o enlace</span>
+                <textarea class="entrada" id="sync-entrada-texto" rows="3" spellcheck="false" placeholder="nc://onetime-login/user:…&amp;password:…&amp;server:https://…" data-l10n-ph-es="nc://onetime-login/user:…&amp;password:…&amp;server:https://…" data-l10n-ph-en="nc://onetime-login/user:…&amp;password:…&amp;server:https://…" data-l10n-ph-zh="nc://onetime-login/user:…&amp;password:…&amp;server:https://…"></textarea>
+                <span class="sync-pista" data-l10n-es="Acepta el enlace nc://, el texto que lo rodea y una URL de Nextcloud o WebDAV." data-l10n-en="Accepts the nc:// link, the text around it and a Nextcloud or WebDAV URL." data-l10n-zh="接受 nc:// 链接、其周围文本以及 Nextcloud 或 WebDAV URL。">Acepta el enlace nc://, el texto que lo rodea y una URL de Nextcloud o WebDAV.</span>
+              </label>
+              <div class="sync-fila">
+                <button class="btn btn-primario" id="sync-detectar" type="button" data-l10n-es="Detectar" data-l10n-en="Detect" data-l10n-zh="检测">Detectar</button>
+                <button class="btn" id="sync-qr-elegir" type="button" data-l10n-es="Subir imagen QR" data-l10n-en="Upload QR image" data-l10n-zh="上传二维码图片">Subir imagen QR</button>
+                <input type="file" id="sync-qr-archivo" accept="image/*" hidden>
+                <button class="btn" id="sync-qr-camara" type="button" hidden data-l10n-es="Usar cámara" data-l10n-en="Use camera" data-l10n-zh="使用摄像头">Usar cámara</button>
+                <button class="btn" id="sync-qr-capturar" type="button" hidden data-l10n-es="Capturar" data-l10n-en="Capture" data-l10n-zh="拍摄">Capturar</button>
+                <button class="btn" id="sync-qr-parar" type="button" hidden data-l10n-es="Detener" data-l10n-en="Stop" data-l10n-zh="停止">Detener</button>
+              </div>
+              <div class="sync-qr-zona" id="sync-qr-zona" tabindex="0" role="button" data-l10n-es="Arrastra aquí una imagen con QR o pulsa para elegirla" data-l10n-en="Drag a QR image here or press to choose it" data-l10n-zh="将二维码图片拖到这里或点击选择">Arrastra aquí una imagen con QR o pulsa para elegirla</div>
+              <div class="sync-qr-camara" id="sync-qr-camara-caja" hidden><video id="sync-qr-video" playsinline muted></video></div>
+              <p class="sync-pista" id="sync-entrada-estado"></p>
+              <div class="sync-detectado" id="sync-detectado" hidden>
+                <div class="sync-detectado__cab"><b data-l10n-es="Enlace detectado" data-l10n-en="Link detected" data-l10n-zh="检测到链接">Enlace detectado</b><span class="muted" id="sync-detectado-origen"></span></div>
+                <div class="sync-detectado__datos" id="sync-detectado-datos"></div>
+                <div class="sync-fila">
+                  <button class="btn btn-primario" id="sync-usar" type="button" data-l10n-es="Usar este enlace" data-l10n-en="Use this link" data-l10n-zh="使用此链接">Usar este enlace</button>
+                  <button class="btn" id="sync-descartar" type="button" data-l10n-es="Descartar" data-l10n-en="Discard" data-l10n-zh="丢弃">Descartar</button>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details class="sync-panel" id="sync-panel-manual" open>
+            <summary><span data-l10n-es="2. Conexión manual" data-l10n-en="2. Manual connection" data-l10n-zh="2. 手动连接">2. Conexión manual</span><span class="sync-panel__pista" data-l10n-es="Respaldo" data-l10n-en="Fallback" data-l10n-zh="备用">Respaldo</span></summary>
+            <div class="sync-panel__cuerpo">
           <div class="sync-modo">
             <label for="sync-proveedor" data-l10n-es="¿Dónde guardar tu copia?" data-l10n-en="Where should the copy live?" data-l10n-zh="副本保存在哪里？">¿Dónde guardar tu copia?</label>
             <select class="entrada" id="sync-proveedor">
@@ -411,6 +450,26 @@
             </div>
           </div>
 
+          <div id="sync-carpeta" hidden>
+            <p class="muted" id="sync-carpeta-nombre" data-l10n-es="Sin carpeta elegida." data-l10n-en="No folder chosen." data-l10n-zh="未选择文件夹。">Sin carpeta elegida.</p>
+            <button class="btn" id="sync-elegir-carpeta" type="button" data-l10n-es="Elegir carpeta…" data-l10n-en="Choose folder…" data-l10n-zh="选择文件夹…">Elegir carpeta…</button>
+          </div>
+
+          <div id="sync-archivo" hidden>
+            <p class="muted"><span data-l10n-es="Guarda " data-l10n-en="Save " data-l10n-zh="保存 ">Guarda</span> <code>mimo-sync.json</code> <span data-l10n-es="en tu nube y cárgalo en el otro equipo." data-l10n-en="in your cloud and load it on the other device." data-l10n-zh="到你的云端，并在另一台设备上加载。">en tu nube y cárgalo en el otro equipo.</span></p>
+            <div class="sync-fila">
+              <button class="btn" id="sync-guardar-archivo" type="button" data-l10n-es="Guardar archivo" data-l10n-en="Save file" data-l10n-zh="保存文件">Guardar archivo</button>
+              <button class="btn" id="sync-cargar-archivo" type="button" data-l10n-es="Cargar archivo" data-l10n-en="Load file" data-l10n-zh="加载文件">Cargar archivo</button>
+              <input type="file" id="sync-archivo-input" accept=".json,application/json" hidden>
+            </div>
+          </div>
+
+            </div>
+          </details>
+
+          <details class="sync-panel" id="sync-panel-cifrado" open>
+            <summary><span data-l10n-es="3. Cifrado" data-l10n-en="3. Encryption" data-l10n-zh="3. 加密">3. Cifrado</span><span class="sync-panel__pista" data-l10n-es="Obligatorio para la nube" data-l10n-en="Required for the cloud" data-l10n-zh="云端必填">Obligatorio para la nube</span></summary>
+            <div class="sync-panel__cuerpo">
           <div id="sync-cifrado" hidden>
             <div class="sync-columnas sync-columnas--una">
               <section class="sync-bloque sync-bloque--cifrado" aria-labelledby="sync-cifrado-tit">
@@ -431,21 +490,23 @@
               </section>
             </div>
           </div>
-
-          <div id="sync-carpeta" hidden>
-            <p class="muted" id="sync-carpeta-nombre" data-l10n-es="Sin carpeta elegida." data-l10n-en="No folder chosen." data-l10n-zh="未选择文件夹。">Sin carpeta elegida.</p>
-            <button class="btn" id="sync-elegir-carpeta" type="button" data-l10n-es="Elegir carpeta…" data-l10n-en="Choose folder…" data-l10n-zh="选择文件夹…">Elegir carpeta…</button>
-          </div>
-
-          <div id="sync-archivo" hidden>
-            <p class="muted"><span data-l10n-es="Guarda " data-l10n-en="Save " data-l10n-zh="保存 ">Guarda</span> <code>mimo-sync.json</code> <span data-l10n-es="en tu nube y cárgalo en el otro equipo." data-l10n-en="in your cloud and load it on the other device." data-l10n-zh="到你的云端，并在另一台设备上加载。">en tu nube y cárgalo en el otro equipo.</span></p>
-            <div class="sync-fila">
-              <button class="btn" id="sync-guardar-archivo" type="button" data-l10n-es="Guardar archivo" data-l10n-en="Save file" data-l10n-zh="保存文件">Guardar archivo</button>
-              <button class="btn" id="sync-cargar-archivo" type="button" data-l10n-es="Cargar archivo" data-l10n-en="Load file" data-l10n-zh="加载文件">Cargar archivo</button>
-              <input type="file" id="sync-archivo-input" accept=".json,application/json" hidden>
             </div>
-          </div>
+          </details>
 
+          <details class="sync-panel" id="sync-panel-acciones" open>
+            <summary><span data-l10n-es="4. Enlace y sincronización" data-l10n-en="4. Link and sync" data-l10n-zh="4. 链接和同步">4. Enlace y sincronización</span><span class="sync-panel__pista" data-l10n-es="Verificar y ejecutar" data-l10n-en="Check and run" data-l10n-zh="检查和执行">Verificar y ejecutar</span></summary>
+            <div class="sync-panel__cuerpo">
+          <div class="sync-enlace" id="sync-enlace">
+            <h3 data-l10n-es="Enlace y partes" data-l10n-en="Link and parts" data-l10n-zh="链接和部分">Enlace y partes</h3>
+            <p class="sync-nota" data-l10n-es="Este es el enlace que Mimo resuelve y guarda. Incluye la contraseña de aplicación: trátalo como una credencial." data-l10n-en="This is the link Mimo resolves and saves. It includes the app password: treat it as a credential." data-l10n-zh="这是 Mimo 解析并保存的链接。它包含应用密码：请将其视为凭据。">Este es el enlace que Mimo resuelve y guarda. Incluye la contraseña de aplicación: trátalo como una credencial.</p>
+            <code class="sync-enlace__texto" id="sync-enlace-completo" data-l10n-es="Sin enlace resuelto." data-l10n-en="No resolved link." data-l10n-zh="尚无解析链接。">Sin enlace resuelto.</code>
+            <div class="sync-fila">
+              <button class="btn" id="sync-enlace-ver" type="button" data-l10n-es="Mostrar contraseña" data-l10n-en="Show password" data-l10n-zh="显示密码">Mostrar contraseña</button>
+              <button class="btn" id="sync-enlace-copiar" type="button" data-l10n-es="Copiar enlace" data-l10n-en="Copy link" data-l10n-zh="复制链接">Copiar enlace</button>
+              <button class="btn" id="sync-enlace-copiar-destino" type="button" data-l10n-es="Copiar destino" data-l10n-en="Copy destination" data-l10n-zh="复制目标">Copiar destino</button>
+            </div>
+            <div class="sync-partes" id="sync-enlace-partes"></div>
+          </div>
           <div class="sync-acciones">
             <label class="check"><input type="checkbox" id="sync-manual" checked> <span data-l10n-es="Sincronizar solo cuando yo lo pida" data-l10n-en="Sync only when I ask" data-l10n-zh="仅在我要求时同步">Sincronizar solo cuando yo lo pida</span></label>
             <div class="sync-fila sync-fila--acciones">
@@ -457,6 +518,9 @@
             <p class="muted" id="sync-prueba" data-l10n-es="Sin comprobante todavía: la primera sincronización lo deja aquí." data-l10n-en="No receipt yet: the first sync will leave it here." data-l10n-zh="还没有凭据：第一次同步会留在这里。">Sin comprobante todavía: la primera sincronización lo deja aquí.</p>
             <p class="muted" id="sync-ayuda" data-l10n-es="La nube guarda siempre una copia cifrada. El archivo y la carpeta local no están cifrados: úsalos solo en un lugar de confianza." data-l10n-en="The cloud always stores an encrypted copy. The file and local folder are not encrypted: use them only in a trusted place." data-l10n-zh="云端始终保存加密副本。文件和本地文件夹不加密：仅在可信位置使用。">La nube guarda siempre una copia cifrada. El archivo y la carpeta local no están cifrados: úsalos solo en un lugar de confianza.</p>
           </div>
+            </div>
+          </details>
+          </div></div>
         </section>
       </div>
 
@@ -465,7 +529,7 @@
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques" data-l10n-es="0 bloques instalados." data-l10n-en="0 blocks installed." data-l10n-zh="0 个模块已安装。">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes" data-l10n-es="Agregar bloque o kit" data-l10n-en="Add block or kit" data-l10n-zh="添加模块或套件">Agregar bloque o kit</button></section>
         <div class="ajustes-pila">
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Vista dividida</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">Muestra dos secciones a la vez.</p><label class="check"><input type="checkbox" id="lab-split"> <span data-l10n-es="Vista dividida" data-l10n-en="Split view" data-l10n-zh="分屏视图">Vista dividida</span></label></section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.6 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.6 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.6 · 离线可用。">Mimo · 1.2.0-beta.6 · Funciona sin conexión.</p></section>
+          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.7 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.7 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.7 · 离线可用。">Mimo · 1.2.0-beta.7 · Funciona sin conexión.</p></section>
           <section class="card" id="actualizaciones-card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-l10n-es="Actualizaciones" data-l10n-en="Updates" data-l10n-zh="更新">Actualizaciones</span></h2><p class="muted" id="act-estado" data-l10n-es="Listo para comprobar." data-l10n-en="Ready to check." data-l10n-zh="可以检查。">Listo para comprobar.</p>
             <div class="act-controles"><button class="btn" type="button" id="act-buscar" data-l10n-es="Buscar actualizaciones" data-l10n-en="Check for updates" data-l10n-zh="检查更新">Buscar actualizaciones</button><label class="campo"><span data-l10n-es="Canal" data-l10n-en="Channel" data-l10n-zh="频道">Canal</span><select class="entrada" id="act-canal"><option value="beta">Beta</option><option value="stable" data-l10n-es="Estable" data-l10n-en="Stable" data-l10n-zh="稳定">Estable</option></select></label><label class="check"><input type="checkbox" id="act-auto" checked> <span data-l10n-es="Avisarme automáticamente" data-l10n-en="Notify me automatically" data-l10n-zh="自动通知我">Avisarme automáticamente</span></label></div>
             <div id="act-oferta" hidden><p><b id="act-version"></b> <span class="muted" id="act-fecha"></span></p><p class="muted" id="act-notas"></p><div class="fila"><button class="btn btn-primario" type="button" id="act-instalar" data-l10n-es="Instalar y reiniciar" data-l10n-en="Install and restart" data-l10n-zh="安装并重启">Instalar y reiniciar</button><button class="btn" type="button" id="act-posponer" data-l10n-es="Mañana" data-l10n-en="Tomorrow" data-l10n-zh="明天">Mañana</button><button class="btn" type="button" id="act-omitir" data-l10n-es="Omitir esta versión" data-l10n-en="Skip this version" data-l10n-zh="跳过此版本">Omitir esta versión</button><button class="btn" type="button" id="act-release" data-l10n-es="Ver release" data-l10n-en="View release" data-l10n-zh="查看发布">Ver release</button></div></div>
@@ -632,6 +696,7 @@
 <script src="vendor/katex/auto-render.min.js"></script>
 <script src="vendor/marked/marked.min.js"></script>
 <script src="vendor/dompurify/purify.min.js"></script>
+<script src="vendor/jsqr/jsQR.js"></script>
 <script src="js/version.js"></script>
 <script src="js/esquema.js"></script>
 <script src="js/nucleo/eventos.js"></script>
@@ -639,10 +704,13 @@
 <script src="js/nucleo/registro.js"></script>
 <script src="js/nucleo/modal.js"></script>
 <script src="js/nucleo/plegable.js"></script>
+<script src="js/nucleo/editor-md.js"></script>
 <script src="js/dominio/cursos.js"></script>
 <script src="js/dominio/iconos-ramo.js"></script>
 <script src="js/dominio/identidad.js"></script>
 <script src="js/dominio/sesiones.js"></script>
+<script src="js/dominio/recurrencia.js"></script>
+<script src="js/dominio/sync-enlace.js"></script>
 <script src="js/bloques/calendario/vista.js"></script>
 <script src="js/bloques/tareas/vista.js"></script>
 <script src="js/bloques/notas/vista.js"></script>

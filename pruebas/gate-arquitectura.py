@@ -21,7 +21,7 @@ APP = RAIZ / "app"
 SHELL = (APP / "js" / "shell.js").read_text(encoding="utf-8")
 INDICE = (APP / "index.html").read_text(encoding="utf-8")
 REGISTRO = (APP / "js" / "nucleo" / "registro.js").read_text(encoding="utf-8")
-DOMINIO = [APP / "js" / "dominio" / "cursos.js", APP / "js" / "dominio" / "sesiones.js"]
+DOMINIO = [APP / "js" / "dominio" / "cursos.js", APP / "js" / "dominio" / "sesiones.js", APP / "js" / "dominio" / "recurrencia.js", APP / "js" / "dominio" / "sync-enlace.js"]
 FALLAS: list[str] = []
 
 
@@ -39,15 +39,17 @@ def orden_scripts() -> list[str]:
 
 def main() -> int:
     scripts = orden_scripts()
-    for necesario in ("js/nucleo/registro.js", "js/dominio/cursos.js", "js/dominio/sesiones.js", "js/shell.js"):
+    for necesario in ("js/nucleo/registro.js", "js/dominio/cursos.js", "js/dominio/sesiones.js", "js/dominio/sync-enlace.js", "js/shell.js"):
         exigir(necesario in scripts, f"carga: {necesario}")
-    if all(x in scripts for x in ("js/nucleo/registro.js", "js/dominio/cursos.js", "js/dominio/sesiones.js", "js/shell.js")):
+    if all(x in scripts for x in ("js/nucleo/registro.js", "js/dominio/cursos.js", "js/dominio/sesiones.js", "js/dominio/sync-enlace.js", "js/shell.js")):
         exigir(scripts.index("js/nucleo/registro.js") < scripts.index("js/shell.js"),
                "orden: el registro va antes que el shell")
         exigir(scripts.index("js/dominio/cursos.js") < scripts.index("js/shell.js"),
                "orden: cursos va antes que el shell")
         exigir(scripts.index("js/dominio/sesiones.js") < scripts.index("js/shell.js"),
                "orden: sesiones va antes que el shell")
+        exigir(scripts.index("js/dominio/sync-enlace.js") < scripts.index("js/shell.js"),
+               "orden: sync-enlace va antes que el shell")
 
     for nombre in ("registrar", "secciones", "pintar", "validar", "puedeInstalar", "puedeQuitar"):
         exigir(f"{nombre}:" in REGISTRO, f"registro: expone {nombre}")

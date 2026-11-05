@@ -1,5 +1,142 @@
 # Cambios
 
+## 1.2.0-beta.7 — 2026-11-05
+
+### Publicación
+
+- La beta.7 se publica como **app web en GitHub Pages** (`https://billibu-n.github.io/Mimo/`)
+  con la versión `1.2.0-beta.7` en la app, el escritorio y las pruebas. Los instaladores siguen
+  siendo los de la beta.6 hasta que se empaquete la beta.7.
+- **32 compuertas web** en verde.
+
+### Sincronización
+
+- La tarjeta de Sincronización y el pie abren una **ventana única** (`modal.js`) con cuatro
+  paneles desplegables: Enlace o QR, Conexión manual, Cifrado y Enlace y sincronización. El
+  flujo manual de siempre queda como respaldo dentro del mismo modal.
+- Se puede **pegar el texto completo** de la página o **subir/arrastrar una imagen con QR**;
+  el lector local **jsQR 1.4.0** (Apache-2.0, en `app/vendor/jsqr/`) lo decodifica en el
+  cliente, sin servidor. Si el navegador ofrece cámara, también se puede capturar.
+- El motor `app/js/dominio/sync-enlace.js` desarma `nc://onetime-login/user:…&password:…&server:…`
+  (y el texto que lo rodea, las etiquetas o una URL WebDAV) en servidor, usuario, contraseña de
+  aplicación y ruta; muestra el resultado antes de confirmar y lo normaliza a los campos que
+  ya usaba la sincronización.
+- El enlace resultante se muestra enmascarado, se puede revelar, copiar completo y descomponer
+  en sus partes (servidor, usuario, contraseña, ruta WebDAV, carpeta y archivo). Al cerrar se
+  borra el texto pegado para no dejar la contraseña de aplicación en Ajustes.
+
+### Malla
+
+- El grafo de requisitos se dibuja con **tramos ortogonales y esquinas redondeadas**
+  (`--malla-radio`), no con curvas que atravesaban las tarjetas. Cada arista sale del borde
+  derecho de su ramo y viaja por los huecos de columna y por las **franjas entre dos fichas**:
+  varios cables comparten carril y franja, no se abre una pista por arista ni se baja a una
+  banda inferior. El trazado no entra en ninguna ficha y no crece hacia abajo.
+- El orden de las líneas es estable: se ordenan por nivel, posición y código, y cada corredor
+  se reutiliza con el mismo criterio en cada repintado. Al elegir un ramo quedan visibles solo
+  sus aristas y los ramos vinculados; el resto se atenúa. Al deseleccionar vuelve la vista
+  general.
+- Los requisitos del **mismo nivel** se dibujan rodeando la columna por la derecha.
+- Al entrar a Malla desde la barra de secciones, el tablero aparece **sin selección**: no se
+  arrastra el ramo abierto en Calificaciones ni en otra vista. **Ver en Malla** y la búsqueda sí
+  abren el ramo concreto.
+
+### Tareas
+
+- El **Tablero** vuelve a ser la vista inicial y recupera los filtros de la versión anterior:
+  Todas, Pendientes, Hoy, Ramos y Personales, con su cuenta.
+- La tarjeta del tablero se puede **completar** con un clic: queda tachada y pasa a Hechas.
+  El menú contextual ofrece Completar/Reabrir y **subir o bajar la prioridad**.
+- El clic derecho vuelve a abrir acciones en Tareas, Malla, Calendario, Notas, Periodos y
+  Sesiones.
+- Se retira el **gráfico de barras semanal** de Tareas: la sección queda con el tablero, los
+  filtros y la lista, sin la tarjeta de siete días.
+- La vista **Hoy** pasa a **Al día**: muestra las tareas **no hechas vencidas, de hoy y sin
+  fecha**, una sola vez, ordenadas de la más antigua a la más reciente y con las **sin fecha
+  al final**; quedan fuera las futuras y las hechas. Las series entran solo con su ocurrencia
+  de hoy. Se elige «Al día» y no «Pendientes» porque la vista es la bandeja accionable de hoy
+  (vencidas + hoy + sin fecha), no el listado de todo lo abierto: las futuras siguen en el
+  Tablero y en el Árbol, y «Pendientes» ya nombra un filtro del tablero.
+- El **modal de tarea** deja la fecha **opcional** (nace vacía, con atajos Hoy/Mañana/Sin
+  fecha) y las tareas sin fecha se ven en su propia tira del tablero. La **descripción** usa
+  el mismo editor Markdown de Notas —barra de formato, vista previa, tablas, KaTeX y saneado—
+  y el panel la pinta con ese motor.
+- Las tareas pueden ser **series**: frecuencia diaria, semanal, mensual o anual; intervalo;
+  días de la semana; fin por fecha o por número de veces. Cada fecha de la serie es una
+  ocurrencia: el tablero, «Al día» y el árbol la muestran, y completar una
+  ocurrencia no cierra la serie. «Diaria + L–V» configura en dos clics «correr 30 minutos de
+  lunes a viernes». La regla se guarda en `recurrencia` con las ocurrencias cumplidas en
+  `hechas`.
+
+### Calificaciones
+
+- Calificaciones distingue **activo**, **disponible** e **historial**. Por defecto muestra solo
+  los activos; el filtro deja ver los disponibles (en la Malla pero sin cursar) y los cerrados.
+  Un ramo disponible se añade con el botón o desde el modal, sin inventar notas.
+- **Retirar de Calificaciones** es desvincular, no borrar: pide confirmación, conserva el ramo y
+  sus notas, y ofrece **Deshacer**. El borrado destructivo queda como una acción aparte.
+- Las **notas se editan a mano** en la propia sección: categorías, componentes y examen. La
+  **nota final se edita en su propia caja** del resumen, con el mismo trato en sitio que el
+  reloj de Tiempo; no hay un control aparte. Manda sobre el cálculo, la escala es 1.0–7.0 y el
+  umbral de aprobación sale de la nota mínima (4.0 por defecto); todo se guarda en
+  `mimo.shell.v1` y se recalcula al reabrir.
+- Al cerrar, la final (calculada o manual) pasa al **Historial** una sola vez y queda visible
+  en la lista y en el detalle; no se inventan notas ni se duplica el ramo.
+- **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la
+  presentación como final provisional, se avisa del resultado y el ramo se puede reabrir.
+- Cada ramo ofrece **Editar** e **Identidad** en la cabecera. El clic derecho de la lista abre
+  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Añadir/Retirar, Cerrar/Reabrir y Borrar
+  ramo; el clic derecho de la sección añade Nuevo ramo y Ver Malla.
+
+### Estudio
+
+- El bloque **Meta por semana** desaparece: en su lugar queda una línea compacta con la
+  **meta semanal del ramo**, sin una fila de inputs por semana.
+- El techo del gráfico y la línea de meta usan esa **meta semanal del ramo** (la suma de las
+  metas de los ramos), no el total del semestre ni el máximo de otras semanas; las barras se
+  escalan contra ella y la barra máxima llega al 100 %.
+- El campo global **Meta semanal** se oculta cuando hay metas de ramo: la meta se edita en la
+  columna **Meta semanal** de la tabla.
+- La **línea de meta** se dibuja dentro del área de las barras y el techo toma el máximo de la
+  semana actual si supera la meta; una semana de 30 h con meta de 20 h deja la barra por encima
+  de la línea, sin arrastrar el máximo de otras semanas.
+- La tabla **Horas por ramo** también es semanal: **Horas semanales** muestra lo registrado en
+  la semana actual y **Avance** compara contra la meta semanal del ramo, sin multiplicar por las
+  semanas del período (5,5 h de meta son el 100 %).
+
+### Calendario
+
+- Vuelve el motor de **mes, año y semestre** de Mimo Académics: grilla mensual de 42 celdas
+  con número de día y marcas de la semana del periodo, los 12 meses del año con un punto por
+  día con eventos y la tabla de semanas con la columna de estudio.
+- Las vistas se navegan con las flechas (mes, año o periodo) y **Hoy** vuelve al periodo
+  actual. En el año, pulsar un día abre su mes. La tabla del semestre marca la semana actual
+  y mide las horas registradas por semana.
+- La cabecera del calendario ofrece **Desde la semana actual**: oculta las semanas
+  anteriores en la tabla y en las marcas del periodo, sin perder la fila actual, los chips ni
+  las horas. Es reversible y se conserva al reabrir.
+- Los chips recuperan el tinte suave y el borde de color del ramo; la categoría del evento
+  sigue visible en mes, semana, semestre y detalle.
+
+### Pruebas
+
+- Nueva `gate-malla-grafo.py`: 39 aristas del fixture con corredores compartidos (5 carriles
+  para 6 columnas y 3 franjas para 13 saltos), sin banda inferior, sin entrar en ninguna ficha,
+  selección que deja 3 aristas y 3 ramos vinculados con 26 atenuados, y el mismo trazado al
+  repintar, a 1440 y 411 px.
+- Nueva `gate-calendario-motor.py`: Mes/Año/Semestre/Semana, 42 celdas, 12 meses,
+  18 semanas con estudio, navegación, corte y categorías, a 1440 y 411.
+- `gate-calificaciones.py` amplía la distinción activo/disponible, el alta desde el modal, el
+  retiro no destructivo con deshacer, la nota final manual que pasa al Historial y persiste al
+  recargar, el cierre sin nota de examen, el clic derecho y el filtro de ramos de la Malla.
+- `gate-tareas-tablero.py`: tablero inicial, filtros, completar/tachar, prioridad en el menú,
+  clic derecho en tres secciones y 411; **sin gráfico de barras** y con **Al día** (vencidas,
+  hoy y sin fecha, una vez, sin futuras ni hechas).
+- Nuevas `gate-tareas-modal.py` (fecha opcional, descripción Markdown y repetición) y
+  `gate-sync-enlace.py` (QR/texto, enlace y partes, saneado y 411). La suite web pasa a
+  **32 compuertas**.
+- Se retiró la vista **Agenda**: los eventos siguen en mes, semana, semestre y detalle.
+
 ## 1.2.0-beta.6 — 2026-11-01
 
 ### Pruebas antes de publicar
@@ -9,6 +146,25 @@
 - **27 compuertas web** en verde: las 26 anteriores más `gate-categorias.py`; `gate-tiempo` usa
   reloj falso para medir segundos exactos y `gate-malla`/`gate-estudio` cubren el cierre y el
   renombre de un ramo.
+
+### Calificaciones
+
+- Calificaciones distingue **activo**, **disponible** e **historial**. Por defecto muestra solo
+  los activos; el filtro deja ver los disponibles (en la Malla pero sin cursar) y los cerrados.
+  Un ramo disponible se añade con el botón o desde el modal, sin inventar notas.
+- **Retirar de Calificaciones** es desvincular, no borrar: pide confirmación, conserva el ramo y
+  sus notas, y ofrece **Deshacer**. El borrado destructivo queda como una acción aparte.
+- Las **notas se editan a mano** en la propia sección: categorías, componentes, examen y una
+  **nota final manual** que manda sobre el cálculo. La escala es 1.0–7.0 y el umbral de
+  aprobación sale de la nota mínima (4.0 por defecto); todo se guarda en `mimo.shell.v1` y se
+  recalcula al reabrir.
+- Al cerrar, la final (calculada o manual) pasa al **Historial** una sola vez y queda visible
+  en la lista y en el detalle; no se inventan notas ni se duplica el ramo.
+- **Cerrar un curso** ya no queda bloqueado cuando falta la nota del examen: se usa la
+  presentación como final provisional, se avisa del resultado y el ramo se puede reabrir.
+- Cada ramo ofrece **Editar** e **Identidad** en la cabecera. El clic derecho de la lista abre
+  Abrir ficha, Ver en Malla, Editar ramo, Identidad, Añadir/Retirar, Cerrar/Reabrir y Borrar
+  ramo; el clic derecho de la sección añade Nuevo ramo y Ver Malla.
 
 ### Calendario
 

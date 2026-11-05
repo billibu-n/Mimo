@@ -4,6 +4,10 @@ Mimo es una aplicación de escritorio. Descarga el archivo de tu sistema desde l
 [última release](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.6), instálalo y ábrelo. No hay
 cuenta ni registro.
 
+La **beta.7** también se puede probar sin instalar en
+<https://billibu-n.github.io/Mimo/>. Los instaladores de abajo siguen siendo los de la beta.6
+hasta que se empaquete la beta.7.
+
 | Sistema | Archivo | Instalación |
 |---|---|---|
 | Fedora 40+ / RHEL 10+ x86_64 | `Mimo-1.2.0-beta.6-1.x86_64.rpm` | `sudo dnf install ./Mimo-1.2.0-beta.6-1.x86_64.rpm` |

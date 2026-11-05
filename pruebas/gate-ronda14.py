@@ -193,16 +193,18 @@ def main() -> int:
             exigir("Nota para deshacer" in titulos, f"deshacer: restaura — {titulos}", fallas)
 
             # Componente de Calificaciones -> calendario.
-            page.evaluate("""(fecha) => {
+            page.evaluate("""([fecha, hoyIso]) => {
               const s = MimoHost.snapshot();
               s.instalados = Array.from(new Set([...(s.instalados || []), "calificaciones", "estudio"]));
-              s.cursos = [{codigo:"T1", nombre:"Curso de prueba", creditos:6, nivel:1, requisitos:[]}];
+              s.cursos = [{codigo:"T1", nombre:"Curso de prueba", creditos:6, nivel:1, requisitos:[], enCurso:true}];
               s.califs = {T1:{categorias:[{nombre:"General",peso:100}],
                 componentes:[{nombre:"Control",categoria:"General",nota:null,fecha:fecha,peso:1}],
                 examen:{activo:false,peso:0,nota:null,reemplaza:null},
                 eximicion:{activa:false,modo:"todas",condiciones:[]}, notaMin:4, meta:5, cerrado:false}};
+              s.estudio = Object.assign({}, s.estudio, { metasRamo: {T1: 22}, metasSemana: {} });
+              s.sesiones = [{ id: "s-ronda14", fecha: hoyIso, minutos: 660, ramo: "T1" }];
               MimoHost.reemplazar(s);
-            }""", viernes)
+            }""", [viernes, hoy.isoformat()])
             page.locator('#tabs [data-ir="calificaciones"]').click(); page.wait_for_timeout(250)
             page.locator('[data-calif="T1"]').click(); page.wait_for_timeout(150)
             abrir_plegable(page, '[data-accion-calif="comp-cal"]')
@@ -211,18 +213,60 @@ def main() -> int:
             exigir(not any(e.get("id") == "calif-T1-0" for e in evs),
                    f"calificaciones: el evento es derivado, no copia en eventos — {evs}", fallas)
             page.locator('#tabs [data-ir="calendario"]').click(); page.wait_for_timeout(150)
-            page.locator('#vista-calendario button[data-cal-vista="agenda"]').click(); page.wait_for_timeout(150)
-            exigir("Control" in page.locator("#cal-agenda").inner_text(),
-                   "calificaciones: el componente aparece en la agenda del calendario", fallas)
+            page.locator('#vista-calendario button[data-cal-vista="semestre"]').click(); page.wait_for_timeout(180)
+            exigir("Control" in page.locator("#cal-semestre").inner_text(),
+                   "calificaciones: el componente aparece en el semestre del calendario", fallas)
 
-            # Meta por semana.
-            page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(250)
-            metas = page.locator("#est-metas-semana input")
-            exigir(metas.count() == 4, f"estudio: una meta por semana — {metas.count()}", fallas)
-            metas.first.fill("3"); metas.first.dispatch_event("change"); page.wait_for_timeout(200)
-            guardadas = page.evaluate("JSON.parse(localStorage.getItem('mimo.shell.v1')).estudio.metasSemana")
-            exigir(len(guardadas) >= 1 and 3 in [float(x) for x in guardadas.values()],
-                   f"estudio: meta semanal guardada — {guardadas}", fallas)
+            # Meta semanal del ramo: sin la tira de metas por semana, el techo del
+            # gráfico sale de la meta del ramo y la barra de la semana actual se mide
+            # contra ella (11 h de 22 h = 50 %), no contra el total del semestre.
+            page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(300)
+            exigir(page.locator("#est-metas-semana").count() == 0,
+                   "estudio: no queda el bloque de metas por semana", fallas)
+            exigir("22 h" in page.locator("#est-meta-ramo").inner_text(),
+                   f"estudio: la línea muestra la meta del ramo — {page.locator('#est-meta-ramo').inner_text()}", fallas)
+            exigir("meta 22 h" in page.locator("#est-grafico").inner_text(),
+                   f"estudio: la línea de meta usa la meta del ramo — {page.locator('#est-grafico').inner_text()[:80]}", fallas)
+            alto = page.evaluate("""() => {
+              const cols = [...document.querySelectorAll('.est-col')];
+              const col = cols.find(c => c.innerText.includes('11 h')) || cols[0];
+              const pila = col.querySelector('.est-pila');
+              const base = document.querySelector('.est-cols').getBoundingClientRect().height;
+              return {alto: pila.getBoundingClientRect().height, base};
+            }""")
+            ratio = alto["alto"] / alto["base"] if alto["base"] else 0
+            exigir(0.45 <= ratio <= 0.55,
+                   f"estudio: la barra usa la meta del ramo, no el total — {ratio:.2f} ({alto})", fallas)
+            page.locator('[data-est-meta-ramo="T1"]').fill("44")
+            page.locator('[data-est-meta-ramo="T1"]').blur()
+            page.wait_for_timeout(300)
+            exigir("44 h" in page.locator("#est-meta-ramo").inner_text() and
+                   "meta 44 h" in page.locator("#est-grafico").inner_text(),
+                   "estudio: al cambiar la meta se actualiza el techo", fallas)
+            alto = page.evaluate("""() => {
+              const cols = [...document.querySelectorAll('.est-col')];
+              const col = cols.find(c => c.innerText.includes('11 h')) || cols[0];
+              const pila = col.querySelector('.est-pila');
+              const base = document.querySelector('.est-cols').getBoundingClientRect().height;
+              return {alto: pila.getBoundingClientRect().height, base};
+            }""")
+            ratio = alto["alto"] / alto["base"] if alto["base"] else 0
+            exigir(0.20 <= ratio <= 0.30,
+                   f"estudio: la barra se reescala con la meta nueva — {ratio:.2f} ({alto})", fallas)
+            # Con la semana por encima de la meta, la barra supera la línea y el
+            # techo sale de la semana actual, no de un valor fijo ni del semestre.
+            page.locator('[data-est-meta-ramo="T1"]').fill("5")
+            page.locator('[data-est-meta-ramo="T1"]').blur()
+            page.wait_for_timeout(300)
+            caja = page.evaluate("""() => {
+              const cols = document.querySelector('.est-cols').getBoundingClientRect();
+              const col = [...document.querySelectorAll('.est-col')].find(c => c.innerText.includes('11 h')) || document.querySelector('.est-col');
+              const pila = col.querySelector('.est-pila').getBoundingClientRect();
+              const linea = document.querySelector('.est-meta-line').getBoundingClientRect();
+              return {colsTop: cols.top, pilaTop: pila.top, lineaTop: linea.top};
+            }""")
+            exigir(caja["lineaTop"] >= caja["colsTop"] and caja["lineaTop"] > caja["pilaTop"] + 5,
+                   f"estudio: la línea queda dentro de las barras y la barra la supera — {caja}", fallas)
 
             # Enlace recíproco nota -> tarea.
             page.locator('#tabs [data-ir="tareas"]').click(); page.wait_for_timeout(120)

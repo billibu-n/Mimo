@@ -68,11 +68,7 @@ def main() -> int:
             exigir("--tag:#" in estilo,
                    f"categorías: la etiqueta toma color de la identidad — {estilo!r}", fallas)
 
-            page.locator('#vista-calendario [data-cal-vista="agenda"]').click()
-            page.wait_for_timeout(200)
-            exigir(page.locator("#cal-agenda .cal-agenda__tag").first.inner_text().strip() == "Laboratorio",
-                   "categorías: la agenda muestra la etiqueta", fallas)
-            page.locator(".cal-agenda__item").first.click()
+            page.locator(".evento-chip").first.click()
             page.wait_for_timeout(220)
             exigir("Categoría" in page.locator("#panel-cuerpo").inner_text()
                    and "Laboratorio" in page.locator("#panel-cuerpo").inner_text(),

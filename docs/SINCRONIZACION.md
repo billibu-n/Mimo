@@ -1,5 +1,8 @@
 # Sincronización en Mimo — estado, alternativas y plan
 
+> **Actualización beta.7 (2026-11-05):** la sección 9 documenta la entrada por QR/texto ya
+> implementada; el resto del documento conserva el estado de la observación de 2026-10-31.
+
 **Fecha:** 2026-10-31 · **Ámbito:** observación y planificación. No cambia código.
 **Base:** `t/mimo-beta5` desde `main` (`a297b16`), versión `1.2.0-beta.4`.
 **Qué se leyó:** `app/js/sync.js` (1.061 líneas), la tarjeta de Ajustes en `app/index.html`, el
@@ -731,3 +734,92 @@ que es justo el campo donde hoy se equivoca la gente.
 - Precios: Cloudflare R2 <https://developers.cloudflare.com/r2/pricing/> · Backblaze B2
   <https://www.backblaze.com/cloud-storage/pricing> · Supabase <https://supabase.com/pricing> ·
   Firebase <https://firebase.google.com/pricing>
+
+---
+
+## 9. Entrada por QR o texto (beta.7)
+
+La página de Nextcloud no entrega una URL limpia: entrega un texto (y su QR) con esta forma
+comprobada contra el QR real del dueño:
+
+```text
+nc://onetime-login/user:<usuario>&password:<contraseña-de-aplicación>&server:<servidor>
+```
+
+Mimo ya no pide pegar una URL a mano. La tarjeta de **Sincronización** abre la ventana única
+(`app/js/nucleo/modal.js`) con cuatro paneles desplegables:
+
+1. **Enlace o QR** — pegar el texto completo, subir una imagen o arrastrarla, y capturar con la
+   cámara si el navegador la ofrece. El resultado se muestra **antes** de confirmar.
+2. **Conexión manual** — el formulario de siempre (Nextcloud, WebDAV, carpeta local, archivo),
+   como respaldo.
+3. **Cifrado** — la contraseña de cifrado y su guardado/olvido.
+4. **Enlace y sincronización** — el enlace resuelto, sus partes, copiar enlace/destino y las
+   acciones de sincronizar, desconectar y ver la copia.
+
+### 9.1 Motor de lectura
+
+`app/js/dominio/sync-enlace.js` (sin DOM ni estado) acepta:
+
+- el enlace `nc://onetime-login/...` o `nc://login/...` (se normaliza a `onetime-login`);
+- el texto completo con prosa alrededor, saltos de línea y etiquetas `Servidor:`, `Usuario:`,
+  `Contraseña:`;
+- una URL de servidor (`https://nube.ejemplo`) o una URL WebDAV completa
+  (`https://nube.ejemplo/remote.php/dav/files/usuario`), de donde saca el usuario.
+
+Devuelve `servidor`, `usuario`, `clave`, `urlWebDAV`, `carpeta` (Mimo), `enlace` canónico,
+`partes`, `faltan` y `avisos`. Al confirmar se escribe en los campos que ya usa el motor:
+`provider = "webdav"`, `nc`, `ncUrl`, `webdav.url`, `webdav.usuario`, `webdav.carpeta`. No se
+inventa un formato de almacenamiento nuevo ni se guarda el enlace con la contraseña en claro:
+la contraseña sigue el camino de siempre (memoria/sesión y, con clave de cifrado, el envoltorio
+AES-GCM del llavero local).
+
+### 9.2 Enlace completo y partes
+
+El panel 4 compone el enlace canónico a partir de lo guardado y lo muestra **enmascarado**.
+«Mostrar contraseña» lo revela solo a petición; «Copiar enlace» copia el enlace completo (con
+la contraseña de aplicación) y avisa de que es una credencial. La tabla de partes descompone
+servidor, usuario, contraseña, ruta WebDAV, carpeta y archivo (`mimo-sync.json.enc`). El botón
+«Copiar destino» copia la URL WebDAV del archivo, sin credenciales.
+
+Ejemplo con datos ficticios:
+
+```text
+nc://onetime-login/user:prueba@example.test&password:ABCD-EFGH-IJKL-MNOP&server:https://nube.example.test
+  servidor  https://nube.example.test
+  usuario   prueba@example.test
+  webdav    https://nube.example.test/remote.php/dav/files/prueba%40example.test
+  archivo   …/Mimo/mimo-sync.json.enc
+```
+
+Con el enlace real del dueño, el motor separa el servidor, el usuario y la contraseña de
+aplicación del QR; ni el usuario ni la contraseña se repiten en la documentación ni en las
+pruebas.
+
+### 9.3 Lector de QR local
+
+Se eligió **jsQR 1.4.0** (Apache-2.0, `app/vendor/jsqr/jsQR.js` y `LICENSE`) porque es una
+biblioteca JavaScript pura, sin servidor ni servicios externos, que ya encaja con el patrón de
+`app/vendor/` (marked, DOMPurify, KaTeX). La imagen se dibuja en un `<canvas>` local (máximo
+1600 px de lado) y se decodifica con `jsQR`; nunca sale del equipo. La cámara se ofrece solo si
+`navigator.mediaDevices.getUserMedia` existe; la captura se decodifica en el mismo canvas. Si no
+hay cámara o permiso, queda la imagen o el texto.
+
+### 9.4 Saneado y límites
+
+- Solo se aceptan `https://` y `http://`; el `http` se marca como aviso. Se rechazan
+  `javascript:`, `data:`, `file:` y esquemas desconocidos. El servidor se normaliza con `URL`
+  (host, path base, sin credenciales embebidas) y el usuario se codifica en la ruta WebDAV.
+- La contraseña se limpia de caracteres de control y se limita a 512 caracteres; el texto
+  pegado se recorta a 16 KB.
+- Al cerrar la ventana se borra el texto pegado y la vista previa, para que la contraseña de
+  aplicación no quede escrita en Ajustes.
+- El texto pegado se analiza en el cliente; no se envía a ningún servidor.
+
+**Huecos declarados:** el formato `&`-separado no admite un `&` literal dentro de la contraseña
+(las contraseñas de aplicación de Nextcloud no lo usan); no se reconoce un JSON ni otros
+formatos de QR de otros proveedores; el enlace no transporta la carpeta remota (se conserva
+«Mimo» o la que ya hubiera); la confirmación no valida contra el servidor, solo normaliza y
+guarda (la validación sigue en «Probar conexión» / «Sincronizar ahora»). El `user` del enlace se
+usa como identificador de la ruta WebDAV; si el servidor distingue el nombre de login del id de
+la carpeta, pulsa **Conectar** en el panel 2 para que Mimo pida el perfil y corrija la ruta.

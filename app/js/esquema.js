@@ -12,7 +12,7 @@
 (function () {
   "use strict";
 
-  var APP = "Mimo", APP_VERSION = (typeof window !== "undefined" && window.MIMO_VERSION) || "1.2.0-beta.6", V = 1;
+  var APP = "Mimo", APP_VERSION = (typeof window !== "undefined" && window.MIMO_VERSION) || "1.2.0-beta.7", V = 1;
   var ultimoError = "";
   var ENTORNO = "mimo.entorno", MALLA = "mimo.malla", BACKUP = "mimo.backup";
 
@@ -150,7 +150,8 @@
     });
     return {
       id: String(p.id || ("periodo-" + i)), nombre: String(p.nombre || p.id || ("Periodo " + (i + 1))),
-      inicio: String(p.inicio || (semanas[0] && semanas[0].desde) || ""), semanas: semanas
+      inicio: String(p.inicio || (semanas[0] && semanas[0].desde) || ""), semanas: semanas,
+      corteActual: !!p.corteActual
     };
   }
   function horaDe(e) {
