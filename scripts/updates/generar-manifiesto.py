@@ -12,7 +12,7 @@ genérica linux-x86_64, para que un paquete del sistema no reciba el formato equ
 
 Uso:
   python3 scripts/updates/generar-manifiesto.py \
-    --version 1.2.0-beta.6 --tag v1.2.0-beta.6 \
+    --version 1.2.0-beta.7 --tag v1.2.0-beta.7 \
     --dir publicacion --out publicacion/beta.json
 """
 from __future__ import annotations

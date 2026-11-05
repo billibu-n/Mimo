@@ -14,6 +14,6 @@ Comprueba la huella contra la publicada en el README del proyecto antes de confi
 
 ## Verificar un paquete
 
-    rpm --checksig -v Mimo-1.2.0-beta.6-1.x86_64.rpm
+    rpm --checksig -v Mimo-1.2.0-beta.7-1.x86_64.rpm
 
 Debe responder `OK`. Si responde `NOKEY`, la clave no está importada.
