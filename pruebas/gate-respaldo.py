@@ -75,8 +75,8 @@ def main() -> int:
             doc = json.loads(exportado.read_text(encoding="utf-8"))
             exigir(doc.get("schema") == "mimo.backup" and doc.get("version") == 1,
                    f"backup: schema v1 — {doc.get('schema')}/{doc.get('version')}", fallas)
-            exigir(doc.get("appVersion") == "1.2.0-beta.6",
-                   f"backup: appVersion beta.4 — {doc.get('appVersion')}", fallas)
+            exigir(doc.get("appVersion") == "1.2.0-beta.7",
+                   f"backup: appVersion beta.7 — {doc.get('appVersion')}", fallas)
 
             # Importación válida: el respaldo previo se descarga antes de reemplazar.
             valido = td / "valido.json"

@@ -1,6 +1,13 @@
 # Cambios
 
-## Sin publicar
+## 1.2.0-beta.7 — 2026-11-05
+
+### Publicación
+
+- La beta.7 se publica como **app web en GitHub Pages** (`https://billibu-n.github.io/Mimo/`)
+  con la versión `1.2.0-beta.7` en la app, el escritorio y las pruebas. Los instaladores siguen
+  siendo los de la beta.6 hasta que se empaquete la beta.7.
+- **32 compuertas web** en verde.
 
 ### Sincronización
 
@@ -40,16 +47,23 @@
   Todas, Pendientes, Hoy, Ramos y Personales, con su cuenta.
 - La tarjeta del tablero se puede **completar** con un clic: queda tachada y pasa a Hechas.
   El menú contextual ofrece Completar/Reabrir y **subir o bajar la prioridad**.
-- Vuelve el **gráfico de barra semanal** de siete días, separando hechas y pendientes.
 - El clic derecho vuelve a abrir acciones en Tareas, Malla, Calendario, Notas, Periodos y
   Sesiones.
+- Se retira el **gráfico de barras semanal** de Tareas: la sección queda con el tablero, los
+  filtros y la lista, sin la tarjeta de siete días.
+- La vista **Hoy** pasa a **Al día**: muestra las tareas **no hechas vencidas, de hoy y sin
+  fecha**, una sola vez, ordenadas de la más antigua a la más reciente y con las **sin fecha
+  al final**; quedan fuera las futuras y las hechas. Las series entran solo con su ocurrencia
+  de hoy. Se elige «Al día» y no «Pendientes» porque la vista es la bandeja accionable de hoy
+  (vencidas + hoy + sin fecha), no el listado de todo lo abierto: las futuras siguen en el
+  Tablero y en el Árbol, y «Pendientes» ya nombra un filtro del tablero.
 - El **modal de tarea** deja la fecha **opcional** (nace vacía, con atajos Hoy/Mañana/Sin
   fecha) y las tareas sin fecha se ven en su propia tira del tablero. La **descripción** usa
   el mismo editor Markdown de Notas —barra de formato, vista previa, tablas, KaTeX y saneado—
   y el panel la pinta con ese motor.
 - Las tareas pueden ser **series**: frecuencia diaria, semanal, mensual o anual; intervalo;
   días de la semana; fin por fecha o por número de veces. Cada fecha de la serie es una
-  ocurrencia: el tablero, la barra semanal, «Hoy» y el árbol la muestran, y completar una
+  ocurrencia: el tablero, «Al día» y el árbol la muestran, y completar una
   ocurrencia no cierra la serie. «Diaria + L–V» configura en dos clics «correr 30 minutos de
   lunes a viernes». La regla se guarda en `recurrencia` con las ocurrencias cumplidas en
   `hechas`.
@@ -115,9 +129,12 @@
 - `gate-calificaciones.py` amplía la distinción activo/disponible, el alta desde el modal, el
   retiro no destructivo con deshacer, la nota final manual que pasa al Historial y persiste al
   recargar, el cierre sin nota de examen, el clic derecho y el filtro de ramos de la Malla.
-- Nueva `gate-tareas-tablero.py`: tablero inicial, filtros, barra semanal, completar/tachar,
-  prioridad en el menú, clic derecho en tres secciones y 411. La suite web pasa a
-  **30 compuertas**.
+- `gate-tareas-tablero.py`: tablero inicial, filtros, completar/tachar, prioridad en el menú,
+  clic derecho en tres secciones y 411; **sin gráfico de barras** y con **Al día** (vencidas,
+  hoy y sin fecha, una vez, sin futuras ni hechas).
+- Nuevas `gate-tareas-modal.py` (fecha opcional, descripción Markdown y repetición) y
+  `gate-sync-enlace.py` (QR/texto, enlace y partes, saneado y 411). La suite web pasa a
+  **32 compuertas**.
 - Se retiró la vista **Agenda**: los eventos siguen en mes, semana, semestre y detalle.
 
 ## 1.2.0-beta.6 — 2026-11-01
