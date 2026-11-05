@@ -1,4 +1,20 @@
 /* tareas.css — estilos del bloque Tareas. */
+
+/* El resumen de la semana: los cuatro KPI a la izquierda y el anillo a la
+   derecha. El anillo no depende del filtro: mide la semana completa para que
+   el tablero y «Al día» compartan la misma foto. */
+.tareas-resumen{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-3);align-items:stretch;margin-bottom:var(--sp-4)}
+.tareas-resumen .kpis{margin-bottom:0}
+.tareas-anillo{display:flex;align-items:center;gap:var(--sp-3);min-width:260px;padding:var(--sp-3) var(--sp-4);border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup)}
+.tareas-anillo svg{flex:none;width:108px;height:108px}
+.tareas-ley .tit{margin:0 0 6px;font-size:var(--fs-sm);font-weight:700}
+.tareas-ley .leg{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:var(--fs-xs);color:var(--muted)}
+.tareas-ley .leg i{flex:none;width:10px;height:10px;border-radius:3px}
+.tareas-ley .num{font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums}
+@media (max-width:900px){
+  .tareas-resumen{grid-template-columns:1fr}
+  .tareas-anillo{min-width:0}
+}
 .tareas-lista{display:flex;flex-direction:column;gap:var(--sp-1)}
 .tarea-fila{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto;gap:var(--sp-2);align-items:center;padding:var(--sp-2);border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup)}
 .tarea-fila:hover{border-color:var(--line)}

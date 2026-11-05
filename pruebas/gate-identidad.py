@@ -249,7 +249,7 @@ def main() -> int:
                    "estudio: la fila del ramo lleva su icono", fallas)
             exigir(ver_en(page, "malla", '.ramo-card .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
                    "malla: la tarjeta lleva su icono", fallas)
-            exigir(ver_en(page, "tiempo", '#tiempo-lista-sesiones .plegable__tit .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
+            exigir(ver_en(page, "tiempo", '#tiempo-lista-sesiones .sesion-item .ramo-ico use[href="#ICONO"]', "i-ramo-libro"),
                    "tiempo: el grupo de sesiones lleva su icono", fallas)
             page.locator('#tabs [data-ir="calendario"]').click()
             page.wait_for_timeout(350)

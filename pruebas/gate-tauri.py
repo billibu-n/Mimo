@@ -108,6 +108,8 @@ def main() -> int:
         print(f"[INFO] fps de la ventana: {r.get('fps')}")
         exigir(r.get("origen", "").startswith("tauri://"), f"tauri: origen tauri — {r.get('origen')}", fallas)
         exigir(r.get("titulo") == "Mimo · universal", f"tauri: titulo — {r.get('titulo')}", fallas)
+        exigir(r.get("ajustes_ms", 9999) < 2000 and r.get("ajustes_escala") == "140%",
+               f"tauri: tema y escala responden sin colgar — {r.get('ajustes_ms')} ms / {r.get('ajustes_escala')}", fallas)
         exigir(r.get("tabs") == ["calendario", "tareas", "notas", "ajustes"],
                f"tauri: 4 pestanas base — {r.get('tabs')}", fallas)
         exigir(len(r.get("secciones", [])) == 4,

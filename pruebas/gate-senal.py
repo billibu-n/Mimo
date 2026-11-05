@@ -120,6 +120,9 @@ def main() -> int:
         exigir("--ok" in punto(page), "al día el punto es verde", fallas)
         page.locator('#tabs [data-ir="ajustes"]').click()
         page.wait_for_timeout(250)
+        if not page.locator("#sync-panel-acciones").evaluate("e => e.open"):
+            page.locator("#sync-panel-acciones > summary").click()
+            page.wait_for_timeout(120)
         exigir(page.locator("#sync-ver-copia").is_visible(), "con destino se ofrece «Ver la copia»", fallas)
 
         # 5. comprobante
@@ -131,6 +134,9 @@ def main() -> int:
         cargar(page)
         page.locator('#tabs [data-ir="ajustes"]').click()
         page.wait_for_timeout(250)
+        if not page.locator("#sync-panel-acciones").evaluate("e => e.open"):
+            page.locator("#sync-panel-acciones > summary").click()
+            page.wait_for_timeout(120)
         prueba = page.locator("#sync-prueba").inner_text().strip()
         exigir(prueba.startswith("Comprobante:"), f"el comprobante se lee en Ajustes: «{prueba[:56]}…»", fallas)
         exigir("41.2 KB" in prueba and "28 tareas" in prueba, "el comprobante dice peso y cuentas", fallas)
@@ -164,6 +170,12 @@ def main() -> int:
         # 8. la contraseña de aplicación sobrevive al reinicio, cifrada
         page.locator('#tabs [data-ir="ajustes"]').click()
         page.wait_for_timeout(200)
+        if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
+            page.locator("#sync-panel-manual > summary").click()
+            page.wait_for_timeout(120)
+        if not page.locator("#sync-panel-cifrado").evaluate("e => e.open"):
+            page.locator("#sync-panel-cifrado > summary").click()
+            page.wait_for_timeout(120)
         page.locator("#sync-webdav-clave").fill("clave-de-prueba-2026")
         page.locator("#sync-webdav-guardar-clave").click()
         page.wait_for_timeout(500)
@@ -174,6 +186,12 @@ def main() -> int:
         cargar(page)
         page.locator('#tabs [data-ir="ajustes"]').click()
         page.wait_for_timeout(300)
+        if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
+            page.locator("#sync-panel-manual > summary").click()
+            page.wait_for_timeout(120)
+        if not page.locator("#sync-panel-acciones").evaluate("e => e.open"):
+            page.locator("#sync-panel-acciones > summary").click()
+            page.wait_for_timeout(120)
         valor = page.locator("#sync-webdav-clave-acceso").input_value()
         exigir(valor == "app-password-secreta", f"tras reiniciar la contraseña sigue puesta (leída «{valor[:4]}…»)", fallas)
         page.locator("#sync-desconectar").click()

@@ -577,6 +577,19 @@ const GUION_SONDA: &str = r#"
     await esperar(200);
     r.grupos = document.querySelectorAll('.ajustes-grupo').length;
     r.sync_card = !!document.querySelector('#sync-card');
+    var tAjustes = performance.now();
+    function cambiar(sel, valor) {
+      var e = document.querySelector(sel);
+      if (!e) return false;
+      e.value = valor;
+      e.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    }
+    cambiar('#pref-tema-oscuro', 'negro');
+    cambiar('#pref-escala', '140');
+    await esperar(150);
+    r.ajustes_ms = Math.round(performance.now() - tAjustes);
+    r.ajustes_escala = document.documentElement.style.fontSize;
     r.actualizaciones = {
       card: !!document.querySelector('#actualizaciones-card'),
       version: window.MIMO_VERSION || '',

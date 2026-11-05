@@ -81,25 +81,39 @@
     return "";
   }
 
+  function tieneColor(c) {
+    return !!(c && typeof c === "object" && Object.prototype.hasOwnProperty.call(c, "color"));
+  }
+  function tieneIcono(c) {
+    return !!(c && typeof c === "object" && Object.prototype.hasOwnProperty.call(c, "icono"));
+  }
   function colorDe(c) {
-    var propio = c && typeof c === "object" ? hex(c.color) : "";
-    return propio || colorAuto(codigoDe(c));
+    /* Un color vacío explícito es una decisión del usuario: el ramo no lleva
+       color y las vistas usan el gris de la casa. Sin la propiedad, se conserva
+       el color estable por código de siempre. */
+    if (tieneColor(c)) return hex(c.color);
+    return colorAuto(codigoDe(c));
   }
   function iconoDe(c) {
-    var guardado = c && typeof c === "object" ? String(c.icono || "") : "";
-    return iconoVigente(guardado) || iconoAuto(codigoDe(c));
+    if (tieneIcono(c)) {
+      var guardado = String(c.icono || "");
+      return guardado ? iconoVigente(guardado) : "";
+    }
+    return iconoAuto(codigoDe(c));
   }
   function esColor(v) { return !!hex(v); }
 
   /* El icono del ramo, listo para pintar. Lleva el color como variable CSS para
      que el estilo lo use sin que cada vista repita el hex. */
   function iconoHTML(c, clase) {
-    return '<svg class="icono ramo-ico' + (clase ? " " + clase : "") + '" style="--ramo:' + colorDe(c) +
-      '" aria-hidden="true"><use href="#' + iconoDe(c) + '"/></svg>';
+    var id = iconoDe(c);
+    if (!id) return "";
+    return '<svg class="icono ramo-ico' + (clase ? " " + clase : "") + '" style="--ramo:' + (colorDe(c) || "var(--muted)") +
+      '" aria-hidden="true"><use href="#' + id + '"/></svg>';
   }
   /* Punto de color para listas densas (chips del calendario, filas de sesiones). */
   function puntoHTML(c, clase) {
-    return '<i class="ramo-punto' + (clase ? " " + clase : "") + '" style="--ramo:' + colorDe(c) +
+    return '<i class="ramo-punto' + (clase ? " " + clase : "") + '" style="--ramo:' + (colorDe(c) || "var(--muted)") +
       '" aria-hidden="true"></i>';
   }
 
@@ -107,12 +121,20 @@
      icono que no esté en el catálogo también (vuelven al criterio automático). */
   function normalizar(c) {
     if (!c || typeof c !== "object") return c;
-    if (c.color != null && !hex(c.color)) delete c.color;
-    else if (hex(c.color)) c.color = hex(c.color);
-    if (c.icono != null) {
-      var vigente = iconoVigente(c.icono);
-      if (vigente) c.icono = vigente;
-      else delete c.icono;
+    if (Object.prototype.hasOwnProperty.call(c, "color")) {
+      var color = hex(c.color);
+      if (color) c.color = color;
+      else if (c.color === "" || c.color === null || c.color === undefined) c.color = "";
+      else delete c.color;
+    }
+    if (Object.prototype.hasOwnProperty.call(c, "icono")) {
+      var guardado = String(c.icono || "");
+      if (!guardado) c.icono = "";
+      else {
+        var vigente = iconoVigente(guardado);
+        if (vigente) c.icono = vigente;
+        else delete c.icono;
+      }
     }
     return c;
   }
@@ -125,6 +147,8 @@
     iconoAuto: iconoAuto,
     colorDe: colorDe,
     iconoDe: iconoDe,
+    tieneColor: tieneColor,
+    tieneIcono: tieneIcono,
     esColor: esColor,
     esIcono: esIcono,
     iconoVigente: iconoVigente,

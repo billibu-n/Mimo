@@ -149,6 +149,9 @@ def main() -> int:
             exigir("Español" in page.locator("#pref-idioma").inner_text(),
                    "ajustes: idioma con bandera", fallas)
 
+            if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
+                page.locator("#sync-panel-manual > summary").click()
+                page.wait_for_timeout(120)
             page.locator("#sync-proveedor").select_option("webdav")
             page.wait_for_timeout(250)
             reg = page.locator("#sync-webdav-registro")

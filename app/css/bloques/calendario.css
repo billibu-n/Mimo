@@ -52,6 +52,13 @@ body.split .cal-layout .rail{display:none}
 .cal-tipo{display:inline-flex;align-items:center;gap:4px;max-width:100%;border:1px solid var(--line2);border-radius:999px;padding:2px 8px;font-size:var(--fs-xs);background:var(--sup);overflow:hidden}
 .cal-tipo i{width:8px;height:8px;border-radius:50%;background:var(--tag,var(--muted));flex:0 0 auto}
 .cal-tipo b{font-weight:600;color:var(--muted);margin-left:2px}
+.cal-ramo{font:inherit;cursor:pointer;text-align:left}
+.cal-ramo[aria-pressed="false"]{opacity:.45;text-decoration:line-through}
+.cal-ramo .ramo-ico{width:13px;height:13px;color:var(--tag,var(--muted))}
+.cal-ramo i{width:8px;height:8px;border-radius:50%;background:var(--tag,var(--muted));flex:0 0 auto}
+.evento-chip__ico{display:inline-flex;align-items:center;flex:none}
+.evento-chip__ico .ramo-ico{width:11px;height:11px;color:var(--chip,currentColor)}
+.evento-chip__ramo{font-size:.9em;font-weight:700;color:var(--muted);flex:none}
 .cal-agenda__tag{display:inline-flex;align-items:center;flex:0 0 auto;max-width:9em;border:1px solid color-mix(in srgb,var(--tag,var(--line2)) 55%,transparent);background:color-mix(in srgb,var(--tag,var(--line2)) 14%,transparent);border-radius:999px;padding:0 6px;font-size:var(--fs-xs);font-weight:600;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .evento-chip{display:flex;align-items:center;gap:3px}
 .evento-chip b,.evento-chip__tag{flex:0 0 auto}

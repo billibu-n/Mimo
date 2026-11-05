@@ -93,6 +93,9 @@
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="4" height="14" rx="1"/><rect x="13" y="5" width="4" height="14" rx="1"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1.5"/></symbol>
+  <symbol id="i-reiniciar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6h6"/><path d="M5.5 15a7 7 0 1 0 .6-8.4L4 10"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></symbol>
   <symbol id="i-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-5V2"/><path d="M20 7a8 8 0 0 0-14-3"/><path d="M4 17h5v5"/><path d="M4 17a8 8 0 0 0 14 3"/></symbol>
   <symbol id="i-nube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.6A3.5 3.5 0 0 1 18 18Z"/></symbol>
@@ -294,6 +297,23 @@
                 <option value="125" data-l10n-es="Muy grande (125 %)" data-l10n-en="Very large (125%)" data-l10n-zh="很大（125%）">Muy grande (125 %)</option>
                 <option value="140" data-l10n-es="Máximo (140 %)" data-l10n-en="Maximum (140%)" data-l10n-zh="最大（140%）">Máximo (140 %)</option>
               </select></label>
+            <label class="campo"><span data-i18n="aj.fuente">Tipo de letra</span>
+              <select class="entrada" id="pref-fuente">
+                <option value="clasica" data-l10n-es="Clásica" data-l10n-en="Classic" data-l10n-zh="经典">Clásica</option>
+                <option value="sistema" data-l10n-es="Sistema del equipo" data-l10n-en="Device system" data-l10n-zh="系统字体">Sistema del equipo</option>
+                <option value="mono" data-l10n-es="Monoespaciada" data-l10n-en="Monospaced" data-l10n-zh="等宽">Monoespaciada</option>
+                <option value="personalizada" data-l10n-es="Otra fuente…" data-l10n-en="Other font…" data-l10n-zh="其他字体…">Otra fuente…</option>
+              </select></label>
+            <label class="campo" id="fila-fuente-nombre" hidden><span data-i18n="aj.fuente.nombre">Nombre de la fuente</span>
+              <input class="entrada" id="pref-fuente-nombre" type="text" list="fuentes-sistema" autocomplete="off" spellcheck="false" placeholder="Cantarell, Noto Sans…">
+              <datalist id="fuentes-sistema">
+                <option value="Noto Sans"></option><option value="Cantarell"></option><option value="Adwaita Sans"></option>
+                <option value="DejaVu Sans"></option><option value="Liberation Sans"></option><option value="Nimbus Sans"></option>
+                <option value="Open Sans"></option><option value="Lato"></option><option value="Ubuntu"></option>
+                <option value="Segoe UI"></option><option value="Helvetica"></option><option value="Arial"></option>
+                <option value="ui-monospace"></option>
+              </datalist></label>
+            <p class="muted" data-i18n="aj.fuente.sub">La clásica usa la tipografía de Mimo. También puedes usar la del sistema o escribir el nombre de una fuente instalada.</p>
             <p class="muted" data-l10n-es="Se aplica a toda la app y se recuerda en este equipo." data-l10n-en="Applies to the whole app and is remembered on this device." data-l10n-zh="应用于整个应用，并在此设备上记住。">Se aplica a toda la app y se recuerda en este equipo.</p>
           </section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg><span data-i18n="aj.idioma">Idioma</span></h2><p class="muted" data-i18n="aj.idioma.sub">Elige el idioma de la interfaz.</p>
@@ -337,7 +357,7 @@
           </div>
 
           <div id="sync-hueco"><div id="sync-formulario">
-          <details class="sync-panel" id="sync-panel-entrada" open>
+          <details class="sync-panel" id="sync-panel-entrada">
             <summary><span data-l10n-es="1. Enlace o QR" data-l10n-en="1. Link or QR" data-l10n-zh="1. 链接或二维码">1. Enlace o QR</span><span class="sync-panel__pista" data-l10n-es="Lo más rápido" data-l10n-en="Fastest" data-l10n-zh="最快">Lo más rápido</span></summary>
             <div class="sync-panel__cuerpo">
               <p class="sync-nota" data-l10n-es="Pega el texto completo que te dio la página o sube una imagen con el QR. Mimo separa servidor, usuario y contraseña de aplicación y te los muestra antes de guardar." data-l10n-en="Paste the full text the page gave you or upload a QR image. Mimo splits server, user and app password and shows them before saving." data-l10n-zh="粘贴页面给出的完整文本或上传二维码图片。Mimo 会分离服务器、用户和应用密码，并在保存前显示。">Pega el texto completo que te dio la página o sube una imagen con el QR. Mimo separa servidor, usuario y contraseña de aplicación y te los muestra antes de guardar.</p>
@@ -367,7 +387,7 @@
             </div>
           </details>
 
-          <details class="sync-panel" id="sync-panel-manual" open>
+          <details class="sync-panel" id="sync-panel-manual">
             <summary><span data-l10n-es="2. Conexión manual" data-l10n-en="2. Manual connection" data-l10n-zh="2. 手动连接">2. Conexión manual</span><span class="sync-panel__pista" data-l10n-es="Respaldo" data-l10n-en="Fallback" data-l10n-zh="备用">Respaldo</span></summary>
             <div class="sync-panel__cuerpo">
           <div class="sync-modo">
@@ -467,7 +487,7 @@
             </div>
           </details>
 
-          <details class="sync-panel" id="sync-panel-cifrado" open>
+          <details class="sync-panel" id="sync-panel-cifrado">
             <summary><span data-l10n-es="3. Cifrado" data-l10n-en="3. Encryption" data-l10n-zh="3. 加密">3. Cifrado</span><span class="sync-panel__pista" data-l10n-es="Obligatorio para la nube" data-l10n-en="Required for the cloud" data-l10n-zh="云端必填">Obligatorio para la nube</span></summary>
             <div class="sync-panel__cuerpo">
           <div id="sync-cifrado" hidden>
@@ -493,7 +513,7 @@
             </div>
           </details>
 
-          <details class="sync-panel" id="sync-panel-acciones" open>
+          <details class="sync-panel" id="sync-panel-acciones">
             <summary><span data-l10n-es="4. Enlace y sincronización" data-l10n-en="4. Link and sync" data-l10n-zh="4. 链接和同步">4. Enlace y sincronización</span><span class="sync-panel__pista" data-l10n-es="Verificar y ejecutar" data-l10n-en="Check and run" data-l10n-zh="检查和执行">Verificar y ejecutar</span></summary>
             <div class="sync-panel__cuerpo">
           <div class="sync-enlace" id="sync-enlace">

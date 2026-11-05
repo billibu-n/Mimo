@@ -196,15 +196,29 @@
   }
   registrarManifiestos();
 
+  var FUENTES = ["clasica", "sistema", "mono", "personalizada"];
+  function normalizarFuente(v) {
+    v = String(v || "");
+    return FUENTES.indexOf(v) >= 0 ? v : "clasica";
+  }
+  function limpiarNombreFuente(t) {
+    /* Un nombre de fuente es una lista de familias, no CSS: se descartan llaves,
+       puntos y coma, parentesis y comillas angulares para que no pueda cerrar la
+       declaracion ni colar una url(). Las comas y las comillas simples/dobles se
+       conservan porque son parte legitima del nombre. */
+    t = String(t || "").replace(/[;{}<>\\]/g, " ").replace(/\burl\s*\(/gi, " ").replace(/\bvar\s*\(/gi, " ");
+    t = t.replace(/[^a-zA-Z0-9\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1\u00c1\u00c9\u00cd\u00d3\u00da\u00dc\u00d1\s,'"_-]/g, " ");
+    return t.replace(/\s+/g, " ").trim().slice(0, 120);
+  }
   function porDefecto() {
     return {
-      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], eventoTipos: [], cursos: [], califs: {},
+      tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], eventoTipos: [], cursos: [], califs: {}, calRamosOcultos: [],
       carrera: { titulo: "", universidad: "", pais: "" },
-      periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "",
+      periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "", tiempoSemana: "", tiempoDia: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: false, navPlegada: false, navOculta: false,
-        temaClaro: "clasico", temaOscuro: "deepsea", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
+        temaClaro: "clasico", temaOscuro: "deepsea", fuente: "clasica", fuenteNombre: "", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       plegables: {},
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
@@ -234,8 +248,12 @@
           if (!d.estudio.metasRamo || typeof d.estudio.metasRamo !== "object") d.estudio.metasRamo = {};
           if (!d.estudio.metasSemana || typeof d.estudio.metasSemana !== "object") d.estudio.metasSemana = {};
           if (!d.prefs || typeof d.prefs !== "object") d.prefs = {};
+          if (!Array.isArray(d.calRamosOcultos)) d.calRamosOcultos = [];
           if (!d.prefs.temaClaro) d.prefs.temaClaro = "clasico";
           if (!d.prefs.temaOscuro) d.prefs.temaOscuro = "deepsea";
+          d.prefs.fuente = normalizarFuente(d.prefs.fuente);
+          if (typeof d.prefs.fuenteNombre !== "string") d.prefs.fuenteNombre = "";
+          else d.prefs.fuenteNombre = limpiarNombreFuente(d.prefs.fuenteNombre);
           if (!Array.isArray(d.tiempoHijos)) d.tiempoHijos = HIJOS.map(function (y) { return y[0]; });
           if (!d.kits || typeof d.kits !== "object") d.kits = {};
           Object.keys(d.kits).forEach(function (k) {
@@ -528,6 +546,7 @@
     abrirPanel();
   }
   function abrirEventoDetalle(id) {
+    if (/^tarea-/.test(String(id || ""))) { abrirTarea(String(id).slice(6)); return; }
     if (!eventoPorId(id)) return;
     estado.eventoSel = id;
     estado.panel.calendario = "detalle";
@@ -610,18 +629,42 @@
       var viejo = ramoPorCodigo(s.ramo);
       if (viejo) opciones.push({ v: viejo.codigo, t: viejo.codigo + " — " + viejo.nombre + " (" + L("cerrado", "closed", "已关闭") + ")" });
     }
+    var tareas = [{ v: "", t: L("Sin vínculo", "No link", "无关联") }];
+    estado.tareas.forEach(function (t) { tareas.push({ v: t.id, t: t.titulo }); });
+    if (s.vinculo && !estado.tareas.some(function (t) { return t.id === s.vinculo; })) {
+      tareas.push({ v: s.vinculo, t: L("Tarea eliminada", "Deleted task", "已删除任务") });
+    }
+    var semanas = [{ v: "", t: L("Fuera del periodo", "Outside the term", "学期外") }];
+    semanasTiempo().forEach(function (w) { semanas.push({ v: w.desde, t: etiquetaSemanaTiempo(w) }); });
+    var semana = semanaDeFechaTiempo(s.fecha || hoyISO());
     MimoModal.abrir({
       id: "sesion",
       titulo: L("Editar sesión de estudio", "Edit study session", "编辑学习会话"),
-      sub: L("Corrige lo que registró Tiempo o una sesión manual.", "Fix what Time or a manual session logged.", "修正时间或手动记录的会话。"),
+      sub: L("Corrige el tiempo, el día, el ramo o la tarea. La fecha manda sobre la semana.", "Fix the time, day, course or task. The date rules over the week.", "修正时间、日期、课程或任务。日期优先于周。"),
+      columnas: true,
       campos: [
-        { id: "sesion-fecha", etiqueta: L("Fecha", "Date", "日期"), tipo: "date", valor: s.fecha || hoyISO() },
-        { id: "sesion-duracion", etiqueta: L("Duración", "Duration", "时长"), valor: duracionInput(s.minutos), ph: "2:30:21", inputmode: "decimal" },
-        { id: "sesion-ramo", etiqueta: L("Ramo", "Course", "课程"), tipo: "select", valor: s.ramo || "", opciones: opciones },
-        { id: "sesion-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: s.hora || "" }
+        { id: "sesion-fecha", etiqueta: L("Día", "Day", "日期"), tipo: "date", valor: s.fecha || hoyISO(), ancho: "mitad" },
+        { id: "sesion-duracion", etiqueta: L("Duración", "Duration", "时长"), valor: duracionInput(s.minutos), ph: "1:00:00", inputmode: "decimal", ancho: "mitad", ayuda: L("Horas:minutos:segundos", "Hours:minutes:seconds", "时:分:秒") },
+        { id: "sesion-ramo", etiqueta: L("Ramo", "Course", "课程"), tipo: "select", valor: s.ramo || "", opciones: opciones, ancho: "mitad" },
+        { id: "sesion-vinculo", etiqueta: L("Tarea", "Task", "任务"), tipo: "select", valor: s.vinculo || "", opciones: tareas, ancho: "mitad" },
+        { id: "sesion-semana", etiqueta: L("Semana", "Week", "周"), tipo: "select", valor: semana ? semana.desde : "", opciones: semanas, ancho: "mitad", ayuda: L("Solo ajusta el día si está fuera de la semana.", "Only moves the day if it is outside the week.", "仅当日期在周外时调整。") },
+        { id: "sesion-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: s.hora || "", ancho: "mitad" }
       ],
       guardar: L("Guardar", "Save", "保存"),
       borrar: { texto: L("Borrar", "Delete", "删除"), run: function () { borrarSesion(id); } },
+      despues: function () {
+        var fe = $("#sesion-fecha"), se = $("#sesion-semana");
+        if (!fe || !se) return;
+        se.onchange = function () {
+          if (!se.value) return;
+          var w = semanaDeFechaTiempo(se.value);
+          if (w && (fe.value < w.desde || fe.value > w.hasta)) fe.value = w.desde;
+        };
+        fe.onchange = function () {
+          var w = semanaDeFechaTiempo(fe.value);
+          se.value = w ? w.desde : "";
+        };
+      },
       onGuardar: function () { return guardarSesionDesdeVentana(s); }
     });
   }
@@ -633,12 +676,14 @@
         fecha: $("#sesion-fecha").value || s.fecha || hoyISO(),
         minutos: Math.round(minutos * 100) / 100,
         ramo: $("#sesion-ramo").value || "",
+        vinculo: $("#sesion-vinculo") ? ($("#sesion-vinculo").value || "") : (s.vinculo || ""),
         hora: $("#sesion-hora").value || ""
       });
     } else {
       s.fecha = $("#sesion-fecha").value || s.fecha || hoyISO();
       s.minutos = Math.round(minutos * 100) / 100;
       s.ramo = $("#sesion-ramo").value || "";
+      s.vinculo = $("#sesion-vinculo") ? ($("#sesion-vinculo").value || "") : (s.vinculo || "");
       s.hora = $("#sesion-hora").value || "";
     }
     guardar(); pintarTiempo(); refrescarEstudio();
@@ -729,6 +774,15 @@
     if (eEl) {
       var ev = eventoPorId(eEl.getAttribute("data-evento"));
       if (!ev) return null;
+      if (ev.origen === "tarea") {
+        var tt = tareaPorId(ev.tareaId);
+        if (!tt) return null;
+        return { titulo: menuTitulo(L("Tarea", "Task", "任务"), tt.titulo), items: [
+          { accion: "tarea-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirTarea(tt.id); } },
+          { accion: "tarea-editar", texto: L("Editar", "Edit", "编辑"), run: function () { abrirFormulario(tt); } },
+          { accion: "tarea-estado", texto: tt.hecha ? L("Reabrir", "Reopen", "重开") : L("Completar", "Complete", "完成"), run: function () { alternarTarea(tt.id, tt.fecha); } }
+        ] };
+      }
       return { titulo: menuTitulo(L("Evento", "Event", "事件"), ev.titulo), items: [
         { accion: "evento-abrir", texto: L("Abrir detalle", "Open details", "打开详情"), run: function () { abrirEventoDetalle(ev.id); } },
         { accion: "evento-editar", texto: "Editar", run: function () { abrirEvento(ev); } },
@@ -1312,8 +1366,20 @@
   }
   function eventosTodos() { return eventosBase().concat(eventosFuente()); }
   function eventoPorId(id) { return eventosTodos().filter(function (e) { return e.id === id; })[0] || null; }
+  /* El calendario lee los ramos como categorías: no hay que crear una categoría
+     por ramo ni asignarle color. El evento ya trae `contexto`; aquí solo se
+     resuelve a su código y se respeta el interruptor de la barra lateral. */
+  function calRamoOculto(ctx) {
+    var c = cursoDeContexto(ctx);
+    var codigo = c ? c.codigo : String(ctx || "").trim().toUpperCase();
+    if (!codigo) return false;
+    return (estado.calRamosOcultos || []).indexOf(codigo) !== -1;
+  }
+  function eventosCalendario() {
+    return eventosTodos().filter(function (e) { return !calRamoOculto(e.contexto); });
+  }
   function eventosDe(fecha) {
-    return eventosTodos().filter(function (e) { return e.fecha === fecha; })
+    return eventosCalendario().filter(function (e) { return e.fecha === fecha; })
       .sort(function (a, b) { return (a.hora || "99:99") < (b.hora || "99:99") ? -1 : 1; });
   }
   function isoFecha(f) {
@@ -1336,13 +1402,17 @@
     };
   }
   function chipEvento(e) {
-    var col = colorDeContexto(e.contexto);
+    var c = cursoDeContexto(e.contexto);
+    var col = c ? colorDeRamo(c) : colorDeContexto(e.contexto);
     var estilo = col ? ' style="--chip:' + col + '"' : "";
     var tipo = tipoEvento(e.tipo);
     var etiqueta = tipo ? '<span class="evento-chip__tag" title="' + esc(tipo.nombre) + '" style="--tag:' + colorTipoEvento(tipo.id) + '">' + esc(tipo.nombre) + "</span>" : "";
+    var ico = c ? iconoRamoHTML(c) : "";
+    var codigo = c && !col ? '<span class="evento-chip__ramo">' + esc(c.codigo) + "</span>" : "";
     return '<button class="evento-chip' + (col ? " evento-chip--color" : "") + '" type="button" data-evento="' + esc(e.id) + '" title="' + esc(e.titulo) + ' · ' + esc(t("cal.clicDerecho")) + '"' + estilo + ">" +
       (e.hora ? '<b>' + esc(horaTexto(e.hora)) + "</b>" : "") +
-      '<span class="evento-chip__tit">' + esc(e.titulo) + "</span>" + etiqueta + "</button>";
+      (ico ? '<span class="evento-chip__ico">' + ico + "</span>" : "") +
+      '<span class="evento-chip__tit">' + esc(e.titulo) + "</span>" + codigo + etiqueta + "</button>";
   }
   function pintarTiposCalendario() {
     var caja = $("#cal-tipos"); if (!caja) return;
@@ -1352,7 +1422,43 @@
     caja.innerHTML = tipos.length ? tipos.map(function (t) {
       return '<span class="cal-tipo" style="--tag:' + colorTipoEvento(t.id) + '"><i aria-hidden="true"></i>' +
         esc(t.nombre) + '<b>' + (cuenta[t.id] || 0) + "</b></span>";
-    }).join("") : '<p class="muted">' + esc(t("cal.sinCategorias")) + "</p>";
+    }).join("") : '<p class="muted">' + esc(L("Sin categorías propias.", "No custom categories.", "没有自定义分类。")) + "</p>";
+  }
+  /* Los ramos son categorías de primera clase: se listan solos, con su icono y
+     su tinte, y la casilla los muestra u oculta en las cinco vistas. Un ramo sin
+     color sigue apareciendo con su código y su icono, en gris. */
+  function pintarCalRamos() {
+    var caja = $("#cal-ramos"); if (!caja) return;
+    var cuenta = {};
+    eventosTodos().forEach(function (e) {
+      var c = cursoDeContexto(e.contexto);
+      if (c) cuenta[c.codigo] = (cuenta[c.codigo] || 0) + 1;
+    });
+    var lista = (estado.cursos || []).filter(function (c) {
+      return c.enMalla !== false && (c.enCurso || cuenta[c.codigo]);
+    }).sort(function (a, b) { return a.codigo < b.codigo ? -1 : 1; });
+    if (!lista.length) {
+      caja.innerHTML = '<p class="muted">' + esc(L("Sin ramos. Créalos en Malla y aparecerán aquí.", "No courses. Create them in the plan and they will appear here.", "没有课程。在规划中创建后会显示在这里。")) + "</p>";
+      return;
+    }
+    caja.innerHTML = lista.map(function (c) {
+      var col = colorDeRamo(c) || "var(--muted)";
+      var ico = iconoRamoHTML(c) || '<i aria-hidden="true"></i>';
+      var n = cuenta[c.codigo] || 0;
+      return '<button class="cal-tipo cal-ramo" type="button" data-cal-ramo="' + esc(c.codigo) +
+        '" style="--tag:' + col + '" aria-pressed="' + (!calRamoOculto(c.codigo)) + '" title="' +
+        esc(c.codigo + " — " + c.nombre) + '">' + ico + '<span>' + esc(c.codigo) + "</span><b>" + n + "</b></button>";
+    }).join("");
+    $$("#cal-ramos [data-cal-ramo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var cod = b.getAttribute("data-cal-ramo");
+        var ocultos = estado.calRamosOcultos || [];
+        var i = ocultos.indexOf(cod);
+        if (i >= 0) ocultos.splice(i, 1); else ocultos.push(cod);
+        estado.calRamosOcultos = ocultos;
+        guardar(); pintarCalendario();
+      });
+    });
   }
   function pintarContextosCursos() {
     var dl = $("#contextos-ramos"); if (!dl) return;
@@ -1414,7 +1520,7 @@
     });
     var segs = Object.keys(por).map(function (k) {
       var c = k === "_" ? null : ramoPorCodigo(k);
-      var color = c ? colorDeRamo(c) : "var(--muted)";
+      var color = c ? (colorDeRamo(c) || "var(--muted)") : "var(--muted)";
       return '<i style="width:' + (por[k] / total * 100).toFixed(2) + "%;background:" + color + '"></i>';
     }).join("");
     return '<div class="cal-barra" style="width:' + Math.max(8, total / Math.max(1, maximo) * 100).toFixed(1) + '%">' + segs + "</div>";
@@ -1546,9 +1652,10 @@
   function pintarCalendario() {
     normalizarEventos();
     pintarContextosCursos();
+    pintarCalRamos();
     pintarTiposCalendario();
     var y = calCursor.getFullYear(), m = calCursor.getMonth();
-    var total = eventosTodos().length;
+    var total = eventosCalendario().length;
     $("#kpi-eventos").textContent = String(total);
     $("#kpi-tareas").textContent = String(estado.tareas.filter(function (t) { return t.fecha; }).length);
     var minReg = (estado.sesiones || []).reduce(function (a, s) { return a + (Number(s.minutos) || 0); }, 0);
@@ -1618,7 +1725,9 @@
     });
     $$("#cal-grid [data-evento], #cal-anio [data-evento], #cal-semestre [data-evento]").forEach(function (b) {
       b.addEventListener("click", function () {
-        estado.eventoSel = b.getAttribute("data-evento");
+        var id = b.getAttribute("data-evento");
+        if (/^tarea-/.test(String(id || ""))) { abrirTarea(String(id).slice(6)); return; }
+        estado.eventoSel = id;
         var ctx = ctxDe(b);
         estado.panel[ctx] = "detalle";
         guardar(); pintarPanelDe(ctx); pintarCalendario();
@@ -1645,9 +1754,14 @@
         { id: "evento-hora", etiqueta: L("Hora", "Time", "时间"), tipo: "time", valor: ev ? ev.hora : "" },
         { id: "evento-tipo", etiqueta: L("Categoría", "Category", "分类"), tipo: "select", valor: ev ? ev.tipo : "", opciones: opcionesTipo },
         { id: "evento-tipo-nuevo", etiqueta: L("Nueva categoría (opcional)", "New category (optional)", "新分类（可选）"), valor: "", ph: L("Ej.: Laboratorio, Cumpleaños", "E.g.: Lab, Birthday", "例如：实验室、生日"), ayuda: L("Se crea y se asigna a este evento.", "It is created and assigned to this event.", "将创建并分配给此事件。") },
-        { id: "evento-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: ev ? ev.contexto : "", lista: "contextos-ramos", ph: L("Ramo o lugar", "Course or place", "课程或地点") }
+        { id: "evento-contexto", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: ev ? ev.contexto : "", lista: "contextos-ramos", ph: L("Ramo o lugar", "Course or place", "课程或地点") },
+        { tipo: "html", html: window.MimoEditorMD ? MimoEditorMD.campoHTML({ id: "evento-nota", L: L, filas: 4 }) : "" },
+        { tipo: "html", html: ev ? "" : '<label class="campo"><span>' + esc(L("Guardar como", "Save as", "保存为")) + '</span><select class="entrada" id="evento-destino"><option value="evento">' + esc(L("Evento del calendario", "Calendar event", "日历事件")) + '</option><option value="tarea">' + esc(L("Tarea", "Task", "任务")) + '</option></select><small class="muted">' + esc(L("La tarea se puede editar después en Tareas.", "The task can be edited later in Tasks.", "该任务之后可在任务中编辑。")) + "</small></label>" }
       ],
       guardar: ev ? L("Guardar", "Save", "保存") : L("Crear evento", "Create event", "创建事件"),
+      despues: function (form) {
+        if (window.MimoEditorMD) MimoEditorMD.montar(form, { id: "evento-nota", L: L, valor: ev ? (ev.nota || "") : "" });
+      },
       onGuardar: guardarEventoDesdeVentana
     });
   }
@@ -1673,6 +1787,22 @@
   function guardarEventoDesdeVentana() {
     var titulo = $("#evento-titulo").value.trim();
     if (!titulo) { $("#evento-titulo").focus(); return false; }
+    var destino = $("#evento-destino") ? $("#evento-destino").value : "evento";
+    if (!formEventoId && destino === "tarea") {
+      var nueva = {
+        id: "t" + Date.now(), titulo: titulo, tipo: "tarea", padre_id: null,
+        estado: "pendiente", hecha: false, prioridad: "media",
+        fecha: $("#evento-fecha").value || hoyISO(), hora: $("#evento-hora").value || "",
+        enCalendario: true, contexto: $("#evento-contexto").value.trim(),
+        nota: $("#evento-nota") ? $("#evento-nota").value : "",
+        recurrencia: null, orden: estado.tareas.length, creada: new Date().toISOString()
+      };
+      estado.tareas.push(nueva);
+      estado.tareaSel = nueva.id;
+      guardar(); pintarTareas(); pintarCalendario(); pintarPanel();
+      aviso(L("Tarea creada con los datos del calendario.", "Task created from the calendar data.", "已用日历数据创建任务。"));
+      return true;
+    }
     var ev = formEventoId ? eventoPorId(formEventoId) : null;
     if (!ev) {
       ev = { id: "e" + Date.now() };
@@ -1684,7 +1814,7 @@
     var nuevaCat = $("#evento-tipo-nuevo").value.trim();
     ev.tipo = nuevaCat ? crearTipoEvento(nuevaCat) : $("#evento-tipo").value;
     ev.contexto = $("#evento-contexto").value.trim();
-    ev.nota = ev.nota || "";
+    ev.nota = $("#evento-nota") ? $("#evento-nota").value : (ev.nota || "");
     estado.eventoSel = ev.id;
     estado.panel[pantalla] = "detalle";
     formEventoId = null;
@@ -1731,6 +1861,8 @@
         hecha: e === "hecha",
         prioridad: t.prioridad || "media",
         fecha: t.fecha || "",
+        hora: t.hora || "",
+        enCalendario: t.enCalendario === true,
         contexto: t.contexto || "",
         nota: t.nota || "",
         recurrencia: rec,
@@ -1807,6 +1939,7 @@
     var hecho = item ? item.hecha : (rec ? !!(fechaItem && t.recurrencia.hechas[fechaItem]) : !!t.hecha);
     var puedeMarcar = !rec || !!prox;
     var fechaTxt = rec ? (prox ? fechaCorta(prox) : L("serie terminada", "series ended", "系列已结束")) : fechaCorta(t.fecha);
+    if (t.hora) fechaTxt += " · " + horaTexto(t.hora);
     var serieBadge = rec
       ? ' <small class="tarea-serie" title="' + esc(resumenRecurrencia(t.recurrencia)) + '">↻ ' + esc(etiquetaCortaRecurrencia(t.recurrencia)) + "</small>"
       : "";
@@ -1857,6 +1990,35 @@
       });
     });
   }
+  /* Anillo de la semana: hechas contra pendientes. Se calcula sobre
+     ocurrencias (una serie con tres días cuenta tres) y no sobre tareas: el
+     tablero semanal muestra las ocurrencias. */
+  function pintarAnilloTareas(hechas, pendientes) {
+    var svg = $("#tareas-anillo");
+    if (!svg) return;
+    var total = hechas + pendientes;
+    var pct = total ? Math.round(pendientes / total * 100) : 0;
+    var C = 2 * Math.PI * 50;
+    var lenH = total ? (hechas / total) * C : 0;
+    var lenP = total ? (pendientes / total) * C : 0;
+    var html = '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--pista)" stroke-width="14"></circle>';
+    if (lenH > 0) {
+      html += '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--ok)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' +
+        lenH.toFixed(1) + " " + C.toFixed(1) + '" transform="rotate(-90 60 60)"></circle>';
+    }
+    if (lenP > 0) {
+      html += '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--fg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' +
+        lenP.toFixed(1) + " " + C.toFixed(1) + '" stroke-dashoffset="-' + lenH.toFixed(1) + '" transform="rotate(-90 60 60)"></circle>';
+    }
+    html += '<text x="60" y="57" text-anchor="middle" font-size="24" font-weight="700" fill="var(--fg)">' + pct + "%</text>" +
+      '<text x="60" y="74" text-anchor="middle" font-size="10" fill="var(--muted)">' + esc(L("pendientes", "pending", "待办")) + "</text>";
+    svg.innerHTML = html;
+    svg.setAttribute("aria-label", L("Resumen de la semana: " + hechas + " hechas, " + pendientes + " pendientes de " + total + ".",
+      "This week: " + hechas + " done, " + pendientes + " pending of " + total + ".",
+      "本周：" + hechas + " 项已完成，" + pendientes + " 项待办，共 " + total + " 项。"));
+    var set = function (id, v) { var el = $("#" + id); if (el) el.textContent = String(v); };
+    set("tareas-ley-hechas", hechas); set("tareas-ley-pend", pendientes); set("tareas-ley-total", total);
+  }
   function _pasaFiltroTareas(item, filtro) {
     if (filtro === "pendientes") return !item.hecha;
     if (filtro === "hoy") return item.fecha === hoyISO();
@@ -1889,18 +2051,21 @@
       ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
       personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
     Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
-    if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; return; }
+    var lunesSemana = lunesDe(new Date()), domingoSemana = new Date(lunesSemana.getTime());
+    domingoSemana.setDate(domingoSemana.getDate() + 6);
+    var lunesSemanaIso = isoFecha(lunesSemana), domingoSemanaIso = isoFecha(domingoSemana);
+    var semanaItems = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas);
+    pintarAnilloTareas(semanaItems.filter(function (i) { return i.hecha; }).length,
+      semanaItems.filter(function (i) { return !i.hecha; }).length);
+    if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; bindTareas(); return; }
     vacio.hidden = true;
     if (vistaTareas === "arbol") {
       lista.innerHTML = raicesTareas().map(function (t) { return filaTarea(t, 0); }).join("");
     } else if (vistaTareas === "tablero") {
-      var lunes = lunesDe(new Date()), domingo = new Date(lunes.getTime());
-      domingo.setDate(domingo.getDate() + 6);
-      var lunesIso = isoFecha(lunes), domingoIso = isoFecha(domingo);
-      var visibles = itemsEntre(lunesIso, domingoIso, tareas).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+      var visibles = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
       var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha === hoyISO(); });
-      var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoIso; });
-      var colHechas = visibles.filter(function (i) { return i.hecha && i.fecha >= lunesIso && i.fecha <= domingoIso; });
+      var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoSemanaIso; });
+      var colHechas = visibles.filter(function (i) { return i.hecha && i.fecha >= lunesSemanaIso && i.fecha <= domingoSemanaIso; });
       var col = function (titulo, items, clave) {
         return '<div class="tablero-col"><h3>' + esc(titulo) + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(t(clave)) + '</p>') + "</div>";
       };
@@ -2201,6 +2366,8 @@
         { tipo: "html", ancho: "mitad", html: campoFechaHTML(t ? t.fecha : "") },
         { id: "tarea-prioridad", ancho: "mitad", etiqueta: L("Prioridad", "Priority", "优先级"), tipo: "select", valor: t ? t.prioridad : "media",
           opciones: [{ v: "alta", t: L("Alta", "High", "高") }, { v: "media", t: L("Media", "Medium", "中") }, { v: "baja", t: L("Baja", "Low", "低") }] },
+        { id: "tarea-hora", ancho: "mitad", etiqueta: L("Hora (opcional)", "Time (optional)", "时间（可选）"), tipo: "time", valor: t ? (t.hora || "") : "" },
+        { id: "tarea-calendario", ancho: "mitad", etiqueta: L("Mostrar en el calendario", "Show on the calendar", "在日历中显示"), tipo: "check", valor: !!(t && t.enCalendario) },
         { id: "tarea-contexto", ancho: "todo", etiqueta: L("Contexto (opcional)", "Context (optional)", "情境（可选）"), valor: t ? t.contexto : "", ph: L("Contexto (opcional)", "Context (optional)", "情境（可选）") },
         { tipo: "html", ancho: "todo", html: recurrenciaHTML(rec) },
         { tipo: "html", ancho: "todo", html: window.MimoEditorMD ? MimoEditorMD.campoHTML({ id: "tarea-nota", L: L, filas: 4 }) : "" }
@@ -2245,6 +2412,8 @@
     t.tipo = tipo;
     t.padre_id = padre;
     t.fecha = fecha;
+    t.hora = $("#tarea-hora") ? ($("#tarea-hora").value || "") : (t.hora || "");
+    t.enCalendario = $("#tarea-calendario") ? !!$("#tarea-calendario").checked : !!t.enCalendario;
     t.prioridad = $("#tarea-prioridad").value;
     t.contexto = $("#tarea-contexto").value.trim();
     t.nota = $("#tarea-nota") ? $("#tarea-nota").value : (t.nota || "");
@@ -3452,12 +3621,21 @@
      iconos no se conviertan en una pared. Se guarda el id del icono. */
   function abrirIdentidadCalif(cod) {
     var cur = ramoPorCodigo(cod); if (!cur) return;
-    var color = colorDeRamo(cur), icono = iconoDeRamo(cur);
+    /* El color y el icono son opcionales. Si el ramo no trae la propiedad, se
+       muestra el valor estable por código; el botón «Sin color» / «Sin icono»
+       guarda una cadena vacía, que es una decisión explícita del usuario. */
+    var color = MimoIdentidad.tieneColor(cur) ? String(cur.color || "") : colorDeRamo(cur);
+    var icono = MimoIdentidad.tieneIcono(cur) ? String(cur.icono || "") : iconoDeRamo(cur);
     var catalogo = window.MimoIconosRamo || null;
     var todos = catalogo ? catalogo.ICONOS : [];
     var categorias = catalogo ? catalogo.CATEGORIAS : [];
     var normal = function (s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
     var nombreDe = function (i) { return t("ico." + i.id.replace(/^i-ramo-/, "")); };
+    var vista = function () {
+      var ico = icono ? iconoRamoHTML({ codigo: cur.codigo, color: color, icono: icono }, "ramo-ico--lg") : "";
+      return '<div class="ident-preview" id="ident-preview">' + (ico || '<span class="ident-sin-icono" aria-hidden="true">—</span>') +
+        '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div></div>";
+    };
 
     var paleta = MimoIdentidad.PALETA.map(function (h) {
       return '<button class="ident-color" type="button" data-ident-color="' + esc(h) + '" style="--sw:' + esc(h) +
@@ -3471,7 +3649,7 @@
     var cuerpoIconos = function (i) {
       return '<button class="ident-ico" type="button" data-ident-icono="' + esc(i.id) + '" aria-pressed="' + (i.id === icono) +
         '" aria-label="' + esc(nombreDe(i)) + '" title="' + esc(nombreDe(i)) + '">' +
-        iconoRamoHTML({ codigo: cur.codigo, color: $("#ident-color") ? $("#ident-color").value : color, icono: i.id }) +
+        iconoRamoHTML({ codigo: cur.codigo, color: color, icono: i.id }) +
         '<span class="ident-ico__nom">' + esc(nombreDe(i)) + "</span></button>";
     };
 
@@ -3479,12 +3657,13 @@
       id: "identidad",
       titulo: t("ident.titulo"),
       sub: t("ident.sub"),
-      html: '<div class="ident-preview" id="ident-preview">' + iconoRamoHTML(cur, "ramo-ico--lg") +
-          '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div></div>" +
+      html: vista() +
         '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.color")) + "</span>" +
-          '<input class="entrada ident-rgb" id="ident-color" type="color" value="' + esc(color) + '" aria-label="' + esc(t("ident.color")) + '"></div>' +
+          '<div class="ident-fila"><input class="entrada ident-rgb" id="ident-color" type="color" value="' + esc(color || "#2563eb") + '" aria-label="' + esc(t("ident.color")) + '">' +
+          '<button class="btn btn--chico ident-sin" type="button" data-ident-sin-color aria-pressed="' + (!color) + '">' + esc(t("ident.sinColor")) + "</button></div></div>" +
         '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.paleta")) + '</span><div class="ident-paleta" role="group" aria-label="' + esc(t("ident.paleta")) + '">' + paleta + "</div></div>" +
-        '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.iconos")) + "</span>" +
+        '<div class="ident-grupo"><div class="ident-etq ident-etq--fila"><span>' + esc(t("ident.iconos")) + "</span>" +
+          '<button class="btn btn--chico ident-sin" type="button" data-ident-sin-icono aria-pressed="' + (!icono) + '">' + esc(t("ident.sinIcono")) + "</button></div>" +
           '<input class="entrada ident-buscar" id="ident-buscar" type="search" placeholder="' + esc(t("ico.buscar")) +
             '" aria-label="' + esc(t("ico.buscar")) + '" aria-controls="ident-iconos" autocomplete="off">' +
           '<div class="ident-filtros" role="group" aria-label="' + esc(t("ico.filtro")) + '">' + filtros + "</div>" +
@@ -3495,12 +3674,16 @@
         var caja = form.querySelector("#ident-iconos");
         var buscar = form.querySelector("#ident-buscar");
         var cuenta = form.querySelector("#ident-cuenta");
+        var sinColor = form.querySelector("[data-ident-sin-color]");
+        var sinIcono = form.querySelector("[data-ident-sin-icono]");
         var cat = "todas";
-
         var pintarVista = function () {
-          var v = { codigo: cur.codigo, color: $("#ident-color").value, icono: icono };
-          $("#ident-preview").innerHTML = iconoRamoHTML(v, "ramo-ico--lg") +
-            '<div><b>' + esc(cur.codigo) + "</b><small>" + esc(t("ident.vista")) + "</small></div>";
+          $("#ident-preview").outerHTML = vista();
+          form.querySelectorAll("[data-ident-color]").forEach(function (x) {
+            x.setAttribute("aria-pressed", x.getAttribute("data-ident-color").toLowerCase() === String(color).toLowerCase());
+          });
+          if (sinColor) sinColor.setAttribute("aria-pressed", color ? "false" : "true");
+          if (sinIcono) sinIcono.setAttribute("aria-pressed", icono ? "false" : "true");
         };
         var filtrar = function () {
           var q = normal(buscar.value);
@@ -3513,7 +3696,6 @@
             : '<p class="muted ident-vacio">' + esc(t("ico.sinResultados")) + "</p>";
           cuenta.textContent = tf("ico.cuenta", { n: lista.length });
         };
-
         form.querySelectorAll("[data-ident-cat]").forEach(function (b) {
           b.addEventListener("click", function () {
             cat = b.getAttribute("data-ident-cat");
@@ -3522,7 +3704,6 @@
           });
         });
         buscar.addEventListener("input", filtrar);
-        /* delegado: el catálogo se repinta al filtrar */
         caja.addEventListener("click", function (e) {
           var b = e.target.closest("[data-ident-icono]"); if (!b) return;
           icono = b.getAttribute("data-ident-icono");
@@ -3531,19 +3712,20 @@
         });
         form.querySelectorAll("[data-ident-color]").forEach(function (b) {
           b.addEventListener("click", function () {
-            $("#ident-color").value = b.getAttribute("data-ident-color");
-            form.querySelectorAll("[data-ident-color]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+            color = b.getAttribute("data-ident-color");
+            $("#ident-color").value = color;
             pintarVista();
           });
         });
-        $("#ident-color").addEventListener("input", pintarVista);
+        $("#ident-color").addEventListener("input", function () { color = $("#ident-color").value; pintarVista(); });
+        if (sinColor) sinColor.addEventListener("click", function () { color = ""; pintarVista(); });
+        if (sinIcono) sinIcono.addEventListener("click", function () { icono = ""; pintarVista(); });
         filtrar();
       },
       onGuardar: function () {
-        var hex = $("#ident-color").value;
-        if (!MimoIdentidad.esColor(hex)) return false;
-        cur.color = hex.toLowerCase();
-        cur.icono = MimoIdentidad.iconoVigente(icono) || "";
+        if (color && !MimoIdentidad.esColor(color)) return false;
+        cur.color = color ? color.toLowerCase() : "";
+        cur.icono = icono ? (MimoIdentidad.iconoVigente(icono) || "") : "";
         notificarCurso(cur);
         guardar();
         pintarCalificaciones(); pintarMalla(); pintarEstudio(); pintarTiempo(); pintarCalendario(); pintarTareas(); pintarPanel();
@@ -3731,6 +3913,18 @@
     guardar(); pintarMalla(); pintarCalificaciones(); pintarPanel();
   }
   function eventoCompId(codigo, i) { return "calif-" + codigo + "-" + i; }
+  /* Las tareas con fecha pueden entrar al calendario; la casilla de la ventana
+     de tarea decide. No se duplican: el calendario lee la tarea viva. */
+  function fuenteTareasCalendario() {
+    return (estado.tareas || []).filter(function (t) {
+      return t && t.fecha && t.enCalendario === true;
+    }).map(function (t) {
+      return {
+        id: "tarea-" + t.id, titulo: t.titulo, fecha: t.fecha, hora: t.hora || "",
+        contexto: t.contexto || "", nota: t.nota || "", origen: "tarea", tareaId: t.id
+      };
+    });
+  }
   function fuenteCalificaciones() {
     if (!instalado("calificaciones")) return [];
     var out = [];
@@ -3741,7 +3935,7 @@
         if (!comp || !comp.fecha) return;
         out.push({
           id: eventoCompId(cod, i), titulo: comp.nombre + " · " + cod,
-          fecha: comp.fecha, hora: "", contexto: "Calificaciones",
+          fecha: comp.fecha, hora: comp.hora || "", contexto: cod,
           nota: comp.categoria || "", codigo: cod, indice: i
         });
       });
@@ -3815,14 +4009,16 @@
     return window.MimoIdentidad ? MimoIdentidad.iconoDe(c) : "i-libro";
   }
   function marcaRamo(c) {
-    return window.MimoIdentidad ? MimoIdentidad.puntoHTML(c) : "";
+    if (!window.MimoIdentidad) return "";
+    if (MimoIdentidad.tieneColor(c) && !MimoIdentidad.colorDe(c)) return "";
+    return MimoIdentidad.puntoHTML(c);
   }
   function iconoRamoHTML(c, clase) {
     return window.MimoIdentidad ? MimoIdentidad.iconoHTML(c, clase) : "";
   }
   function colorEstudio(cod) {
     var c = ramoPorCodigo(cod);
-    return c ? colorDeRamo(c) : "var(--muted)";
+    return c ? (colorDeRamo(c) || "var(--muted)") : "var(--muted)";
   }
   function cursoDeContexto(ctx) {
     var q = String(ctx || "").trim();
@@ -4116,6 +4312,189 @@
     if (estado.tiempoRamo && modo !== "alarmas") txt += " · " + estado.tiempoRamo;
     if (estado.tiempoVinculo && modo !== "alarmas") txt += " · " + L("tarea", "task", "任务");
     $("#tiempo-estado").textContent = txt;
+    var nombre = $("#tiempo-modo-nombre");
+    if (nombre) nombre.textContent = nombreModo(modo);
+    var badge = $("#tiempo-badge");
+    if (badge) {
+      badge.textContent = modo === "alarmas" ? L("en vivo", "live", "实时")
+        : tiempoInt ? L("corriendo", "running", "运行中")
+        : modo === "temporizador" && tempSeg ? L("listo", "ready", "就绪")
+        : L("parado", "stopped", "已停止");
+      badge.classList.toggle("tiempo-badge--on", !!tiempoInt || modo === "alarmas");
+    }
+  }
+  /* ---- Tiempo: semana, día y lista de sesiones ---- */
+  function semanasTiempo() {
+    var p = periodoActivoObj();
+    if (!p || !Array.isArray(p.semanas) || !p.semanas.length) return [];
+    return p.semanas.map(function (w) {
+      return { desde: w.desde, hasta: w.hasta, n: w.n, tipo: w.tipo || "clases" };
+    });
+  }
+  function semanaDeFechaTiempo(iso) {
+    if (!iso) return null;
+    return semanasTiempo().filter(function (w) { return iso >= w.desde && iso <= w.hasta; })[0] || null;
+  }
+  function etiquetaSemanaTiempo(w) {
+    if (!w) return L("Fuera del periodo", "Outside the term", "学期外");
+    var tipo = w.tipo === "receso" ? L("receso", "break", "假期")
+      : w.tipo === "examenes" ? L("exámenes", "exams", "考试") : "";
+    return L("Semana ", "Week ", "第 ") + w.n + (tipo ? " · " + tipo : "") + (idioma() === "zh" ? " 周" : "");
+  }
+  function etiquetaDiaTiempo(iso) {
+    var d = new Date((iso || hoyISO()) + "T12:00:00");
+    if (isNaN(d.getTime())) return iso || "";
+    var base = d.toLocaleDateString(localeActual(), { weekday: "long", day: "numeric", month: "short" });
+    return iso === hoyISO() ? L("Hoy", "Today", "今天") + " · " + base : base;
+  }
+  function tipoSesionTiempo(tipo) {
+    return {
+      crono: L("Cronómetro", "Stopwatch", "秒表"),
+      temporizador: L("Temporizador", "Timer", "计时器"),
+      pomodoro: L("Pomodoro", "Pomodoro", "番茄钟"),
+      importado: L("Importada", "Imported", "已导入")
+    }[tipo] || L("Sesión", "Session", "会话");
+  }
+  function actualizarDestinoTiempo() {
+    var destino = $("#tiempo-destino");
+    if (!destino) return;
+    var modo = estado.tiempoModo || "crono";
+    if (modo === "alarmas") {
+      destino.textContent = L("Las alarmas no generan sesiones.", "Alarms do not create sessions.", "闹钟不会生成会话。");
+      return;
+    }
+    var d = /^\d{4}-\d{2}-\d{2}$/.test(estado.tiempoDia || "") ? estado.tiempoDia : hoyISO();
+    var w = semanaDeFechaTiempo(d);
+    var partes = [];
+    if (w) partes.push(etiquetaSemanaTiempo(w));
+    else if (semanasTiempo().length) partes.push(L("Fuera del periodo", "Outside the term", "学期外"));
+    partes.push(etiquetaDiaTiempo(d));
+    partes.push(estado.tiempoRamo ? estado.tiempoRamo : L("Sin ramo", "No course", "无课程"));
+    var t = estado.tiempoVinculo ? tareaPorId(estado.tiempoVinculo) : null;
+    partes.push(t ? t.titulo : L("Sin tarea", "No task", "无任务"));
+    destino.textContent = L("Se guardará en ", "Will be saved in ", "将保存到 ") + partes.join(" · ");
+  }
+  function pintarMetaTiempo() {
+    var modo = estado.tiempoModo || "crono";
+    var semanas = semanasTiempo();
+    var campo = $("#campo-tiempo-semana"), sel = $("#tiempo-semana"), dia = $("#tiempo-dia");
+    var d = /^\d{4}-\d{2}-\d{2}$/.test(estado.tiempoDia || "") ? estado.tiempoDia : hoyISO();
+    var w = semanaDeFechaTiempo(d);
+    if (semanas.length) {
+      if (campo) campo.hidden = false;
+      if (!estado.tiempoSemana || !semanas.some(function (x) { return x.desde === estado.tiempoSemana; })) {
+        estado.tiempoSemana = w ? w.desde : "";
+      }
+      if (sel) {
+        sel.innerHTML = '<option value="">' + esc(L("Fuera del periodo", "Outside the term", "学期外")) + "</option>" +
+          semanas.map(function (x) {
+            return '<option value="' + esc(x.desde) + '">' + esc(etiquetaSemanaTiempo(x)) + " · " +
+              esc(new Date(x.desde + "T12:00:00").toLocaleDateString(localeActual(), { day: "2-digit", month: "short" })) + "</option>";
+          }).join("");
+        sel.value = estado.tiempoSemana || "";
+        sel.onchange = function () {
+          estado.tiempoSemana = sel.value || "";
+          var sw = estado.tiempoSemana ? semanaDeFechaTiempo(estado.tiempoSemana) : null;
+          if (sw && (estado.tiempoDia < sw.desde || estado.tiempoDia > sw.hasta)) {
+            estado.tiempoDia = (hoyISO() >= sw.desde && hoyISO() <= sw.hasta) ? hoyISO() : sw.desde;
+          }
+          guardar(); pintarTiempo();
+        };
+      }
+    } else {
+      if (campo) campo.hidden = true;
+      estado.tiempoSemana = "";
+      if (sel) { sel.innerHTML = ""; sel.onchange = null; }
+    }
+    if (!w && estado.tiempoSemana) {
+      var forzada = semanaDeFechaTiempo(estado.tiempoSemana);
+      if (forzada) { d = forzada.desde; estado.tiempoDia = d; }
+    }
+    if (dia) {
+      dia.value = d;
+      dia.onchange = function () {
+        estado.tiempoDia = dia.value || hoyISO();
+        var sw = semanaDeFechaTiempo(estado.tiempoDia);
+        estado.tiempoSemana = sw ? sw.desde : "";
+        guardar(); pintarTiempo();
+      };
+    }
+    var campos = $("#tiempo-meta-campos"), nota = $("#tiempo-meta-nota");
+    if (campos) campos.hidden = modo === "alarmas";
+    if (nota) nota.hidden = modo !== "alarmas";
+    actualizarDestinoTiempo();
+  }
+  function pintarSesionesTiempo(ses) {
+    var lista = $("#tiempo-lista-sesiones");
+    if (!lista) return;
+    var semana = semanaDeFechaTiempo(hoyISO());
+    var chip = $("#tiempo-semana-actual");
+    if (chip) {
+      chip.textContent = semana ? etiquetaSemanaTiempo(semana) : "";
+      chip.hidden = !semana;
+    }
+    var ordenadas = (ses || []).slice().sort(function (a, b) {
+      if (a.fecha !== b.fecha) return a.fecha < b.fecha ? 1 : -1;
+      return String(b.hora || "").localeCompare(String(a.hora || ""));
+    });
+    if (!ordenadas.length) {
+      lista.innerHTML = '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + "</p>";
+      return;
+    }
+    var grupos = [];
+    ordenadas.forEach(function (x) {
+      var g = grupos[grupos.length - 1];
+      if (!g || g.fecha !== x.fecha) { g = { fecha: x.fecha, minutos: 0, items: [] }; grupos.push(g); }
+      g.minutos += Number(x.minutos || 0); g.items.push(x);
+    });
+    var lunes = lunesDe(new Date()), domingo = new Date(lunes.getTime());
+    domingo.setDate(domingo.getDate() + 6);
+    var lunesIso = isoFecha(lunes), domingoIso = isoFecha(domingo);
+    var actuales = grupos.filter(function (g) { return g.fecha >= lunesIso && g.fecha <= domingoIso; });
+    var anteriores = grupos.filter(function (g) { return g.fecha < lunesIso; });
+    var total = function (gs) { return gs.reduce(function (a, g) { return a + g.minutos; }, 0); };
+    var fila = function (x) {
+      var r = x.ramo ? ramoPorCodigo(x.ramo) : null;
+      var t = x.vinculo ? tareaPorId(x.vinculo) : null;
+      var icono = r ? iconoRamoHTML(r) : '<span class="sesion-sin-ramo" aria-hidden="true">·</span>';
+      return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '">' +
+        '<span class="sesion-hora">' + esc(x.hora || "—") + "</span>" +
+        '<span class="sesion-icono">' + icono + "</span>" +
+        '<span class="sesion-texto"><b>' + esc(r ? r.codigo : L("Sin ramo", "No course", "无课程")) + "</b><small>" +
+          esc(t ? t.titulo : tipoSesionTiempo(x.tipo)) + "</small></span>" +
+        '<span class="sesion-min">' + esc(fmtDuracion(x.minutos)) + "</span>" +
+        '<span class="sesion-acciones"><button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' +
+          esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
+          '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' +
+          esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></span></div>';
+    };
+    var grupo = function (g, abierto) {
+      return MimoPlegable.html({
+        id: "tiempo:dia:" + g.fecha,
+        titulo: (g.fecha === hoyISO() ? L("Hoy", "Today", "今天") + " · " : "") + fechaLarga(g.fecha),
+        cuenta: fmtDuracion(g.minutos),
+        abierto: abierto,
+        cuerpo: g.items.map(fila).join("")
+      });
+    };
+    var html = "";
+    if (actuales.length) {
+      html += '<div class="sesiones-grupo-tit"><span>' + esc(L("Esta semana", "This week", "本周")) + "</span><b>" +
+        esc(fmtDuracion(total(actuales))) + "</b></div>" + actuales.map(function (g) { return grupo(g, true); }).join("");
+    } else {
+      html += '<p class="muted">' + esc(L("Sin sesiones esta semana.", "No sessions this week.", "本周没有会话。")) + "</p>";
+    }
+    if (anteriores.length) {
+      html += '<div class="sesiones-grupo-tit"><span>' + esc(L("Semanas anteriores", "Previous weeks", "之前的周")) + "</span><b>" +
+        esc(fmtDuracion(total(anteriores))) + "</b></div>" + anteriores.map(function (g) { return grupo(g, false); }).join("");
+    }
+    lista.innerHTML = html;
+    $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
+      b.addEventListener("click", function (ev) { ev.stopPropagation(); borrarSesion(b.getAttribute("data-borrar-sesion")); });
+    });
+    $$("#tiempo-lista-sesiones [data-editar-sesion]").forEach(function (b) {
+      b.addEventListener("click", function (ev) { ev.stopPropagation(); abrirSesionModal(b.getAttribute("data-editar-sesion")); });
+    });
   }
   function pintarTiempo() {
     var c = $("#estanteria-tiempo");
@@ -4214,7 +4593,7 @@
       var ops = ['<option value="">' + esc(L("Sin vínculo", "No link", "无关联")) + '</option>'];
       estado.tareas.forEach(function (t) { ops.push('<option value="' + t.id + '">' + esc(t.titulo) + "</option>"); });
       v.innerHTML = ops.join(""); v.value = estado.tiempoVinculo || "";
-      v.onchange = function () { estado.tiempoVinculo = v.value; guardar(); };
+      v.onchange = function () { estado.tiempoVinculo = v.value; guardar(); actualizarDestinoTiempo(); };
     }
     var r = $("#tiempo-ramo");
     if (r) {
@@ -4223,39 +4602,14 @@
       var opsR = ['<option value="">' + esc(L("Sin ramo", "No course", "无课程")) + '</option>'];
       actuales.forEach(function (c) { opsR.push('<option value="' + esc(c.codigo) + '">' + esc(c.codigo) + " — " + esc(c.nombre) + "</option>"); });
       r.innerHTML = opsR.join(""); r.value = estado.tiempoRamo || "";
-      r.onchange = function () { estado.tiempoRamo = r.value; guardar(); };
+      r.onchange = function () { estado.tiempoRamo = r.value; guardar(); actualizarDestinoTiempo(); };
     }
     var ses = sesionesActuales(estado.sesiones), min = 0;
     ses.forEach(function (x) { min += Number(x.minutos || 0); });
     if ($("#tiempo-sesiones")) $("#tiempo-sesiones").textContent = String(ses.length);
     if ($("#tiempo-horas")) $("#tiempo-horas").textContent = fmtHoras(min);
-    var listaSes = $("#tiempo-lista-sesiones");
-    if (listaSes) {
-      var gruposSes = agruparPorRamo(ses);
-      listaSes.innerHTML = gruposSes.length ? gruposSes.map(function (g) {
-        var items = g.items.map(function (x) {
-          var vin = x.vinculo ? tareaPorId(x.vinculo) : null;
-          return '<div class="sesion-item" data-sesion="' + esc(x.id) + '" title="' + esc(L("Clic derecho: editar o borrar", "Right-click: edit or delete", "右键：编辑或删除")) + '"><span><b>' +
-            esc(fechaCorta(x.fecha)) + "</b>" + (vin ? " · " + esc(vin.titulo) : "") + "</span><small>" +
-            esc(fmtDuracion(x.minutos)) + "</small>" +
-            '<button class="sesion-x" type="button" data-editar-sesion="' + esc(x.id) + '" title="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '" aria-label="' + esc(L("Editar sesión", "Edit session", "编辑会话")) + '">✎</button>' +
-            '<button class="sesion-x" type="button" data-borrar-sesion="' + esc(x.id) + '" title="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '" aria-label="' + esc(L("Borrar sesión", "Delete session", "删除会话")) + '">×</button></div>';
-        }).join("");
-        return MimoPlegable.html({
-          id: "tiempo:sesion:" + (g.ramo || "_"),
-          titulo: tituloDeRamo(g.ramo),
-          icono: g.ramo ? iconoRamoHTML(ramoPorCodigo(g.ramo)) : "",
-          cuenta: g.items.length + " " + L("sesiones", "sessions", "会话") + " · " + fmtHoras(g.minutos),
-          cuerpo: items
-        });
-      }).join("") : '<p class="muted">' + esc(L("Sin sesiones todavía.", "No sessions yet.", "还没有会话。")) + "</p>";
-      $$("#tiempo-lista-sesiones [data-borrar-sesion]").forEach(function (b) {
-        b.addEventListener("click", function () { borrarSesion(b.getAttribute("data-borrar-sesion")); });
-      });
-      $$("#tiempo-lista-sesiones [data-editar-sesion]").forEach(function (b) {
-        b.addEventListener("click", function () { abrirSesionModal(b.getAttribute("data-editar-sesion")); });
-      });
-    }
+    pintarMetaTiempo();
+    pintarSesionesTiempo(ses);
     var fila = document.querySelector(".tiempo-caja .fila");
     if (fila) fila.hidden = estado.tiempoModo === "alarmas";
     $("#btn-empezar").disabled = estado.tiempoModo === "alarmas" || !!tiempoInt;
@@ -4268,8 +4622,9 @@
     if (!minutos) return;
     estado.sesiones = estado.sesiones || [];
     var d = new Date();
+    var fecha = /^\d{4}-\d{2}-\d{2}$/.test(estado.tiempoDia || "") ? estado.tiempoDia : hoyISO();
     var datos = {
-      fecha: hoyISO(), hora: String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"),
+      fecha: fecha, hora: String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"),
       minutos: minutos, vinculo: estado.tiempoVinculo || "", ramo: estado.tiempoRamo || "", tipo: tipo || "crono"
     };
     estado.sesiones.push(window.MimoDominioSesiones ? MimoDominioSesiones.crear(datos) : datos);
@@ -4518,7 +4873,8 @@
           (ev.hora ? '<div class="panel__bloque"><span>' + esc(t("panel.hora")) + '</span><small>' + esc(ev.hora) + "</small></div>" : "") +
           (tipoEv ? '<div class="panel__bloque"><span>' + esc(t("cal.categoria")) + '</span><small><span class="cal-agenda__tag" style="--tag:' + colorTipoEvento(tipoEv.id) + '">' + esc(tipoEv.nombre) + "</span></small></div>" : "") +
           (ev.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(ev.contexto) + "</small></div>" : "") +
-          (ev.nota ? '<p class="panel__nota">' + esc(ev.nota) + "</p>" : "") +
+          (ev.nota ? '<h2>' + esc(L("Descripción", "Description", "描述")) + '</h2><div class="panel__nota panel__nota--md">' +
+            (window.MimoEditorMD ? MimoEditorMD.renderMarkdown(ev.nota) : esc(ev.nota)) + "</div>" : "") +
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
       } else if (pantalla === "tareas" && tareaP) {
         var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
@@ -4636,10 +4992,30 @@
     if (pie) pie.textContent = nombre(pantalla);
   }
 
+  function aplicarFuente() {
+    var p = estado.prefs || {};
+    var id = normalizarFuente(p.fuente);
+    var valor = "var(--fuente-clasica)";
+    if (id === "sistema") valor = "var(--fuente-sistema)";
+    else if (id === "mono") valor = "var(--fuente-mono)";
+    else if (id === "personalizada") {
+      var nombre = limpiarNombreFuente(p.fuenteNombre);
+      if (nombre) valor = nombre + ",var(--fuente-clasica)";
+    }
+    document.documentElement.style.setProperty("--fuente", valor);
+    if (document.body) document.body.setAttribute("data-fuente", id);
+    var sel = $("#pref-fuente");
+    if (sel) sel.value = id;
+    var fila = $("#fila-fuente-nombre"), campo = $("#pref-fuente-nombre");
+    if (fila) fila.hidden = id !== "personalizada";
+    if (campo && document.activeElement !== campo) campo.value = p.fuenteNombre || "";
+    return id;
+  }
   function aplicarPrefs() {
     var p = estado.prefs || {};
     var escala = Number(p.escala) || 100;
     document.documentElement.style.fontSize = escala + "%";
+    aplicarFuente();
     // Los huecos no siguen al font-size de la raíz: se escalan aparte, o la letra
     // crece y las cajas se quedan igual (era el defecto de beta.5).
     document.documentElement.style.setProperty("--esc", String(escala / 100));
@@ -5617,6 +5993,7 @@
 
   async function init() {
     registrarFuenteCalendario("calificaciones", fuenteCalificaciones);
+    registrarFuenteCalendario("tareas", fuenteTareasCalendario);
     // El plegable guarda su estado en el mismo estado de la app: sobrevive a
     // cambiar de sección y a recargar (y viaja en el respaldo como un campo más).
     if (window.MimoPlegable) {
@@ -5742,6 +6119,22 @@
     $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); repintarIdioma(); });
     $("#pref-escala").addEventListener("change", function (e) {
       estado.prefs.escala = e.target.value; guardar(); aplicarPrefs();
+    });
+    $("#pref-fuente").addEventListener("change", function (e) {
+      estado.prefs.fuente = normalizarFuente(e.target.value);
+      guardar(); aplicarFuente();
+      if (estado.prefs.fuente === "personalizada") {
+        var campo = $("#pref-fuente-nombre");
+        if (campo && !estado.prefs.fuenteNombre) campo.focus();
+      }
+    });
+    $("#pref-fuente-nombre").addEventListener("input", function (e) {
+      estado.prefs.fuenteNombre = limpiarNombreFuente(e.target.value);
+      aplicarFuente();
+    });
+    $("#pref-fuente-nombre").addEventListener("change", function (e) {
+      estado.prefs.fuenteNombre = limpiarNombreFuente(e.target.value);
+      guardar(); aplicarFuente();
     });
     $("#pref-tema-claro").addEventListener("change", function (e) {
       estado.prefs.temaClaro = temaValido(e.target.value, "clasico");

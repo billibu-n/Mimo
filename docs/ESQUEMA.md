@@ -45,7 +45,7 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
   "exportado": "2026-10-28T23:00:00.000Z",
   "datos": {
     "tema": "clasico",
-    "prefs": {"idioma": "es", "inicioSemana": "lunes", "hora": "24", "panelAncho": "320"},
+    "prefs": {"idioma": "es", "inicioSemana": "lunes", "hora": "24", "panelAncho": "320", "fuente": "clasica"},
     "instalados": ["tiempo", "malla", "calificaciones", "estudio"],
     "kits": {"academics": ["malla", "calificaciones", "estudio"]},
     "panel": {"calendario": "contexto"},
