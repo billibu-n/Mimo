@@ -56,5 +56,6 @@ base64 -d Mimo-*.rpm.sig | head -3
 
 - 32 gates web, `gate-release` y `gate-tauri` en verde.
 - RPM con firma GPG `OK` y `.sig` minisign con `version:1.2.0-beta.7`.
-- Pre-release con los 12 assets y `SHA256SUMS` verificado.
+- Pre-release con los 12 assets publicados (14 con los dos archivos de fuente que agrega
+  GitHub) y `SHA256SUMS` verificado.
 - `beta.json` en `updates` apuntando al tag `v1.2.0-beta.7`.
