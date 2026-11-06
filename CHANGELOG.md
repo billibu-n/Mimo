@@ -97,6 +97,8 @@
 - La beta.8 se publica como **app web en GitHub Pages** (`https://billibu-n.github.io/Mimo/`) y
   como **pre-release de escritorio** con tag `v1.2.0-beta.8`: RPM para Fedora/RHEL, DEB para
   Debian/Ubuntu, NSIS para Windows y paquete para Arch Linux.
+- La [pre-release](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.8) queda con 12
+  assets, firmas `.sig`, `beta.json`, `tutorial.json`, `LICENSE` y `SHA256SUMS` verificado.
 - **38 compuertas web** en verde, más `gate-release` sobre los paquetes firmados y `gate-tauri`
   sobre el binario Linux; `beta.json` queda en la rama `updates`.
 

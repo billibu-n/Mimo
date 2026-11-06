@@ -1,13 +1,13 @@
 # Publicar 1.2.0-beta.8
 
-Estado: **en preparación**. La app web sale por GitHub Pages y el escritorio como pre-release
-para Fedora/RHEL, Debian/Ubuntu, Arch Linux y Windows.
+Estado: **publicada** el 2026-11-05: app web en GitHub Pages y pre-release de escritorio para
+Fedora/RHEL, Debian/Ubuntu, Arch Linux y Windows.
 
-## Qué se publica
+## Qué se publicó
 
 - La app web (`app/`) en <https://billibu-n.github.io/Mimo/> mediante
   `.github/workflows/paginas.yml` y Pages con `build_type: workflow`.
-- El tag `v1.2.0-beta.8` y el workflow `Empaquetar`, que construye:
+- El tag `v1.2.0-beta.8` y el workflow `Empaquetar` (run `42139255116`), que construyó:
   - RPM y DEB en Ubuntu 24.04, con firma GPG del RPM y firma minisign del actualizador;
   - instalador NSIS x64 en Windows;
   - paquete `pkg.tar.zst` en Arch Linux.
@@ -59,3 +59,12 @@ base64 -d Mimo-*.rpm.sig | head -3
 - Pre-release con los paquetes, firmas, tutorial, licencia, LEEME, `beta.json` y `SHA256SUMS`
   verificado.
 - `beta.json` en `updates` apuntando al tag `v1.2.0-beta.8`.
+
+## Resultado
+
+- 38/38 gates web; `gate-tauri` en 0 choques sobre el binario Linux.
+- La pre-release tiene **12 assets** (14 con los dos archivos de fuente que agrega GitHub) y
+  `SHA256SUMS` verificado tras descargarlos.
+- Las tres firmas minisign declaran `version:1.2.0-beta.8`; el RPM conserva la firma GPG
+  `5A25 CB80 9B69 735F 6073 8837 DBAC 7846 2D0B F92A`.
+- Pages sirve `1.2.0-beta.8` y el manifiesto de `updates` apunta al tag exacto.
