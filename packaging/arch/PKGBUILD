@@ -14,7 +14,7 @@ depends=('webkit2gtk-4.1' 'gtk3' 'libsoup3' 'openssl' 'cairo' 'pango'
 makedepends=('rust' 'cargo' 'python' 'pkgconf')
 install=mimo.install
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v1.2.0-beta.8.tar.gz")
-sha256sums=('6b7220a51eb08f27c137cdc849d58f639111296f59bbd1b458ec3d0fce0c47f0')
+sha256sums=('d5f3197a69e7a6a7c006f27aa7d4924d38895ca69724a9e1b2bee83408ad006f')
 _archivo="Mimo-1.2.0-beta.8"
 
 build() {
