@@ -227,7 +227,7 @@ def main() -> int:
             page.wait_for_timeout(80)
             # La casilla vive en Ajustes; el clic directo evita que el deslizamiento del
             # panel la deje «inestable» para Playwright.
-            page.evaluate("document.querySelector('#lab-split').click()")
+            page.evaluate("document.querySelector('#btn-split').click()")
             page.wait_for_timeout(150)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
                    "split: el diálogo de dos secciones se abre desde Ajustes", fallas)

@@ -62,6 +62,14 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
 Campos obligatorios del sobre: `schema`, `version`, `datos`. `app`, `appVersion`, `exportado` y
 `extensiones` son informativos y aditivos.
 
+### Preferencias de interfaz
+
+- `panelAncho` es el ancho en píxeles del panel derecho, entre **240 y 560**. Se guarda al soltar
+  el asa; el panel siempre arranca cerrado, por eso ya no existe `panelAbierto`.
+- `fuente` acepta `clasica`, `sistema`, `mono`, `personalizada` o una de las diez familias
+  (`cantarell`, `adwaita`, `liberation`, `nimbus`, `carlito`, `caladea`, `liberation-serif`,
+  `latin-modern`, `montserrat`, `noto-mono`). `fuenteNombre` solo se usa con `personalizada`.
+
 ### Tareas y series
 
 Cada entrada de `datos.tareas` conserva los campos de siempre (`titulo`, `tipo`, `padre_id`,

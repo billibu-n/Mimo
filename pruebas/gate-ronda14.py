@@ -153,8 +153,8 @@ def main() -> int:
                    f"idioma: bandera genérica de Sudamérica — {bandera}", fallas)
 
             # Dos secciones y arrastre.
-            # El split ya no vive en la barra: se abre desde Ajustes (R3).
-            page.evaluate("document.querySelector('#lab-split').click()"); page.wait_for_timeout(200)
+            # El split vive en la barra superior: su botón abre el diálogo.
+            page.evaluate("document.querySelector('#btn-split').click()"); page.wait_for_timeout(200)
             exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
                    "split: abre el diálogo de dos secciones", fallas)
             page.locator("#split-izq").select_option("tareas")
@@ -291,6 +291,9 @@ def main() -> int:
             page.locator("#btn-nueva-nota").click()
             pagina = page
             pagina.wait_for_timeout(700)
+            # El foco queda en el título; el deshacer de la app solo corre fuera
+            # de un campo de texto (dentro manda el historial nativo).
+            page.evaluate("document.activeElement && document.activeElement.blur()")
             page.keyboard.press("Control+z"); pagina.wait_for_timeout(400)
             despues = page.locator("#notas-items .nota-item").count()
             exigir(despues == antes, f"historial: Ctrl+Z deshace el alta — {antes} -> {despues}", fallas)

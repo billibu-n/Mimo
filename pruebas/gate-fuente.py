@@ -6,9 +6,11 @@ Mide sobre app/index.html:
   1. la opción predeterminada es la pila clásica de Mimo, con Noto Sans antes
      de Helvetica (WebKit caía en Nimbus Sans sin ese orden);
   2. «Sistema del equipo» cambia la pila y se guarda;
-  3. «Otra fuente…» muestra el campo y aplica el nombre escrito;
-  4. la elección sobrevive a recargar y se puede volver a la clásica;
-  5. a 411 no desborda y no hay errores de consola.
+  3. las diez familias nuevas entran en el selector, cambian `--fuente` y se
+     guardan; la muestra y el estado acompañan;
+  4. «Otra fuente…» muestra el campo y el botón Aplicar, aplica y avisa;
+  5. la elección sobrevive a recargar y se puede volver a la clásica;
+  6. a 411 no desborda y no hay errores de consola.
 """
 from __future__ import annotations
 
@@ -67,15 +69,43 @@ def main() -> int:
             exigir(page.locator("#pref-fuente").input_value() == "sistema",
                    f"fuente: el sistema sobrevive a recargar — {page.locator('#pref-fuente').input_value()}", fallas)
 
+            # El motor nuevo: diez familias del equipo, no solo la clásica y el sistema.
+            familias = {
+                "cantarell": "Cantarell", "adwaita": "Adwaita Sans",
+                "liberation": "Liberation Sans", "nimbus": "Nimbus Sans",
+                "carlito": "Carlito", "caladea": "Caladea",
+                "liberation-serif": "Liberation Serif",
+                "latin-modern": "Latin Modern Roman",
+                "montserrat": "Montserrat", "noto-mono": "Noto Sans Mono",
+            }
+            opciones = page.locator("#pref-fuente option").evaluate_all("els => els.map(e => e.value)")
+            exigir(all(v in opciones for v in familias), f"fuente: las diez familias están en el selector — {opciones}", fallas)
+            for valor, familia in familias.items():
+                page.locator("#pref-fuente").select_option(valor)
+                page.wait_for_timeout(70)
+                exigir(page.evaluate("document.body.getAttribute('data-fuente')") == valor,
+                       f"fuente: {familia} queda marcada", fallas)
+                exigir(familia in fuente(page), f"fuente: {familia} entra en la pila — {fuente(page)}", fallas)
+                exigir(prefs(page)["fuente"] == valor, f"fuente: {familia} se guarda", fallas)
+            exigir(page.locator("#fuente-muestra").is_visible(),
+                   "fuente: la muestra enseña la familia elegida", fallas)
+            exigir("Fuente" in page.locator("#fuente-estado").inner_text() or
+                   "Familia" in page.locator("#fuente-estado").inner_text(),
+                   "fuente: el estado nombra la familia activa", fallas)
+
             page.locator("#pref-fuente").select_option("personalizada")
             page.wait_for_timeout(180)
             exigir(page.locator("#fila-fuente-nombre").is_visible(),
                    "fuente: «Otra fuente» muestra el campo de nombre", fallas)
+            exigir(page.locator("#btn-fuente-aplicar").is_visible(),
+                   "fuente: «Otra fuente» muestra el botón Aplicar", fallas)
             page.locator("#pref-fuente-nombre").fill("Cantarell")
-            page.locator("#pref-fuente-nombre").press("Tab")
+            page.locator("#btn-fuente-aplicar").click()
             page.wait_for_timeout(250)
             exigir(prefs(page)["fuente"] == "personalizada" and prefs(page)["fuenteNombre"] == "Cantarell",
                    f"fuente: el nombre se guarda — {prefs(page)}", fallas)
+            exigir("Fuente aplicada" in page.locator("#toast").inner_text(),
+                   "fuente: aplicar avisa con el aviso pequeño", fallas)
             exigir(cuerpo(page).startswith("Cantarell"),
                    f"fuente: el nombre se aplica al cuerpo — {cuerpo(page)}", fallas)
 

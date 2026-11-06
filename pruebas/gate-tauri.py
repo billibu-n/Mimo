@@ -5,7 +5,8 @@
 Mide el binario real, no el HTML suelto:
   1. carga la app universal desde `frontendDist` (no el prototipo);
   2. navega a Tareas y Notas, crea una nota y comprueba `localStorage`;
-  3. Ajustes conserva los 4 grupos y la tarjeta de sincronización;
+  3. Ajustes conserva los 4 grupos y la tarjeta de sincronización; la familia
+     tipográfica elegida llega al WebView;
   4. WebDAV funciona por el puente HTTP nativo (sin CORS) contra un servidor local;
   5. el remoto queda cifrado y con Basic auth;
   6. el estado sobrevive a cerrar y abrir el binario;
@@ -110,6 +111,8 @@ def main() -> int:
         exigir(r.get("titulo") == "Mimo · universal", f"tauri: titulo — {r.get('titulo')}", fallas)
         exigir(r.get("ajustes_ms", 9999) < 2000 and r.get("ajustes_escala") == "140%",
                f"tauri: tema y escala responden sin colgar — {r.get('ajustes_ms')} ms / {r.get('ajustes_escala')}", fallas)
+        exigir("Cantarell" in (r.get("fuente_pila") or "") and r.get("fuente_dato") == "cantarell",
+               f"tauri: la familia elegida llega al WebView — {r.get('fuente_pila')} / {r.get('fuente_dato')}", fallas)
         exigir(r.get("tabs") == ["calendario", "tareas", "notas", "ajustes"],
                f"tauri: 4 pestanas base — {r.get('tabs')}", fallas)
         exigir(len(r.get("secciones", [])) == 4,

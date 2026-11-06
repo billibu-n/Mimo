@@ -285,11 +285,26 @@ body{padding-bottom:var(--alto-pie)}
 .panel{display:flex;flex-direction:column;overflow:hidden;
   transition:width .18s var(--curva),opacity .18s var(--curva),padding .18s var(--curva),border-left-width .18s var(--curva)}
 #panel-cuerpo{overflow:auto;min-height:0;flex:1}
+/* Asa de arrastre: ocupa 7 px en el borde izquierdo del panel. El ancho se
+   mueve con puntero o con flechas (10 px, 40 con Shift); doble clic restablece.
+   Durante el arrastre se apaga la transición para que el borde siga al puntero
+   sin retraso. */
+.panel-asa{position:relative;flex:0 0 7px;width:7px;touch-action:none;cursor:col-resize;outline:none;z-index:3}
+.panel-asa::after{content:"";position:absolute;left:1px;top:50%;width:4px;height:4px;margin-top:-2px;border-radius:50%;background:var(--muted2);opacity:.7;box-shadow:0 8px 0 var(--muted2),0 -8px 0 var(--muted2);transition:background .15s var(--curva),box-shadow .15s var(--curva),opacity .15s var(--curva)}
+.panel-asa:hover::after,.panel-asa:focus-visible::after{background:var(--ac);opacity:1;box-shadow:0 10px 0 var(--ac),0 -10px 0 var(--ac)}
+.panel-asa:focus-visible{box-shadow:inset 0 0 0 2px var(--ac)}
+body.panel-redimensionando{cursor:col-resize;user-select:none}
+body.panel-redimensionando *{cursor:col-resize!important}
+body.panel-redimensionando .panel{transition:none}
+.icono-btn[aria-pressed="true"]{background:var(--sup2);color:var(--ac)}
+#pref-fuente{max-width:220px}
 @media (min-width:1256px){
   body.panel-oculto .panel{width:0;opacity:0;padding-left:0;padding-right:0;border-left-width:0}
+  body.panel-oculto .panel-asa{display:none}
 }
 @media (max-width:1255px){
   .panel{top:calc(var(--alto-topbar) + var(--alto-navbar-viva));bottom:var(--alto-pie);height:auto}
+  .panel-asa{display:none}
   }
 
 /* ---- U2: árbol, tablero y detalle de tareas ---- */
@@ -353,7 +368,9 @@ body.split #contenido-b{flex:1 1 50%;width:auto;max-width:none}
 body.split #contenido{width:auto}
 .ajustes-grid .campo{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--muted);margin:var(--sp-2) 0}
 .ajustes-grid .campo select{max-width:160px}
-#lab-split{margin-right:var(--sp-1)}
+.fuente-campo{flex:1;min-width:170px;display:flex;flex-direction:column;gap:var(--sp-1);font-size:var(--fs-sm);color:var(--muted)}
+.fuente-muestra{margin:var(--sp-2) 0 0;padding:var(--sp-2) var(--sp-3);border:1px dashed var(--line);border-radius:var(--r-sm);background:var(--sup2);font-size:var(--fs-md);line-height:1.35;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#fuente-estado{min-height:1.5em;margin:var(--sp-1) 0 0}
 .navbar .tabs{justify-content:flex-end}
 
 /* ---- navegación en rail izquierdo (preferencia) ---- */

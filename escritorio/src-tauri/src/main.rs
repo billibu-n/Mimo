@@ -590,6 +590,12 @@ const GUION_SONDA: &str = r#"
     await esperar(150);
     r.ajustes_ms = Math.round(performance.now() - tAjustes);
     r.ajustes_escala = document.documentElement.style.fontSize;
+    cambiar('#pref-fuente', 'cantarell');
+    await esperar(120);
+    r.fuente_pila = getComputedStyle(document.documentElement).getPropertyValue('--fuente').trim();
+    r.fuente_dato = document.body.getAttribute('data-fuente');
+    cambiar('#pref-fuente', 'clasica');
+    await esperar(100);
     r.actualizaciones = {
       card: !!document.querySelector('#actualizaciones-card'),
       version: window.MIMO_VERSION || '',

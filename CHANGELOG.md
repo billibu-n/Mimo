@@ -12,12 +12,42 @@
 
 - Ajustes estrena **Tipo de letra**: la opción predeterminada es la pila clásica de Mimo, que
   ahora nombra **Noto Sans antes de Helvetica** para que WebKitGTK no caiga en Nimbus Sans y la
-  app de escritorio pinte la misma letra que el navegador. Se puede cambiar a la **fuente del
-  sistema**, a **monoespaciada** o escribir el nombre de una **fuente instalada**; la elección
-  se guarda y sobrevive a recargar.
-- La pila personalizada se limpia antes de aplicarse: no admite llaves, `url()` ni `var()`,
-  y cae en la clásica si el nombre queda vacío.
-- `gate-fuente` mide la pila, el cambio, la persistencia, el campo libre y 411.
+  app de escritorio pinte la misma letra que el navegador.
+- El selector suma **diez familias del equipo**: Cantarell, Adwaita Sans, Liberation Sans,
+  Nimbus Sans, Carlito, Caladea, Liberation Serif, Latin Modern Roman, Montserrat y Noto Sans
+  Mono, además de la clásica, la del sistema, la monoespaciada y la personalizada. Cada una
+  cambia `--fuente`, se guarda y sobrevive a recargar; la muestra «Aa Bb Cc · Mimo 123» y el
+  estado nombran la familia activa.
+- **Otra fuente…** ya no queda a medias: muestra el campo, el botón **Aplicar**, admite Enter,
+  enfoca el nombre al elegirla y avisa con el toast. Si el nombre queda vacío, no cambia la
+  letra y pide uno; si el equipo no tiene la familia, cae en la clásica.
+- `gate-fuente` mide las diez familias, la muestra, el botón, la persistencia y 411.
+
+### Panel derecho
+
+- El panel se redimensiona **arrastrando su asa** (7 px en el borde izquierdo), como el panel
+  lateral de un navegador. El ancho se limita a 240–560 px y se guarda al soltar.
+- El asa también responde al teclado: flechas izquierda/derecha mueven 10 px (40 con Shift),
+  Inicio restablece 320 px y el doble clic hace lo mismo. Tiene rol `separator` y anuncia el
+  ancho actual.
+- El panel **nace cerrado siempre**; se abre con el botón superior, el pie o cuando un motor
+  lo llama. La tarjeta **Paneles** de Ajustes desaparece, junto con el ancho y el «abierto al
+  iniciar» que ya no tenían sentido.
+- **Vista dividida** deja de ocupar una tarjeta en Ajustes y vuelve a su **botón en la barra
+  superior**, con estado `aria-pressed`; el diálogo de dos secciones no cambia.
+- `gate-panel` mide el arranque cerrado, el arrastre, los topes, el teclado, el doble clic, la
+  persistencia y 411.
+
+### Atajos y deshacer
+
+- **Ctrl+Z y Ctrl+Y dentro de un campo de texto ya no tocan el estado de la app**: mandan el
+  historial nativo del navegador, así deshacen lo escrito en tareas, notas, sincronización y
+  cualquier `input`, `textarea` o `contenteditable`.
+- Fuera de un campo, el historial de la app sigue funcionando y cada deshacer o rehacer deja su
+  **aviso pequeño** («Deshecho.» / «Rehecho.»). Esto evita que un Ctrl+Z borre una tarea o una
+  nota sin que el usuario lo note.
+- `gate-atajos` mide el texto nativo, que la nota no desaparezca, el historial fuera del campo
+  y los avisos de deshacer y rehacer.
 
 ### Tareas
 
