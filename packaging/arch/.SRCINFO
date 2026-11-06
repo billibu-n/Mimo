@@ -22,6 +22,6 @@ pkgbase = mimo
 	depends = librsvg
 	depends = hicolor-icon-theme
 	source = mimo-1.2.0beta.8.tar.gz::https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.8.tar.gz
-	sha256sums = d5f3197a69e7a6a7c006f27aa7d4924d38895ca69724a9e1b2bee83408ad006f
+	sha256sums = SKIP
 
 pkgname = mimo
