@@ -1,19 +1,19 @@
 {
-  "version": "1.2.0-beta.7",
-  "notes": "Tareas sin barras y Al dia, sincronizacion por QR o texto y escritorio beta.7.",
-  "pub_date": "2026-11-05T17:08:37Z",
+  "version": "1.2.0-beta.8",
+  "notes": "Panel arrastrable, diez familias tipograficas, vista dividida en la barra y Ctrl+Z seguro en campos.",
+  "pub_date": "2026-11-06T01:13:39Z",
   "platforms": {
     "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzJMS2RWYnY4N0RNM3dWYlFYVFpVRlpZZkxxSTUyU1VWNzlLdUNxaTJUZ2tPYUZTdUlKZnhGWmlHcjh3UjhUTmtFQjU0REIrRXBsMmVIMWc1OURLakFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODk4MzQ4CWZpbGU6TWltb18xLjIuMC1iZXRhLjdfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMi4wLWJldGEuNwpzbVYrOFEyM1RBNGE3cEJNSktaWnRkdWFzQVovNjJZeHRESkRjb3greFRVVTdjbHd0ZlJsTGt5TEZ5STg2b2dKRERvZmNNMG92aTVqY1Z0L3l5ZVVBdz09Cg==",
-      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/Mimo_1.2.0-beta.7_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4Ry9tRHFQOVpYRlFvREJOVmJhKzNCU3ZYbGx3NWFVeElLQU92MlhOZTYzVWZibWZCQm11WGFqdTVoZlBMMHM5c1UyOTJQbHBPem9LUkJKaXppeE9OQ1FrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTI2MTMzCWZpbGU6TWltb18xLjIuMC1iZXRhLjhfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjEuMi4wLWJldGEuOApPcXNkMDcyOGloRkE2NnM2MkdqNHJxbyt1NytMOU96SHdjbHhqVmJIZ3oxVG5vZ1lOVitiQlovZFpaVTlLa2VJbC9qcDhib0R6MHJGUGN3bS91Q0VDQT09Cg==",
+      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/Mimo_1.2.0-beta.8_x64-setup.exe"
     },
     "linux-x86_64-deb": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzBxOXkzcnlBR1gzZHRUWklwclRSTTlhck4rSFRDek9ZQlNwTUhHVjhsL2xBMVpnRjJqanFKSmExeGhHVFVyY01DYzRwRWt0aUYzY1lnQlV6dkpwdnc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODk4MzYyCWZpbGU6TWltb18xLjIuMC1iZXRhLjdfYW1kNjQuZGViCXZlcnNpb246MS4yLjAtYmV0YS43CldialQ0MVc3WEpBUVA3V1dlcGl5NG9kUXoxQTRHeW5EMDB0czUrdXM2TWpnSXYxZXl3Y25ZOXpWYUk3Zk15eFM3clFQQ2c1Mis2MG1kdmV2N2daQ0RnPT0K",
-      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/Mimo_1.2.0-beta.7_amd64.deb"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzVidERCbHpsL2dNcTNvbDRzd3M3SjhhY2h0TjRFbThuM1dRUUdjVm1nQWJBODNGVHN4dFQ3dVdSM1g4ZkxreG9ZTFZlR20wM205QXBOYTM5aVNpRFFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTI3NDI2CWZpbGU6TWltb18xLjIuMC1iZXRhLjhfYW1kNjQuZGViCXZlcnNpb246MS4yLjAtYmV0YS44Cm8zbzJRT3NSSDBtclhTRmwrNXNrS3F0N3N0N2ZPb0xUUWt5TWJ2dFhaczZHVDRqUTdKU0podk9RelJocHZtMnQwUHc4K0xYT3pkZzlyMHRWdS9SWEN3PT0K",
+      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/Mimo_1.2.0-beta.8_amd64.deb"
     },
     "linux-x86_64-rpm": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4RzBOVXZaMUVjY21rNjF3VS9SUlorbnplQzNiQjRHTHlKSjB5d3p5Zk01alV1S2tLL0orTDdCaWQrQjBRSUxKQmh3Q25zVXBCc3hhSmdpYVBxRzVsMEFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzODk4MzY1CWZpbGU6TWltby0xLjIuMC1iZXRhLjctMS54ODZfNjQucnBtCXZlcnNpb246MS4yLjAtYmV0YS43ClM1Q1pNYnF0S2FDQUU4anBSMG1CNWZUR2RGY0FIS0ZJdXY2d0JJZy94VFBUOEc4dzBYVEQ0U0dIWmhzbC9ldkpvMGE0UDM5aEpFb21kcXNzMUh6VENnPT0K",
-      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/Mimo-1.2.0-beta.7-1.x86_64.rpm"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTWhadjk4dDk4Rzduek5QRUlWV2RLcXBzQkVERmdQZHJGd1JxTFFEelUyY2tWMklGdGUzSGYwMDdpTENRRG9tZkFZTjlBT25tc3hENi9NN3g3bUlubVU0cEFaMTRMZGdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkzOTI3NDI4CWZpbGU6TWltby0xLjIuMC1iZXRhLjgtMS54ODZfNjQucnBtCXZlcnNpb246MS4yLjAtYmV0YS44CnRSLzFLbzdxN2ZDcklpZDNlaTlLRnRZMERDa1BiZzMvRFNweU1TeTcxeTFNc1AzYWhYaE0rMkx6cXFsLy9WNzVCU0xIVk10bzBuMHd5MldWYm45N0FnPT0K",
+      "url": "https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/Mimo-1.2.0-beta.8-1.x86_64.rpm"
     }
   }
 }
