@@ -12,12 +12,12 @@ makepkg -si
 
 ## Antes de publicar en AUR
 
-El `sha256sums` está fijado al tarball de `v1.2.0-beta.7`. Para recalcularlo cuando cambie el
+El `sha256sums` está fijado al tarball de `v1.2.0-beta.8`. Para recalcularlo cuando cambie el
 tag:
 
 ```bash
 cd packaging/arch
-URL="https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.7.tar.gz"
+URL="https://github.com/billibu-n/Mimo/archive/refs/tags/v1.2.0-beta.8.tar.gz"
 SUMA=$(curl -L "$URL" | sha256sum | cut -d' ' -f1)
 sed -i "s/^sha256sums=.*/sha256sums=('$SUMA')/" PKGBUILD
 makepkg --printsrcinfo > .SRCINFO

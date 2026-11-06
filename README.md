@@ -1,6 +1,6 @@
 # Mimo
 
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-1.2.0--beta.7-16a34a)](https://billibu-n.github.io/Mimo/)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-1.2.0--beta.8-16a34a)](https://billibu-n.github.io/Mimo/)
 [![Plataforma](https://img.shields.io/badge/plataforma-Linux%20%7C%20Windows-2563eb)](#descargar)
 [![Licencia](https://img.shields.io/badge/licencia-MIT-3da639)](LICENSE)
 
@@ -12,23 +12,23 @@ No hay cuenta, no hay nube propia y no se envía nada a un servidor. Tus datos v
 
 ## Probar en el navegador
 
-La **beta.7** está publicada en **GitHub Pages**: <https://billibu-n.github.io/Mimo/>. Es la app
+La **beta.8** está publicada en **GitHub Pages**: <https://billibu-n.github.io/Mimo/>. Es la app
 web completa, sin instalación. Los instaladores de escritorio de la misma versión están en la
-[release v1.2.0-beta.7](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.7).
+[release v1.2.0-beta.8](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.8).
 
 ## Descargar
 
-[![Abrir la beta.7 en el navegador](https://img.shields.io/badge/Abrir_la_beta.7_en_el_navegador-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://billibu-n.github.io/Mimo/)
-[![Descargar la beta.7](https://img.shields.io/badge/Descargar_la_beta.7-2563eb?style=for-the-badge&logo=github&logoColor=white)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.7)
+[![Abrir la beta.8 en el navegador](https://img.shields.io/badge/Abrir_la_beta.8_en_el_navegador-16a34a?style=for-the-badge&logo=github&logoColor=white)](https://billibu-n.github.io/Mimo/)
+[![Descargar la beta.8](https://img.shields.io/badge/Descargar_la_beta.8-2563eb?style=for-the-badge&logo=github&logoColor=white)](https://github.com/billibu-n/Mimo/releases/tag/v1.2.0-beta.8)
 
 **Descarga → instala → abre.** No necesitas cuenta ni configurar nada para empezar.
 
 | Tu sistema | Archivo | Cómo instalarlo |
 |---|---|---|
-| **Fedora 40+ / RHEL 10+** | [Mimo-1.2.0-beta.7-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/Mimo-1.2.0-beta.7-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.7-1.x86_64.rpm` |
-| **Debian / Ubuntu 24.04+** | [Mimo_1.2.0-beta.7_amd64.deb](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/Mimo_1.2.0-beta.7_amd64.deb) | `sudo apt install ./Mimo_1.2.0-beta.7_amd64.deb` |
-| **Arch Linux** | [mimo-1.2.0beta.7-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/mimo-1.2.0beta.7-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.7-1-x86_64.pkg.tar.zst` |
-| **Windows 10/11 x64** | [Mimo_1.2.0-beta.7_x64-setup.exe](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.7/Mimo_1.2.0-beta.7_x64-setup.exe) | Doble clic. Se instala por usuario, sin administrador. |
+| **Fedora 40+ / RHEL 10+** | [Mimo-1.2.0-beta.8-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/Mimo-1.2.0-beta.8-1.x86_64.rpm) | `sudo dnf install ./Mimo-1.2.0-beta.8-1.x86_64.rpm` |
+| **Debian / Ubuntu 24.04+** | [Mimo_1.2.0-beta.8_amd64.deb](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/Mimo_1.2.0-beta.8_amd64.deb) | `sudo apt install ./Mimo_1.2.0-beta.8_amd64.deb` |
+| **Arch Linux** | [mimo-1.2.0beta.8-1-x86_64.pkg.tar.zst](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/mimo-1.2.0beta.8-1-x86_64.pkg.tar.zst) | `sudo pacman -U ./mimo-1.2.0beta.8-1-x86_64.pkg.tar.zst` |
+| **Windows 10/11 x64** | [Mimo_1.2.0-beta.8_x64-setup.exe](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.8/Mimo_1.2.0-beta.8_x64-setup.exe) | Doble clic. Se instala por usuario, sin administrador. |
 
 Los paquetes Linux necesitan **WebKitGTK 4.1** y **GTK 3**, y glibc **2.39** o superior. En
 Windows, el instalador incluye el bootstrapper de WebView2 y pide conexión si el sistema no lo

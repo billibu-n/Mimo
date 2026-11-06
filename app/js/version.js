@@ -1,2 +1,2 @@
 /* version.js — una sola versión visible para la app web y Tauri. */
-window.MIMO_VERSION = "1.2.0-beta.7";
+window.MIMO_VERSION = "1.2.0-beta.8";

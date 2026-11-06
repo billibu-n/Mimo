@@ -2,7 +2,7 @@
 
 ## Versiones con soporte
 
-Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.7` es la versión publicada: la app web en GitHub Pages y los instaladores de escritorio de la release `v1.2.0-beta.7`.
+Solo la beta publicada más reciente recibe correcciones. `1.2.0-beta.8` es la versión publicada: la app web en GitHub Pages y los instaladores de escritorio de la release `v1.2.0-beta.8`.
 
 ## Cómo reportar
 
