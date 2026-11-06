@@ -1,6 +1,6 @@
 # Cambios
 
-## 1.2.0-beta.8 — en curso
+## 1.2.0-beta.8 — 2026-11-05
 
 ### Rendimiento
 
@@ -91,6 +91,14 @@
 
 - Los cuatro paneles de la sección nacen cerrados; se abren al pulsarlos. La tarjeta queda más
   corta y sin ruido visual.
+
+### Publicación
+
+- La beta.8 se publica como **app web en GitHub Pages** (`https://billibu-n.github.io/Mimo/`) y
+  como **pre-release de escritorio** con tag `v1.2.0-beta.8`: RPM para Fedora/RHEL, DEB para
+  Debian/Ubuntu, NSIS para Windows y paquete para Arch Linux.
+- **38 compuertas web** en verde, más `gate-release` sobre los paquetes firmados y `gate-tauri`
+  sobre el binario Linux; `beta.json` queda en la rama `updates`.
 
 ## 1.2.0-beta.7 — 2026-11-05
 

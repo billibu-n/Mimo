@@ -42,7 +42,7 @@ def crear_assets(carpeta: Path, version: str):
 def main() -> int:
     fallas = []
     conf = json.loads(CONF.read_text(encoding="utf-8"))
-    exigir(conf.get("version") == "1.2.0-beta.7",
+    exigir(conf.get("version") == "1.2.0-beta.8",
            f"config: versión beta.4 — {conf.get('version')}", fallas)
     exigir(conf.get("bundle", {}).get("createUpdaterArtifacts") is True,
            "config: createUpdaterArtifacts", fallas)
@@ -68,8 +68,8 @@ def main() -> int:
             exigir("escritorio" in page.locator("#act-estado").inner_text().lower(),
                    f"ui: explica que es de escritorio — {page.locator('#act-estado').inner_text()}", fallas)
             version = page.evaluate("window.MIMO_VERSION")
-            exigir(version == "1.2.0-beta.7", f"ui: versión única — {version}", fallas)
-            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.7",
+            exigir(version == "1.2.0-beta.8", f"ui: versión única — {version}", fallas)
+            exigir(page.locator(".badge").inner_text().strip() == "v1.2.0-beta.8",
                    f"ui: badge — {page.locator('.badge').inner_text().strip()}", fallas)
             exigir(not [e for e in errores if e.startswith("pageerror")],
                    f"ui: sin pageerror — {errores[:2]}", fallas)
@@ -78,11 +78,11 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory() as td:
         td = Path(td)
-        crear_assets(td, "1.2.0-beta.7")
+        crear_assets(td, "1.2.0-beta.8")
         out = td / "beta.json"
         p = subprocess.run([
-            sys.executable, str(GEN), "--version", "1.2.0-beta.7",
-            "--tag", "v1.2.0-beta.7", "--dir", str(td), "--out", str(out),
+            sys.executable, str(GEN), "--version", "1.2.0-beta.8",
+            "--tag", "v1.2.0-beta.8", "--dir", str(td), "--out", str(out),
             "--notes", "prueba",
         ], capture_output=True, text=True)
         exigir(p.returncode == 0, f"manifiesto: genera — {p.stderr[-300:]}", fallas)
@@ -93,17 +93,17 @@ def main() -> int:
                    f"manifiesto: claves por paquete — {sorted(plataformas)}", fallas)
             exigir("linux-x86_64" not in plataformas and "arch" not in json.dumps(plataformas).lower(),
                    f"manifiesto: sin genérico ni Arch — {sorted(plataformas)}", fallas)
-            exigir(m.get("version") == "1.2.0-beta.7", f"manifiesto: versión — {m.get('version')}", fallas)
+            exigir(m.get("version") == "1.2.0-beta.8", f"manifiesto: versión — {m.get('version')}", fallas)
             exigir(all(v.get("signature") and v.get("url") for v in plataformas.values()),
                    "manifiesto: firma y URL en cada plataforma", fallas)
-            exigir(all("/v1.2.0-beta.7/" in v["url"] for v in plataformas.values()),
+            exigir(all("/v1.2.0-beta.8/" in v["url"] for v in plataformas.values()),
                    "manifiesto: URLs al tag exacto", fallas)
 
         # Firma faltante: debe fallar.
-        (td / "Mimo_1.2.0-beta.7_x64-setup.exe.sig").unlink()
+        (td / "Mimo_1.2.0-beta.8_x64-setup.exe.sig").unlink()
         p2 = subprocess.run([
-            sys.executable, str(GEN), "--version", "1.2.0-beta.7",
-            "--tag", "v1.2.0-beta.7", "--dir", str(td), "--out", str(td / "mal.json"),
+            sys.executable, str(GEN), "--version", "1.2.0-beta.8",
+            "--tag", "v1.2.0-beta.8", "--dir", str(td), "--out", str(td / "mal.json"),
         ], capture_output=True, text=True)
         exigir(p2.returncode != 0, "manifiesto: firma faltante falla", fallas)
 
