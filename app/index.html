@@ -40,7 +40,7 @@
 <link rel="stylesheet" href="css/actualizaciones.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
 </head>
-<body class="cargando">
+<body class="cargando panel-oculto">
 <script>
   /* El tema del último estado guardado manda desde el primer píxel. */
   (function () {
@@ -247,7 +247,8 @@
   <button class="icono-btn" id="btn-sync" type="button" title="Guardado en este equipo" data-i18n-title="top.sync"><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg></button>
   <button class="icono-btn" id="btn-historial" type="button" title="Historial y atajos (Ctrl+Z)" data-i18n-title="top.historial"><svg class="icono" aria-hidden="true"><use href="#i-historial"/></svg></button>
   <button class="icono-btn" id="btn-tema" type="button" title="Cambiar entre claro y oscuro" data-i18n-title="top.tema"><svg class="icono" aria-hidden="true"><use href="#i-luna"/></svg></button>
-  <button class="icono-btn" id="btn-panel" type="button" title="Ocultar el panel" aria-controls="panel" aria-expanded="true"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
+  <button class="icono-btn" id="btn-split" type="button" title="Vista dividida" aria-label="Vista dividida" aria-pressed="false" data-i18n-title="top.split" data-i18n-aria="top.split"><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg></button>
+  <button class="icono-btn" id="btn-panel" type="button" title="Mostrar el panel" aria-label="Mostrar el panel" aria-controls="panel" aria-expanded="false"><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg></button>
   <button class="icono-btn" id="btn-ajustes" type="button" title="Ajustes" data-i18n-title="top.ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
 </header>
 
@@ -301,19 +302,37 @@
               <select class="entrada" id="pref-fuente">
                 <option value="clasica" data-l10n-es="Clásica" data-l10n-en="Classic" data-l10n-zh="经典">Clásica</option>
                 <option value="sistema" data-l10n-es="Sistema del equipo" data-l10n-en="Device system" data-l10n-zh="系统字体">Sistema del equipo</option>
+                <option value="cantarell">Cantarell</option>
+                <option value="adwaita">Adwaita Sans</option>
+                <option value="liberation">Liberation Sans</option>
+                <option value="nimbus">Nimbus Sans</option>
+                <option value="carlito">Carlito</option>
+                <option value="caladea">Caladea</option>
+                <option value="liberation-serif">Liberation Serif</option>
+                <option value="latin-modern">Latin Modern Roman</option>
+                <option value="montserrat">Montserrat</option>
+                <option value="noto-mono">Noto Sans Mono</option>
                 <option value="mono" data-l10n-es="Monoespaciada" data-l10n-en="Monospaced" data-l10n-zh="等宽">Monoespaciada</option>
                 <option value="personalizada" data-l10n-es="Otra fuente…" data-l10n-en="Other font…" data-l10n-zh="其他字体…">Otra fuente…</option>
               </select></label>
-            <label class="campo" id="fila-fuente-nombre" hidden><span data-i18n="aj.fuente.nombre">Nombre de la fuente</span>
-              <input class="entrada" id="pref-fuente-nombre" type="text" list="fuentes-sistema" autocomplete="off" spellcheck="false" placeholder="Cantarell, Noto Sans…">
-              <datalist id="fuentes-sistema">
-                <option value="Noto Sans"></option><option value="Cantarell"></option><option value="Adwaita Sans"></option>
-                <option value="DejaVu Sans"></option><option value="Liberation Sans"></option><option value="Nimbus Sans"></option>
-                <option value="Open Sans"></option><option value="Lato"></option><option value="Ubuntu"></option>
-                <option value="Segoe UI"></option><option value="Helvetica"></option><option value="Arial"></option>
-                <option value="ui-monospace"></option>
-              </datalist></label>
-            <p class="muted" data-i18n="aj.fuente.sub">La clásica usa la tipografía de Mimo. También puedes usar la del sistema o escribir el nombre de una fuente instalada.</p>
+            <p class="fuente-muestra" id="fuente-muestra" aria-hidden="true">Aa Bb Cc · Mimo 123</p>
+            <div class="fila" id="fila-fuente-nombre" hidden>
+              <label class="fuente-campo"><span data-i18n="aj.fuente.nombre">Nombre de la fuente</span>
+                <input class="entrada" id="pref-fuente-nombre" type="text" list="fuentes-sistema" autocomplete="off" spellcheck="false" placeholder="Cantarell, Noto Sans…">
+              </label>
+              <button class="btn" type="button" id="btn-fuente-aplicar" data-l10n-es="Aplicar" data-l10n-en="Apply" data-l10n-zh="应用">Aplicar</button>
+            </div>
+            <datalist id="fuentes-sistema">
+              <option value="Noto Sans"></option><option value="Cantarell"></option><option value="Adwaita Sans"></option>
+              <option value="DejaVu Sans"></option><option value="Liberation Sans"></option><option value="Nimbus Sans"></option>
+              <option value="Carlito"></option><option value="Caladea"></option><option value="Liberation Serif"></option>
+              <option value="Latin Modern Roman"></option><option value="Montserrat"></option><option value="Noto Sans Mono"></option>
+              <option value="Open Sans"></option><option value="Lato"></option><option value="Ubuntu"></option>
+              <option value="Segoe UI"></option><option value="Helvetica"></option><option value="Arial"></option>
+              <option value="ui-monospace"></option>
+            </datalist>
+            <p class="muted" id="fuente-estado" aria-live="polite"></p>
+            <p class="muted" data-i18n="aj.fuente.sub">La clásica usa la tipografía de Mimo. También puedes elegir una familia del equipo o escribir el nombre de una fuente instalada.</p>
             <p class="muted" data-l10n-es="Se aplica a toda la app y se recuerda en este equipo." data-l10n-en="Applies to the whole app and is remembered on this device." data-l10n-zh="应用于整个应用，并在此设备上记住。">Se aplica a toda la app y se recuerda en este equipo.</p>
           </section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-libro"/></svg><span data-i18n="aj.idioma">Idioma</span></h2><p class="muted" data-i18n="aj.idioma.sub">Elige el idioma de la interfaz.</p>
@@ -331,11 +350,6 @@
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-malla"/></svg><span data-i18n="aj.navegacion">Navegación</span></h2><p class="muted" data-i18n="aj.navegacion.sub">Dónde se ubica la barra de secciones.</p>
             <label class="campo"><span data-i18n="aj.barra">Barra de secciones</span> <select class="entrada" id="pref-nav"><option value="arriba" data-i18n="aj.arriba">Arriba</option><option value="izquierda" data-i18n="aj.izquierda">Izquierda</option></select></label>
             <p class="muted" data-l10n-es="Arriba: barra horizontal. Izquierda: barra vertical." data-l10n-en="Top: horizontal bar. Left: vertical bar." data-l10n-zh="上方：水平栏。左侧：垂直栏。">Arriba: barra horizontal. Izquierda: barra vertical.</p>
-          </section>
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-panel"/></svg><span data-i18n="aj.paneles">Paneles</span></h2><p class="muted" data-i18n="aj.paneles.sub">Ancho y visibilidad del panel lateral.</p>
-            <label class="campo"><span data-i18n="aj.ancho">Ancho</span> <select class="entrada" id="pref-panel-ancho"><option value="280" data-l10n-es="Angosto · 280" data-l10n-en="Narrow · 280" data-l10n-zh="窄 · 280">Angosto · 280</option><option value="320" selected data-l10n-es="Normal · 320" data-l10n-en="Normal · 320" data-l10n-zh="标准 · 320">Normal · 320</option><option value="360" data-l10n-es="Ancho · 360" data-l10n-en="Wide · 360" data-l10n-zh="宽 · 360">Ancho · 360</option></select></label>
-            <label class="check"><input type="checkbox" id="pref-panel-abierto"> <span data-i18n="aj.abierto">Abierto al iniciar</span></label>
-            <button class="btn" type="button" id="btn-panel-ajustes" style="margin-top:8px" data-i18n="aj.abrirPanel">Abrir panel</button>
           </section>
         </div>
       </div>
@@ -548,7 +562,6 @@
       <div class="ajustes-grid">
         <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-bloque"/></svg><span data-i18n="aj.kits">Kits y bloques</span></h2><p class="muted" id="ajustes-bloques" data-l10n-es="0 bloques instalados." data-l10n-en="0 blocks installed." data-l10n-zh="0 个模块已安装。">0 bloques instalados.</p><button class="btn btn-primario" type="button" id="btn-catalogo-ajustes" data-l10n-es="Agregar bloque o kit" data-l10n-en="Add block or kit" data-l10n-zh="添加模块或套件">Agregar bloque o kit</button></section>
         <div class="ajustes-pila">
-          <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-split"/></svg><span data-i18n="aj.laboratorio">Vista dividida</span></h2><p class="muted" data-i18n="aj.laboratorio.sub">Muestra dos secciones a la vez.</p><label class="check"><input type="checkbox" id="lab-split"> <span data-l10n-es="Vista dividida" data-l10n-en="Split view" data-l10n-zh="分屏视图">Vista dividida</span></label></section>
           <section class="card"><h2><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span data-i18n="aj.acerca">Acerca de</span></h2><p class="muted" data-l10n-es="Mimo · 1.2.0-beta.7 · Funciona sin conexión." data-l10n-en="Mimo · 1.2.0-beta.7 · Works offline." data-l10n-zh="Mimo · 1.2.0-beta.7 · 离线可用。">Mimo · 1.2.0-beta.7 · Funciona sin conexión.</p></section>
           <section class="card" id="actualizaciones-card"><h2><svg class="icono" aria-hidden="true"><use href="#i-check"/></svg><span data-l10n-es="Actualizaciones" data-l10n-en="Updates" data-l10n-zh="更新">Actualizaciones</span></h2><p class="muted" id="act-estado" data-l10n-es="Listo para comprobar." data-l10n-en="Ready to check." data-l10n-zh="可以检查。">Listo para comprobar.</p>
             <div class="act-controles"><button class="btn" type="button" id="act-buscar" data-l10n-es="Buscar actualizaciones" data-l10n-en="Check for updates" data-l10n-zh="检查更新">Buscar actualizaciones</button><label class="campo"><span data-l10n-es="Canal" data-l10n-en="Channel" data-l10n-zh="频道">Canal</span><select class="entrada" id="act-canal"><option value="beta">Beta</option><option value="stable" data-l10n-es="Estable" data-l10n-en="Stable" data-l10n-zh="稳定">Estable</option></select></label><label class="check"><input type="checkbox" id="act-auto" checked> <span data-l10n-es="Avisarme automáticamente" data-l10n-en="Notify me automatically" data-l10n-zh="自动通知我">Avisarme automáticamente</span></label></div>
@@ -581,6 +594,7 @@
     <div id="split-escena" class="split-escena"></div>
   </main>
 
+  <div class="panel-asa" id="panel-asa" role="separator" aria-orientation="vertical" aria-controls="panel" aria-valuemin="240" aria-valuemax="560" aria-valuenow="320" tabindex="0" title="Arrastra para cambiar el ancho del panel. Doble clic para restablecer." data-i18n-title="panel.asa" data-i18n-aria="panel.asa"></div>
   <aside class="panel" id="panel" aria-label="Panel de herramientas" data-i18n-aria="panel.herramientas">
     <div class="panel__cab"><span class="panel__tit" data-i18n="panel.titulo">Panel</span><button class="icono-btn" id="btn-panel-cerrar" type="button" title="Cerrar panel" aria-label="Cerrar panel" data-i18n-title="panel.cerrar" data-i18n-aria="panel.cerrar" style="min-width:28px;height:26px"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <div class="panel__tabs" role="tablist" aria-label="Herramientas del panel" data-i18n-aria="panel.herramientas">

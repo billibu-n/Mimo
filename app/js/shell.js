@@ -17,6 +17,11 @@
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   };
+  /* Dentro de un campo de texto manda el historial nativo del navegador: Ctrl+Z
+     deshace lo escrito, no el estado entero de la app. */
+  function enCampoTexto(el) {
+    return !!(el && el.closest && el.closest("input, textarea, [contenteditable='true'], [contenteditable=''], [role='textbox']"));
+  }
 
   var I18N = window.MIMO_I18N || {};
   function idioma() { return (estado && estado.prefs && estado.prefs.idioma) || "es"; }
@@ -196,10 +201,34 @@
   }
   registrarManifiestos();
 
-  var FUENTES = ["clasica", "sistema", "mono", "personalizada"];
+  /* El motor de tipografía no descarga fuentes: ofrece familias del equipo y una
+     caja libre. Cada pila termina en una familia genérica para que una fuente
+     ausente no deje la app sin letra. */
+  var FUENTES = {
+    clasica: "var(--fuente-clasica)",
+    sistema: "var(--fuente-sistema)",
+    mono: "var(--fuente-mono)",
+    cantarell: "Cantarell,var(--fuente-clasica)",
+    adwaita: '"Adwaita Sans",var(--fuente-clasica)',
+    liberation: '"Liberation Sans",Arial,var(--fuente-clasica)',
+    nimbus: '"Nimbus Sans",Helvetica,Arial,var(--fuente-clasica)',
+    carlito: "Carlito,Calibri,var(--fuente-clasica)",
+    caladea: "Caladea,Cambria,serif",
+    "liberation-serif": '"Liberation Serif","Times New Roman",serif',
+    "latin-modern": '"Latin Modern Roman",serif',
+    montserrat: "Montserrat,var(--fuente-clasica)",
+    "noto-mono": '"Noto Sans Mono",ui-monospace,monospace',
+    personalizada: null
+  };
+  var NOMBRES_FUENTE = {
+    cantarell: "Cantarell", adwaita: "Adwaita Sans", liberation: "Liberation Sans",
+    nimbus: "Nimbus Sans", carlito: "Carlito", caladea: "Caladea",
+    "liberation-serif": "Liberation Serif", "latin-modern": "Latin Modern Roman",
+    montserrat: "Montserrat", "noto-mono": "Noto Sans Mono"
+  };
   function normalizarFuente(v) {
     v = String(v || "");
-    return FUENTES.indexOf(v) >= 0 ? v : "clasica";
+    return Object.prototype.hasOwnProperty.call(FUENTES, v) ? v : "clasica";
   }
   function limpiarNombreFuente(t) {
     /* Un nombre de fuente es una lista de familias, no CSS: se descartan llaves,
@@ -210,6 +239,12 @@
     t = t.replace(/[^a-zA-Z0-9\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc\u00f1\u00c1\u00c9\u00cd\u00d3\u00da\u00dc\u00d1\s,'"_-]/g, " ");
     return t.replace(/\s+/g, " ").trim().slice(0, 120);
   }
+  var ANCHO_PANEL_DEFECTO = 320, ANCHO_PANEL_MIN = 240, ANCHO_PANEL_MAX = 560;
+  function anchoPanelValido(v) {
+    var n = parseFloat(v);
+    if (!isFinite(n)) n = ANCHO_PANEL_DEFECTO;
+    return Math.round(Math.min(ANCHO_PANEL_MAX, Math.max(ANCHO_PANEL_MIN, n)));
+  }
   function porDefecto() {
     return {
       tema: "clasico", instalados: [], kits: {}, panel: {}, tareas: [], notas: [], eventos: [], eventoTipos: [], cursos: [], califs: {}, calRamosOcultos: [],
@@ -217,7 +252,7 @@
       periodos: [], periodoActivo: null, sesiones: [], tiempoVinculo: "", tiempoRamo: "", tiempoSemana: "", tiempoDia: "",
       tiempoModo: "crono", tempMin: 25, pomo: { trabajo: 25, corto: 5, largo: 15, cada: 4, fase: "trabajo", trabajos: 0 },
       alarmas: [], estudio: { metaSemanal: 10, metasRamo: {}, metasSemana: {} }, splitSeccion: "tareas",
-      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, panelAbierto: false, navPlegada: false, navOculta: false,
+      prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, navPlegada: false, navOculta: false,
         temaClaro: "clasico", temaOscuro: "deepsea", fuente: "clasica", fuenteNombre: "", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       plegables: {},
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
@@ -249,6 +284,8 @@
           if (!d.estudio.metasSemana || typeof d.estudio.metasSemana !== "object") d.estudio.metasSemana = {};
           if (!d.prefs || typeof d.prefs !== "object") d.prefs = {};
           if (!Array.isArray(d.calRamosOcultos)) d.calRamosOcultos = [];
+          d.prefs.panelAncho = String(anchoPanelValido(d.prefs.panelAncho));
+          delete d.prefs.panelAbierto;
           if (!d.prefs.temaClaro) d.prefs.temaClaro = "clasico";
           if (!d.prefs.temaOscuro) d.prefs.temaOscuro = "deepsea";
           d.prefs.fuente = normalizarFuente(d.prefs.fuente);
@@ -292,6 +329,7 @@
   var HISTORIAL_MAX = 60, historial = [], historialPos = -1, historialTimer = null, historialSilencio = false;
   var falloGuardado = false, copiaNativa = null;
   var ultimoGuardado = 0, textoGuardado = "";
+  var fuenteTimer = null;
 
   function mostrarBannerAlmacen(texto, restaurar) {
     var b = $("#banner-almacen"), t = $("#banner-almacen-texto"), r = $("#banner-almacen-restaurar");
@@ -368,14 +406,14 @@
     if (historialPos <= 0) { aviso(L("No hay nada que deshacer.", "Nothing to undo.", "没有可撤销的步骤。")); return; }
     historialPos--;
     restaurarHistorial(historial[historialPos]);
-    aviso(L("Deshecho.", "Undone.", "已撤销。"));
+    aviso(L("Deshecho: último cambio de la app.", "Undone: last app change.", "已撤销：应用的上一步。"));
   }
   function rehacer() {
     flushHistorial();
     if (historialPos >= historial.length - 1) { aviso(L("No hay nada que rehacer.", "Nothing to redo.", "没有可重做的步骤。")); return; }
     historialPos++;
     restaurarHistorial(historial[historialPos]);
-    aviso(L("Rehecho.", "Redone.", "已重做。"));
+    aviso(L("Rehecho: último cambio de la app.", "Redone: last app change.", "已重做：应用的上一步。"));
   }
   function guardarAhora() {
     guardar();
@@ -4992,15 +5030,34 @@
     if (pie) pie.textContent = nombre(pantalla);
   }
 
+  function nombreFuentePersonalizada(v) {
+    return limpiarNombreFuente(v).split(",")[0].replace(/^["']|["']$/g, "").replace(/"/g, "").trim();
+  }
+  function pintarFuenteEstado(id, nombre) {
+    var el = $("#fuente-estado"); if (!el) return;
+    if (id === "personalizada") {
+      el.textContent = nombre
+        ? L("Fuente personalizada: ", "Custom font: ", "自定义字体：") + nombre + L(". Si el equipo no la tiene, se usa la clásica.", ". If the device does not have it, Classic is used.", "。如果设备没有该字体，将使用经典字体。")
+        : L("Escribe el nombre de una fuente instalada y pulsa Aplicar.", "Type the name of an installed font and press Apply.", "输入已安装字体的名称，然后按应用。");
+    } else if (id === "clasica") {
+      el.textContent = L("Pila clásica de Mimo. Es la predeterminada.", "Mimo's classic stack. It is the default.", "Mimo 经典字体栈，默认选项。");
+    } else if (id === "sistema") {
+      el.textContent = L("Usa la fuente nativa del equipo.", "Uses the device's native font.", "使用设备的原生字体。");
+    } else if (id === "mono") {
+      el.textContent = L("Variante monoespaciada para código y datos.", "Monospaced variant for code and data.", "用于代码和数据的等宽字体。");
+    } else {
+      el.textContent = L("Familia activa: ", "Active family: ", "当前字体：") + (NOMBRES_FUENTE[id] || id) +
+        L(". Si no está instalada, el sistema usa la de respaldo.", ". If it is not installed, the system uses the fallback.", "。如果未安装，系统将使用后备字体。");
+    }
+  }
   function aplicarFuente() {
     var p = estado.prefs || {};
     var id = normalizarFuente(p.fuente);
-    var valor = "var(--fuente-clasica)";
-    if (id === "sistema") valor = "var(--fuente-sistema)";
-    else if (id === "mono") valor = "var(--fuente-mono)";
-    else if (id === "personalizada") {
-      var nombre = limpiarNombreFuente(p.fuenteNombre);
-      if (nombre) valor = nombre + ",var(--fuente-clasica)";
+    var valor = FUENTES[id] || FUENTES.clasica;
+    var nombre = "";
+    if (id === "personalizada") {
+      nombre = nombreFuentePersonalizada(p.fuenteNombre);
+      valor = nombre ? '"' + nombre + '",var(--fuente-clasica)' : FUENTES.clasica;
     }
     document.documentElement.style.setProperty("--fuente", valor);
     if (document.body) document.body.setAttribute("data-fuente", id);
@@ -5009,7 +5066,22 @@
     var fila = $("#fila-fuente-nombre"), campo = $("#pref-fuente-nombre");
     if (fila) fila.hidden = id !== "personalizada";
     if (campo && document.activeElement !== campo) campo.value = p.fuenteNombre || "";
+    pintarFuenteEstado(id, nombre);
     return id;
+  }
+  function aplicarFuenteEscrita() {
+    var campo = $("#pref-fuente-nombre"); if (!campo) return;
+    var nombre = limpiarNombreFuente(campo.value);
+    if (!nombre) {
+      aviso(L("Escribe el nombre de una fuente instalada.", "Type the name of an installed font.", "请输入已安装字体的名称。"));
+      campo.focus();
+      return;
+    }
+    clearTimeout(fuenteTimer);
+    estado.prefs.fuente = "personalizada";
+    estado.prefs.fuenteNombre = nombre;
+    guardar(); aplicarFuente();
+    aviso(L("Fuente aplicada: ", "Font applied: ", "字体已应用：") + nombre + ".");
   }
   function aplicarPrefs() {
     var p = estado.prefs || {};
@@ -5019,22 +5091,21 @@
     // Los huecos no siguen al font-size de la raíz: se escalan aparte, o la letra
     // crece y las cajas se quedan igual (era el defecto de beta.5).
     document.documentElement.style.setProperty("--esc", String(escala / 100));
-    document.documentElement.style.setProperty("--ancho-panel", (p.panelAncho || "320") + "px");
+    document.documentElement.style.setProperty("--ancho-panel", anchoPanelValido(p.panelAncho) + "px");
     document.body.classList.toggle("nav-izq", p.navPos === "izquierda");
     document.body.classList.toggle("nav-plegada", !!p.navPlegada);
     document.body.classList.toggle("nav-oculta", !!p.navOculta);
     pintarPlegado(); pintarSecciones();
-    var fi = $("#pref-inicio"), fh = $("#pref-hora"), fp = $("#pref-panel-ancho");
+    pintarAsaPanel();
+    var fi = $("#pref-inicio"), fh = $("#pref-hora");
     if (fi) fi.value = p.inicioSemana || "lunes";
     if (fh) fh.value = p.hora || "24";
-    if (fp) fp.value = p.panelAncho || "320";
     if ($("#pref-nav")) $("#pref-nav").value = p.navPos || "arriba";
     if ($("#pref-idioma")) $("#pref-idioma").value = p.idioma || "es";
     if ($("#pref-escala")) $("#pref-escala").value = String(Number(p.escala) || 100);
     pintarBandera();
     if ($("#pref-notif")) $("#pref-notif").checked = p.notificaciones !== false;
-    if ($("#pref-panel-abierto")) $("#pref-panel-abierto").checked = p.panelAbierto !== false;
-    var lab = $("#lab-split"); if (lab) lab.checked = splitOn;
+    pintarBotonSplit();
   }
   function pintarBandera() {
     var c = $("#idioma-bandera"); if (!c) return;
@@ -5650,10 +5721,71 @@
     aviso(nombre(id) + " " + L("quitado. Tus datos se conservan.", "removed. Your data is preserved.", "已移除。你的数据保留。"));
   }
 
+  function pintarAsaPanel() {
+    var asa = $("#panel-asa"); if (!asa) return;
+    asa.setAttribute("aria-valuenow", String(anchoPanelValido((estado.prefs || {}).panelAncho)));
+  }
+  function fijarAnchoPanel(w, persistir) {
+    w = anchoPanelValido(w);
+    document.documentElement.style.setProperty("--ancho-panel", w + "px");
+    if (persistir) {
+      estado.prefs.panelAncho = String(w);
+      guardar();
+    }
+    pintarAsaPanel();
+    return w;
+  }
+  function iniciarArrastrePanel(e) {
+    if (e.button !== 0 || window.innerWidth <= 1255) return;
+    if (document.body.classList.contains("panel-oculto") ||
+        document.body.classList.contains("panel-redimensionando")) return;
+    var asa = e.currentTarget, panel = $("#panel");
+    if (!asa || !panel) return;
+    e.preventDefault();
+    var x0 = e.clientX, w0 = panel.getBoundingClientRect().width, ultimo = w0, activo = true;
+    document.body.classList.add("panel-redimensionando");
+    try { asa.setPointerCapture(e.pointerId); } catch (_) {}
+    function mover(ev) {
+      if (!activo) return;
+      ultimo = Math.round(w0 + (x0 - ev.clientX));
+      ultimo = Math.min(ANCHO_PANEL_MAX, Math.max(ANCHO_PANEL_MIN, ultimo));
+      document.documentElement.style.setProperty("--ancho-panel", ultimo + "px");
+      asa.setAttribute("aria-valuenow", String(ultimo));
+    }
+    function soltar() {
+      if (!activo) return;
+      activo = false;
+      document.body.classList.remove("panel-redimensionando");
+      try { asa.releasePointerCapture(e.pointerId); } catch (_) {}
+      document.removeEventListener("pointermove", mover);
+      document.removeEventListener("pointerup", soltar);
+      document.removeEventListener("pointercancel", soltar);
+      if (Math.abs(ultimo - w0) >= 1) fijarAnchoPanel(ultimo, true);
+      else pintarAsaPanel();
+    }
+    document.addEventListener("pointermove", mover);
+    document.addEventListener("pointerup", soltar);
+    document.addEventListener("pointercancel", soltar);
+  }
+  function teclaAsaPanel(e) {
+    var actual = anchoPanelValido((estado.prefs || {}).panelAncho);
+    var paso = e.shiftKey ? 40 : 10;
+    if (e.key === "ArrowLeft") fijarAnchoPanel(actual + paso, true);
+    else if (e.key === "ArrowRight") fijarAnchoPanel(actual - paso, true);
+    else if (e.key === "Home" || e.key === "0") fijarAnchoPanel(ANCHO_PANEL_DEFECTO, true);
+    else return;
+    e.preventDefault();
+  }
+  function reiniciarAnchoPanel(e) {
+    e.preventDefault();
+    fijarAnchoPanel(ANCHO_PANEL_DEFECTO, true);
+  }
+
   function abrirPanel() {
     document.body.classList.remove("panel-oculto");
     document.body.classList.add("panel-abierto");
     pintarBotonPanel();
+    pintarAsaPanel();
   }
   function cerrarPanel() {
     document.body.classList.remove("panel-abierto");
@@ -5704,7 +5836,14 @@
     s.classList.add("en-split");
     esc.appendChild(s);
   }
+  function pintarBotonSplit() {
+    var boton = $("#btn-split");
+    if (!boton) return;
+    boton.setAttribute("aria-pressed", splitOn ? "true" : "false");
+    boton.setAttribute("aria-label", L("Vista dividida", "Split view", "分屏视图"));
+  }
   function pintarSplit() {
+    pintarBotonSplit();
     var sel = $("#split-seccion");
     if (!sel) return;
     var ids = opcionesSplit();
@@ -5720,10 +5859,7 @@
     splitOn = true;
     document.body.classList.add("split");
     $("#contenido-b").hidden = false;
-    if ($("#btn-split")) $("#btn-split").setAttribute("aria-pressed", "true");
-    var lab = $("#lab-split"); if (lab) lab.checked = true;
     pintarSplit();
-    moverSeccionSplit(estado.splitSeccion);
     mostrarPaneles();
   }
   function cerrarSplit() {
@@ -5731,8 +5867,7 @@
     splitOn = false;
     document.body.classList.remove("split");
     $("#contenido-b").hidden = true;
-    if ($("#btn-split")) $("#btn-split").setAttribute("aria-pressed", "false");
-    var lab = $("#lab-split"); if (lab) lab.checked = false;
+    pintarSplit();
     mostrarPaneles();
   }
   function alternarSplit() {
@@ -6038,9 +6173,9 @@
     secciones().forEach(montarHost);
     aplicarTema(estado.tema || "clasico");
     aplicarPrefs(); aplicarIdioma(); pintarTabs(); pintarTemaIcono(); pintarPeriodo(); pintarSplit();
-    // El panel arranca cerrado: se abre cuando el dueño pide ver algo (o lo deja abierto
-    // en Ajustes y entonces se respeta).
-    if (estado.prefs.panelAbierto === false) cerrarPanel();
+    // El panel arranca cerrado siempre: se abre cuando el usuario lo pide o
+    // cuando un motor lo llama directamente.
+    cerrarPanel();
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTemas();
     historial = [JSON.stringify(estado)]; historialPos = 0; pintarHistorial();
@@ -6066,7 +6201,11 @@
     $("#hist-rehacer").addEventListener("click", rehacer);
     $("#hist-guardar").addEventListener("click", guardarAhora);
     $("#hist-refrescar").addEventListener("click", refrescarVista);
+    $("#btn-split").addEventListener("click", alternarSplit);
     $("#btn-panel").addEventListener("click", alternarPanel);
+    $("#panel-asa").addEventListener("pointerdown", iniciarArrastrePanel);
+    $("#panel-asa").addEventListener("keydown", teclaAsaPanel);
+    $("#panel-asa").addEventListener("dblclick", reiniciarAnchoPanel);
     $("#btn-panel-cerrar").addEventListener("click", cerrarPanel);
     $("#velo").addEventListener("click", cerrarPanel);
     $("#btn-cerrar-split").addEventListener("click", cerrarSplit);
@@ -6114,7 +6253,6 @@
     $("#periodo-inicio").addEventListener("change", function () { if (mapaPeriodo) pintarMapaPeriodo(); });
     $("#pref-inicio").addEventListener("change", function (e) { estado.prefs.inicioSemana = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
     $("#pref-hora").addEventListener("change", function (e) { estado.prefs.hora = e.target.value; guardar(); aplicarPrefs(); pintarCalendario(); });
-    $("#pref-panel-ancho").addEventListener("change", function (e) { estado.prefs.panelAncho = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-nav").addEventListener("change", function (e) { estado.prefs.navPos = e.target.value; guardar(); aplicarPrefs(); });
     $("#pref-idioma").addEventListener("change", function (e) { estado.prefs.idioma = e.target.value; guardar(); repintarIdioma(); });
     $("#pref-escala").addEventListener("change", function (e) {
@@ -6125,17 +6263,26 @@
       guardar(); aplicarFuente();
       if (estado.prefs.fuente === "personalizada") {
         var campo = $("#pref-fuente-nombre");
-        if (campo && !estado.prefs.fuenteNombre) campo.focus();
+        if (campo) setTimeout(function () { campo.focus(); campo.select(); }, 0);
       }
     });
     $("#pref-fuente-nombre").addEventListener("input", function (e) {
+      estado.prefs.fuente = "personalizada";
       estado.prefs.fuenteNombre = limpiarNombreFuente(e.target.value);
       aplicarFuente();
+      clearTimeout(fuenteTimer);
+      fuenteTimer = setTimeout(function () { fuenteTimer = null; guardar(); }, 350);
     });
     $("#pref-fuente-nombre").addEventListener("change", function (e) {
+      clearTimeout(fuenteTimer);
+      estado.prefs.fuente = "personalizada";
       estado.prefs.fuenteNombre = limpiarNombreFuente(e.target.value);
       guardar(); aplicarFuente();
     });
+    $("#pref-fuente-nombre").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); aplicarFuenteEscrita(); }
+    });
+    $("#btn-fuente-aplicar").addEventListener("click", aplicarFuenteEscrita);
     $("#pref-tema-claro").addEventListener("change", function (e) {
       estado.prefs.temaClaro = temaValido(e.target.value, "clasico");
       if (temaModo(estado.tema) === "claro") aplicarTema(estado.prefs.temaClaro, true);
@@ -6151,12 +6298,6 @@
       if (e.target.checked && typeof Notification !== "undefined" && Notification.permission === "default") {
         try { Notification.requestPermission(); } catch (_) {}
       }
-    });
-    $("#pref-panel-abierto").addEventListener("change", function (e) { estado.prefs.panelAbierto = e.target.checked; guardar(); if (e.target.checked) abrirPanel(); else cerrarPanel(); });
-    $("#lab-split").addEventListener("change", function (e) {
-      if (e.target.checked) abrirSplitModal();
-      else cerrarSplit();
-      pintarAjustes();
     });
     function descargarJSON(obj, nombre) {
       var texto = JSON.stringify(obj, null, 2);
@@ -6220,7 +6361,6 @@
       };
       lector.readAsText(f); e.target.value = "";
     });
-    $("#btn-panel-ajustes").addEventListener("click", abrirPanel);
     $("#pie-panel").addEventListener("click", alternarPanel);
     $("#pie-sync").addEventListener("click", abrirEnSync);
     document.addEventListener("mimo:sync", pintarPie);
@@ -6375,8 +6515,13 @@
       if (e.key === "F5") { e.preventDefault(); refrescarVista(); return; }
       if ((e.ctrlKey || e.metaKey) && !e.altKey) {
         var k = String(e.key || "").toLowerCase();
-        if (k === "z") { e.preventDefault(); if (e.shiftKey) rehacer(); else deshacer(); return; }
-        if (k === "y") { e.preventDefault(); rehacer(); return; }
+        if (k === "z" || k === "y") {
+          /* No secuestrar el deshacer nativo mientras se escribe. */
+          if (enCampoTexto(e.target)) return;
+          e.preventDefault();
+          if (k === "y" || e.shiftKey) rehacer(); else deshacer();
+          return;
+        }
         if (k === "s") { e.preventDefault(); guardarAhora(); return; }
         if (k === "r") { e.preventDefault(); refrescarVista(); return; }
       }

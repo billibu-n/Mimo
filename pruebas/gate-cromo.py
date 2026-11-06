@@ -34,8 +34,9 @@ def main() -> int:
         ancho = page.evaluate(ANCHO_PANEL)
         exigir(ancho <= 1, f"arranque: el panel está cerrado — {ancho:.0f} px", fallas)
         exigir(page.locator(".footer").is_visible(), "arranque: el pie está siempre", fallas)
-        exigir(page.locator("#btn-split").count() == 0,
-               "barra: la vista dividida no ocupa un botón", fallas)
+        exigir(page.locator("#btn-split").count() == 1 and
+               page.get_attribute("#btn-split", "aria-pressed") == "false",
+               "barra: la vista dividida vive en el botón superior", fallas)
 
         # 2) el botón de la barra informa, con su hora
         estado = page.locator("#btn-sync").get_attribute("data-estado") or ""
@@ -64,13 +65,13 @@ def main() -> int:
         exigir("Control de prueba" in page.locator("#panel-cuerpo").inner_text(),
                "detalle: el panel muestra el evento elegido", fallas)
 
-        # 4) el split se abre desde Ajustes
+        # 4) el split se abre desde el botón superior
         page.locator('#tabs [data-ir="ajustes"]').click()
         page.wait_for_timeout(300)
-        page.evaluate("document.querySelector('#lab-split').click()")
+        page.evaluate("document.querySelector('#btn-split').click()")
         page.wait_for_timeout(250)
         exigir(page.locator("#modal-split").evaluate("e => e.classList.contains('on')"),
-               "split: se abre desde Ajustes", fallas)
+               "split: se abre desde el botón superior", fallas)
         page.locator("#split-cancelar").click()
         page.wait_for_timeout(200)
 
