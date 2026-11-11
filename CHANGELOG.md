@@ -1,5 +1,49 @@
 # Cambios
 
+## 1.2.0-beta.9 — en curso
+
+### Tareas
+
+- La columna **Hoy** pasa a **Hoy y atrasadas**: una tarea con fecha anterior a hoy ya no
+  desaparece del tablero. Se distinguen tres situaciones de fecha —`atrasada`, `en_fecha` y
+  `sin_fecha`— sin confundirlas con `hecha`.
+- Cada ocurrencia lleva una clave `id@fecha` (o `id@sin-fecha`) para que un vínculo o una
+  nota no apunten a la ocurrencia equivocada de una serie.
+- Una serie recurrente que empezó antes de hoy se abre en su **primera ocurrencia pendiente**,
+  no en la de hoy; el check marca esa fecha, no la actual.
+
+### Progreso (bloque nuevo)
+
+- **Progreso** entra como bloque nativo opcional, naturaleza `personal`, código `09`. Se
+  instala y se quita desde el catálogo; quitar no borra sus datos y reinstalar los devuelve.
+- Cuatro formas de medir: `suma`, `último`, `mejor` y `conteo`; cinco períodos: día, semana,
+  mes, año y única; dos sentidos: piso (`subir`) y techo (`bajar`). Una meta de trayecto puede
+  declarar un valor inicial para medir el avance real (30 → 50 kg, 90 → 75 kg).
+- Registro rápido por paso, registro exacto con fecha y nota, edición, borrado con deshacer,
+  archivar/restaurar y duplicar. El progreso **no se guarda**: se calcula con
+  `dominio/progreso.js` a partir de las metas y los registros.
+- Tarjetas con anillo, mini-gráfico y racha; panel de detalle con barras o línea, línea de
+  objetivo, historial y racha actual/mejor. A 411 px no desborda.
+- **Academics opcional**: una meta puede alimentarse de las sesiones de Estudio (`fuente:
+  "sesiones"`) sin copiarlas. Si Estudio no está, avisa que no hay fuente y no inventa horas.
+- **Tareas sin acoplar**: el vínculo se guarda en la meta (`tareaId`). Si Progreso está, la
+  tarjeta del tablero muestra el número y el panel de la tarea ofrece Registrar; completar la
+  tarea no cambia el registro. Tareas sigue funcionando si Progreso no está.
+- **Categorías plegables**: cada meta vive en una categoría editable (nombre, icono y color);
+  `General` siempre existe y no se elimina; borrar otra mueve sus metas a `General` sin
+  borrar ninguna. El estado plegado se guarda.
+- **Muchas fichas y orden**: una categoría pinta 6 fichas (3 en ventana angosta) y ofrece
+  «Ver N más»; las fichas se arrastran por el asa `⋮⋮` dentro o entre categorías, y
+  `Alt+↑/↓` ordena con teclado. El orden se guarda en `meta.orden` y `meta.categoriaId`.
+- `gate-progreso-categorias` mide las categorías, el plegado, el límite de 6, el arrastre,
+  el teclado y la eliminación sin pérdida de metas.
+- Entra en el catálogo (10 fichas), en el buscador, en el panel y en el esquema aditivo
+  (`datos.progreso`). `mimo.entorno` y el respaldo lo llevan sin cambiar la versión del
+  documento.
+- `gate-progreso-motor` mide normalización, agregación, períodos, pisos/techos, rachas y
+  series; `gate-progreso` mide el bloque de punta a punta, el vínculo con Tareas, la fuente de
+  Estudio, el borrado con deshacer, la reinstalación y 411. El arnés pasa a 40 compuertas.
+
 ## 1.2.0-beta.8 — 2026-11-05
 
 ### Rendimiento

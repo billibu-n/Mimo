@@ -100,12 +100,14 @@
     prerrequisitos: ["prerrequisitos", "prerequisites", "先修"], examen: ["examen", "exam", "考试"],
     horas: ["horas", "hours", "小时"], metas: ["metas", "goals", "目标"],
     calendario: ["calendario", "calendar", "日历"],
-    kit: ["kit", "kit", "套件"]
+    kit: ["kit", "kit", "套件"],
+    registros: ["registros", "logs", "记录"], graficos: ["gráficos", "charts", "图表"],
+    progreso: ["progreso", "progress", "进度"]
   };
   var NATURALEZAS = {
     base: ["Base", "Base", "基础"], tiempo: ["Tiempo", "Time", "时间"],
     academico: ["Académico", "Academic", "学术"], aporte: ["Aportes", "Contributions", "贡献"],
-    kit: ["Kit", "Kit", "套件"]
+    personal: ["Personal", "Personal", "个人"], kit: ["Kit", "Kit", "套件"]
   };
   var ORIGENES = {
     nativo: ["Nativos", "Native", "原生"], kit: ["Kits", "Kits", "套件"],
@@ -179,6 +181,30 @@
         });
       } catch (e) { if (window.console) console.error(e); }
     });
+    try {
+      MimoRegistro.registrar({
+        id: "progreso", nombre: "Progreso", tipo: "seccion", fija: false, orden: 80,
+        origen: "nativo", naturaleza: "personal", icono: "i-progreso", codigo: "09",
+        tags: ["metas", "registros", "graficos"],
+        desc: "Metas, registros y gráficos.",
+        detalle: {
+          resumen: ["Metas y registros; el progreso se calcula solo.", "Goals and entries; progress is derived.", "目标和记录；进度自动计算。"],
+          queHace: [
+            ["Metas diarias, semanales, mensuales, anuales o únicas.", "Daily, weekly, monthly, yearly or one-off goals.", "每日、每周、每月、每年或一次性目标。"],
+            ["Registros con fecha, nota y deshacer.", "Entries with date, note and undo.", "带日期、备注和撤销的记录。"],
+            ["Gráficos de barras y línea, rachas y cumplimiento.", "Bar and line charts, streaks and completion.", "柱状图、折线图、连续和完成率。"],
+            ["Fuente opcional de sesiones de Estudio y vínculo con Tareas.", "Optional Study session source and task links.", "可选的学习时段来源和任务关联。"]
+          ],
+          datos: ["progreso"],
+          notas: ["Quitar el bloque no borra las metas ni los registros.", "Removing the block does not delete goals or entries.", "移除模块不会删除目标或记录。"]
+        },
+        vista: window.MimoBloqueProgresoVista, css: "progreso.css",
+        montar: window.MimoBloqueProgreso && MimoBloqueProgreso.montar,
+        desmontar: window.MimoBloqueProgreso && MimoBloqueProgreso.desmontar,
+        pintar: window.MimoBloqueProgreso && MimoBloqueProgreso.pintar,
+        panel: window.MimoBloqueProgreso && MimoBloqueProgreso.panel
+      });
+    } catch (e) { if (window.console) console.error(e); }
     var fallas = MimoRegistro.validar();
     if (fallas.length && window.console) console.warn("MimoRegistro:", fallas);
     // El registro es la fuente de estructura; BLOQUES/BASE/ORDEN quedan como
@@ -255,12 +281,13 @@
       prefs: { inicioSemana: "lunes", hora: "24", panelAncho: "320", navPos: "arriba", idioma: "es", escala: "100", notificaciones: true, navPlegada: false, navOculta: false,
         temaClaro: "clasico", temaOscuro: "deepsea", fuente: "clasica", fuenteNombre: "", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       plegables: {},
+      progreso: { v: 1, categorias: [], metas: [], registros: [] },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
   function leer() {
     var d = porDefecto();
-    if (RESET) { try { localStorage.removeItem(CLAVE); } catch (e) {} arranqueLimpio = true; return d; }
+    if (RESET) { try { localStorage.removeItem(CLAVE); } catch (e) {} arranqueLimpio = true; if (window.MimoProgreso) MimoProgreso.normalizarEstado(d); return d; }
     try {
       var bruto = localStorage.getItem(CLAVE);
       if (bruto) {
@@ -299,11 +326,14 @@
           });
           delete d.kits.evaluaciones;
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
+          if (!d.progreso || typeof d.progreso !== "object") d.progreso = { v: 1, metas: [], registros: [] };
+          if (window.MimoProgreso) MimoProgreso.normalizarEstado(d);
         }
       } else {
         arranqueLimpio = true;
       }
     } catch (e) { arranqueLimpio = true; }
+    if (window.MimoProgreso) MimoProgreso.normalizarEstado(d);
     return d;
   }
   var estado = leer();
@@ -553,6 +583,8 @@
     estado.prefs = Object.assign(porDefecto().prefs, nuevo.prefs || {});
     estado.estudio = Object.assign({ metaSemanal: 10, metasRamo: {}, metasSemana: {} }, nuevo.estudio || {});
     normalizarEventos(); normalizarTareas(); normalizarNotas(); normalizarCursos(); normalizarCalifs(); normalizarEstudio();
+    if (!estado.progreso || typeof estado.progreso !== "object") estado.progreso = { v: 1, metas: [], registros: [] };
+    if (window.MimoProgreso) MimoProgreso.normalizarEstado(estado);
     guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs(); aplicarIdioma();
     pintarTabs(); pintarCalendario(); pintarTareas(); pintarNotas(); pintarMalla(); pintarCalificaciones(); pintarEstudio(); pintarTiempo(); pintarPeriodo(); pintarSplit(); pintarPanel(); pintarAjustes();
     return estado;
@@ -981,7 +1013,7 @@
   }
   function icono(id) { return '<svg class="icono" aria-hidden="true"><use href="#' + id + '"/></svg>'; }
   function nombre(id) {
-    if (["calendario", "tareas", "notas", "ajustes", "tiempo", "malla", "calificaciones", "estudio"].indexOf(id) !== -1) return t("nav." + id);
+    if (["calendario", "tareas", "notas", "ajustes", "tiempo", "malla", "calificaciones", "estudio", "progreso"].indexOf(id) !== -1) return t("nav." + id);
     return BLOQUES[id] ? BLOQUES[id].nombre : id;
   }
   function descripcionBloque(id) {
@@ -990,6 +1022,7 @@
       malla: ["Cursos, niveles y prerrequisitos.", "Courses, levels and prerequisites.", "课程、层级和先修要求。"],
       calificaciones: ["Categorías, examen y eximición.", "Categories, exam and exemption.", "分类、考试和免考。"],
       estudio: ["Horas por ramo y metas.", "Hours per course and goals.", "按课程小时和目标。"],
+      progreso: ["Metas, registros y gráficos.", "Goals, entries and charts.", "目标、记录和图表。"],
       academics: ["Kit: Malla, Calificaciones y Estudio.", "Kit: plan, grades and study.", "套件：规划、成绩和学习。"]
     }[id];
     return m ? L(m[0], m[1], m[2]) : (BLOQUES[id] ? BLOQUES[id].desc : L("Sección base.", "Base section.", "基础分区。"));
@@ -1143,7 +1176,7 @@
   function contextoRuntime() {
     var ctx = {
       $: $, $$: $$, esc: esc, L: L, t: t, tf: tf, tr: tr, icono: icono,
-      guardar: guardar, aviso: aviso, ir: ir, pintarTabs: pintarTabs,
+      guardar: guardar, aviso: aviso, ir: ir, pintarTabs: pintarTabs, aplicarIdioma: aplicarIdioma,
       pintarPanel: pintarPanel, pintarPanelDe: pintarPanelDe, ctxDe: ctxDe,
       abrirPanel: abrirPanel, cerrarPanel: cerrarPanel, selloLocal: selloLocal,
       conservar: conservar, localeActual: localeActual,
@@ -2062,6 +2095,10 @@
     var total = ds.length;
     return { total: total, hechas: hechas, pct: total ? Math.round(hechas / total * 100) : (t.hecha ? 100 : 0) };
   }
+  function progresoDeTarea(id) {
+    if (!window.MimoBloqueProgreso || !MimoBloqueProgreso.resumenTarea) return null;
+    return MimoBloqueProgreso.resumenTarea(estado, id);
+  }
   function etiquetaPrioridad(p) {
     return p === "alta" ? L("Alta", "High", "高") : p === "baja" ? L("Baja", "Low", "低") : L("Media", "Medium", "中");
   }
@@ -2097,11 +2134,15 @@
   }
   function tarjetaTablero(item) {
     var tar = item.t, p = progreso(tar);
+    var pt = progresoDeTarea(tar.id);
     var sit = item.situacion || situacionDe(tar, item.fecha, item.hecha);
     return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (item.hecha ? " hecha" : "") + (sit === "atrasada" ? " tarjeta-tarea--atrasada" : "") + '" data-tarea="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" data-clave="' + esc(item.clave || claveTarea(tar, item.fecha)) + '" data-situacion="' + sit + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
       '<button class="tarea-check' + (item.hecha ? " hecha" : "") + '" type="button" data-check="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" aria-label="' + esc(item.hecha ? t("tar.reabrir") : t("tar.completar")) + '">' + (item.hecha ? "✓" : "") + "</button>" +
       '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + (item.serie ? ' <small class="tarea-serie">↻ ' + esc(etiquetaCortaRecurrencia(tar.recurrencia)) + "</small>" : "") + "</b><small>" + esc(fechaCorta(item.hecha ? (item.hechaEn || item.fecha) : item.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
       (sit !== "hecha" ? '<span class="tarea-situacion tarea-situacion--' + sit + '">' + esc(etiquetaSituacion(sit)) + "</span>" : "") +
+      (pt ? '<span class="tarea-prog" title="' + esc(L("Progreso: ", "Progress: ", "进度：")) + esc(pt.meta.nombre) + '">' +
+        (pt.proyecto.valor === null ? "—" : Number(pt.proyecto.valor).toLocaleString(localeActual(), { maximumFractionDigits: pt.meta.decimales || 0 })) + "/" +
+        Number(pt.meta.objetivo).toLocaleString(localeActual(), { maximumFractionDigits: pt.meta.decimales || 0 }) + "</span>" : "") +
       (tar.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</span></div>";
   }
   function bindTareas() {
@@ -5020,6 +5061,7 @@
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
       } else if (pantalla === "tareas" && tareaP) {
         var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
+        var pt = progresoDeTarea(tareaP.id);
         var tareaRec = esRecurrente(tareaP), pend = tareaRec ? primeraPendienteDe(tareaP) : "";
         var hoyOcurre = tareaRec && MimoRecurrencia.ocurre(tareaP.recurrencia, hoyISO());
         var hechaHoy = tareaRec && !!(tareaP.recurrencia.hechas && tareaP.recurrencia.hechas[hoyISO()]);
@@ -5043,6 +5085,12 @@
           (tareaP.tipo === "proyecto" ? '<h2>' + esc(t("panel.progreso")) + '</h2><div class="tarea-progreso" style="width:100%"><i style="width:' + p.pct + '%"></i></div><p class="panel__nota">' + p.pct + " % · " + esc(tf("panel.progresoTareas", { hechas: p.hechas, total: p.total })) + "</p>" +
             '<h2>' + esc(t("panel.subtareas")) + '</h2>' + (hijos.length ? hijos.map(function (h) { return '<div class="panel__bloque"><span>' + esc(h.titulo) + "</span><small>" + esc(t(h.hecha ? "panel.hecha" : "panel.abierta")) + "</small></div>"; }).join("") : '<p class="panel__nota">' + esc(t("panel.sinSubtareas")) + '</p>') : "") +
           (tareaP.nota ? '<h2>' + esc(L("Descripción", "Description", "描述")) + '</h2><div class="panel__nota panel__nota--md">' + (window.MimoEditorMD ? MimoEditorMD.renderMarkdown(tareaP.nota) : esc(tareaP.nota)) + "</div>" : "") +
+          (pt ? '<h2>' + esc(L("Progreso", "Progress", "进度")) + '</h2>' +
+            '<div class="panel__bloque"><span>' + esc(pt.meta.nombre) + '</span><small>' +
+            (pt.proyecto.valor === null ? "—" : Number(pt.proyecto.valor).toLocaleString(localeActual(), { maximumFractionDigits: pt.meta.decimales || 0 })) + " / " +
+            Number(pt.meta.objetivo).toLocaleString(localeActual(), { maximumFractionDigits: pt.meta.decimales || 0 }) + (pt.meta.unidad ? " " + esc(pt.meta.unidad) : "") + "</small></div>" +
+            '<div class="tarea-progreso" style="width:100%"><i style="width:' + (pt.proyecto.avancePct === null ? 0 : pt.proyecto.avancePct) + '%"></i></div>' +
+            '<div class="fila" style="margin-top:6px"><button class="btn btn--chico" type="button" data-progreso-reg="' + esc(pt.meta.id) + '">' + esc(L("Registrar", "Log", "记录")) + '</button></div>' : "") +
           bloqueNotasEnlazadas("tarea", tareaP.id) +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + tareaP.id + '">' + esc(t("acc.editar")) + '</button>' +
           (tareaRec && !pend ? "" : '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '" data-fecha="' + esc(tareaRec ? pend : "") + '">' + esc(toggleTxt) + "</button>") +
@@ -5056,6 +5104,8 @@
           (n.enlaces.length ? '<div class="panel__bloque"><span>' + esc(L("Enlazada a", "Linked to", "链接到")) + '</span><small><button class="btn btn--chico" type="button" data-abrir-enlace="' + esc(n.enlaces[0].tipo) + ':' + esc(n.enlaces[0].id) + '">' + esc(n.enlaces[0].titulo) + "</button></small></div>" : "") +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-abrir-nota="' + n.id + '">' + esc(L("Abrir", "Open", "打开")) + '</button>' +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-nota="' + n.id + '">' + esc(L("Borrar", "Delete", "删除")) + '</button></div>';
+      } else if (pantalla === "progreso" && window.MimoBloqueProgreso && MimoBloqueProgreso.panel) {
+        html = MimoBloqueProgreso.panel() || ('<h2>' + esc(t("panel.detalle")) + '</h2><p class="panel__nota">' + esc(t("panel.detalleVacio")) + '</p>');
       } else {
         html = '<h2>' + esc(t("panel.detalle")) + '</h2><p class="panel__nota">' + esc(t("panel.detalleVacio")) + '</p>';
       }
@@ -5077,6 +5127,7 @@
         malla: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Cursos, niveles, prerrequisitos y créditos.", "Courses, levels, prerequisites and credits.", "课程、层级、先修要求和学分。")],
         calificaciones: [(estado.cursos || []).length + " " + L("ramos", "courses", "门课程"), L("Notas por categoría, examen y eximición.", "Grades by category, exam and exemption.", "按分类、考试和免考计算成绩。")],
         estudio: [sesionesActuales(estado.sesiones).length + " " + L("sesiones", "sessions", "会话"), L("Horas por ramo y meta semanal.", "Hours per course and weekly goal.", "按课程小时和每周目标。")],
+        progreso: [(function () { var n = estado.progreso && estado.progreso.metas ? estado.progreso.metas.filter(function (m) { return !m.archivada; }).length : 0; return n + " " + (n === 1 ? L("meta", "goal", "目标") : L("metas", "goals", "目标")); })(), L("Metas, registros y gráficos.", "Goals, entries and charts.", "目标、记录和图表。")],
         tiempo: [estado.tiempoHijos.length + " " + L("bloques dentro", "blocks inside", "个模块"), L("Cronómetro, temporizador, pomodoro y alarmas.", "Stopwatch, timer, pomodoro and alarms.", "秒表、计时器、番茄钟和闹钟。")],
         ajustes: [TEMAS.length + " " + L("temas", "themes", "主题"), L("Apariencia, idioma, datos y colaboración.", "Appearance, language, data and collaboration.", "外观、语言、数据和参与。")]
       }[pantalla] || [t("panel.sinContexto"), t("panel.estaSeccion")];
@@ -5113,6 +5164,13 @@
     });
     $$("#panel-cuerpo [data-borrar-nota]").forEach(function (b) {
       b.addEventListener("click", function () { borrarNota(b.getAttribute("data-borrar-nota")); });
+    });
+    $$("#panel-cuerpo [data-progreso-reg]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = b.getAttribute("data-progreso-reg");
+        ir("progreso");
+        if (window.MimoBloqueProgreso) MimoBloqueProgreso.abrirRegistro(id);
+      });
     });
     $$("#panel-cuerpo [data-abrir-calif]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -5273,6 +5331,7 @@
     pintarCalificaciones();
     pintarEstudio();
     pintarTiempo();
+    if (window.MimoBloqueProgreso) MimoBloqueProgreso.pintar();
     pintarPanel();
     pintarSplit();
     pintarAjustes();
@@ -5480,6 +5539,14 @@
           ir("malla", true); pintarMalla(); pintarPanel();
         } });
     });
+    if (instalado("progreso") && estado.progreso) {
+      (estado.progreso.metas || []).forEach(function (m) {
+        if (!tiene(m.nombre, m.unidad)) return;
+        out.push({ tipo: L("Meta", "Goal", "目标"), titulo: m.nombre,
+          sub: (m.periodo === "unica" ? L("meta única", "one-off", "一次性") : m.periodo) + (m.unidad ? " · " + m.unidad : ""),
+          run: function () { ir("progreso"); if (window.MimoBloqueProgreso) MimoBloqueProgreso.abrir(m.id); } });
+      });
+    }
     (estado.periodos || []).forEach(function (p) {
       if (!tiene(p.nombre)) return;
       out.push({ tipo: L("Periodo", "Term", "学期"), titulo: p.nombre, sub: p.semanas.length + " " + L("semanas", "weeks", "周") + " · " + (p.id === estado.periodoActivo ? L("activo", "active", "当前") : L("guardado", "saved", "已保存")),

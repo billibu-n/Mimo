@@ -124,3 +124,7 @@
 .panel__nota--md .katex{font-size:1em}
 .tarea-check:disabled{opacity:.45;cursor:default}
 .panel__nota--md{overflow-x:auto}
+
+/* Progreso en la tarjeta del tablero: solo si la tarea tiene una meta vinculada.
+   Es lectura: el número se registra en Progreso, no aquí. */
+.tarea-prog{display:inline-flex;align-items:center;align-self:flex-start;max-width:100%;border-radius:var(--r-sm);padding:0 var(--sp-1);background:var(--sup2);color:var(--muted2);font-size:var(--fs-xs);line-height:1.6;font-variant-numeric:tabular-nums;white-space:nowrap}

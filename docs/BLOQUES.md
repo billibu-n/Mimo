@@ -56,6 +56,7 @@ Los bloques base (`calendario`, `tareas`, `notas`, `ajustes`) viven en un mapa
 | `tiempo` | Tiempo y sus modos |
 | `academico` | Malla, Calificaciones, Estudio |
 | `aporte` | Aportes al calendario, si se diseñan en el futuro |
+| `personal` | Progreso: metas y registros personales |
 | `kit` | Academics u otros paquetes |
 
 Los `tags` son libres y se muestran como chips secundarios; no sustituyen a `naturaleza`.
@@ -81,7 +82,7 @@ El catálogo separa **origen** —quién provee el bloque— de **naturaleza** �
 - Estado aditivo en `prefs.catalogoOrigen` y `prefs.catalogoTag`; por defecto `todos` y vacío.
 - Los contadores salen de la lista completa, no de la filtrada.
 - Sin resultados: «No hay bloques con estos filtros.» + «Limpiar filtros».
-- El catálogo visible tiene 9 fichas: 4 base, 4 opcionales y el kit Academics.
+- El catálogo visible tiene 10 fichas: 4 base, 5 opcionales (Tiempo, Malla, Calificaciones, Estudio, Progreso) y el kit Academics.
 - `evaluaciones` fue eliminada y desvinculada en R60; no es una ficha oculta.
 - El detalle se abre desde la ficha y se cierra con `ESC`; el foco vuelve a la ficha.
 
@@ -143,3 +144,32 @@ Los filtros por origen, los tags, la búsqueda y el detalle se miden en
 3. Imágenes y respaldo: el detalle usa el icono del bloque; las capturas quedan
    como recurso opcional.
 4. Cierre y commit del detalle: **hecho en R60**.
+
+## 9. Progreso (bloque nuevo)
+
+- **id** `progreso`, **origen** `nativo`, **tipo** `seccion`, **naturaleza** `personal`,
+  **ficha** `09`, opcional (no fija).
+- **Datos**: `estado.progreso` (`v`, `metas`, `registros`). Contrato completo en
+  `ESQUEMA.md`. No se guarda el progreso: se calcula con `dominio/progreso.js`.
+- **Ciclo**: se instala y se quita como Tiempo, Malla, Calificaciones o Estudio; quitar no
+  borra las metas ni los registros. Reinstalar los devuelve.
+- **Categorías**: cada meta pertenece a una categoría editable (nombre, icono y color).
+  Son paneles plegables; `colapsada` se guarda. `General` siempre existe y no se elimina;
+  eliminar otra categoría mueve sus metas a `General` sin borrar ninguna.
+- **Muchas metas**: una categoría pinta 6 fichas (3 en ventana angosta) y ofrece «Ver N más»;
+  el resto no se renderiza hasta pedirlo. Plegar la categoría oculta todo su cuerpo.
+- **Orden**: las fichas se arrastran por el asa `⋮⋮` dentro de una categoría o hacia otra;
+  el orden y la categoría se guardan en `meta.orden` y `meta.categoriaId`. `Alt+↑/↓` hace
+  lo mismo con teclado. El orden de las categorías es `categoria.orden`.
+- **Panel**: en `Detalle`, resumen de la meta seleccionada (valor, objetivo, racha,
+  gráfico e historial). En `Contexto`, cuántas metas activas hay.
+- **Buscador**: encuentra metas por nombre y unidad; al elegir una, abre Progreso con esa
+  meta seleccionada.
+- **Academics**: si Estudio está instalado, una meta puede declarar `fuente: "sesiones"` y
+  leer sus horas sin copiarlas. Si Academics no está, la meta sigue existiendo y avisa que
+  no tiene fuente; no se borra nada.
+- **Tareas**: el vínculo vive en la meta (`tareaId`), nunca en la tarea. Tareas funciona
+  sin Progreso; si Progreso está, la tarjeta del tablero muestra el número y el panel de la
+  tarea ofrece Registrar. Completar la tarea no cambia el registro.
+- **Ficha**: el `detalle` va en el manifiesto, en es/en/zh. No usa imágenes: el icono del
+  bloque es el respaldo.

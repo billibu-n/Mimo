@@ -53,7 +53,8 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
     "periodos": [], "periodoActivo": null,
     "estudio": {"metaSemanal": 10, "metasRamo": {}, "metasSemana": {}},
     "tiempoModo": "crono", "tiempoHijos": ["crono", "temporizador", "pomodoro", "alarmas"],
-    "alarmas": []
+    "alarmas": [],
+    "progreso": {"v": 1, "categorias": [], "metas": [], "registros": []}
   },
   "extensiones": {}
 }
@@ -108,6 +109,68 @@ Una tarea que se repite añade `recurrencia` (o `null`):
 - `hechas`: ocurrencias cumplidas, por fecha ISO. No se duplica la tarea por ocurrencia: la
   serie se calcula al pintar y solo se guarda lo cumplido. Completar una fecha no pone
   `hecha` en la tarea; `hecha` sigue describiendo una tarea suelta.
+
+### Progreso
+
+`datos.progreso` es el bloque instalable del mismo nombre. No se guarda el progreso: se
+calcula con `app/js/dominio/progreso.js` a partir de dos listas.
+
+```json
+"progreso": {
+  "v": 1,
+  "categorias": [
+    {"id":"general","nombre":"General","icono":"diana","tono":"ac","orden":0,"colapsada":false},
+    {"id":"salud","nombre":"Salud","icono":"corazon","tono":"ok","orden":1,"colapsada":false}
+  ],
+  "metas": [
+    {"id":"m1","nombre":"Agua","unidad":"L","tipo":"suma","sentido":"subir",
+     "periodo":"dia","objetivo":2,"inicio":null,"desde":"2026-10-01","hasta":"",
+     "paso":0.25,"decimales":2,"tono":"ac","icono":"agua","fuente":"manual",
+     "categoriaId":"salud","orden":0,"tareaId":"t1","notaId":"","archivada":false,
+     "creada":"2026-11-11T14:00"}
+  ],
+  "registros": [
+    {"id":"r1","metaId":"m1","valor":0.5,"cuando":"2026-11-11T08:10",
+     "nota":"","tareaId":"","notaId":"","origen":"manual"}
+  ]
+}
+```
+
+- `tipo`: `suma` (acumula), `ultimo` (último valor), `mejor` (mejor marca) o `conteo`.
+- `sentido`: `subir` (mínimo) o `bajar` (máximo o techo). No es lo mismo un piso que un techo:
+  un techo no se “cumple” a las 0 unidades; se evalúa al cerrar el período.
+- `periodo`: `dia`, `semana`, `mes`, `anio` o `unica`. La semana empieza el lunes. `unica`
+  no se reinicia.
+- `objetivo` e `inicio`: `inicio` es opcional y solo sirve para medir el avance de una meta
+  de trayecto (30 → 50 kg, 90 → 75 kg). Sin `inicio`, no se inventa un porcentaje: se muestra
+  la distancia.
+- `fuente`: `manual` o `sesiones`. `sesiones` no copia datos: lee `datos.sesiones` y suma
+  `minutos / 60` en el período. Si Estudio no está instalado, la meta se muestra sin fuente
+  y no se borra.
+- `tareaId` y `notaId`: vínculos opcionales. La tarea es la única que manda sobre su estado;
+  completarla no cambia el registro. El vínculo se guarda en la meta, no en la tarea.
+- `archivada`: oculta la meta de la lista activa sin borrar sus registros.
+- `categoriaId`: categoría a la que pertenece la meta. Si falta o apunta a una categoría
+  inexistente, cae en `general`. `orden` es el orden elegido por el usuario; al arrastrar una
+  ficha se actualizan `categoriaId` y `orden`.
+
+Cada categoría es una ficha plegable con `id`, `nombre`, `icono`, `tono`, `orden` y
+`colapsada`. `general` siempre existe, se puede renombrar y cambiar de icono/color, pero no
+se elimina. Eliminar otra categoría mueve sus metas a `general`; no borra ninguna meta.
+
+Cuando una categoría supera **6 metas** (3 en ventana angosta), la sección muestra ese
+límite y un botón «Ver N más»; el resto no se pinta hasta pedirlo. Las categorías se pliegan y el estado `colapsada` se guarda.
+El orden dentro de una categoría se cambia arrastrando el asa `⋮⋮` de la ficha o con
+`Alt+↑/↓` sobre una ficha enfocada.
+
+Cada ocurrencia de una meta periódica se identifica con `metaId@período` (por ejemplo,
+`m1@2026-11-11` o `m1@2026-11`); el período de una meta `unica` es `metaId@unica`. Un vínculo
+o una nota que necesite apuntar a una ocurrencia concreta usa esa clave, no solo `metaId`.
+Las claves de período son: día ISO, lunes de la semana, `AAAA-MM`, `AAAA` o `unica`.
+
+Quitar el bloque no borra `progreso`. Eliminar una meta sí borra sus registros, con deshacer.
+La exportación de `mimo.entorno` y el respaldo llevan la clave tal cual: es aditiva y no
+cambia la versión del documento.
 
 ## 3. Malla
 

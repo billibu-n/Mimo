@@ -21,7 +21,8 @@ APP = RAIZ / "app"
 SHELL = (APP / "js" / "shell.js").read_text(encoding="utf-8")
 INDICE = (APP / "index.html").read_text(encoding="utf-8")
 REGISTRO = (APP / "js" / "nucleo" / "registro.js").read_text(encoding="utf-8")
-DOMINIO = [APP / "js" / "dominio" / "cursos.js", APP / "js" / "dominio" / "sesiones.js", APP / "js" / "dominio" / "recurrencia.js", APP / "js" / "dominio" / "sync-enlace.js"]
+DOMINIO = [APP / "js" / "dominio" / "cursos.js", APP / "js" / "dominio" / "sesiones.js", APP / "js" / "dominio" / "recurrencia.js", APP / "js" / "dominio" / "sync-enlace.js",
+             APP / "js" / "dominio" / "progreso.js"]
 FALLAS: list[str] = []
 
 
@@ -69,8 +70,11 @@ def main() -> int:
         if i != "academics":
             exigir((APP / "js" / "bloques" / i / "vista.js").exists(), f"bloque: {i}/vista.js")
             exigir((APP / "js" / "bloques" / i / "bloque.js").exists(), f"bloque: {i}/bloque.js")
+    exigir('id: "progreso"' in SHELL, "manifiesto opcional: progreso")
+    exigir((APP / "js" / "bloques" / "progreso" / "vista.js").exists(), "bloque: progreso/vista.js")
+    exigir((APP / "js" / "bloques" / "progreso" / "bloque.js").exists(), "bloque: progreso/bloque.js")
 
-    for i in ("calendario", "tareas", "notas", "tiempo", "malla", "calificaciones", "estudio"):
+    for i in ("calendario", "tareas", "notas", "tiempo", "malla", "calificaciones", "estudio", "progreso"):
         exigir(f'id="p-{i}"' not in INDICE, f"index: {i} no vive en el HTML estático")
         exigir(f"js/bloques/{i}/vista.js" in scripts, f"carga: vista de {i}")
 
@@ -91,6 +95,9 @@ def main() -> int:
 
     runner = (RAIZ / "pruebas" / "correr-gates.py").read_text(encoding="utf-8")
     exigir('"gate-bloques.py"' in runner, "arnés: gate-bloques incluido")
+    exigir('"gate-progreso.py"' in runner, "arnés: gate-progreso incluido")
+    exigir('"gate-progreso-motor.py"' in runner, "arnés: gate-progreso-motor incluido")
+    exigir('"gate-progreso-categorias.py"' in runner, "arnés: gate-progreso-categorias incluido")
     exigir('"gate-arquitectura.py"' in runner, "arnés: gate-arquitectura incluido")
     exigir((RAIZ / "pruebas" / "gate-bloques.py").exists(), "arnés: gate-bloques existe")
 

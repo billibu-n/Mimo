@@ -925,6 +925,7 @@ commit. No se declara verde por “se ve bien”.
 | **Malla** | `carrera`; edita `cursos` | — | `calificaciones.resumen` (cierre por nota) | — | `cursos.curso.*` (dominio) |
 | **Calificaciones** | `califs` | — | `cursos`, `calendario` (fuente) | `calificaciones` | `calificaciones.componente.*` |
 | **Estudio** | `estudio` | — | `cursos`, `periodos`, `sesiones` | `estudio` | `estudio.meta.*` |
+| **Progreso** | `progreso` | — | `tareas` (vínculo), `sesiones` (fuente) | — | — |
 | **Ajustes** | `prefs`, `panel`, `instalados`, `kits` | — | ajustes de bloques | shell | `prefs.*` |
 | **Academics** | — | hijos | — | pack | — |
 
@@ -961,6 +962,12 @@ Decisiones por bloque:
   instalando como metadato, pero no debe prometer una UI que no existe.
 - **Ajustes** no es bloque; es shell. Los periodos son ajustes de Calendario, no de
   Ajustes global.
+- **Progreso** es un bloque opcional y independiente. Sus metas y registros viven en
+  `estado.progreso`; no se guarda el progreso, se calcula. Puede leer sesiones de Estudio
+  como fuente (sin copiarlas) y guardar `tareaId` en la meta para el vínculo con Tareas.
+  Tareas no depende de Progreso: si el bloque no está, la tarjeta y el panel de la tarea
+  siguen igual; si está, muestran el número y ofrecen registrar. Completar la tarea no
+  escribe un registro.
 - **Academics** es un pack: instala/desinstala hijos de forma transaccional y registra
   cuáles agregó (`kits`) para no quitar los que el usuario instaló por su cuenta.
 

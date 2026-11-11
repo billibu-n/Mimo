@@ -4,7 +4,7 @@
   window.MIMO_I18N = {
     es: {
       "nav.calendario": "Calendario", "nav.tareas": "Tareas", "nav.notas": "Notas", "nav.tiempo": "Tiempo",
-      "nav.malla": "Malla", "nav.calificaciones": "Calificaciones", "nav.estudio": "Estudio", "nav.ajustes": "Ajustes",
+      "nav.malla": "Malla", "nav.calificaciones": "Calificaciones", "nav.estudio": "Estudio", "nav.progreso": "Progreso", "nav.ajustes": "Ajustes",
       "panel.contexto": "Contexto", "panel.detalle": "Detalle", "panel.notas": "Notas", "panel.bloques": "Bloques", "panel.ocultar": "Ocultar el panel", "panel.mostrar": "Mostrar el panel",
       "sub.calendario": "Todo lo que tiene fecha, en un solo sitio.",
       "sub.tareas": "Proyectos y tareas sobre tareas; el progreso se calcula solo.",
@@ -19,6 +19,7 @@
       "malla.pistaSel": "Ves solo los ramos y las líneas de este ramo: azul lo que necesita, naranjo lo que desbloquea. El resto se atenúa.",
       "sub.calificaciones": "Categorías, componentes, examen y eximición. La nota se calcula sola.",
       "sub.estudio": "Horas por ramo, meta semanal y avance. Lo registrado en Tiempo entra aquí.",
+      "sub.progreso": "Metas, registros y gráficos. Tú decides qué medir, cada cuánto y hasta dónde.",
       "est.horasSemana": "Horas semanales",
       "sub.ajustes": "Apariencia, idioma, datos y colaboración.",
       "grupo.aplicacion": "Aplicación", "grupo.aplicacion.sub": "Lo que aplica a toda la app.",
@@ -265,7 +266,7 @@
     },
     en: {
       "nav.calendario": "Calendar", "nav.tareas": "Tasks", "nav.notas": "Notes", "nav.tiempo": "Time",
-      "nav.malla": "Degree plan", "nav.calificaciones": "Grades", "nav.estudio": "Study", "nav.ajustes": "Settings",
+      "nav.malla": "Degree plan", "nav.calificaciones": "Grades", "nav.estudio": "Study", "nav.progreso": "Progress", "nav.ajustes": "Settings",
       "panel.contexto": "Context", "panel.detalle": "Details", "panel.notas": "Notes", "panel.bloques": "Blocks", "panel.ocultar": "Hide the panel", "panel.mostrar": "Show the panel",
       "sub.calendario": "Everything with a date, in one place.",
       "sub.tareas": "Projects and tasks on tasks; progress is calculated.",
@@ -280,6 +281,7 @@
       "malla.pistaSel": "You only see this course and its lines: blue what it needs, orange what it unlocks. Everything else fades.",
       "sub.calificaciones": "Categories, components, exam and exemption. Your grade is calculated.",
       "sub.estudio": "Hours per course, weekly goal and progress. Time sessions land here.",
+      "sub.progreso": "Goals, entries and charts. You choose what to measure, how often and how far.",
       "est.horasSemana": "Weekly hours",
       "sub.ajustes": "Appearance, language, data and collaboration.",
       "grupo.aplicacion": "Application", "grupo.aplicacion.sub": "What applies to the whole app.",
@@ -526,7 +528,7 @@
     },
     zh: {
       "nav.calendario": "日历", "nav.tareas": "任务", "nav.notas": "笔记", "nav.tiempo": "时间",
-      "nav.malla": "课程规划", "nav.calificaciones": "成绩", "nav.estudio": "学习", "nav.ajustes": "设置",
+      "nav.malla": "课程规划", "nav.calificaciones": "成绩", "nav.estudio": "学习", "nav.progreso": "进度", "nav.ajustes": "设置",
       "panel.contexto": "上下文", "panel.detalle": "详情", "panel.notas": "笔记", "panel.bloques": "模块", "panel.ocultar": "隐藏面板", "panel.mostrar": "显示面板",
       "sub.calendario": "所有带日期的事情，都集中在这里。",
       "sub.tareas": "任务可以层层拆分，进度自动计算。",
@@ -541,6 +543,7 @@
       "malla.pistaSel": "只显示这门课程及其连线：蓝色是所需，橙色是解锁。其余内容会淡出。",
       "sub.calificaciones": "分类、评分项、考试和免考。成绩自动计算。",
       "sub.estudio": "按课程统计小时数、每周目标和进度。时间记录会自动进入这里。",
+      "sub.progreso": "目标、记录和图表。你决定衡量什么、多久一次、到哪一步。",
       "est.horasSemana": "每周小时",
       "sub.ajustes": "外观、语言、数据和参与。",
       "grupo.aplicacion": "应用", "grupo.aplicacion.sub": "适用于整个应用的设置。",
