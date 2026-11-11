@@ -77,6 +77,13 @@ Cada entrada de `datos.tareas` conserva los campos de siempre (`titulo`, `tipo`,
 la tira **Sin fecha** del tablero. `nota` es la descripción en Markdown; se pinta con el mismo
 motor de Notas.
 
+`estado` es `pendiente` o `hecha`; `hecha` lo refleja y `hechaEn` guarda el día ISO del cierre
+para que **Hechas esta semana** cuente por cierre y no por vencimiento. `situacion` es la
+variable de fecha: `atrasada` (abierta con fecha anterior a hoy), `en_fecha` (con fecha de hoy
+o futura) o `sin_fecha`. Se recalcula en cada normalización y no sustituye a `hecha`. Cada
+ocurrencia que pinta el tablero lleva además una clave `id@fecha` (o `id@sin-fecha`), que la
+distingue de otra ocurrencia de la misma serie.
+
 Una tarea que se repite añade `recurrencia` (o `null`):
 
 ```json

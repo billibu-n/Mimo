@@ -8,9 +8,11 @@ Mide lo que el encargo pide:
   3. una tarea se completa desde la tarjeta, se tacha y pasa a Hechas;
   4. el menú contextual sube y baja la prioridad y también trae Completar;
   5. el clic derecho abre acciones en Tareas, Malla y Calendario;
-  6. los filtros Todas/Pendientes/Hoy/Ramos/Personales recortan el tablero;
+  6. los filtros Todas/Pendientes/Hoy y atrasadas/Ramos/Personales recortan el tablero;
   7. «Al día» muestra vencidas, de hoy y sin fecha, una vez, sin futuras ni hechas;
-  8. el estado sobrevive a reabrir y a 411 no desborda.
+  8. «Hoy y atrasadas» junta las vencidas con las de hoy y cada ocurrencia lleva
+     situación y clave propias; una vieja cerrada hoy cae en Hechas;
+  9. el estado sobrevive a reabrir y a 411 no desborda.
 """
 from __future__ import annotations
 
@@ -97,14 +99,14 @@ def main() -> int:
             exigir(page.locator(".tablero-col").count() == 3,
                    f"tablero: tres columnas — {page.locator('.tablero-col').count()}", fallas)
             titulos_cols = [c.inner_text().split("\n")[0] for c in page.locator(".tablero-col h3").all()]
-            exigir(titulos_cols == ["Hoy", "Esta semana", "Hechas esta semana"],
+            exigir(titulos_cols == ["Hoy y atrasadas", "Esta semana", "Hechas esta semana"],
                    f"tablero: jerarquía de columnas — {titulos_cols}", fallas)
             exigir(page.locator(".tablero-col").nth(0).locator(".tarjeta-tarea").count() == 2,
                    "tablero: dos tareas para hoy", fallas)
             exigir(page.locator(".tablero-col").nth(1).locator(".tarjeta-tarea").count() == 2,
                    "tablero: dos tareas esta semana", fallas)
             filtros = page.locator(".tareas-filtro").all_inner_texts()
-            exigir("Ramos\n2" in filtros and "Personales\n2" in filtros and "Hoy\n2" in filtros,
+            exigir("Ramos\n2" in filtros and "Personales\n2" in filtros and "Hoy y atrasadas\n2" in filtros,
                    f"filtros: cuentas por contexto — {filtros}", fallas)
 
             # Completar desde la tarjeta: se tacha y pasa a Hechas.
@@ -235,6 +237,102 @@ def main() -> int:
             exigir(restantes.count() == 2 and "Hoy" not in page.locator("#tareas-lista .tarea-nom").all_inner_texts(),
                    f"al día: completar quita la tarea — {restantes.count()}", fallas)
             exigir(not errores, f"al día: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+
+        # Tablero: la columna Hoy es la bandeja de atrasadas + hoy, y cada
+        # ocurrencia lleva su situación y su clave propias.
+        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        try:
+            ayer = (hoy - timedelta(days=3)).isoformat()
+            vieja = (hoy - timedelta(days=10)).isoformat()
+            manana = (hoy + timedelta(days=1)).isoformat()
+            domingo = hoy + timedelta(days=(6 - hoy.weekday()))
+            page.evaluate("""(datos) => {
+              const k = 'mimo.shell.v1';
+              const s = JSON.parse(localStorage.getItem(k) || '{}');
+              const base = {
+                tipo: 'tarea', padre_id: null, prioridad: 'media', contexto: '',
+                nota: '', recurrencia: null, creada: '', hora: '', enCalendario: false
+              };
+              s.tareas = [
+                Object.assign({}, base, {id: 'ta', titulo: 'Atrasada', estado: 'pendiente', hecha: false, fecha: datos.ayer, orden: 0}),
+                Object.assign({}, base, {id: 'th', titulo: 'Atrasada hecha', estado: 'hecha', hecha: true, fecha: datos.vieja, hechaEn: datos.hoy_iso, orden: 1}),
+                Object.assign({}, base, {id: 'tt', titulo: 'Hoy', estado: 'pendiente', hecha: false, fecha: datos.hoy_iso, orden: 2}),
+                Object.assign({}, base, {id: 'tf', titulo: 'Futura', estado: 'pendiente', hecha: false, fecha: datos.manana, orden: 3}),
+                Object.assign({}, base, {id: 'ts', titulo: 'Sin fecha', estado: 'pendiente', hecha: false, fecha: '', orden: 4}),
+                Object.assign({}, base, {id: 'td', titulo: 'Cerrada sin fecha', estado: 'hecha', hecha: true, fecha: '', hechaEn: datos.hoy_iso, orden: 5})
+              ];
+              s.vistaTareas = 'tablero';
+              localStorage.setItem(k, JSON.stringify(s));
+            }""", {"ayer": ayer, "vieja": vieja, "hoy_iso": hoy.isoformat(), "manana": manana})
+            page.goto(APP.as_uri(), wait_until="load")
+            page.wait_for_timeout(300)
+            page.locator('#tabs [data-ir="tareas"]').click()
+            page.wait_for_timeout(250)
+
+            col_hoy = page.locator(".tablero-col").nth(0)
+            exigir(col_hoy.locator("h3").inner_text().startswith("Hoy y atrasadas"),
+                   f"estados: la columna se llama Hoy y atrasadas — {col_hoy.locator('h3').inner_text()}", fallas)
+            titulos_hoy = col_hoy.locator(".tarjeta-tarea b").all_inner_texts()
+            exigir(titulos_hoy == ["Atrasada", "Hoy"],
+                   f"estados: atrasada y hoy en la misma columna — {titulos_hoy}", fallas)
+            atrasada = col_hoy.locator('.tarjeta-tarea[data-tarea="ta"]')
+            exigir(atrasada.get_attribute("data-situacion") == "atrasada" and
+                   atrasada.get_attribute("data-clave") == "ta@" + ayer,
+                   "estados: la atrasada lleva situación y clave de su fecha", fallas)
+            exigir("Atrasada" in atrasada.inner_text(),
+                   f"estados: la tarjeta se rotula — {atrasada.inner_text()}", fallas)
+            hoy_card = col_hoy.locator('.tarjeta-tarea[data-tarea="tt"]')
+            exigir(hoy_card.get_attribute("data-situacion") == "en_fecha" and
+                   hoy_card.get_attribute("data-clave") == "tt@" + hoy.isoformat(),
+                   "estados: hoy está en fecha y con su propia clave", fallas)
+            exigir(hoy_card.get_attribute("data-clave") != atrasada.get_attribute("data-clave"),
+                   "estados: la atrasada y la de hoy no comparten identificador", fallas)
+            futura = page.locator('.tarjeta-tarea[data-tarea="tf"]')
+            if manana <= domingo.isoformat():
+                exigir(futura.get_attribute("data-situacion") == "en_fecha",
+                       f"estados: la futura está en fecha — {futura.get_attribute('data-situacion')}", fallas)
+            else:
+                exigir(futura.count() == 0,
+                       "estados: un domingo no hay futura dentro de la semana", fallas)
+            sinfecha = page.locator('.tablero-sin-fecha .tarjeta-tarea[data-tarea="ts"]')
+            exigir(sinfecha.get_attribute("data-situacion") == "sin_fecha" and
+                   "Sin fecha" in sinfecha.inner_text(),
+                   f"estados: la tira sin fecha declara su estado — {sinfecha.inner_text()}", fallas)
+
+            filtros = page.locator(".tareas-filtro").all_inner_texts()
+            exigir("Hoy y atrasadas\n2" in filtros,
+                   f"estados: el filtro Hoy cuenta la atrasada — {filtros}", fallas)
+
+            hechas_col = page.locator(".tablero-col").nth(2)
+            exigir("Atrasada hecha" in hechas_col.inner_text(),
+                   f"estados: una vieja cerrada hoy cae en Hechas — {hechas_col.inner_text()}", fallas)
+            exigir(hechas_col.locator('.tarjeta-tarea[data-tarea="th"]').get_attribute("data-situacion") == "hecha",
+                   "estados: la cerrada no se confunde con atrasada", fallas)
+            exigir(hechas_col.locator('[data-tarea="td"]').count() == 1 and "Cerrada sin fecha" in hechas_col.inner_text(),
+                   "estados: una cerrada sin fecha también cae en Hechas", fallas)
+            exigir(page.locator('.tablero-sin-fecha [data-tarea="td"]').count() == 0,
+                   "estados: la cerrada sin fecha no se duplica en la tira", fallas)
+
+            atrasada.click()
+            page.wait_for_timeout(200)
+            panel = page.locator("#panel-cuerpo").inner_text()
+            exigir("Situación" in panel and "Atrasada" in panel,
+                   f"estados: el detalle declara la situación — {panel[:160]}", fallas)
+            guardada = [t for t in estado(page)["tareas"] if t["id"] == "ta"][0]
+            exigir(guardada.get("situacion") == "atrasada",
+                   f"estados: la situación vive en la tarea — {guardada.get('situacion')}", fallas)
+
+            page.locator('.tablero-col').nth(0).locator('[data-tarea="ta"] [data-check]').click()
+            page.wait_for_timeout(250)
+            exigir("Atrasada" not in page.locator(".tablero-col").nth(0).inner_text(),
+                   "estados: completar la atrasada la saca de Hoy", fallas)
+            exigir(page.locator('.tablero-col').nth(2).locator('[data-tarea="ta"]').count() == 1,
+                   "estados: la atrasada completada pasa a Hechas", fallas)
+            exigir(page.locator('.tablero-col').nth(2).locator('[data-tarea="ta"]').get_attribute("data-situacion") == "hecha",
+                   "estados: en Hechas deja de ser atrasada", fallas)
+            exigir(not errores, f"estados: consola limpia — {errores[:3]}", fallas)
         finally:
             ctx.close()
 

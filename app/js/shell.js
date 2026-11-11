@@ -614,7 +614,10 @@
     }
     var marcar = !x.hecha;
     x.hecha = marcar; x.estado = marcar ? "hecha" : "pendiente";
-    if (marcar && x.tipo === "proyecto") descendientes(x).forEach(function (h) { h.hecha = true; h.estado = "hecha"; });
+    x.hechaEn = marcar ? hoyISO() : "";
+    if (marcar && x.tipo === "proyecto") descendientes(x).forEach(function (h) {
+      h.hecha = true; h.estado = "hecha"; h.hechaEn = hoyISO();
+    });
     guardar(); pintarTareas(); pintarPanel();
   }
   function crearEventoEn(fecha) {
@@ -1890,13 +1893,14 @@
         }));
         if (rec && !rec.desde) rec = null;
       }
-      return conservar({
+      var tarea = conservar({
         id: t.id || "t" + i,
         titulo: t.titulo || "Sin título",
         tipo: t.tipo === "proyecto" ? "proyecto" : "tarea",
         padre_id: t.padre_id || null,
         estado: e,
         hecha: e === "hecha",
+        hechaEn: t.hechaEn || (e === "hecha" ? (t.fecha || "") : ""),
         prioridad: t.prioridad || "media",
         fecha: t.fecha || "",
         hora: t.hora || "",
@@ -1907,6 +1911,11 @@
         orden: typeof t.orden === "number" ? t.orden : i,
         creada: t.creada || ""
       }, t);
+      /* `situacion` es la variable de fecha de la tarea: atrasada, en_fecha o
+         sin_fecha. Se recalcula en cada normalización; se guarda para que los
+         vínculos y las pruebas lean lo mismo que pinta el tablero. */
+      tarea.situacion = situacionDe(tarea, undefined, tarea.hecha);
+      return tarea;
     });
   }
   function tareaPorId(id) { return estado.tareas.filter(function (t) { return t.id === id; })[0] || null; }
@@ -1916,7 +1925,14 @@
     if (!t) return null;
     var rec = esRecurrente(t);
     var iso = fecha || (rec ? "" : t.fecha || "");
-    return { t: t, fecha: iso, hecha: rec ? !!(t.recurrencia.hechas && t.recurrencia.hechas[iso]) : !!t.hecha, serie: rec };
+    var hecha = rec ? !!(t.recurrencia.hechas && t.recurrencia.hechas[iso]) : !!t.hecha;
+    var it = {
+      t: t, fecha: iso, hecha: hecha, serie: rec,
+      clave: t.id + "@" + (iso || "sin-fecha"),
+      hechaEn: hecha ? (rec ? iso : (t.hechaEn || t.fecha || "")) : ""
+    };
+    it.situacion = situacionDe(t, iso, hecha);
+    return it;
   }
   /* Todas las ocurrencias que caen entre dos fechas, incluidas las de una serie.
      Es la única puerta que usan el tablero, la barra y «Hoy». */
@@ -1938,6 +1954,91 @@
   }
   function proximaPendienteDe(t) {
     return esRecurrente(t) ? MimoRecurrencia.proximaPendiente(t.recurrencia, hoyISO()) : (t.fecha || "");
+  }
+  /* La primera ocurrencia pendiente de una serie, mirando también hacia atrás.
+     `proximaPendienteDe` empieza hoy y por eso no ve lo que quedó vencido. */
+  function primeraPendienteDe(t) {
+    if (!esRecurrente(t)) return t.fecha || "";
+    var rec = t.recurrencia;
+    if (!rec.desde) return "";
+    var hoy = hoyISO();
+    var occ = MimoRecurrencia.ocurrenciasEntre(rec, rec.desde, hoy);
+    for (var i = 0; i < occ.length; i++) {
+      if (!(rec.hechas && rec.hechas[occ[i]])) return occ[i];
+    }
+    return MimoRecurrencia.proximaPendiente(rec, hoy) || "";
+  }
+  function fechaReferenciaTarea(t) {
+    return esRecurrente(t) ? primeraPendienteDe(t) : (t.fecha || "");
+  }
+  /* Tres situaciones de una tarea abierta: atrasada, en fecha o sin fecha.
+     La hecha es otra cosa: se guarda aparte y no se mezcla con la fecha. */
+  function situacionDe(t, fecha, hecha) {
+    var f = fecha === undefined ? fechaReferenciaTarea(t) : (fecha || "");
+    var h = hecha === undefined
+      ? (esRecurrente(t) ? !!(f && t.recurrencia.hechas && t.recurrencia.hechas[f]) : !!t.hecha)
+      : !!hecha;
+    if (h) return "hecha";
+    if (f) return f < hoyISO() ? "atrasada" : "en_fecha";
+    if (esRecurrente(t) && MimoRecurrencia.serieCompleta && MimoRecurrencia.serieCompleta(t.recurrencia)) return "hecha";
+    return "sin_fecha";
+  }
+  function etiquetaSituacion(s) {
+    if (s === "atrasada") return L("Atrasada", "Overdue", "已逾期");
+    if (s === "sin_fecha") return L("Sin fecha", "No date", "无日期");
+    if (s === "hecha") return L("Hecha", "Done", "已完成");
+    return L("En fecha", "On schedule", "按期");
+  }
+  function claveTarea(t, fecha) {
+    var f = fecha === undefined ? (t.fecha || "") : (fecha || "");
+    return t.id + "@" + (f || "sin-fecha");
+  }
+  function ordenarItems(a, b) {
+    return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : ((a.t.orden || 0) - (b.t.orden || 0));
+  }
+  function sinDuplicados(items) {
+    var vistos = {};
+    return items.filter(function (i) {
+      var k = i.clave || claveTarea(i.t, i.fecha);
+      if (vistos[k]) return false;
+      vistos[k] = 1;
+      return true;
+    });
+  }
+  /* Lo abierto que ya pasó de fecha: una tarjeta por tarea, y en una serie
+     solo su ocurrencia pendiente más antigua. */
+  function itemsAtrasados(tareas) {
+    var out = [];
+    (tareas || estado.tareas || []).forEach(function (t) {
+      if (esRecurrente(t)) {
+        var f = primeraPendienteDe(t);
+        if (f && f < hoyISO()) out.push(itemDe(t, f));
+      } else if (!t.hecha && t.fecha && t.fecha < hoyISO()) {
+        out.push(itemDe(t, t.fecha));
+      }
+    });
+    return sinDuplicados(out).sort(ordenarItems);
+  }
+  function itemsHoy(tareas) {
+    var out = itemsAtrasados(tareas);
+    itemsEntre(hoyISO(), hoyISO(), tareas).forEach(function (i) { if (!i.hecha) out.push(i); });
+    return sinDuplicados(out).sort(ordenarItems);
+  }
+  /* Hechas por fecha de cierre, no por fecha de vencimiento: una tarea vieja
+     que se completa hoy tiene que aparecer en la semana en que se cerró. */
+  function itemsHechosSemana(tareas, desde, hasta) {
+    var out = [];
+    (tareas || estado.tareas || []).forEach(function (t) {
+      if (esRecurrente(t)) {
+        MimoRecurrencia.ocurrenciasEntre(t.recurrencia, desde, hasta).forEach(function (iso) {
+          if (t.recurrencia.hechas && t.recurrencia.hechas[iso]) out.push(itemDe(t, iso));
+        });
+      } else if (t.hecha) {
+        var f = t.hechaEn || t.fecha || "";
+        if (f >= desde && f <= hasta) out.push(itemDe(t, t.fecha || ""));
+      }
+    });
+    return sinDuplicados(out).sort(ordenarItems);
   }
   function hijosDe(id) { return estado.tareas.filter(function (t) { return t.padre_id === id; }); }
   function raicesTareas() {
@@ -1972,9 +2073,10 @@
   }
   function filaTarea(t, nivel, item) {
     var p = progreso(t), hijos = hijosDe(t.id), rec = esRecurrente(t);
-    var prox = rec ? proximaPendienteDe(t) : (t.fecha || "");
+    var prox = rec ? primeraPendienteDe(t) : (t.fecha || "");
     var fechaItem = item ? item.fecha : (rec ? (prox || "") : (t.fecha || ""));
     var hecho = item ? item.hecha : (rec ? !!(fechaItem && t.recurrencia.hechas[fechaItem]) : !!t.hecha);
+    var sit = item ? item.situacion : situacionDe(t, fechaItem, hecho);
     var puedeMarcar = !rec || !!prox;
     var fechaTxt = rec ? (prox ? fechaCorta(prox) : L("serie terminada", "series ended", "系列已结束")) : fechaCorta(t.fecha);
     if (t.hora) fechaTxt += " · " + horaTexto(t.hora);
@@ -1984,7 +2086,7 @@
     var sub = t.tipo === "proyecto"
       ? '<span class="tarea-progreso" title="' + esc(L(p.hechas + " de " + p.total, p.hechas + " of " + p.total, p.hechas + "/" + p.total)) + '"><i style="width:' + p.pct + '%"></i></span><small class="tarea-pct">' + p.pct + "%</small>"
       : "";
-    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + '" data-tarea="' + t.id + '" data-fecha="' + esc(fechaItem) + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
+    var html = '<div class="tarea-fila' + (estado.tareaSel === t.id ? " sel" : "") + (sit === "atrasada" ? " tarea-fila--atrasada" : "") + '" data-tarea="' + t.id + '" data-fecha="' + esc(fechaItem) + '" data-clave="' + esc(item ? item.clave : claveTarea(t, fechaItem)) + '" data-situacion="' + sit + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '" style="--nivel:' + nivel + '">' +
       '<button class="tarea-check' + (hecho ? " hecha" : "") + '" type="button" data-check="' + t.id + '" data-fecha="' + esc(fechaItem) + '"' + (puedeMarcar ? "" : " disabled") + ' aria-label="' + esc(hecho ? L("Marcar abierta", "Mark open", "标为未完成") : L("Marcar hecha", "Mark done", "标为完成")) + '">' + (hecho ? "✓" : "") + "</button>" +
       '<span class="tarea-nom' + (hecho ? " hecha" : "") + '">' + esc(t.titulo) + (t.tipo === "proyecto" ? ' <small class="tarea-tipo">' + esc(L("proyecto", "project", "项目")) + '</small>' : "") + serieBadge + "</span>" +
       '<span class="tarea-meta">' + esc(fechaTxt) + "</span>" +
@@ -1995,9 +2097,11 @@
   }
   function tarjetaTablero(item) {
     var tar = item.t, p = progreso(tar);
-    return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (item.hecha ? " hecha" : "") + '" data-tarea="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
+    var sit = item.situacion || situacionDe(tar, item.fecha, item.hecha);
+    return '<div class="tarjeta-tarea' + (estado.tareaSel === tar.id ? " sel" : "") + (item.hecha ? " hecha" : "") + (sit === "atrasada" ? " tarjeta-tarea--atrasada" : "") + '" data-tarea="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" data-clave="' + esc(item.clave || claveTarea(tar, item.fecha)) + '" data-situacion="' + sit + '" role="button" tabindex="0" title="' + esc(tr("cal.clicDerecho")) + '">' +
       '<button class="tarea-check' + (item.hecha ? " hecha" : "") + '" type="button" data-check="' + tar.id + '" data-fecha="' + esc(item.fecha) + '" aria-label="' + esc(item.hecha ? t("tar.reabrir") : t("tar.completar")) + '">' + (item.hecha ? "✓" : "") + "</button>" +
-      '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + (item.serie ? ' <small class="tarea-serie">↻ ' + esc(etiquetaCortaRecurrencia(tar.recurrencia)) + "</small>" : "") + "</b><small>" + esc(fechaCorta(item.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+      '<span class="tarjeta-cuerpo"><b>' + esc(tar.titulo) + (item.serie ? ' <small class="tarea-serie">↻ ' + esc(etiquetaCortaRecurrencia(tar.recurrencia)) + "</small>" : "") + "</b><small>" + esc(fechaCorta(item.hecha ? (item.hechaEn || item.fecha) : item.fecha)) + " · " + marcaContexto(tar.contexto) + esc(tar.contexto || L("sin contexto", "no context", "无情境")) + "</small>" +
+      (sit !== "hecha" ? '<span class="tarea-situacion tarea-situacion--' + sit + '">' + esc(etiquetaSituacion(sit)) + "</span>" : "") +
       (tar.tipo === "proyecto" ? '<span class="tarea-progreso"><i style="width:' + p.pct + '%"></i></span>' : "") + "</span></div>";
   }
   function bindTareas() {
@@ -2059,7 +2163,7 @@
   }
   function _pasaFiltroTareas(item, filtro) {
     if (filtro === "pendientes") return !item.hecha;
-    if (filtro === "hoy") return item.fecha === hoyISO();
+    if (filtro === "hoy") return !!item.fecha && item.fecha <= hoyISO();
     if (filtro === "ramos") return !!cursoDeContexto(item.t.contexto);
     if (filtro === "personal") return !cursoDeContexto(item.t.contexto);
     return true;
@@ -2068,10 +2172,10 @@
     normalizarTareas();
     var lista = $("#tareas-lista"), vacio = $("#tareas-vacio"), tareas = estado.tareas;
     /* Una serie cuenta una vez en «abiertas»/«hechas»: se cierra cuando ya no
-       tiene próxima ocurrencia (fin por fecha o por número de veces). */
-    var hoy = itemsEntre(hoyISO(), hoyISO(), tareas).filter(function (i) { return !i.hecha; });
-    var abiertas = tareas.filter(function (t) { return esRecurrente(t) ? !!proximaPendienteDe(t) : !t.hecha; });
-    var hechas = tareas.filter(function (t) { return esRecurrente(t) ? !proximaPendienteDe(t) : t.hecha; });
+       tiene una ocurrencia pendiente, mire hacia atrás o hacia adelante. */
+    var hoy = itemsHoy(tareas);
+    var abiertas = tareas.filter(function (t) { return esRecurrente(t) ? !!primeraPendienteDe(t) : !t.hecha; });
+    var hechas = tareas.filter(function (t) { return esRecurrente(t) ? !primeraPendienteDe(t) : t.hecha; });
     $("#kpi-hoy").textContent = String(hoy.length);
     $("#kpi-abiertas").textContent = String(abiertas.length);
     $("#kpi-hechas").textContent = String(hechas.length);
@@ -2085,7 +2189,7 @@
       b.classList.toggle("on", b.getAttribute("data-filtro") === filtroTareas);
     });
     var cuenta = { todas: tareas.length, pendientes: abiertas.length,
-      hoy: itemsEntre(hoyISO(), hoyISO(), tareas).length,
+      hoy: hoy.length,
       ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
       personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
     Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
@@ -2093,6 +2197,7 @@
     domingoSemana.setDate(domingoSemana.getDate() + 6);
     var lunesSemanaIso = isoFecha(lunesSemana), domingoSemanaIso = isoFecha(domingoSemana);
     var semanaItems = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas);
+    var hechasSemana = itemsHechosSemana(tareas, lunesSemanaIso, domingoSemanaIso);
     pintarAnilloTareas(semanaItems.filter(function (i) { return i.hecha; }).length,
       semanaItems.filter(function (i) { return !i.hecha; }).length);
     if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; bindTareas(); return; }
@@ -2100,34 +2205,33 @@
     if (vistaTareas === "arbol") {
       lista.innerHTML = raicesTareas().map(function (t) { return filaTarea(t, 0); }).join("");
     } else if (vistaTareas === "tablero") {
-      var visibles = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
-      var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha === hoyISO(); });
+      /* «Hoy» es la bandeja de lo que ya toca: atrasadas + hoy. La semana
+         queda para lo que todavía no vence y Hechas se mide por cierre. */
+      var atrasadas = itemsAtrasados(tareas);
+      var visibles = sinDuplicados(atrasadas.concat(semanaItems)).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+      var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha && i.fecha <= hoyISO(); });
       var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoSemanaIso; });
-      var colHechas = visibles.filter(function (i) { return i.hecha && i.fecha >= lunesSemanaIso && i.fecha <= domingoSemanaIso; });
+      var colHechas = hechasSemana.filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
       var col = function (titulo, items, clave) {
         return '<div class="tablero-col"><h3>' + esc(titulo) + " <span>" + items.length + "</span></h3>" + (items.map(tarjetaTablero).join("") || '<p class="muted">' + esc(t(clave)) + '</p>') + "</div>";
       };
-      /* Las tareas sin fecha no caben en ninguna columna: tienen su propia tira. */
+      /* Las tareas abiertas sin fecha no caben en ninguna columna: tienen su tira.
+         Las cerradas van a Hechas por su fecha de cierre. */
       var sinFecha = tareas.filter(function (t) { return !esRecurrente(t) && !t.fecha; })
         .map(function (t) { return itemDe(t, ""); })
-        .filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
+        .filter(function (i) { return !i.hecha && _pasaFiltroTareas(i, filtroTareas); });
       lista.innerHTML = '<div class="tablero">' + col(t("tar.col.hoy"), colHoy, "tar.vacio.hoy") + col(t("tar.col.semana"), colSemana, "tar.vacio.semana") + col(t("tar.col.hechas"), colHechas, "tar.vacio.hechas") + "</div>" +
         (sinFecha.length ? '<div class="tablero-sin-fecha"><h3>' + esc(L("Sin fecha", "No date", "无日期")) + " <span>" + sinFecha.length + '</span></h3><div class="tablero-sin-fecha__lista">' + sinFecha.map(tarjetaTablero).join("") + "</div></div>" : "");
     } else {
       /* «Al día»: lo accionable de hoy, una sola vez. Entran las tareas
          vencidas, las de hoy y las que no tienen fecha; quedan fuera las
-         futuras y las hechas. Una serie entra solo con su ocurrencia de hoy. */
+         futuras y las hechas. Una serie entra con su ocurrencia pendiente
+         más antigua y con la de hoy si son distintas. */
       var v = tareas.filter(function (t) {
         return !esRecurrente(t) && !t.hecha && (!t.fecha || t.fecha <= hoyISO());
       }).map(function (t) { return itemDe(t, t.fecha || ""); });
       hoy.forEach(function (i) { if (i.serie) v.push(i); });
-      var vistos = {};
-      v = v.filter(function (i) {
-        var clave = i.t.id + "|" + i.fecha;
-        if (vistos[clave]) return false;
-        vistos[clave] = 1;
-        return true;
-      });
+      v = sinDuplicados(v);
       v.sort(function (a, b) {
         if (!a.fecha && !b.fecha) return 0;
         if (!a.fecha) return 1;
@@ -2456,8 +2560,8 @@
     t.contexto = $("#tarea-contexto").value.trim();
     t.nota = $("#tarea-nota") ? $("#tarea-nota").value : (t.nota || "");
     t.recurrencia = rec;
-    if (rec) { t.hecha = false; t.estado = "pendiente"; }
-    if (!t.estado) { t.estado = "pendiente"; t.hecha = false; }
+    if (rec) { t.hecha = false; t.estado = "pendiente"; t.hechaEn = ""; }
+    if (!t.estado) { t.estado = "pendiente"; t.hecha = false; t.hechaEn = ""; }
     estado.tareaSel = t.id;
     estado.panel[pantalla] = "detalle";
     formEditId = null;
@@ -4916,18 +5020,22 @@
           bloqueNotasEnlazadas("evento", ev.id) + accionesEvento;
       } else if (pantalla === "tareas" && tareaP) {
         var p = progreso(tareaP), hijos = hijosDe(tareaP.id), padre = tareaP.padre_id ? tareaPorId(tareaP.padre_id) : null;
-        var tareaRec = esRecurrente(tareaP), prox = tareaRec ? proximaPendienteDe(tareaP) : "";
+        var tareaRec = esRecurrente(tareaP), pend = tareaRec ? primeraPendienteDe(tareaP) : "";
         var hoyOcurre = tareaRec && MimoRecurrencia.ocurre(tareaP.recurrencia, hoyISO());
         var hechaHoy = tareaRec && !!(tareaP.recurrencia.hechas && tareaP.recurrencia.hechas[hoyISO()]);
+        var atrasadaP = !!(tareaRec && pend && pend < hoyISO());
+        var sitP = situacionDe(tareaP, tareaRec ? pend : tareaP.fecha, tareaRec ? false : tareaP.hecha);
         var estadoTxt = tareaRec ? L("Se repite", "Repeats", "重复") : t(tareaP.hecha ? "panel.hecha" : "panel.abierta");
         var toggleTxt = tareaRec
-          ? (hoyOcurre ? (hechaHoy ? L("Reabrir hoy", "Reopen today", "重新打开今天") : L("Completar hoy", "Complete today", "完成今天")) : L("Completar la próxima", "Complete next", "完成下一次"))
+          ? (atrasadaP ? L("Completar la atrasada", "Complete overdue", "完成逾期")
+            : (hoyOcurre ? (hechaHoy ? L("Reabrir hoy", "Reopen today", "重新打开今天") : L("Completar hoy", "Complete today", "完成今天")) : L("Completar la próxima", "Complete next", "完成下一次")))
           : t(tareaP.hecha ? "panel.reabrir" : "panel.marcarHecha");
         html = "<h2>" + esc(t(tareaP.tipo === "proyecto" ? "panel.proyecto" : "panel.tarea")) + "</h2><h3>" + esc(tareaP.titulo) + "</h3>" +
           '<div class="panel__bloque"><span>' + esc(t("panel.estado")) + '</span><small>' + esc(estadoTxt) + "</small></div>" +
+          (!tareaP.hecha && sitP !== "hecha" ? '<div class="panel__bloque"><span>' + esc(L("Situación", "Situation", "情况")) + '</span><small><span class="tarea-situacion tarea-situacion--' + sitP + '">' + esc(etiquetaSituacion(sitP)) + "</span></small></div>" : "") +
           '<div class="panel__bloque"><span>' + esc(tareaRec ? L("Desde", "Since", "开始") : t("panel.fecha")) + '</span><small>' + esc(fechaCorta(tareaP.fecha)) + "</small></div>" +
           (tareaRec ? '<div class="panel__bloque"><span>' + esc(L("Repetición", "Repeat", "重复")) + '</span><small>' + esc(resumenRecurrencia(tareaP.recurrencia)) + "</small></div>" +
-            '<div class="panel__bloque"><span>' + esc(L("Próxima", "Next", "下次")) + '</span><small>' + esc(prox ? fechaLarga(prox) : L("sin próxima", "none", "无")) + "</small></div>" +
+            '<div class="panel__bloque"><span>' + esc(L("Próxima", "Next", "下次")) + '</span><small>' + esc(pend ? fechaLarga(pend) : L("sin próxima", "none", "无")) + "</small></div>" +
             '<div class="panel__bloque"><span>' + esc(L("Cumplidas", "Completed", "已完成")) + '</span><small>' + MimoRecurrencia.cumplidas(tareaP.recurrencia) + "</small></div>" : "") +
           '<div class="panel__bloque"><span>' + esc(t("panel.prioridad")) + '</span><small>' + esc(etiquetaPrioridad(tareaP.prioridad)) + "</small></div>" +
           (tareaP.contexto ? '<div class="panel__bloque"><span>' + esc(t("panel.contexto")) + '</span><small>' + esc(tareaP.contexto) + "</small></div>" : "") +
@@ -4937,7 +5045,7 @@
           (tareaP.nota ? '<h2>' + esc(L("Descripción", "Description", "描述")) + '</h2><div class="panel__nota panel__nota--md">' + (window.MimoEditorMD ? MimoEditorMD.renderMarkdown(tareaP.nota) : esc(tareaP.nota)) + "</div>" : "") +
           bloqueNotasEnlazadas("tarea", tareaP.id) +
           '<div class="fila" style="margin-top:10px"><button class="btn btn--chico" type="button" data-editar-tarea="' + tareaP.id + '">' + esc(t("acc.editar")) + '</button>' +
-          (tareaRec && !prox ? "" : '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '" data-fecha="' + esc(tareaRec ? (hoyOcurre ? hoyISO() : prox) : "") + '">' + esc(toggleTxt) + "</button>") +
+          (tareaRec && !pend ? "" : '<button class="btn btn--chico" type="button" data-toggle-tarea="' + tareaP.id + '" data-fecha="' + esc(tareaRec ? pend : "") + '">' + esc(toggleTxt) + "</button>") +
           '<button class="btn btn--chico btn-peligro" type="button" data-borrar-tarea="' + tareaP.id + '">' + esc(t("acc.borrar")) + "</button></div>";
 
       } else if (pantalla === "notas" && n) {

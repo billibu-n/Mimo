@@ -137,10 +137,13 @@ def main() -> int:
             crear_evento(page, "Entrega de ensayo", fechas[1], "18:00", "Entregas")
             crear_evento(page, "Cumpleaños de Ana", fechas[2], "", "Personal")
             crear_evento(page, "Reunión de estudio", fechas[3], "20:30", "Estudio")
+            # Un evento en la semana actual: la vista Semana no depende de que
+            # una de las cuatro fechas fijas caiga en esta semana.
+            crear_evento(page, "Control de la semana", hoy.isoformat(), "08:00", "Evaluaciones")
             page.locator('#vista-calendario [data-cal-vista="mes"]').click()
             page.wait_for_timeout(200)
-            exigir(page.locator("#cal-grid .cal-dia .evento-chip").count() == 4,
-                   f"mes: los cuatro eventos se ven — {page.locator('#cal-grid .evento-chip').count()}", fallas)
+            exigir(page.locator("#cal-grid .cal-dia .evento-chip").count() == 5,
+                   f"mes: los cinco eventos se ven — {page.locator('#cal-grid .evento-chip').count()}", fallas)
             exigir(any("EVALUACIONES" in c.inner_text().upper() for c in page.locator("#cal-grid .evento-chip").all()),
                    "mes: el chip conserva la categoría", fallas)
             exigir(len(estado(page)["eventoTipos"]) == 4,
@@ -192,8 +195,8 @@ def main() -> int:
                    f"semestre: semana + 7 días + estudio — {page.locator('.cal-sem thead th').count()}", fallas)
             exigir(page.locator(".cal-sem tr.actual").count() == 1,
                    "semestre: la fila de la semana actual está marcada", fallas)
-            exigir(page.locator(".cal-sem .evento-chip").count() == 4,
-                   f"semestre: los cuatro eventos se ven — {page.locator('.cal-sem .evento-chip').count()}", fallas)
+            exigir(page.locator(".cal-sem .evento-chip").count() == 5,
+                   f"semestre: los cinco eventos se ven — {page.locator('.cal-sem .evento-chip').count()}", fallas)
             horas = page.locator(".cal-sem td.cal-sem-est b").all_inner_texts()
             exigir(any(h not in ("0 h", "0,0 h") for h in horas),
                    f"semestre: la sesión registrada se mide en la columna Estudio — {horas[:3]}", fallas)
@@ -281,7 +284,7 @@ def main() -> int:
             exigir(any("EVALUACIONES" in c.inner_text().upper() for c in page.locator(".cal-semana-dia .evento-chip").all()),
                    "semana: el chip conserva la categoría", fallas)
 
-            page.locator(".cal-semana-dia .evento-chip").first.click()
+            page.locator(".cal-semana-dia .evento-chip", has_text="Control de la semana").first.click()
             page.wait_for_timeout(220)
             exigir("Categoría" in page.locator("#panel-cuerpo").inner_text() and
                    "Evaluaciones" in page.locator("#panel-cuerpo").inner_text(),

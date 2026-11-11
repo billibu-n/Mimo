@@ -263,7 +263,51 @@ def main() -> int:
         finally:
             ctx.close()
 
-        # 7) 411: el modal cabe y la recurrencia no desborda.
+        # 7) Serie vencida: la tarjeta muestra la ocurrencia más antigua y el
+        # check no salta a hoy. La clave separa esa ocurrencia de su gemela.
+        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        try:
+            desde = (hoy - timedelta(days=3)).isoformat()
+            page.evaluate("""(d) => {
+              const k = 'mimo.shell.v1';
+              const s = JSON.parse(localStorage.getItem(k) || '{}');
+              s.tareas = [{
+                id: 'tv', titulo: 'Serie vencida', tipo: 'tarea', padre_id: null,
+                estado: 'pendiente', hecha: false, prioridad: 'media', fecha: d,
+                hora: '', enCalendario: false, contexto: '', nota: '', orden: 0,
+                creada: '', recurrencia: {
+                  frecuencia: 'diaria', intervalo: 1, dias: [], desde: d,
+                  fin: 'nunca', hasta: '', veces: 10, hechas: {}
+                }
+              }];
+              s.vistaTareas = 'tablero';
+              localStorage.setItem(k, JSON.stringify(s));
+            }""", desde)
+            page.goto(APP.as_uri(), wait_until="load")
+            page.wait_for_timeout(300)
+            page.locator('#tabs [data-ir="tareas"]').click()
+            page.wait_for_timeout(250)
+            tarjeta = page.locator('.tarjeta-tarea[data-tarea="tv"]').first
+            exigir(tarjeta.get_attribute("data-situacion") == "atrasada",
+                   f"vencida: la serie entra como atrasada — {tarjeta.get_attribute('data-situacion')}", fallas)
+            exigir(tarjeta.get_attribute("data-fecha") == desde and
+                   tarjeta.get_attribute("data-clave") == "tv@" + desde,
+                   f"vencida: la tarjeta es la ocurrencia más antigua — {tarjeta.get_attribute('data-fecha')} / {tarjeta.get_attribute('data-clave')}", fallas)
+            tarjeta.locator("[data-check]").click()
+            page.wait_for_timeout(250)
+            t = datos(page)["tareas"][0]
+            exigir(t["recurrencia"]["hechas"].get(desde) is True,
+                   f"vencida: se cumple la ocurrencia mostrada — {t['recurrencia']['hechas']}", fallas)
+            exigir(t["recurrencia"]["hechas"].get(hoy_iso) is not True,
+                   "vencida: el check no se salta a hoy", fallas)
+            siguiente = page.locator('.tarjeta-tarea[data-tarea="tv"]').first
+            exigir(siguiente.get_attribute("data-fecha") == (hoy - timedelta(days=2)).isoformat(),
+                   f"vencida: la serie avanza a la siguiente atrasada — {siguiente.get_attribute('data-fecha')}", fallas)
+            exigir(not errores, f"vencida: consola limpia — {errores[:3]}", fallas)
+        finally:
+            ctx.close()
+
+        # 8) 411: el modal cabe y la recurrencia no desborda.
         ctx, page, errores = nav.abrir(APP, 411, 900)
         try:
             page.locator('#tabs [data-ir="tareas"]').click()

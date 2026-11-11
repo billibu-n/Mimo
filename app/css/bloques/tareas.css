@@ -58,6 +58,16 @@
 .tarjeta-tarea.hecha b{text-decoration:line-through;color:var(--muted)}
 .tarjeta-tarea.hecha{opacity:.72}
 
+/* Situación temporal: atrasada, en fecha o sin fecha. La hecha se tacha y
+   no lleva insignia: es otra dimensión, no un cuarto estado de fecha. */
+.tarea-fila--atrasada{border-left:3px solid var(--warn);padding-left:calc(var(--sp-2) - 2px + (var(--nivel,0) * 14px))}
+.tarjeta-tarea--atrasada{border-left:3px solid var(--warn)}
+.tarea-situacion{display:inline-block;padding:0 6px;border:1px solid var(--line2);border-radius:999px;background:var(--sup2);color:var(--muted);font-size:var(--fs-xs);line-height:1.7;white-space:nowrap;vertical-align:middle}
+.tarjeta-cuerpo .tarea-situacion{margin:0 0 3px}
+.tarea-situacion--atrasada{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,var(--sup));color:var(--warn);font-weight:600}
+.tarea-situacion--en_fecha{border-color:var(--line2);color:var(--muted)}
+.tarea-situacion--sin_fecha{border-style:dashed;color:var(--muted)}
+
 /* ---- ventana de tarea: descripción Markdown, fecha opcional y recurrencia ---- */
 .modal-campos .editor-md .nota-cuerpo{min-height:120px;max-height:42vh;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);resize:vertical}
 .modal-campos .editor-md .nota-preview{min-height:140px;max-height:42vh;border:1px solid var(--line2);border-radius:var(--r-sm);background:var(--sup);padding:var(--sp-2);overflow:auto}
