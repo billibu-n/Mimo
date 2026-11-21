@@ -1,6 +1,6 @@
 # Plan de correcciones estéticas — Mimo
 
-> **Estado:** Fase 0, E-14 y E-17 hechas. Fase 1 en curso: sigue E-18.
+> **Estado:** Fase 1 completa (E-14, E-17, E-18). Sigue Fase 2A con E-01.
 > **Base:** `t/beta-9` en `4896e08`.
 > **Rama de trabajo:** `t/estetica`, creada desde `4896e08`; se mergea a `t/beta-9` al cerrar.
 > **Fuente de verdad:** este archivo. Si el chat se compacta o se pierde, se retoma por §0.
@@ -107,8 +107,8 @@ Un botón, un campo y un desplegable se definen **una vez**. Las secciones no es
 
 | ID | Decisión | Default propuesto | Estado |
 |---|---|---|---|
-| D-01 | ¿Qué llena el anillo de Tareas? | Lo **cumplido**: arco `--ok`, pista `--pista`, texto «% al día». Deja de ser un donut de lo pendiente. | pendiente |
-| D-02 | ¿Qué cuenta «Hoy y atrasadas»? | **Ocurrencias** (las tarjetas que hay que hacer), igual en KPI y columna. Se renombra el KPI a «pendientes hoy/atrasadas». | pendiente |
+| D-01 | ¿Qué llena el anillo de Tareas? | Lo **cumplido**: arco `--ok`, pista `--pista`, texto «% al día». Deja de ser un donut de lo pendiente. | provisional (E-17) |
+| D-02 | ¿Qué cuenta «Hoy y atrasadas»? | **Ocurrencias** (las tarjetas que hay que hacer), igual en KPI y columna. Se renombra el KPI a «pendientes hoy/atrasadas». | provisional (E-18) |
 | D-03 | ¿De qué color es «disponible»? | `--ac` (azul) en Malla, leyenda y Calificaciones. `--q` queda solo para estimado/proyectado. | pendiente |
 | D-04 | ¿De qué color es «activo»? | `--ok` (verde) en lista y resumen. «Sin examen / no hace falta» pasa a neutro (`--sup2`/`--muted`), no a `--warn`. | pendiente |
 | D-05 | ¿La paleta de ramos se adapta al tema? | Sí: se conservan los 9 tonos de identidad y se deriva `--ramo-visible` con `color-mix` hacia `--fg` en temas oscuros, para garantizar 3:1 sin cambiar el tono. | pendiente |
@@ -157,7 +157,7 @@ Se actualiza en el mismo commit del cambio. `Commit` es el SHA corto.
 | E-00 | 0 | Baseline + gate | hecho | E-00 |
 | E-14 | 1 | Badge q legible | hecho | E-14 |
 | E-17 | 1 | Anillo de Tareas | hecho | E-17 |
-| E-18 | 1 | Conteo hoy/atrasadas | pendiente | — |
+| E-18 | 1 | Conteo hoy/atrasadas | hecho | E-18 |
 | E-01 | 2A | Escala tipográfica | pendiente | — |
 | E-12 | 2A | «Disponible» | pendiente | — |
 | E-13 | 2A | «Activo» y «sin examen» | pendiente | — |
@@ -460,6 +460,7 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-21 | E-00 | E-00 | Gate `gate-estetica.py` creado y agregado al suite (42). Baseline verde: 10 temas, contraste de `--muted`, 9 secciones sin desborde a 1440. |
 | 2026-11-21 | E-14 | E-14 | Badge «Desde Estudio» con `--fg` sobre `--info-bg`: 9,74–21:1 en los 10 temas (antes 1,83–2,35 en tres oscuros). Gate lo asserta. |
 | 2026-11-21 | E-17 | E-17 | El anillo llena lo cumplido con `--ok` sobre pista `--pista`; texto «% al día»; el texto SVG pasa a `--fs-lg`/`--fs-xs` y el anillo a 110 px. Con 2 hechas/1 pendiente marca 67 %. `gate-tareas-anillo` actualizado. |
+| 2026-11-21 | E-18 | E-18 | KPI, columna y filtro cuentan las ocurrencias visibles con fecha hasta hoy: 5/5/5 con una serie de lunes a viernes. Etiqueta del KPI: «pendientes hoy/atrasadas». `gate-tareas-tablero` pasa a reloj fijo (miércoles 18/11) para no depender del día. |
 
 ## 10. Cola por gravedad (resumen)
 

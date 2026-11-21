@@ -2212,7 +2212,18 @@
     var hoy = itemsHoy(tareas);
     var abiertas = tareas.filter(function (t) { return esRecurrente(t) ? !!primeraPendienteDe(t) : !t.hecha; });
     var hechas = tareas.filter(function (t) { return esRecurrente(t) ? !primeraPendienteDe(t) : t.hecha; });
-    $("#kpi-hoy").textContent = String(hoy.length);
+    /* La cifra de «hoy y atrasadas» es la misma que pinta la columna: las
+       ocurrencias visibles con fecha hasta hoy, no una por tarea. */
+    var lunesSemana = lunesDe(new Date()), domingoSemana = new Date(lunesSemana.getTime());
+    domingoSemana.setDate(domingoSemana.getDate() + 6);
+    var lunesSemanaIso = isoFecha(lunesSemana), domingoSemanaIso = isoFecha(domingoSemana);
+    var semanaItems = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas);
+    var hechasSemana = itemsHechosSemana(tareas, lunesSemanaIso, domingoSemanaIso);
+    var atrasadas = itemsAtrasados(tareas);
+    var hoyTablero = sinDuplicados(atrasadas.concat(semanaItems)).filter(function (i) {
+      return !i.hecha && i.fecha && i.fecha <= hoyISO();
+    });
+    $("#kpi-hoy").textContent = String(hoyTablero.length);
     $("#kpi-abiertas").textContent = String(abiertas.length);
     $("#kpi-hechas").textContent = String(hechas.length);
     $("#kpi-progreso").textContent = (tareas.length ? Math.round(hechas.length / tareas.length * 100) : 0) + " %";
@@ -2225,15 +2236,10 @@
       b.classList.toggle("on", b.getAttribute("data-filtro") === filtroTareas);
     });
     var cuenta = { todas: tareas.length, pendientes: abiertas.length,
-      hoy: hoy.length,
+      hoy: hoyTablero.length,
       ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
       personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
     Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
-    var lunesSemana = lunesDe(new Date()), domingoSemana = new Date(lunesSemana.getTime());
-    domingoSemana.setDate(domingoSemana.getDate() + 6);
-    var lunesSemanaIso = isoFecha(lunesSemana), domingoSemanaIso = isoFecha(domingoSemana);
-    var semanaItems = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas);
-    var hechasSemana = itemsHechosSemana(tareas, lunesSemanaIso, domingoSemanaIso);
     pintarAnilloTareas(semanaItems.filter(function (i) { return i.hecha; }).length,
       semanaItems.filter(function (i) { return !i.hecha; }).length);
     if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; bindTareas(); return; }
@@ -2243,7 +2249,6 @@
     } else if (vistaTareas === "tablero") {
       /* «Hoy» es la bandeja de lo que ya toca: atrasadas + hoy. La semana
          queda para lo que todavía no vence y Hechas se mide por cierre. */
-      var atrasadas = itemsAtrasados(tareas);
       var visibles = sinDuplicados(atrasadas.concat(semanaItems)).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
       var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha && i.fecha <= hoyISO(); });
       var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoSemanaIso; });

@@ -225,6 +225,25 @@ def main() -> int:
                 etq = (page.locator("#tareas-anillo .tareas-anillo__etq").text_content() or "").strip()
                 exigir(pct_txt == "50%", f"E-17: el número es el % cumplido — {pct_txt}", fallas)
                 exigir(etq in ("al día", "on track", "已完成"), f"E-17: la etiqueta dice al día — {etq}", fallas)
+
+            # E-18: KPI, columna y filtro cuentan la misma cosa.
+            datos = estado()
+            datos["tareas"] = [{
+                "id": "r1", "titulo": "Serie de la semana", "tipo": "tarea",
+                "estado": "pendiente", "hecha": False, "prioridad": "media",
+                "fecha": lunes.isoformat(), "contexto": "", "nota": "", "orden": 0,
+                "recurrencia": {"frecuencia": "diaria", "intervalo": 1,
+                                 "dias": [1, 2, 3, 4, 5], "desde": lunes.isoformat(),
+                                 "fin": "nunca", "hasta": "", "veces": 10, "hechas": {}},
+            }]
+            abrir_estado(page, datos)
+            page.locator('#tabs [data-ir="tareas"]').click()
+            page.wait_for_timeout(220)
+            kpi = page.locator("#kpi-hoy").inner_text().strip()
+            col = page.locator(".tablero-col").first.locator("h3 span").inner_text().strip()
+            filtro = page.locator("#tar-f-hoy").inner_text().strip()
+            exigir(kpi == col == filtro,
+                   f"E-18: KPI, columna y filtro coinciden — {kpi}/{col}/{filtro}", fallas)
             return salir("gate-estetica", fallas)
         finally:
             ctx.close()

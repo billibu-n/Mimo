@@ -17,7 +17,7 @@ Mide lo que el encargo pide:
 from __future__ import annotations
 
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
@@ -69,11 +69,11 @@ def estado(page):
 
 def main() -> int:
     fallas: list[str] = []
-    hoy = date.today()
+    hoy = date(2026, 11, 18)  # miércoles: la semana tiene días a ambos lados
     manana = (hoy + timedelta(days=1)).isoformat()
     con_dias = (hoy + timedelta(days=3)).isoformat()
     with Navegador() as nav:
-        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        ctx, page, errores = nav.abrir(APP, 1440, 950, reloj="2026-11-18T10:00:00")
         page.on("dialog", lambda d: d.accept())
         try:
             instalar_academics(page)
@@ -202,7 +202,7 @@ def main() -> int:
             ctx.close()
 
         # «Al día»: vencidas, de hoy y sin fecha, una sola vez; ni futuras ni hechas.
-        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        ctx, page, errores = nav.abrir(APP, 1440, 950, reloj="2026-11-18T10:00:00")
         page.on("dialog", lambda d: d.accept())
         try:
             page.locator('#tabs [data-ir="tareas"]').click()
@@ -242,7 +242,7 @@ def main() -> int:
 
         # Tablero: la columna Hoy es la bandeja de atrasadas + hoy, y cada
         # ocurrencia lleva su situación y su clave propias.
-        ctx, page, errores = nav.abrir(APP, 1440, 950)
+        ctx, page, errores = nav.abrir(APP, 1440, 950, reloj="2026-11-18T10:00:00")
         try:
             ayer = (hoy - timedelta(days=3)).isoformat()
             vieja = (hoy - timedelta(days=10)).isoformat()
@@ -336,7 +336,7 @@ def main() -> int:
         finally:
             ctx.close()
 
-        ctx, page, errores = nav.abrir(APP, 411, 900)
+        ctx, page, errores = nav.abrir(APP, 411, 900, reloj="2026-11-18T10:00:00")
         try:
             page.locator('#tabs [data-ir="tareas"]').click()
             page.wait_for_timeout(200)
