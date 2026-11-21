@@ -1,6 +1,6 @@
 # Plan de correcciones estéticas — Mimo
 
-> **Estado:** Fase 1 completa (E-14, E-17, E-18). Sigue Fase 2A con E-01.
+> **Estado:** Fase 1 completa y suite 42/42 en `9dcd8a0`. Sigue Fase 2A con E-01 (D-09 pendiente: default letra en `rem`).
 > **Base:** `t/beta-9` en `4896e08`.
 > **Rama de trabajo:** `t/estetica`, creada desde `4896e08`; se mergea a `t/beta-9` al cerrar.
 > **Fuente de verdad:** este archivo. Si el chat se compacta o se pierde, se retoma por §0.
@@ -461,6 +461,7 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-21 | E-14 | E-14 | Badge «Desde Estudio» con `--fg` sobre `--info-bg`: 9,74–21:1 en los 10 temas (antes 1,83–2,35 en tres oscuros). Gate lo asserta. |
 | 2026-11-21 | E-17 | E-17 | El anillo llena lo cumplido con `--ok` sobre pista `--pista`; texto «% al día»; el texto SVG pasa a `--fs-lg`/`--fs-xs` y el anillo a 110 px. Con 2 hechas/1 pendiente marca 67 %. `gate-tareas-anillo` actualizado. |
 | 2026-11-21 | E-18 | E-18 | KPI, columna y filtro cuentan las ocurrencias visibles con fecha hasta hoy: 5/5/5 con una serie de lunes a viernes. Etiqueta del KPI: «pendientes hoy/atrasadas». `gate-tareas-tablero` pasa a reloj fijo (miércoles 18/11) para no depender del día. |
+| 2026-11-21 | — | 9dcd8a0 | Suite completa: 42/42 en verde. Fase 1 cerrada. Siguiente: E-01. |
 
 ## 10. Cola por gravedad (resumen)
 
