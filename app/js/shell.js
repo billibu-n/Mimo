@@ -2180,21 +2180,16 @@
     var svg = $("#tareas-anillo");
     if (!svg) return;
     var total = hechas + pendientes;
-    var pct = total ? Math.round(pendientes / total * 100) : 0;
+    var pct = total ? Math.round(hechas / total * 100) : 0;
     var C = 2 * Math.PI * 50;
     var lenH = total ? (hechas / total) * C : 0;
-    var lenP = total ? (pendientes / total) * C : 0;
     var html = '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--pista)" stroke-width="14"></circle>';
     if (lenH > 0) {
       html += '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--ok)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' +
         lenH.toFixed(1) + " " + C.toFixed(1) + '" transform="rotate(-90 60 60)"></circle>';
     }
-    if (lenP > 0) {
-      html += '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--fg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' +
-        lenP.toFixed(1) + " " + C.toFixed(1) + '" stroke-dashoffset="-' + lenH.toFixed(1) + '" transform="rotate(-90 60 60)"></circle>';
-    }
-    html += '<text x="60" y="57" text-anchor="middle" font-size="24" font-weight="700" fill="var(--fg)">' + pct + "%</text>" +
-      '<text x="60" y="74" text-anchor="middle" font-size="10" fill="var(--muted)">' + esc(L("pendientes", "pending", "待办")) + "</text>";
+    html += '<text class="tareas-anillo__pct" x="60" y="57" text-anchor="middle">' + pct + "%</text>" +
+      '<text class="tareas-anillo__etq" x="60" y="74" text-anchor="middle">' + esc(L("al día", "on track", "已完成")) + "</text>";
     svg.innerHTML = html;
     svg.setAttribute("aria-label", L("Resumen de la semana: " + hechas + " hechas, " + pendientes + " pendientes de " + total + ".",
       "This week: " + hechas + " done, " + pendientes + " pending of " + total + ".",

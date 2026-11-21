@@ -1,6 +1,6 @@
 # Plan de correcciones estéticas — Mimo
 
-> **Estado:** Fase 0 y E-14 hechas. Fase 1 en curso: sigue E-17.
+> **Estado:** Fase 0, E-14 y E-17 hechas. Fase 1 en curso: sigue E-18.
 > **Base:** `t/beta-9` en `4896e08`.
 > **Rama de trabajo:** `t/estetica`, creada desde `4896e08`; se mergea a `t/beta-9` al cerrar.
 > **Fuente de verdad:** este archivo. Si el chat se compacta o se pierde, se retoma por §0.
@@ -156,7 +156,7 @@ Se actualiza en el mismo commit del cambio. `Commit` es el SHA corto.
 |---|---|---|---|---|
 | E-00 | 0 | Baseline + gate | hecho | E-00 |
 | E-14 | 1 | Badge q legible | hecho | E-14 |
-| E-17 | 1 | Anillo de Tareas | pendiente | — |
+| E-17 | 1 | Anillo de Tareas | hecho | E-17 |
 | E-18 | 1 | Conteo hoy/atrasadas | pendiente | — |
 | E-01 | 2A | Escala tipográfica | pendiente | — |
 | E-12 | 2A | «Disponible» | pendiente | — |
@@ -459,6 +459,7 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-21 | — | — | Plan actualizado: grilla de 5 px, capa de componentes y unidades E-25/E-26/E-27. Sigue sin cambios de UI. |
 | 2026-11-21 | E-00 | E-00 | Gate `gate-estetica.py` creado y agregado al suite (42). Baseline verde: 10 temas, contraste de `--muted`, 9 secciones sin desborde a 1440. |
 | 2026-11-21 | E-14 | E-14 | Badge «Desde Estudio» con `--fg` sobre `--info-bg`: 9,74–21:1 en los 10 temas (antes 1,83–2,35 en tres oscuros). Gate lo asserta. |
+| 2026-11-21 | E-17 | E-17 | El anillo llena lo cumplido con `--ok` sobre pista `--pista`; texto «% al día»; el texto SVG pasa a `--fs-lg`/`--fs-xs` y el anillo a 110 px. Con 2 hechas/1 pendiente marca 67 %. `gate-tareas-anillo` actualizado. |
 
 ## 10. Cola por gravedad (resumen)
 

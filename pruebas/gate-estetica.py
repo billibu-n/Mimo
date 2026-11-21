@@ -196,6 +196,35 @@ def main() -> int:
             page.wait_for_timeout(120)
             circulos = page.locator("#tareas-anillo circle").count()
             exigir(circulos >= 1, f"semantica: el anillo de Tareas existe — {circulos} circulo(s)", fallas)
+
+            # E-17: el anillo llena lo cumplido, no lo pendiente.
+            hoy = date.today()
+            lunes = hoy - timedelta(days=hoy.weekday())
+            martes = lunes + timedelta(days=1)
+            datos = estado()
+            datos["tareas"] = [
+                {"id": "t1", "titulo": "Hecha", "tipo": "tarea", "estado": "hecha",
+                 "hecha": True, "prioridad": "media", "fecha": lunes.isoformat(),
+                 "hechaEn": lunes.isoformat(), "contexto": "", "nota": "", "orden": 0},
+                {"id": "t2", "titulo": "Pendiente", "tipo": "tarea", "estado": "pendiente",
+                 "prioridad": "media", "fecha": martes.isoformat(), "contexto": "",
+                 "nota": "", "orden": 1},
+            ]
+            abrir_estado(page, datos)
+            page.locator('#tabs [data-ir="tareas"]').click()
+            page.wait_for_timeout(220)
+            anillo = page.locator("#tareas-anillo circle")
+            exigir(anillo.count() == 2, f"E-17: anillo con pista y un solo arco — {anillo.count()}", fallas)
+            if anillo.count() == 2:
+                guion = anillo.nth(1).get_attribute("stroke-dasharray") or ""
+                partes = [float(x) for x in re.findall(r"[\d.]+", guion)]
+                proporcion = partes[0] / partes[1] if len(partes) >= 2 and partes[1] else 0
+                exigir(abs(proporcion - 0.5) < 0.02,
+                       f"E-17: el arco mide lo cumplido — {proporcion:.2f}", fallas)
+                pct_txt = (page.locator("#tareas-anillo .tareas-anillo__pct").text_content() or "").strip()
+                etq = (page.locator("#tareas-anillo .tareas-anillo__etq").text_content() or "").strip()
+                exigir(pct_txt == "50%", f"E-17: el número es el % cumplido — {pct_txt}", fallas)
+                exigir(etq in ("al día", "on track", "已完成"), f"E-17: la etiqueta dice al día — {etq}", fallas)
             return salir("gate-estetica", fallas)
         finally:
             ctx.close()
