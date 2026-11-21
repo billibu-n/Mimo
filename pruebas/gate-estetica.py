@@ -121,6 +121,27 @@ def ratio_texto(page, selector: str, fondo_selector: str = "body") -> float:
     return contraste(rgb(color), rgb(fondo))
 
 
+def ratio_badge_q(page, tema: str) -> float:
+    """El badge informativo de Progreso, medido en el tema que se le pida."""
+    page.evaluate("t => { document.body.style.transition = 'none'; document.body.dataset.tema = t; }", tema)
+    page.wait_for_timeout(60)
+    color, fondo = page.evaluate("""() => {
+      let p = document.getElementById('probe-estetica');
+      if (!p) {
+        p = document.createElement('div');
+        p.id = 'probe-estetica';
+        p.style.position = 'fixed';
+        p.style.left = '-9999px';
+        p.style.top = '0';
+        document.body.appendChild(p);
+      }
+      p.innerHTML = '<span class="prog-badge prog-badge--q">x</span>';
+      const s = getComputedStyle(p.firstChild);
+      return [s.color, s.backgroundColor];
+    }""")
+    return contraste(rgb(color), rgb(fondo))
+
+
 def main() -> int:
     fallas: list[str] = []
 
@@ -160,6 +181,8 @@ def main() -> int:
                 color, fondo = color_de(page, "body")
                 exigir(contraste(rgb(color), rgb(fondo)) >= 4.5,
                        f"contraste {tema}: --fg sobre --bg", fallas)
+                rq = ratio_badge_q(page, tema)
+                exigir(rq >= 4.5, f"contraste {tema}: badge Desde Estudio — {rq:.2f}", fallas)
 
             # 3. disposicion: 9 secciones a 1440 sin desborde.
             for seccion in SECCIONES:

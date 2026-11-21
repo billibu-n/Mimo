@@ -20,7 +20,7 @@
 .prog-badge--ok{background:var(--pill-ok-bg);color:var(--pill-ok-fg)}
 .prog-badge--warn{background:var(--pill-warn-bg);color:var(--pill-warn-fg)}
 .prog-badge--bad{background:var(--pill-bad-bg);color:var(--pill-bad-fg)}
-.prog-badge--q{background:var(--info-bg);color:var(--ac-fuerte)}
+.prog-badge--q{background:var(--info-bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--ac) 35%,transparent)}
 
 .prog-ring{width:78px;height:78px;flex:none}
 .prog-ring__track{fill:none;stroke:var(--pista);stroke-width:8}
