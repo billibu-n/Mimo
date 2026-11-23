@@ -59,7 +59,7 @@ def main() -> int:
     with Navegador() as nav:
         ctx, page, errores = nav.abrir(APP, 1440, 950)
         try:
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(300)
             exigir(page.locator("#actualizaciones-card").count() == 1,
                    "ui: tarjeta de actualizaciones", fallas)

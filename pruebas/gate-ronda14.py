@@ -91,14 +91,15 @@ def main() -> int:
             exigir(page.locator("#tabs .tab.on").get_attribute("data-ir") == "tareas",
                    "teclado: Ctrl+2 va a la segunda pestaña", fallas)
             page.keyboard.press("Control+4"); page.wait_for_timeout(100)
-            exigir(page.locator("#tabs .tab.on").get_attribute("data-ir") == "ajustes",
+            exigir(page.locator("#p-ajustes").evaluate("e => !e.hidden") and
+                   page.locator("#btn-ajustes").get_attribute("aria-current") == "page",
                    "teclado: Ctrl+4 va a Ajustes", fallas)
             exigir(not page.locator("body").evaluate("e => e.classList.contains('cargando')") and
                    page.locator("#carga").count() == 0,
                    "carga: la pantalla de carga se retiró al terminar", fallas)
 
             # Tiles de tema simétricos y alto contraste claro.
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(150)
             medidas = page.locator("#temas .tema").evaluate_all(
                 "els => els.map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
             exigir(len(set(w for w, _ in medidas)) == 1 and len(set(h for _, h in medidas)) == 1,
@@ -138,7 +139,7 @@ def main() -> int:
                    f"idioma: placeholder del evento en chino — {page.locator('#evento-titulo').get_attribute('placeholder')}", fallas)
             page.locator("#modal-cancelar").click(); page.wait_for_timeout(100)
 
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(150)
             page.locator("#pref-idioma").select_option("en"); page.wait_for_timeout(250)
             page.locator('#tabs [data-ir="calendario"]').click(); page.wait_for_timeout(250)
             mes_en = page.locator("#cal-mes-titulo").inner_text()
@@ -149,7 +150,7 @@ def main() -> int:
             dias_en = page.locator("#cal-grid .cal-dow:not(.cal-dow--sem)").evaluate_all("els => els.map(e => e.textContent.trim())")
             exigir(dias_en[0] == "Mon",
                    f"idioma: días de la semana en inglés — {dias_en[:7]}", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(150)
             page.locator("#pref-idioma").select_option("es"); page.wait_for_timeout(200)
             bandera = page.locator("#idioma-bandera img").get_attribute("src") or ""
             exigir("bandera-sudamerica.webp" in bandera,

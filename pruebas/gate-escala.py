@@ -22,7 +22,7 @@ APP = RAIZ / "app" / "index.html"
 CSS = RAIZ / "app" / "css"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import Navegador, abrir_seccion, exigir, salir  # noqa: E402
 
 PX = re.compile(r"font-size:\s*\d+(?:\.\d+)?px")
 SECCIONES = ("calendario", "tareas", "notas", "malla", "calificaciones", "tiempo", "estudio", "ajustes")
@@ -78,7 +78,7 @@ def main() -> int:
         exigir(chico["nota"] >= 14, f"letra: el editor de notas se lee a {chico['nota']} px (mínimo 14)", fallas)
         exigir(chico["campo"] >= 14, f"letra: un campo de texto se lee a {chico['campo']} px (mínimo 14)", fallas)
 
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(300)
         page.locator("#pref-escala").select_option("140")
         page.wait_for_timeout(400)
@@ -96,7 +96,7 @@ def main() -> int:
 
         rotos = []
         for seccion in SECCIONES:
-            page.locator(f'#tabs [data-ir="{seccion}"]').click()
+            abrir_seccion(page, seccion)
             page.wait_for_timeout(500)
             ancho = page.evaluate(
                 "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"

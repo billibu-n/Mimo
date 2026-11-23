@@ -10,6 +10,7 @@
 }
 .topbar .buscador kbd{font-size:var(--fs-xs);border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--muted2)}
 .topbar .icono-btn[aria-expanded="true"]{background:var(--sup2);color:var(--fg)}
+.topbar .icono-btn[aria-current="page"]{background:var(--sup2);color:var(--ac)}
 
 .nav-acciones{display:flex;align-items:center;gap:var(--sp-2)}
 .periodo{background:transparent;border:1px solid transparent;color:var(--muted);font-size:var(--fs-sm);padding:0 var(--sp-2);height:var(--sp-7);border-radius:var(--r-sm)}

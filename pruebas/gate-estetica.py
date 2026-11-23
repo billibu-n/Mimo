@@ -24,7 +24,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, exigir, salir  # noqa: E402
+from gatelib import Navegador, abrir_seccion, exigir, salir  # noqa: E402
 
 TEMAS = ("clasico", "bosque", "sepia", "pinky", "deepsea", "medianoche", "negro",
          "vino", "alto-contraste", "alto-contraste-claro")
@@ -246,7 +246,7 @@ def main() -> int:
 
             # 3. disposicion: 9 secciones a 1440 sin desborde.
             for seccion in SECCIONES:
-                page.locator(f'#tabs [data-ir="{seccion}"]').click()
+                abrir_seccion(page, seccion)
                 page.wait_for_timeout(120)
                 ancho = desborde_total(page)
                 exigir(ancho <= 0, f"disposicion {seccion}: sin desborde a 1440 — {ancho} px", fallas)

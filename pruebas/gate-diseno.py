@@ -32,7 +32,7 @@ BANCO = AQUI / "banco-tokens.html"
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import Navegador, abrir_seccion, desborde, exigir, salir  # noqa: E402
 
 TEMAS = ["clasico", "deepsea", "medianoche", "negro", "vino", "bosque", "sepia", "pinky", "alto-contraste", "alto-contraste-claro"]
 REQUERIDOS = ("--fg", "--bg", "--ac", "--ac-txt", "--ac-txt-fuerte", "--sup", "--line", "--muted", "--foco", "--sombra")
@@ -236,7 +236,7 @@ def recuadro() -> list[str]:
                 page.wait_for_timeout(30)
                 esperado = page.evaluate(SONDA)
                 for sid in secciones:
-                    page.locator(f'#tabs [data-ir="{sid}"]').click()
+                    abrir_seccion(page, sid)
                     page.wait_for_timeout(120)
                     visto = page.evaluate(VISTO)
                     if not visto:

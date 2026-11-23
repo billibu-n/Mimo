@@ -27,7 +27,7 @@ APP = RAIZ / "app" / "index.html"
 sys.path.insert(0, str(AQUI))
 from gatelib import Navegador, exigir, salir  # noqa: E402
 
-ESPERADOS = ["Calendario", "Tareas", "Notas", "Tiempo", "Malla", "Calificaciones", "Estudio", "Ajustes"]
+ESPERADOS = ["Calendario", "Tareas", "Notas", "Tiempo", "Malla", "Calificaciones", "Estudio"]
 
 
 def nombres_visibles(page) -> list[str]:
@@ -74,6 +74,13 @@ def main() -> int:
                f"barra: en reposo la pestaña usa puntero de selección — {reposo}", fallas)
         exigir(pulsado == "grabbing",
                f"barra: apretada muestra el cursor de arrastre — {pulsado}", fallas)
+        # Ajustes vive en el engranaje del panel superior, no en la barra.
+        exigir(page.locator('#tabs [data-ir="ajustes"]').count() == 0,
+               "barra: Ajustes no ocupa una pestaña", fallas)
+        page.locator("#btn-ajustes").click(); page.wait_for_timeout(300)
+        visible = page.locator('#p-ajustes').evaluate("e => !e.hidden")
+        exigir(visible, "barra: el engranaje del panel superior abre Ajustes", fallas)
+        page.locator("#tabs .tab").first.click(); page.wait_for_timeout(250)
         exigir(page.get_attribute("#btn-plegar", "aria-expanded") == "true",
                "barra: abierta, el botón anuncia que se puede plegar", fallas)
 

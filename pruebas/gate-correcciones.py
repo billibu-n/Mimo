@@ -121,7 +121,7 @@ def main() -> int:
             exigir(page.locator("body").get_attribute("data-tema") == "deepsea",
                    "tema: y vuelve al oscuro de la pareja", fallas)
 
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(180)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(180)
             exigir(page.locator(".ajustes-grupo").count() == 4,
                    f"ajustes: 4 grupos — {page.locator('.ajustes-grupo').count()}", fallas)
             texto_aj = page.locator("#p-ajustes").inner_text().lower()
@@ -139,9 +139,9 @@ def main() -> int:
             despues = page.locator("#mimo-ic").get_attribute("src")
             exigir(antes != despues and page.locator("#mimo-menu").count() == 0,
                    "mascota: anima sin abrir menú", fallas)
-            exigir(page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir") == "ajustes",
+            exigir(page.locator("#btn-ajustes").get_attribute("aria-current") == "page",
                    "mascota: desde Ajustes no cambia de sección", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(220)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(220)
             exigir(page.locator("#pref-tema-claro option").count() == 5,
                    "ajustes: 5 temas claros", fallas)
             exigir(page.locator("#pref-tema-oscuro option").count() == 5,
@@ -194,7 +194,7 @@ def main() -> int:
             page.wait_for_timeout(500)
             tras = page.evaluate("getComputedStyle(document.documentElement).fontSize")
             exigir(tras == grande, f"letra: el tamaño se recuerda — {tras}", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(200)
             page.locator("#pref-escala").select_option("100")
             page.wait_for_timeout(200)
@@ -219,7 +219,7 @@ def main() -> int:
                    "bloques: Estudio y Tiempo ya no comparten icono", fallas)
             exigir(page.get_attribute("#btn-historial use", "href") == "#i-historial",
                    "historial: el botón usa un icono de historial", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(220)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(220)
 
             page.locator("[data-editar-periodo]").first.click(); page.wait_for_timeout(150)
             page.locator("#periodo-nombre").fill("Primavera 2026 bis")
@@ -313,7 +313,7 @@ def main() -> int:
             exigir(desborde_notas == 0, f"notas: 411 sin desborde — {desborde_notas}px", fallas)
 
             page.set_viewport_size({"width": 411, "height": 900})
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(250)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(250)
             desborde = page.evaluate(
                 "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
                 " document.body.scrollWidth - document.body.clientWidth)")

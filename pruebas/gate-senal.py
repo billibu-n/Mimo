@@ -98,7 +98,7 @@ def main() -> int:
         exigir("--gris" in punto(page), "sin destino el punto es neutro", fallas)
 
         # 2. un cambio real
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(200)
         page.locator("#pref-inicio").select_option("domingo")
         page.wait_for_timeout(250)
@@ -118,7 +118,7 @@ def main() -> int:
         texto = pie(page)
         exigir(texto.startswith("Nube · ") and bool(HORA.search(texto)), f"con destino al día dice Nube y la hora: «{texto}»", fallas)
         exigir("--ok" in punto(page), "al día el punto es verde", fallas)
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(250)
         if not page.locator("#sync-panel-acciones").evaluate("e => e.open"):
             page.locator("#sync-panel-acciones > summary").click()
@@ -132,7 +132,7 @@ def main() -> int:
             "clientId": "equipo-de-prueba"[:8],
         })
         cargar(page)
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(250)
         if not page.locator("#sync-panel-acciones").evaluate("e => e.open"):
             page.locator("#sync-panel-acciones > summary").click()
@@ -147,7 +147,7 @@ def main() -> int:
         texto = pie(page)
         exigir(texto.startswith("Sin subir"), f"con cambios pendientes dice Sin subir: «{texto}»", fallas)
         exigir("--warn" in punto(page), "pendiente el punto avisa", fallas)
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(200)
         page.locator("#pref-inicio").select_option("lunes")
         page.wait_for_timeout(250)
@@ -168,7 +168,7 @@ def main() -> int:
         exigir("Nube" not in texto and "Sin subir" not in texto, "en inglés no queda español en el pie", fallas)
 
         # 8. la contraseña de aplicación sobrevive al reinicio, cifrada
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(200)
         if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
             page.locator("#sync-panel-manual > summary").click()
@@ -184,7 +184,7 @@ def main() -> int:
         blob = page.evaluate("localStorage.getItem('mimo.sync.acceso.v1')")
         exigir(bool(blob) and "app-password-secreta" not in (blob or ""), "la contraseña de aplicación se guarda cifrada", fallas)
         cargar(page)
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(300)
         if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
             page.locator("#sync-panel-manual > summary").click()

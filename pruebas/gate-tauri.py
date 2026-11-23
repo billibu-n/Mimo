@@ -113,8 +113,8 @@ def main() -> int:
                f"tauri: tema y escala responden sin colgar — {r.get('ajustes_ms')} ms / {r.get('ajustes_escala')}", fallas)
         exigir("Cantarell" in (r.get("fuente_pila") or "") and r.get("fuente_dato") == "cantarell",
                f"tauri: la familia elegida llega al WebView — {r.get('fuente_pila')} / {r.get('fuente_dato')}", fallas)
-        exigir(r.get("tabs") == ["calendario", "tareas", "notas", "ajustes"],
-               f"tauri: 4 pestanas base — {r.get('tabs')}", fallas)
+        exigir(r.get("tabs") == ["calendario", "tareas", "notas"],
+               f"tauri: 3 pestanas base (Ajustes va en el engranaje) — {r.get('tabs')}", fallas)
         exigir(len(r.get("secciones", [])) == 4,
                f"tauri: 4 secciones base (las opcionales se montan al instalar) — {len(r.get('secciones', []))}", fallas)
         exigir(r.get("tareas_visible") is True, "tauri: Tareas navega", fallas)

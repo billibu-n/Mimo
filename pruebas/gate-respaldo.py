@@ -36,7 +36,7 @@ def abrir(nav):
 
 
 def ajustes(page):
-    page.locator('#tabs [data-ir="ajustes"]').click()
+    page.locator('#btn-ajustes').click()
     page.wait_for_timeout(250)
 
 

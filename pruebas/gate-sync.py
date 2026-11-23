@@ -42,7 +42,7 @@ def abrir_contexto(nav):
 
 
 def ir_sync(page):
-    page.locator('#tabs [data-ir="ajustes"]').click()
+    page.locator('#btn-ajustes').click()
     page.wait_for_timeout(180)
     if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
         page.locator("#sync-panel-manual > summary").click()

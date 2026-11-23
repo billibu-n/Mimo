@@ -78,6 +78,14 @@ def abrir_plegable(page, selector: str) -> None:
     page.wait_for_timeout(220)
 
 
+def abrir_seccion(page, seccion: str) -> None:
+    """Abre una sección. Ajustes vive en el engranaje del panel superior."""
+    if seccion == "ajustes":
+        page.locator("#btn-ajustes").click()
+    else:
+        page.locator(f'#tabs [data-ir="{seccion}"]').click()
+
+
 def texto_tabs(page):
     out = []
     for t in page.locator("#tabs .tab").all():

@@ -56,7 +56,7 @@ def main() -> int:
             exigir(not page.locator("#panel-asa").is_visible(),
                    "panel: cerrado no hay asa", fallas)
 
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(200)
             exigir(page.locator("#p-ajustes").get_by_text("Paneles", exact=True).count() == 0,
                    "ajustes: la tarjeta Paneles ya no existe", fallas)

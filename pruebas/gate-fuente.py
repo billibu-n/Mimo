@@ -42,7 +42,7 @@ def main() -> int:
     with Navegador() as nav:
         ctx, page, errores = nav.abrir(APP, 1440, 950)
         try:
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(250)
 
             exigir(page.locator("#pref-fuente").input_value() == "clasica",
@@ -64,7 +64,7 @@ def main() -> int:
 
             page.goto(APP.as_uri(), wait_until="load")
             page.wait_for_timeout(300)
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(200)
             exigir(page.locator("#pref-fuente").input_value() == "sistema",
                    f"fuente: el sistema sobrevive a recargar — {page.locator('#pref-fuente').input_value()}", fallas)
@@ -111,7 +111,7 @@ def main() -> int:
 
             page.goto(APP.as_uri(), wait_until="load")
             page.wait_for_timeout(300)
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(200)
             exigir(page.locator("#pref-fuente").input_value() == "personalizada" and
                    page.locator("#pref-fuente-nombre").input_value() == "Cantarell",

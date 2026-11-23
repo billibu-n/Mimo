@@ -36,7 +36,7 @@ DAV = "https://nube.example.test/remote.php/dav/files/prueba%40example.test"
 
 
 def abrir_modal(page) -> None:
-    page.locator('#tabs [data-ir="ajustes"]').click()
+    page.locator('#btn-ajustes').click()
     page.wait_for_timeout(220)
     page.locator("#sync-abrir").click()
     page.wait_for_timeout(250)

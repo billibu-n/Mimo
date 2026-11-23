@@ -1120,7 +1120,15 @@
     bp.title = rotulo;
   }
   function pintarTabs() {
-    $("#tabs").innerHTML = secciones().map(function (id) {
+    /* Ajustes no va en la barra: el engranaje del panel superior ya lo abre.
+       La seccion sigue existiendo y se pinta igual; solo no ocupa una pestaña. */
+    var enAjustes = pantalla === "ajustes";
+    var ba = $("#btn-ajustes");
+    if (ba) {
+      if (enAjustes) ba.setAttribute("aria-current", "page");
+      else ba.removeAttribute("aria-current");
+    }
+    $("#tabs").innerHTML = secciones().filter(function (id) { return id !== "ajustes"; }).map(function (id) {
       var on = id === pantalla ? " on" : "";
       var cod = codigoDe(id);
       return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" data-codigo="' + esc(cod) + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
