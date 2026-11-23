@@ -6364,10 +6364,6 @@
     });
     $("#btn-ajustes").addEventListener("click", function () { ir("ajustes"); });
     $("#btn-historial").addEventListener("click", abrirHistorial);
-    $("#btn-mimo").addEventListener("click", function () {
-      var primera = secciones()[0];
-      if (primera && primera !== pantalla) ir(primera);
-    });
     $("#hist-x").addEventListener("click", cerrarHistorial);
     $("#modal-historial").addEventListener("click", function (e) {
       if (e.target === $("#modal-historial")) cerrarHistorial();

@@ -538,7 +538,9 @@ body.nav-izq.nav-plegada .shell{margin-left:64px}
 @media (max-width:520px){.idioma-campo{width:100%}.idioma-campo select{max-width:none;width:100%}}
 
 /* ---- pestañas arrastrables y vista dividida ---- */
-.tab[draggable="true"]{cursor:grab}
+/* La pestaña se puede mover, pero solo cuando se la aprieta: en reposo
+   conserva el puntero de selección; el cursor de arrastre aparece al pulsar. */
+.tab[draggable="true"]{cursor:pointer}
 .tab[draggable="true"]:active{cursor:grabbing}
 .tab.arrastrando{opacity:.35;transform:scale(.9)}
 .tab.tab-acomodo{animation:tab-acomodo .28s ease-out}

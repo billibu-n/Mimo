@@ -59,6 +59,21 @@ def main() -> int:
         exigir(iconos == len(ESPERADOS), f"barra: cada pestaña lleva su icono — {iconos}", fallas)
         codigos = page.eval_on_selector_all("#tabs .cod", "els => els.map(e => e.textContent.trim())")
         exigir(not codigos, f"barra: la pestaña ya no lleva código de bloque — {codigos}", fallas)
+        # La pestaña se mueve solo al apretarla: en reposo el cursor es de
+        # selección y el de arrastre aparece con el botón abajo.
+        centro = page.evaluate("""() => {
+          const r = document.querySelector('#tabs .tab').getBoundingClientRect();
+          return {x: r.x + r.width / 2, y: r.y + r.height / 2};
+        }""")
+        page.mouse.move(centro["x"], centro["y"])
+        reposo = page.evaluate("getComputedStyle(document.querySelector('#tabs .tab')).cursor")
+        page.mouse.down()
+        pulsado = page.evaluate("getComputedStyle(document.querySelector('#tabs .tab')).cursor")
+        page.mouse.up()
+        exigir(reposo == "pointer",
+               f"barra: en reposo la pestaña usa puntero de selección — {reposo}", fallas)
+        exigir(pulsado == "grabbing",
+               f"barra: apretada muestra el cursor de arrastre — {pulsado}", fallas)
         exigir(page.get_attribute("#btn-plegar", "aria-expanded") == "true",
                "barra: abierta, el botón anuncia que se puede plegar", fallas)
 
