@@ -463,6 +463,8 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-21 | E-18 | E-18 | KPI, columna y filtro cuentan las ocurrencias visibles con fecha hasta hoy: 5/5/5 con una serie de lunes a viernes. Etiqueta del KPI: «pendientes hoy/atrasadas». `gate-tareas-tablero` pasa a reloj fijo (miércoles 18/11) para no depender del día. |
 | 2026-11-21 | — | 9dcd8a0 | Suite completa: 42/42 en verde. Fase 1 cerrada. Siguiente: E-01. |
 | 2026-11-23 | E-01 | E-01 | Ocho tokens de letra (5 base + `--fs-h1`/`--fs-num`/`--fs-display`). Se barrio todo `font-size` suelto: cero `rem`/`px` fuera de token; el texto minimo medido es 11,2 px. `gate-diseno` pasa a 8 tamaños y `gate-estetica` recorre el CSS y mide el minimo en el navegador. D-09 queda provisional en `rem`. |
+| 2026-11-23 | — | f136042 | Correcciones funcionales del dueño: la mascota ya no navega (solo cambia de cara) y la pestaña se mueve solo al apretarla; en reposo conserva el puntero de selección. `gate-barra` y `gate-correcciones` lo miden. |
+| 2026-11-23 | — | 28c2837 | Ajustes deja de ocupar pestaña: se abre solo con el engranaje del panel superior, que marca `aria-current`. La sección sigue existiendo. `secciones()` no cambia; la barra filtra el id. Gates actualizados con `abrir_seccion()`. |
 
 ## 10. Cola por gravedad (resumen)
 
