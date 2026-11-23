@@ -1,6 +1,6 @@
 # Plan de correcciones estéticas — Mimo
 
-> **Estado:** Fase 1 completa y suite 42/42 en `9dcd8a0`. Sigue Fase 2A con E-01 (D-09 pendiente: default letra en `rem`).
+> **Estado:** Fase 2A en curso; E-01 hecha y suite 42/42. Sigue E-12 (D-09 provisional: la letra sigue en `rem`).
 > **Base:** `t/beta-9` en `4896e08`.
 > **Rama de trabajo:** `t/estetica`, creada desde `4896e08`; se mergea a `t/beta-9` al cerrar.
 > **Fuente de verdad:** este archivo. Si el chat se compacta o se pierde, se retoma por §0.
@@ -113,9 +113,9 @@ Un botón, un campo y un desplegable se definen **una vez**. Las secciones no es
 | D-04 | ¿De qué color es «activo»? | `--ok` (verde) en lista y resumen. «Sin examen / no hace falta» pasa a neutro (`--sup2`/`--muted`), no a `--warn`. | pendiente |
 | D-05 | ¿La paleta de ramos se adapta al tema? | Sí: se conservan los 9 tonos de identidad y se deriva `--ramo-visible` con `color-mix` hacia `--fg` en temas oscuros, para garantizar 3:1 sin cambiar el tono. | pendiente |
 | D-06 | ¿Píldora única? | Chips de estado = cápsula (`999px`); badges neutros = `--r-sm` (5). Se eliminan los radios sueltos 4/99; 5/10/15 son los tres tokens. | pendiente |
-| D-07 | ¿Escala tipográfica? | 5 tamaños base + 3 roles (`--fs-h1`, `--fs-num`, `--fs-display`). Se elimina todo texto bajo `--fs-xs`. | pendiente |
+| D-07 | ¿Escala tipográfica? | 5 tamaños base + 3 roles (`--fs-h1`, `--fs-num`, `--fs-display`). Se elimina todo texto bajo `--fs-xs`. | hecha (E-01) |
 | D-08 | ¿KPIs con color? | Número siempre `--fg`; el color va en borde superior o punto. Malla y Calificaciones dejan de teñir el número. | pendiente |
-| D-09 | ¿La tipografía también es múltiplo de 5? | **No por defecto:** la grilla aplica a geometría; la letra sigue en `rem` (5 tamaños + roles) para que «Tamaño de letra» funcione. Alternativa: fijar 10/15/20/25/35 px, que pierde el escalado y baja los rótulos a 10 px. | pendiente |
+| D-09 | ¿La tipografía también es múltiplo de 5? | **No por defecto:** la grilla aplica a geometría; la letra sigue en `rem` (5 tamaños + roles) para que «Tamaño de letra» funcione. Alternativa: fijar 10/15/20/25/35 px, que pierde el escalado y baja los rótulos a 10 px. | provisional (E-01, rem) |
 
 > Si el dueño no responde, se implementa el default y se marca `provisional` en la bitácora. Al cerrar cada fase se revisan las provisionales.
 
@@ -125,7 +125,7 @@ La evidencia es `archivo:línea` del estado auditado. El chat que originó esto 
 
 | ID | Sev | Hallazgo | Evidencia | Estado |
 |---|---|---|---|---|
-| E-01 | Media | 15 tamaños en `rem` fuera de los 5 tokens; textos de 7–9 px | `tokens.css:10-15`; `shell.css:28,267,269,320`; `notas.css:11,25-30`; `progreso.css:41`; `tiempo.css:30` | pendiente |
+| E-01 | Media | 15 tamaños en `rem` fuera de los 5 tokens; textos de 7–9 px | `tokens.css:10-15`; `shell.css:28,267,269,320`; `notas.css:11,25-30`; `progreso.css:41`; `tiempo.css:30` | hecho (E-01) |
 | E-02 | Media | Medidas en px fijo que no siguen `--esc` (280, 360, 196, 420, 78, 22) | `notas.css:2,10`; `calificaciones.css:21`; `malla.css:42`; `tiempo.css:25`; `tareas.css:22`; `progreso.css:25` | pendiente |
 | E-03 | Media | 9 radios fuera de la escala; dos formas de píldora | `tokens.css:32-35`; `shell.css:167`; `calendario.css:31`; `malla.css:47`; `progreso.css:65` | pendiente |
 | E-04 | Baja | Borde de estado de 3, 4 y 5 px según sección | `tareas.css:63`; `calificaciones.css:9`; `malla.css:47`; `progreso.css:110`; `calendario.css:31` | pendiente |
@@ -158,7 +158,7 @@ Se actualiza en el mismo commit del cambio. `Commit` es el SHA corto.
 | E-14 | 1 | Badge q legible | hecho | E-14 |
 | E-17 | 1 | Anillo de Tareas | hecho | E-17 |
 | E-18 | 1 | Conteo hoy/atrasadas | hecho | E-18 |
-| E-01 | 2A | Escala tipográfica | pendiente | — |
+| E-01 | 2A | Escala tipográfica | hecho | E-01 |
 | E-12 | 2A | «Disponible» | pendiente | — |
 | E-13 | 2A | «Activo» y «sin examen» | pendiente | — |
 | E-15 | 2A | Paleta de ramos | pendiente | — |
@@ -462,6 +462,7 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-21 | E-17 | E-17 | El anillo llena lo cumplido con `--ok` sobre pista `--pista`; texto «% al día»; el texto SVG pasa a `--fs-lg`/`--fs-xs` y el anillo a 110 px. Con 2 hechas/1 pendiente marca 67 %. `gate-tareas-anillo` actualizado. |
 | 2026-11-21 | E-18 | E-18 | KPI, columna y filtro cuentan las ocurrencias visibles con fecha hasta hoy: 5/5/5 con una serie de lunes a viernes. Etiqueta del KPI: «pendientes hoy/atrasadas». `gate-tareas-tablero` pasa a reloj fijo (miércoles 18/11) para no depender del día. |
 | 2026-11-21 | — | 9dcd8a0 | Suite completa: 42/42 en verde. Fase 1 cerrada. Siguiente: E-01. |
+| 2026-11-23 | E-01 | E-01 | Ocho tokens de letra (5 base + `--fs-h1`/`--fs-num`/`--fs-display`). Se barrio todo `font-size` suelto: cero `rem`/`px` fuera de token; el texto minimo medido es 11,2 px. `gate-diseno` pasa a 8 tamaños y `gate-estetica` recorre el CSS y mide el minimo en el navegador. D-09 queda provisional en `rem`. |
 
 ## 10. Cola por gravedad (resumen)
 

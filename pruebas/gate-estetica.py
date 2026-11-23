@@ -4,12 +4,13 @@
 
 No mide "que se vea bonito": mide que la forma sea una sola.
   1. tokens: los 10 temas declaran las mismas variables y la escala existe.
-  2. contraste: los pares que la app promete (texto, acento, estado) pasan.
-  3. disposicion: las 9 secciones no desbordan a 1440.
-  4. semantica: el anillo de Tareas existe y se puede leer.
+  2. tipografia: toda la letra sale de los 8 tokens y ninguna baja de 11,2 px.
+  3. contraste: los pares que la app promete (texto, acento, estado) pasan.
+  4. disposicion: las 9 secciones no desbordan a 1440.
+  5. semantica: el anillo de Tareas existe y se puede leer.
 
-Las unidades E-14, E-17 y E-18 agregan sus asserts a este gate. El gate no se
-pone rojo por una unidad que aun no se hace: solo contiene lo ya prometido.
+Las unidades E-01, E-14, E-17 y E-18 agregan sus asserts a este gate. El gate no
+se pone rojo por una unidad que aun no se hace: solo contiene lo ya prometido.
 """
 from __future__ import annotations
 
@@ -142,6 +143,36 @@ def ratio_badge_q(page, tema: str) -> float:
     return contraste(rgb(color), rgb(fondo))
 
 
+def fuentes_fuera_de_escala() -> list:
+    """Devuelve cada `font-size` que no sale de un token `--fs-*`.
+
+    Recorre el CSS de la app y el bloque critico de `index.html`. Un tamano en
+    `rem` o en `px` que no venga de `var(--fs-...)` es deuda: rompe la escala y,
+    en el caso del `px`, el ajuste de «Tamano de letra».
+    """
+    objetivos = sorted((RAIZ / "app" / "css").rglob("*.css"))
+    objetivos.append(RAIZ / "app" / "index.html")
+    fuera = []
+    patron = re.compile(r"font-size\s*:\s*([^;}{]+)")
+    for ruta in objetivos:
+        texto = ruta.read_text(encoding="utf-8")
+        base = 0
+        if ruta.suffix == ".html":
+            bloque = re.search(r"<style>(.*?)</style>", texto, re.S)
+            if not bloque:
+                continue
+            base = texto[:bloque.start(1)].count("\n")
+            texto = bloque.group(1)
+        for m in patron.finditer(texto):
+            valor = m.group(1).strip()
+            if "var(--fs-" in valor:
+                continue
+            if "rem" in valor or "px" in valor:
+                linea = base + texto[:m.start()].count("\n") + 1
+                fuera.append(f"{ruta.relative_to(RAIZ)}:{linea} {valor}")
+    return fuera
+
+
 def main() -> int:
     fallas: list[str] = []
 
@@ -156,8 +187,13 @@ def main() -> int:
            f"temas: las mismas variables en los 10 — {len(base)} comunes", fallas)
     tokens = variables_de_tema(RAIZ / "app" / "css" / "tokens.css")
     for nombre in ("fs-xs", "fs-sm", "fs-md", "fs-lg", "fs-xl",
+                   "fs-h1", "fs-num", "fs-display",
                    "sp-1", "sp-2", "sp-3", "sp-4", "r-sm", "r-md", "r-lg", "t"):
         exigir(nombre in tokens, f"tokens: existe --{nombre}", fallas)
+
+    # E-01: ningun `font-size` suelto. Toda la letra sale de los 8 tokens.
+    fuera = fuentes_fuera_de_escala()
+    exigir(not fuera, f"tokens: font-size fuera de escala — {fuera[:3] or 'ninguno'}", fallas)
 
     # El texto secundario, medido sobre el color del tema (sin navegador).
     for ruta in temas:
@@ -172,6 +208,30 @@ def main() -> int:
         try:
             abrir_estado(page, estado())
             exigir(not errores, f"app: sin errores de consola — {errores[:2]}", fallas)
+
+            # E-01: el texto mas pequeno sigue siendo legible (>= 11,2 px).
+            minimos = page.evaluate("""() => {
+              let p = document.getElementById('probe-tipo');
+              if (!p) {
+                p = document.createElement('div');
+                p.id = 'probe-tipo';
+                p.style.cssText = 'position:fixed;left:-9999px;top:0';
+                p.innerHTML =
+                  '<span class="cod">12</span>' +
+                  '<span class="cod cod--tab">3</span>' +
+                  '<div class="nota-preview"><h6>t</h6><code>c</code><p>p</p></div>' +
+                  '<span class="tareas-anillo__etq">a</span>' +
+                  '<span class="prog-badge">b</span>' +
+                  '<span class="footer__btn">f</span>';
+                document.body.appendChild(p);
+              }
+              const salida = [...p.querySelectorAll('*')].map(e =>
+                [String(e.className || e.tagName), parseFloat(getComputedStyle(e).fontSize)]);
+              p.remove();
+              return salida;
+            }""")
+            for clase, px in minimos:
+                exigir(px >= 11.19, f"E-01: texto minimo 11,2 px — {clase}: {px}", fallas)
 
             # 2. contraste: lo que la app ya promete hoy.
             for tema in TEMAS:

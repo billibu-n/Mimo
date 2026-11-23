@@ -25,7 +25,7 @@
 .seccion{display:block}
 .seccion[hidden]{display:none!important}
 .sec-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-4)}
-.sec-cab h1{margin:0;font-size:1.55rem;line-height:1.15}
+.sec-cab h1{margin:0;font-size:var(--fs-h1);line-height:1.15}
 .sec-cab h2{margin:0;font-size:var(--fs-lg)}
 .sec-sub{margin:2px 0 0;color:var(--muted);font-size:var(--fs-sm)}
 .sec-acciones{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
@@ -264,9 +264,9 @@ body{padding-bottom:var(--alto-pie)}
 .footer__btn{display:inline-flex;align-items:center;gap:var(--sp-1);border:1px solid transparent;border-radius:var(--r-sm);background:transparent;color:var(--muted);font:inherit;font-size:var(--fs-xs);padding:var(--sp-1) var(--sp-2);cursor:pointer}
 .footer__btn:hover{background:var(--sup2);color:var(--fg)}
 .footer__centro{margin-left:auto;margin-right:auto;color:var(--muted2)}
-.cod{display:inline-block;min-width:1.7em;padding:0 .25em;border-radius:4px;background:var(--sup2);color:var(--muted);font-size:.62rem;font-variant-numeric:tabular-nums;text-align:center;line-height:1.45;vertical-align:middle}
+.cod{display:inline-block;min-width:1.7em;padding:0 .25em;border-radius:4px;background:var(--sup2);color:var(--muted);font-size:var(--fs-xs);font-variant-numeric:tabular-nums;text-align:center;line-height:1.45;vertical-align:middle}
 .tab{position:relative}
-.cod--tab{position:absolute;right:-4px;bottom:-2px;min-width:0;padding:0 2px;font-size:.48rem;line-height:1.2}
+.cod--tab{position:absolute;right:-4px;bottom:-2px;min-width:0;padding:0 2px;font-size:var(--fs-xs);line-height:1.2}
 .footer__punto{width:6px;height:6px;border-radius:50%;background:var(--muted2);flex:0 0 auto}
 .footer__punto--ok{background:var(--ok)}
 .footer__punto--warn{background:var(--warn)}
@@ -317,7 +317,7 @@ body.panel-redimensionando .panel{transition:none}
 /* ---- correcciones de cabecera, periodo, split y Tiempo ---- */
 @font-face{font-family:"Comfortaa";src:url("../vendor/fonts/comfortaa-semibold.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
 .marca{display:inline-flex;align-items:center;gap:var(--sp-2);border:0;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:var(--fs-lg);cursor:pointer;padding:0}
-.marca .wordmark{display:inline-flex;align-items:baseline;font-family:"Comfortaa","Trebuchet MS",sans-serif;font-weight:600;font-size:1.5rem;line-height:1;letter-spacing:-.045em;color:var(--fg)}
+.marca .wordmark{display:inline-flex;align-items:baseline;font-family:"Comfortaa","Trebuchet MS",sans-serif;font-weight:600;font-size:var(--fs-h1);line-height:1;letter-spacing:-.045em;color:var(--fg)}
 .marca .wm-i{position:relative;display:inline-block;padding:0 .01em}
 .marca .wm-i::after{content:"";position:absolute;left:50%;top:-.1em;width:.13em;height:.13em;transform:translateX(-50%);border-radius:50%;background:#e6b800;box-shadow:0 0 0 .045em var(--fg)}
 .marca img{border-radius:50%}
@@ -345,7 +345,7 @@ body.nav-plegada .tab__nom{display:none}
   body:not(.nav-izq) .tab{width:40px;justify-content:center;padding:0}
   body:not(.nav-izq) .tab__nom{display:none}
 }
-.btn-periodo-nuevo{width:32px;height:32px;min-height:32px;padding:0;font-size:1.1rem;line-height:1}
+.btn-periodo-nuevo{width:32px;height:32px;min-height:32px;padding:0;font-size:var(--fs-lg);line-height:1}
 .periodo{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .periodo-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-2);margin:var(--sp-3) 0}
 .periodo-form .campo{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-xs);color:var(--muted)}
@@ -533,7 +533,7 @@ body.nav-izq.nav-plegada .shell{margin-left:64px}
 .idioma-campo{display:inline-flex;align-items:center;gap:var(--sp-2);min-width:0}
 .idioma-bandera{display:inline-flex;align-items:center;justify-content:center;width:24px;height:16px;flex:none;overflow:hidden;border-radius:2px}
 .idioma-bandera img{width:100%;height:100%;object-fit:cover;display:block}
-.idioma-emoji{font-size:1rem;line-height:1}
+.idioma-emoji{font-size:var(--fs-md);line-height:1}
 .idioma-campo select{max-width:240px}
 @media (max-width:520px){.idioma-campo{width:100%}.idioma-campo select{max-width:none;width:100%}}
 

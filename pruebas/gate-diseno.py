@@ -3,7 +3,7 @@
 """gate-diseno.py — gate G-DISENO de MIMO v2 (M10).
 
 Mide la piel, no el gusto:
-  1. 5 tamaños, 8 espacios, 3 radios y 1 duración en tokens.css
+  1. 8 tamaños (5 base + 3 roles), 8 espacios, 3 radios y 1 duración en tokens.css
   2. 0 hex en base.css (los colores viven en tokens/temas)
   3. 10 temas, cada uno con la paleta completa y su foco
   4. el banco abre a 1440/1100/411 sin desborde y sin errores de consola
@@ -67,7 +67,7 @@ def revisar_css() -> list[str]:
     sp = len(re.findall(r"--sp-[a-z0-9-]+\s*:", tokens))
     radios = len(re.findall(r"--r-(?:sm|md|lg)\s*:", tokens))
     dur = len(re.findall(r"--t\s*:", tokens))
-    exigir(fs == 5, f"tokens: 5 tamaños — {fs}", fallas)
+    exigir(fs == 8, f"tokens: 8 tamaños (5 base + 3 roles) — {fs}", fallas)
     exigir(sp == 8, f"tokens: 8 espacios — {sp}", fallas)
     exigir(radios == 3, f"tokens: 3 radios — {radios}", fallas)
     exigir(dur == 1, f"tokens: 1 duración — {dur}", fallas)

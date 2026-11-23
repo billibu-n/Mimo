@@ -27,7 +27,7 @@
 .tiempo-modo{font-size:var(--fs-sm);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 #tiempo-badge{font-size:var(--fs-xs);min-height:0;padding:2px 8px}
 #tiempo-badge.tiempo-badge--on{background:var(--ok);border-color:var(--ok);color:var(--ac-txt)}
-.tiempo-reloj{font-size:3.4rem;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.04em;font-weight:700}
+.tiempo-reloj{font-size:var(--fs-display);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.04em;font-weight:700}
 .tiempo-reloj.corriendo{color:var(--ac)}
 .tiempo-reloj .rlj{width:1.45em;padding:0;border:0;border-bottom:2px solid transparent;border-radius:4px;background:transparent;color:inherit;font:inherit;font-variant-numeric:tabular-nums;text-align:center;outline:none}
 .tiempo-reloj .rlj:hover{border-bottom-color:var(--line)}
@@ -100,7 +100,7 @@
   .tiempo-sesiones{grid-column:1;grid-row:3;height:460px}
 }
 @media (max-width:600px){
-  .tiempo-reloj{font-size:2.5rem}
+  .tiempo-reloj{font-size:calc(var(--fs-display) * .75)}
   .tiempo-meta-campos{grid-template-columns:1fr}
   #tiempo-destino{max-width:none;text-align:left}
   .btn-control{padding:0 var(--sp-2)}
