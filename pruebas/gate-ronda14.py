@@ -49,10 +49,13 @@ DRAG = """([srcSel, dstSel]) => {
 def main() -> int:
     fallas: list[str] = []
     hoy = date.today()
-    primero = hoy.replace(day=1)
-    lunes = primero - timedelta(days=primero.weekday())
-    inicio = lunes.isoformat()
-    viernes = (lunes + timedelta(days=4)).isoformat()
+    # El periodo de prueba tiene 4 semanas y la sesion de Estudio cae hoy: si el
+    # periodo se ancla al dia 1 del mes, la ultima semana puede haber terminado
+    # antes de hoy (p. ej. el 23/11 con un periodo que acaba el 22/11) y el
+    # grafico mide una semana vacia. Se ancla a la semana en curso.
+    lunes = hoy - timedelta(days=hoy.weekday())
+    inicio = (lunes - timedelta(weeks=3)).isoformat()
+    viernes = (lunes - timedelta(weeks=3) + timedelta(days=4)).isoformat()
     with Navegador() as nav:
         ctx, page, errores = nav.abrir(APP, 1440, 950)
         page.on("dialog", lambda d: d.accept())
