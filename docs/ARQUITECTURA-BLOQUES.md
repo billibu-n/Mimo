@@ -123,7 +123,8 @@ Hoy un bloque es solamente una **ficha de catálogo**:
 
 - `BLOQUES` (líneas 251–258) guarda nombre, tipo, origen, naturaleza, tags, icono y
   descripción.
-- `BASE` (259) fija Calendario, Tareas, Notas y Ajustes.
+- `BASE` (259) fija Calendario, Tareas y Notas como pestañas; Ajustes es base fija
+  del shell y se abre desde el engranaje del panel superior, sin ocupar pestaña.
 - `secciones()` (796–812) arma la barra con `BASE` + `estado.instalados`.
 - `instalar()` / `quitar()` (3729–3753) solo agregan o quitan IDs de
   `estado.instalados` y `estado.kits`.
@@ -1097,8 +1098,8 @@ ida y vuelta y backup antes/después.
   - Si es opcional, solo desmontar.
 - Packs transaccionales; `kits` sigue registrando lo instalado por pack.
 - Estados vacíos:
-  - Sin bloques opcionales: la base sigue (Calendario, Tareas, Notas, Ajustes) y se
-    ofrece “Agregar bloque” para Tiempo o el kit Academics.
+  - Sin bloques opcionales: la base sigue (Calendario, Tareas, Notas) y Ajustes en el
+    engranaje; se ofrece “Agregar bloque” para Tiempo o el kit Academics.
   - Calificaciones sin cursos: “Crea un curso” (dominio) o “Instala Malla”.
   - Estudio sin cursos: sesiones “Sin ramo” y tabla vacía.
   - Tiempo sin tareas/cursos: selectores vacíos, timer funciona.

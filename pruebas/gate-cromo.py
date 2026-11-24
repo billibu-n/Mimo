@@ -41,7 +41,7 @@ def main() -> int:
         # 2) el botón de la barra informa, con su hora
         estado = page.locator("#btn-sync").get_attribute("data-estado") or ""
         exigir(estado.startswith("Local"), f"indicador: sin nube dice Local — «{estado}»", fallas)
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(250)
         page.locator("#pref-inicio").select_option("domingo")
         page.wait_for_timeout(300)
@@ -66,7 +66,7 @@ def main() -> int:
                "detalle: el panel muestra el evento elegido", fallas)
 
         # 4) el split se abre desde el botón superior
-        page.locator('#tabs [data-ir="ajustes"]').click()
+        page.locator('#btn-ajustes').click()
         page.wait_for_timeout(300)
         page.evaluate("document.querySelector('#btn-split').click()")
         page.wait_for_timeout(250)

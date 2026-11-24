@@ -183,7 +183,7 @@ def main() -> int:
             for idioma, nombre in (("en", "grilla en"), ("zh", "grilla zh")):
                 page.locator("#modal-cancelar").click()
                 page.wait_for_timeout(150)
-                page.locator('#tabs [data-ir="ajustes"]').click()
+                page.locator('#btn-ajustes').click()
                 page.wait_for_timeout(250)
                 page.locator("#pref-idioma").select_option(idioma)
                 page.wait_for_timeout(350)
@@ -194,7 +194,7 @@ def main() -> int:
                 exigir_grilla_pareja(page, nombre, fallas)
             page.locator("#modal-cancelar").click()
             page.wait_for_timeout(150)
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(250)
             page.locator("#pref-idioma").select_option("es")
             page.wait_for_timeout(300)

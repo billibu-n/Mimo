@@ -6,7 +6,9 @@
 .tareas-resumen{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sp-3);align-items:stretch;margin-bottom:var(--sp-4)}
 .tareas-resumen .kpis{margin-bottom:0}
 .tareas-anillo{display:flex;align-items:center;gap:var(--sp-3);min-width:260px;padding:var(--sp-3) var(--sp-4);border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup)}
-.tareas-anillo svg{flex:none;width:108px;height:108px}
+.tareas-anillo svg{flex:none;width:110px;height:110px}
+.tareas-anillo__pct{font-size:var(--fs-lg);font-weight:700;fill:var(--fg)}
+.tareas-anillo__etq{font-size:var(--fs-xs);fill:var(--muted)}
 .tareas-ley .tit{margin:0 0 6px;font-size:var(--fs-sm);font-weight:700}
 .tareas-ley .leg{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:var(--fs-xs);color:var(--muted)}
 .tareas-ley .leg i{flex:none;width:10px;height:10px;border-radius:3px}

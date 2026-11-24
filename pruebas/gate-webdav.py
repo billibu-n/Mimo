@@ -47,7 +47,7 @@ def abrir_contexto(nav, reset=True):
 
 
 def configurar(page, srv, clave=CLAVE, guardar_clave=True):
-    page.locator('#tabs [data-ir="ajustes"]').click()
+    page.locator('#btn-ajustes').click()
     page.wait_for_timeout(150)
     if not page.locator("#sync-panel-manual").evaluate("e => e.open"):
         page.locator("#sync-panel-manual > summary").click()
@@ -256,7 +256,7 @@ def main() -> int:
                 ctx_n, n, err_n = abrir_contexto(nav)
                 try:
                     nota(n, "Nota Nextcloud", "por el conector")
-                    n.locator('#tabs [data-ir="ajustes"]').click()
+                    n.locator('#btn-ajustes').click()
                     n.wait_for_timeout(150)
                     if not n.locator("#sync-panel-manual").evaluate("e => e.open"):
                         n.locator("#sync-panel-manual > summary").click()
@@ -306,7 +306,7 @@ def main() -> int:
                 ctx_l, l, err_l = abrir_contexto(nav)
                 try:
                     nota(l, "Nota Autorizada", "por login flow")
-                    l.locator('#tabs [data-ir="ajustes"]').click()
+                    l.locator('#btn-ajustes').click()
                     l.wait_for_timeout(150)
                     if not l.locator("#sync-panel-manual").evaluate("e => e.open"):
                         l.locator("#sync-panel-manual > summary").click()

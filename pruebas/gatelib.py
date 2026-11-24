@@ -47,7 +47,10 @@ class Navegador:
         page.on("console", lambda m: errores.append(f"console.{m.type}: {m.text}") if m.type == "error" else None)
         page.on("pageerror", lambda e: errores.append(f"pageerror: {e}"))
         if reloj:
-            page.clock.install()
+            if isinstance(reloj, str):
+                page.clock.install(time=reloj)
+            else:
+                page.clock.install()
         url = fichero.resolve().as_uri() + ("?reset=1" if reset else "")
         page.goto(url, wait_until="load")
         page.wait_for_timeout(250)
@@ -73,6 +76,14 @@ def abrir_plegable(page, selector: str) -> None:
         if (caja && !caja.classList.contains('on')) caja.querySelector('.plegable__cab').click();
     }""", selector)
     page.wait_for_timeout(220)
+
+
+def abrir_seccion(page, seccion: str) -> None:
+    """Abre una sección. Ajustes vive en el engranaje del panel superior."""
+    if seccion == "ajustes":
+        page.locator("#btn-ajustes").click()
+    else:
+        page.locator(f'#tabs [data-ir="{seccion}"]').click()
 
 
 def texto_tabs(page):

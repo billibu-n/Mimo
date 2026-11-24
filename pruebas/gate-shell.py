@@ -3,7 +3,7 @@
 """gate-shell.py — G-UI de la app M11/M12, sobre app/index.html.
 
 No mide la maqueta: mide el armazón real.
-  1. base 4 en orden y 0 errores de consola
+  1. base 3 en orden (Ajustes no ocupa pestaña) y 0 errores de consola
   2. instalar Tiempo, 4 bloques dentro, quitar uno y el padre sigue
   3. instalar/quitar el kit Academics sin dejar pestañas huérfanas
   4. crear tarea, seleccionarla y ver Detalle en el panel
@@ -33,8 +33,8 @@ def main() -> int:
         ctx, page, errores = nav.abrir(APP, 1440, 950)
         try:
             tabs = [t.get_attribute("title") for t in page.locator("#tabs .tab").all()]
-            exigir(tabs[:3] == ["Calendario", "Tareas", "Notas"] and tabs[-1] == "Ajustes",
-                   f"base 4 en orden — {tabs}", fallas)
+            exigir(tabs[:3] == ["Calendario", "Tareas", "Notas"] and "Ajustes" not in tabs,
+                   f"base 3 en orden, sin Ajustes — {tabs}", fallas)
             exigir(not errores, f"consola limpia — {errores[:3]}", fallas)
 
             page.locator("#btn-nuevo").click()

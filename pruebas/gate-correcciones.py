@@ -14,8 +14,8 @@ Mide sobre app/index.html:
      sanea el HTML peligroso y conserva $...$ / $$...$$ con KaTeX;
   8. la tarjeta de sincronización tiene aire (padding y campos), separa la conexión del
      cifrado en paneles, ofrece el registro de Nextcloud y no desborda en móvil;
-  9. el tamaño de letra se aplica, no desborda y se recuerda; la mascota lleva a la primera
-     sección; la barra dice el nombre de cada sección, sin códigos, con icono propio;
+  9. el tamaño de letra se aplica, no desborda y se recuerda; la mascota no navega
+     (solo cambia de cara); la barra dice el nombre de cada sección, sin códigos, con icono propio;
  10. el botón de desarrollador «Guardar tutorial» ya no está y Restablecer de fábrica deja
      la app vacía.
 
@@ -121,7 +121,7 @@ def main() -> int:
             exigir(page.locator("body").get_attribute("data-tema") == "deepsea",
                    "tema: y vuelve al oscuro de la pareja", fallas)
 
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(180)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(180)
             exigir(page.locator(".ajustes-grupo").count() == 4,
                    f"ajustes: 4 grupos — {page.locator('.ajustes-grupo').count()}", fallas)
             texto_aj = page.locator("#p-ajustes").inner_text().lower()
@@ -139,9 +139,9 @@ def main() -> int:
             despues = page.locator("#mimo-ic").get_attribute("src")
             exigir(antes != despues and page.locator("#mimo-menu").count() == 0,
                    "mascota: anima sin abrir menú", fallas)
-            exigir(page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir") == "calendario",
-                   "mascota: desde Ajustes salta a la primera sección", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(220)
+            exigir(page.locator("#btn-ajustes").get_attribute("aria-current") == "page",
+                   "mascota: desde Ajustes no cambia de sección", fallas)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(220)
             exigir(page.locator("#pref-tema-claro option").count() == 5,
                    "ajustes: 5 temas claros", fallas)
             exigir(page.locator("#pref-tema-oscuro option").count() == 5,
@@ -194,23 +194,18 @@ def main() -> int:
             page.wait_for_timeout(500)
             tras = page.evaluate("getComputedStyle(document.documentElement).fontSize")
             exigir(tras == grande, f"letra: el tamaño se recuerda — {tras}", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(200)
             page.locator("#pref-escala").select_option("100")
             page.wait_for_timeout(200)
 
-            # Mascota: lleva a la primera sección, y no repite si ya estás ahí.
+            # Mascota: ya no navega; el clic solo cambia su cara.
             page.locator('#tabs [data-ir="notas"]').click()
             page.wait_for_timeout(200)
             page.locator("#btn-mimo").click()
             page.wait_for_timeout(300)
-            primera = page.evaluate("document.querySelector('#tabs .tab').dataset.ir")
             activa = page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir")
-            exigir(activa == primera, f"mascota: lleva a la primera sección — {activa}", fallas)
-            page.locator("#btn-mimo").click()
-            page.wait_for_timeout(300)
-            exigir(page.evaluate("document.querySelector('#tabs .tab.on').dataset.ir") == primera,
-                   "mascota: estando ya ahí no cambia de sección", fallas)
+            exigir(activa == "notas", f"mascota: el clic no cambia de sección — {activa}", fallas)
 
             # Identidad de los bloques: código de dos dígitos e iconos distintos.
             # El código de dos dígitos salió de la pestaña (R2): ahora dice su nombre.
@@ -224,7 +219,7 @@ def main() -> int:
                    "bloques: Estudio y Tiempo ya no comparten icono", fallas)
             exigir(page.get_attribute("#btn-historial use", "href") == "#i-historial",
                    "historial: el botón usa un icono de historial", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(220)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(220)
 
             page.locator("[data-editar-periodo]").first.click(); page.wait_for_timeout(150)
             page.locator("#periodo-nombre").fill("Primavera 2026 bis")
@@ -318,7 +313,7 @@ def main() -> int:
             exigir(desborde_notas == 0, f"notas: 411 sin desborde — {desborde_notas}px", fallas)
 
             page.set_viewport_size({"width": 411, "height": 900})
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(250)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(250)
             desborde = page.evaluate(
                 "Math.max(document.documentElement.scrollWidth - document.documentElement.clientWidth,"
                 " document.body.scrollWidth - document.body.clientWidth)")

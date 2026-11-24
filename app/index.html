@@ -15,8 +15,8 @@
     align-items: center; justify-content: center; gap: 10px; background: var(--bg, #f8fafc); color: var(--fg, #1e293b);
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif; transition: opacity .28s ease, visibility .28s ease; }
   #carga img { width: 56px; height: 56px; object-fit: contain; }
-  #carga strong { font-size: 1.5rem; letter-spacing: .06em; }
-  #carga > span { font-size: .85rem; color: var(--muted, #64748b); }
+  #carga strong { font-size: var(--fs-h1, 1.5rem); letter-spacing: .06em; }
+  #carga > span { font-size: var(--fs-sm, .8rem); color: var(--muted, #64748b); }
   #carga .carga-barra { width: 140px; height: 3px; border-radius: 999px; background: var(--line, #e2e8f0); overflow: hidden; margin-top: 6px; }
   #carga .carga-barra i { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--ac, #2563eb); animation: carga-mueve 1s ease-in-out infinite; }
   body:not(.cargando) #carga { opacity: 0; visibility: hidden; pointer-events: none; }

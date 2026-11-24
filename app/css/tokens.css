@@ -7,12 +7,17 @@
    ============================================================================ */
 
 :root{
-  /* 5 tamaños de letra. Lo que no quepa en uno de estos, no entra. */
+  /* 5 tamaños de letra y 3 de rol. Lo que no quepa en uno de estos, no entra.
+     Los roles son tamaños con un trabajo fijo: el título de sección, la cifra de
+     un KPI y el reloj. Se nombran para que no vuelvan a aparecer `rem` sueltos. */
   --fs-xs:.7rem;
   --fs-sm:.8rem;
   --fs-md:.9rem;
   --fs-lg:1.12rem;
   --fs-xl:1.4rem;
+  --fs-h1:1.55rem;
+  --fs-num:1.7rem;
+  --fs-display:3.4rem;
 
   /* Factor de escala: lo escribe Ajustes con «Tamaño de letra» (90 a 140 %).
      La letra crece con el `font-size` de la raíz; los huecos y las alturas,

@@ -3,7 +3,7 @@
 """gate-diseno.py — gate G-DISENO de MIMO v2 (M10).
 
 Mide la piel, no el gusto:
-  1. 5 tamaños, 8 espacios, 3 radios y 1 duración en tokens.css
+  1. 8 tamaños (5 base + 3 roles), 8 espacios, 3 radios y 1 duración en tokens.css
   2. 0 hex en base.css (los colores viven en tokens/temas)
   3. 10 temas, cada uno con la paleta completa y su foco
   4. el banco abre a 1440/1100/411 sin desborde y sin errores de consola
@@ -32,7 +32,7 @@ BANCO = AQUI / "banco-tokens.html"
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import Navegador, desborde, exigir, salir  # noqa: E402
+from gatelib import Navegador, abrir_seccion, desborde, exigir, salir  # noqa: E402
 
 TEMAS = ["clasico", "deepsea", "medianoche", "negro", "vino", "bosque", "sepia", "pinky", "alto-contraste", "alto-contraste-claro"]
 REQUERIDOS = ("--fg", "--bg", "--ac", "--ac-txt", "--ac-txt-fuerte", "--sup", "--line", "--muted", "--foco", "--sombra")
@@ -67,7 +67,7 @@ def revisar_css() -> list[str]:
     sp = len(re.findall(r"--sp-[a-z0-9-]+\s*:", tokens))
     radios = len(re.findall(r"--r-(?:sm|md|lg)\s*:", tokens))
     dur = len(re.findall(r"--t\s*:", tokens))
-    exigir(fs == 5, f"tokens: 5 tamaños — {fs}", fallas)
+    exigir(fs == 8, f"tokens: 8 tamaños (5 base + 3 roles) — {fs}", fallas)
     exigir(sp == 8, f"tokens: 8 espacios — {sp}", fallas)
     exigir(radios == 3, f"tokens: 3 radios — {radios}", fallas)
     exigir(dur == 1, f"tokens: 1 duración — {dur}", fallas)
@@ -236,7 +236,7 @@ def recuadro() -> list[str]:
                 page.wait_for_timeout(30)
                 esperado = page.evaluate(SONDA)
                 for sid in secciones:
-                    page.locator(f'#tabs [data-ir="{sid}"]').click()
+                    abrir_seccion(page, sid)
                     page.wait_for_timeout(120)
                     visto = page.evaluate(VISTO)
                     if not visto:

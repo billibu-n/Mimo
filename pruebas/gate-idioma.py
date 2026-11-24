@@ -21,7 +21,7 @@ RAIZ = AQUI.parent
 APP = RAIZ / "app" / "index.html"
 
 sys.path.insert(0, str(AQUI))
-from gatelib import abrir_plegable, Navegador, exigir, salir  # noqa: E402
+from gatelib import abrir_plegable, abrir_seccion, Navegador, exigir, salir  # noqa: E402
 
 SECCIONES = ("calendario", "tareas", "notas", "tiempo", "malla", "calificaciones", "estudio", "ajustes")
 PROHIBIDO = re.compile(
@@ -81,7 +81,7 @@ def main() -> int:
             exigir(not huerfanas, f"idioma: toda clave data-i18n existe en el diccionario — {huerfanas[:4]}", fallas)
             dibujadas: list[str] = []
             for sec in SECCIONES:
-                page.locator(f'#tabs [data-ir="{sec}"]').click()
+                abrir_seccion(page, sec)
                 page.wait_for_timeout(160)
                 dibujadas += page.evaluate("""() => {
                   // Una clave es una palabra con puntos, en minúsculas y sin espacios.
@@ -109,7 +109,7 @@ def main() -> int:
                 "estudio": "记录学习", "ajustes": "同步",
             }
             for sec in SECCIONES:
-                page.locator(f'#tabs [data-ir="{sec}"]').click()
+                abrir_seccion(page, sec)
                 page.wait_for_timeout(180)
                 txt = leer(page, f"#p-{sec}")
                 exigir(esperado_zh[sec] in txt,
@@ -156,7 +156,7 @@ def main() -> int:
             page.locator('#tabs [data-ir="estudio"]').click(); page.wait_for_timeout(150)
             exigir("Log study" in leer(page, "#p-estudio"),
                    "en/estudio: formulario traducido", fallas)
-            page.locator('#tabs [data-ir="ajustes"]').click(); page.wait_for_timeout(150)
+            page.locator('#btn-ajustes').click(); page.wait_for_timeout(150)
             malos = prohibidos(leer(page, "#p-ajustes"))
             exigir(not malos, f"en/ajustes: sin español — {malos[:4]}", fallas)
 

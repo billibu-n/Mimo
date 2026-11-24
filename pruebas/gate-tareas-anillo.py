@@ -4,7 +4,7 @@
 
 Mide sobre app/index.html:
   1. el anillo aparece en Tareas y cuenta las ocurrencias de la semana;
-  2. el centro muestra el porcentaje pendiente y la leyenda los tres totales;
+  2. el centro muestra el porcentaje cumplido y la leyenda los tres totales;
   3. completar una tarea mueve el anillo y la leyenda sin recargar;
   4. el anillo sigue visible en «Al día» y en la vista de 411 sin desbordar;
   5. sin tareas queda en 0 % y no rompe.
@@ -69,9 +69,9 @@ def main() -> int:
             exigir(page.locator(".tareas-anillo").is_visible() and page.locator("#tareas-anillo").count() == 1,
                    "anillo: visible en Tareas", fallas)
             exigir(leyenda(page) == ("2", "1", "3"), f"anillo: leyenda 2/1/3 — {leyenda(page)}", fallas)
-            exigir(centro(page) == "33%", f"anillo: centro 33 % pendiente — {centro(page)}", fallas)
-            exigir(page.locator("#tareas-anillo circle").count() == 3,
-                   f"anillo: pista + hechas + pendientes — {page.locator('#tareas-anillo circle').count()}", fallas)
+            exigir(centro(page) == "67%", f"anillo: centro 67 % cumplido — {centro(page)}", fallas)
+            exigir(page.locator("#tareas-anillo circle").count() == 2,
+                   f"anillo: pista + hechas — {page.locator('#tareas-anillo circle').count()}", fallas)
             aria = page.locator("#tareas-anillo").get_attribute("aria-label") or ""
             exigir("2" in aria and "1" in aria and "3" in aria,
                    f"anillo: la etiqueta accesible cuenta — {aria}", fallas)
@@ -79,7 +79,7 @@ def main() -> int:
             page.locator('[data-check="t3"]').click()
             page.wait_for_timeout(300)
             exigir(leyenda(page) == ("3", "0", "3"), f"anillo: completar mueve la leyenda — {leyenda(page)}", fallas)
-            exigir(centro(page) == "0%", f"anillo: sin pendientes el centro es 0 % — {centro(page)}", fallas)
+            exigir(centro(page) == "100%", f"anillo: todo hecho el centro es 100 % — {centro(page)}", fallas)
             exigir(page.locator("#tareas-anillo circle").count() == 2,
                    f"anillo: sin pendientes queda pista + hechas — {page.locator('#tareas-anillo circle').count()}", fallas)
 

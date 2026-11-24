@@ -70,7 +70,7 @@ def main() -> int:
                    "atajos: Ctrl+Z en el cuerpo no borra la nota", fallas)
 
             # Fuera de un campo, el historial de la app sigue vivo y avisa.
-            page.locator('#tabs [data-ir="ajustes"]').click()
+            page.locator('#btn-ajustes').click()
             page.wait_for_timeout(150)
             tema0 = page.evaluate("document.body.getAttribute('data-tema')")
             page.locator("#btn-tema").click()

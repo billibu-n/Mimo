@@ -1120,7 +1120,15 @@
     bp.title = rotulo;
   }
   function pintarTabs() {
-    $("#tabs").innerHTML = secciones().map(function (id) {
+    /* Ajustes no va en la barra: el engranaje del panel superior ya lo abre.
+       La seccion sigue existiendo y se pinta igual; solo no ocupa una pestaña. */
+    var enAjustes = pantalla === "ajustes";
+    var ba = $("#btn-ajustes");
+    if (ba) {
+      if (enAjustes) ba.setAttribute("aria-current", "page");
+      else ba.removeAttribute("aria-current");
+    }
+    $("#tabs").innerHTML = secciones().filter(function (id) { return id !== "ajustes"; }).map(function (id) {
       var on = id === pantalla ? " on" : "";
       var cod = codigoDe(id);
       return '<button class="tab' + on + '" type="button" role="tab" aria-selected="' + (id === pantalla) + '" data-ir="' + id + '" data-codigo="' + esc(cod) + '" title="' + esc(nombre(id)) + '" aria-label="' + esc(nombre(id)) + '">' +
@@ -2180,21 +2188,16 @@
     var svg = $("#tareas-anillo");
     if (!svg) return;
     var total = hechas + pendientes;
-    var pct = total ? Math.round(pendientes / total * 100) : 0;
+    var pct = total ? Math.round(hechas / total * 100) : 0;
     var C = 2 * Math.PI * 50;
     var lenH = total ? (hechas / total) * C : 0;
-    var lenP = total ? (pendientes / total) * C : 0;
     var html = '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--pista)" stroke-width="14"></circle>';
     if (lenH > 0) {
       html += '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--ok)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' +
         lenH.toFixed(1) + " " + C.toFixed(1) + '" transform="rotate(-90 60 60)"></circle>';
     }
-    if (lenP > 0) {
-      html += '<circle cx="60" cy="60" r="50" fill="none" stroke="var(--fg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="' +
-        lenP.toFixed(1) + " " + C.toFixed(1) + '" stroke-dashoffset="-' + lenH.toFixed(1) + '" transform="rotate(-90 60 60)"></circle>';
-    }
-    html += '<text x="60" y="57" text-anchor="middle" font-size="24" font-weight="700" fill="var(--fg)">' + pct + "%</text>" +
-      '<text x="60" y="74" text-anchor="middle" font-size="10" fill="var(--muted)">' + esc(L("pendientes", "pending", "待办")) + "</text>";
+    html += '<text class="tareas-anillo__pct" x="60" y="57" text-anchor="middle">' + pct + "%</text>" +
+      '<text class="tareas-anillo__etq" x="60" y="74" text-anchor="middle">' + esc(L("al día", "on track", "已完成")) + "</text>";
     svg.innerHTML = html;
     svg.setAttribute("aria-label", L("Resumen de la semana: " + hechas + " hechas, " + pendientes + " pendientes de " + total + ".",
       "This week: " + hechas + " done, " + pendientes + " pending of " + total + ".",
@@ -2217,7 +2220,18 @@
     var hoy = itemsHoy(tareas);
     var abiertas = tareas.filter(function (t) { return esRecurrente(t) ? !!primeraPendienteDe(t) : !t.hecha; });
     var hechas = tareas.filter(function (t) { return esRecurrente(t) ? !primeraPendienteDe(t) : t.hecha; });
-    $("#kpi-hoy").textContent = String(hoy.length);
+    /* La cifra de «hoy y atrasadas» es la misma que pinta la columna: las
+       ocurrencias visibles con fecha hasta hoy, no una por tarea. */
+    var lunesSemana = lunesDe(new Date()), domingoSemana = new Date(lunesSemana.getTime());
+    domingoSemana.setDate(domingoSemana.getDate() + 6);
+    var lunesSemanaIso = isoFecha(lunesSemana), domingoSemanaIso = isoFecha(domingoSemana);
+    var semanaItems = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas);
+    var hechasSemana = itemsHechosSemana(tareas, lunesSemanaIso, domingoSemanaIso);
+    var atrasadas = itemsAtrasados(tareas);
+    var hoyTablero = sinDuplicados(atrasadas.concat(semanaItems)).filter(function (i) {
+      return !i.hecha && i.fecha && i.fecha <= hoyISO();
+    });
+    $("#kpi-hoy").textContent = String(hoyTablero.length);
     $("#kpi-abiertas").textContent = String(abiertas.length);
     $("#kpi-hechas").textContent = String(hechas.length);
     $("#kpi-progreso").textContent = (tareas.length ? Math.round(hechas.length / tareas.length * 100) : 0) + " %";
@@ -2230,15 +2244,10 @@
       b.classList.toggle("on", b.getAttribute("data-filtro") === filtroTareas);
     });
     var cuenta = { todas: tareas.length, pendientes: abiertas.length,
-      hoy: hoy.length,
+      hoy: hoyTablero.length,
       ramos: tareas.filter(function (t) { return !!cursoDeContexto(t.contexto); }).length,
       personal: tareas.filter(function (t) { return !cursoDeContexto(t.contexto); }).length };
     Object.keys(cuenta).forEach(function (k) { var el = $("#tar-f-" + k); if (el) el.textContent = String(cuenta[k]); });
-    var lunesSemana = lunesDe(new Date()), domingoSemana = new Date(lunesSemana.getTime());
-    domingoSemana.setDate(domingoSemana.getDate() + 6);
-    var lunesSemanaIso = isoFecha(lunesSemana), domingoSemanaIso = isoFecha(domingoSemana);
-    var semanaItems = itemsEntre(lunesSemanaIso, domingoSemanaIso, tareas);
-    var hechasSemana = itemsHechosSemana(tareas, lunesSemanaIso, domingoSemanaIso);
     pintarAnilloTareas(semanaItems.filter(function (i) { return i.hecha; }).length,
       semanaItems.filter(function (i) { return !i.hecha; }).length);
     if (!tareas.length) { lista.innerHTML = ""; vacio.hidden = false; bindTareas(); return; }
@@ -2248,7 +2257,6 @@
     } else if (vistaTareas === "tablero") {
       /* «Hoy» es la bandeja de lo que ya toca: atrasadas + hoy. La semana
          queda para lo que todavía no vence y Hechas se mide por cierre. */
-      var atrasadas = itemsAtrasados(tareas);
       var visibles = sinDuplicados(atrasadas.concat(semanaItems)).filter(function (i) { return _pasaFiltroTareas(i, filtroTareas); });
       var colHoy = visibles.filter(function (i) { return !i.hecha && i.fecha && i.fecha <= hoyISO(); });
       var colSemana = visibles.filter(function (i) { return !i.hecha && i.fecha > hoyISO() && i.fecha <= domingoSemanaIso; });
@@ -6364,10 +6372,6 @@
     });
     $("#btn-ajustes").addEventListener("click", function () { ir("ajustes"); });
     $("#btn-historial").addEventListener("click", abrirHistorial);
-    $("#btn-mimo").addEventListener("click", function () {
-      var primera = secciones()[0];
-      if (primera && primera !== pantalla) ir(primera);
-    });
     $("#hist-x").addEventListener("click", cerrarHistorial);
     $("#modal-historial").addEventListener("click", function (e) {
       if (e.target === $("#modal-historial")) cerrarHistorial();
