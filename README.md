@@ -10,6 +10,10 @@ decides qué bloques usar: la interfaz se adapta a ti, no al revés.
 
 No hay cuenta, no hay nube propia y no se envía nada a un servidor. Tus datos viven en tu equipo.
 
+> **Beta.9 (24/11/2026):** este corte publica **solo el RPM de Fedora / RHEL x86_64**:
+> [Mimo-1.2.0-beta.9-1.x86_64.rpm](https://github.com/billibu-n/Mimo/releases/download/v1.2.0-beta.9/Mimo-1.2.0-beta.9-1.x86_64.rpm).
+> Debian, Arch y Windows siguen en la beta.8.
+
 ## Probar en el navegador
 
 La **beta.8** está publicada en **GitHub Pages**: <https://billibu-n.github.io/Mimo/>. Es la app
