@@ -478,6 +478,7 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-24 | T-02 | 9953f66 | Selector único `selector-iconos.js`: paquete, búsqueda, categorías, importación de carpeta y atribución visible. Se usa en línea en la identidad del ramo y en ventana secundaria en las metas de Progreso. `gate-identidad` y `gate-progreso-categorias` actualizados. |
 | 2026-11-24 | T-03 | dcc5f59 | Color de meta por RGB (0–255) y paleta de tokens/paleta de identidad, con vista previa. `color` es aditivo; la tarjeta, el anillo, la barra y el gráfico usan `--prog-color`. |
 | 2026-11-24 | T-04 | T-04 | `gate-iconos.py` (43.º gate): packs nativo/KDE, cambio de pack, importación de carpeta, persistencia, fallback, uso en ramo y meta, y color RGB/paleta. `docs/ICONOS.md`, `docs/ESQUEMA.md`, `CREDITOS.md`. |
+| 2026-11-24 | T-05 | T-05 | Icono de la barra en Wayland: el `app_id` real es `mimo` y el paquete solo instalaba `Mimo.desktop`; se agrega `mimo.desktop` oculto (`NoDisplay=true`, `Icon=mimo`) al RPM, DEB y Arch. `gate-arquitectura` lo mide. |
 
 ## 10. Cola por gravedad (resumen)
 

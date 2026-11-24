@@ -12,6 +12,7 @@ No mide la UI: mide que el código conserve las reglas que sostienen el registro
 """
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -92,6 +93,24 @@ def main() -> int:
     exigir("sincronizarEventoComp" not in SHELL, "eventos: Calificaciones no copia eventos")
     exigir("fuenteCalificaciones" in SHELL, "eventos: fuente de Calificaciones registrada")
     exigir("registrarFuenteCalendario" in SHELL, "eventos: registro de fuentes del calendario")
+
+    # El icono de la barra depende del app_id de Wayland (`mimo`). El paquete debe
+    # instalar un .desktop en minúscula, oculto, que apunte al icono de la mascota.
+    escritorio = RAIZ / "escritorio" / "src-tauri"
+    oculto = (escritorio / "mimo.desktop").read_text(encoding="utf-8")
+    exigir("NoDisplay=true" in oculto and "Icon=mimo" in oculto and "StartupWMClass=mimo" in oculto,
+           "escritorio: mimo.desktop oculto con el icono de Mimo")
+    visible = (escritorio / "Mimo.desktop").read_text(encoding="utf-8")
+    exigir("Icon={{icon}}" in visible and "StartupWMClass=mimo" in visible,
+           "escritorio: la entrada del menú conserva icono y clase")
+    conf = json.loads((escritorio / "tauri.conf.json").read_text(encoding="utf-8"))
+    for tipo in ("rpm", "deb"):
+        archivos = conf["bundle"]["linux"][tipo].get("files", {})
+        exigir("/usr/share/applications/mimo.desktop" in archivos,
+               f"escritorio: {tipo} instala el alias mimo.desktop")
+    arch = (RAIZ / "packaging" / "arch" / "PKGBUILD").read_text(encoding="utf-8")
+    exigir("/usr/share/applications/mimo.desktop" in arch,
+           "escritorio: Arch instala el alias mimo.desktop")
 
     runner = (RAIZ / "pruebas" / "correr-gates.py").read_text(encoding="utf-8")
     exigir('"gate-bloques.py"' in runner, "arnés: gate-bloques incluido")

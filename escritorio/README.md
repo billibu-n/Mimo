@@ -56,7 +56,10 @@ sudo dnf remove mimo
 ```
 
 El paquete se llama `mimo` (Tauri deriva el nombre rpm del `productName` en kebab-case); el nombre
-visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.desktop` y los iconos.
+visible es "Mimo". Instala `/usr/bin/mimo`, `/usr/share/applications/Mimo.desktop` (la entrada
+del menú), `/usr/share/applications/mimo.desktop` (alias oculto con `NoDisplay=true`) y los iconos.
+Wayland identifica la ventana por `app_id=mimo`; sin el alias en minúscula, KDE/GNOME no
+encuentran `Mimo.desktop` y dibujan el icono genérico en la barra en vez de la mascota.
 
 ## Que hace cada pieza
 

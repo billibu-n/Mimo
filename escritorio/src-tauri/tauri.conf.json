@@ -51,7 +51,8 @@
         "desktopTemplate": "Mimo.desktop",
         "postInstallScript": "scripts/postinstall.sh",
         "files": {
-          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
+          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml",
+          "/usr/share/applications/mimo.desktop": "mimo.desktop"
         },
         "depends": [
           "libc.so.6(GLIBC_2.39)(64bit)",
@@ -62,7 +63,8 @@
         "desktopTemplate": "Mimo.desktop",
         "postInstallScript": "scripts/postinstall.sh",
         "files": {
-          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml"
+          "/usr/share/metainfo/cl.mimo.escritorio.metainfo.xml": "metainfo/cl.mimo.escritorio.metainfo.xml",
+          "/usr/share/applications/mimo.desktop": "mimo.desktop"
         },
         "depends": [
           "libc6 (>= 2.39)",

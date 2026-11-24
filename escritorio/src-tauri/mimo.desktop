@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=Utility;
+Comment=Mimo — organizador personal para tu día, sin conexión.
+Exec=mimo
+Icon=mimo
+Name=Mimo
+StartupWMClass=mimo
+NoDisplay=true
+Terminal=false
+Type=Application
