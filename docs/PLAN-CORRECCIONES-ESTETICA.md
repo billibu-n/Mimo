@@ -10,7 +10,7 @@
 
 1. `git log --oneline -5` y `git status --short`.
 2. Abre §4 y busca la primera fila con estado `en curso` o `pendiente`.
-3. Corre `python3 pruebas/correr-gates.py` (41/41 esperado) y `python3 pruebas/gate-estetica.py`.
+3. Corre `python3 pruebas/correr-gates.py` (42/42 esperado) y `python3 pruebas/gate-estetica.py`.
 4. Abre la ficha de esa unidad en §5. Su columna «Contexto mínimo» lista los archivos y el criterio.
 5. No re-abras la auditoría: los 22 hallazgos y su evidencia están en §3.
 6. Al terminar: actualiza estado, commit y bitácora en el mismo commit. No dejes una unidad a medias sin escribir «en curso» y el paso exacto.
