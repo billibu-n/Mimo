@@ -480,6 +480,8 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-24 | T-04 | T-04 | `gate-iconos.py` (43.º gate): packs nativo/KDE, cambio de pack, importación de carpeta, persistencia, fallback, uso en ramo y meta, y color RGB/paleta. `docs/ICONOS.md`, `docs/ESQUEMA.md`, `CREDITOS.md`. |
 | 2026-11-24 | T-05 | T-05 | Icono de la barra en Wayland: el `app_id` real es `mimo` y el paquete solo instalaba `Mimo.desktop`; se agrega `mimo.desktop` oculto (`NoDisplay=true`, `Icon=mimo`) al RPM, DEB y Arch. `gate-arquitectura` lo mide. |
 
+| 2026-11-24 | — | 4a1ee90 | Publicación **v1.2.0-beta.9 solo Fedora x86_64**: RPM `Mimo-1.2.0-beta.9-1.x86_64.rpm`, firma del actualizador, `beta.json`, `LEEME`, `LICENSE`, `tutorial.json` y `SHA256SUMS`. Suite 43/43. Sin DEB, Arch ni Windows; esas plataformas siguen en beta.8. RPM sin firma GPG local. |
+
 ## 10. Cola por gravedad (resumen)
 
 - **Alta (3):** E-14, E-17, E-18. Fase 1.
@@ -503,6 +505,9 @@ modal de metas de Progreso.
   color propio se pinta en tarjeta, anillo, barra y gráfico.
 - **T-04** — `pruebas/gate-iconos.py` (43.º gate) y documentación: `docs/ICONOS.md`,
   `docs/ESQUEMA.md` (campo `iconos` y `color`), `CREDITOS.md` (KDE Breeze).
+- **T-05** — `escritorio/src-tauri/mimo.desktop`: alias oculto que coincide con el
+  `app_id` de Wayland (`mimo`), instalado por RPM, DEB y Arch, para que la barra muestre
+  la mascota y no el icono genérico.
 
 Criterio de cierre: suite 43/43; `gate-iconos` verde; un pack de usuario importado
 sobrevive a recargar; un icono de un pack ausente vuelve al nativo sin perder el
