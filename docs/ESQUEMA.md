@@ -54,7 +54,8 @@ El nombre del archivo es una convención, no el contrato: manda `schema`.
     "estudio": {"metaSemanal": 10, "metasRamo": {}, "metasSemana": {}},
     "tiempoModo": "crono", "tiempoHijos": ["crono", "temporizador", "pomodoro", "alarmas"],
     "alarmas": [],
-    "progreso": {"v": 1, "categorias": [], "metas": [], "registros": []}
+    "progreso": {"v": 1, "categorias": [], "metas": [], "registros": []},
+    "iconos": {"v": 1, "activo": "nativo", "packs": []}
   },
   "extensiones": {}
 }
@@ -125,7 +126,7 @@ calcula con `app/js/dominio/progreso.js` a partir de dos listas.
   "metas": [
     {"id":"m1","nombre":"Agua","unidad":"L","tipo":"suma","sentido":"subir",
      "periodo":"dia","objetivo":2,"inicio":null,"desde":"2026-10-01","hasta":"",
-     "paso":0.25,"decimales":2,"tono":"ac","icono":"agua","fuente":"manual",
+     "paso":0.25,"decimales":2,"tono":"ac","icono":"agua","color":"","fuente":"manual",
      "categoriaId":"salud","orden":0,"tareaId":"t1","notaId":"","archivada":false,
      "creada":"2026-11-11T14:00"}
   ],
@@ -171,6 +172,37 @@ Las claves de período son: día ISO, lunes de la semana, `AAAA-MM`, `AAAA` o `u
 Quitar el bloque no borra `progreso`. Eliminar una meta sí borra sus registros, con deshacer.
 La exportación de `mimo.entorno` y el respaldo llevan la clave tal cual: es aditiva y no
 cambia la versión del documento.
+
+`icono` acepta dos formas: el id nativo de siempre (`"agua"`, `"i-ramo-libro"`) o una
+referencia a un paquete (`"kde:view-calendar"`, `"usuario-mi-pack:corazon"`). Los ids
+antiguos se traducen al catálogo nativo al pintar; no se reescriben solos. Si el paquete o
+el icono ya no está, se pinta el nativo de respaldo y el id se conserva para cuando vuelva.
+`color` es opcional y guarda `#rrggbb`: si falta, la meta usa el color del token `tono`.
+
+### Paquetes de iconos
+
+`datos.iconos` guarda los packs que importó el usuario. Los packs `nativo` y `kde` viven en
+el código y no se repiten aquí.
+
+```json
+"iconos": {
+  "v": 1,
+  "activo": "usuario-mi-pack",
+  "packs": [
+    {"id":"usuario-mi-pack","nombre":"Mi pack","procedencia":"Carpeta local",
+     "licencia":"Uso personal","origen":"",
+     "iconos":[{"id":"corazon","nombre":"Corazon","cat":"general","tags":[],
+                "viewBox":"0 0 24 24","cuerpo":"<path d="..."/>"}]}
+  ]
+}
+```
+
+- `cuerpo` es el SVG ya saneado (sin scripts, eventos, estilos ejecutables ni referencias
+  externas). Se inyecta como `<symbol>` al arrancar; nunca se evalúa como HTML.
+- `activo` recuerda el último pack elegido en el selector. Si apunta a un pack que ya no
+  está, el selector abre `nativo`.
+- Reimportar una carpeta con el mismo nombre conserva el `id` del pack y de cada icono:
+  las metas y ramos que ya los usaban siguen resolviendo.
 
 ## 3. Malla
 

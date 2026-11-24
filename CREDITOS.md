@@ -4,6 +4,20 @@ Mimo es MIT (ver [`LICENSE`](LICENSE)). Este archivo reúne los avisos de lo que
 dentro de la app. Las licencias completas de cada dependencia están también junto a su código en
 `app/vendor/`.
 
+## Iconos — KDE Breeze
+
+Mimo incluye un paquete de ejemplo de ocho iconos simbólicos de **KDE Breeze**
+(KDE Plasma), bajo **LGPL-2.0-or-later / LGPL-3.0-or-later**. Se usan para demostrar
+que un pack de terceros se puede cargar y citar sin tocar el código. La interfaz
+muestra su procedencia y su licencia, y el detalle está en
+[docs/ICONOS.md](docs/ICONOS.md).
+
+- Origen: <https://invent.kde.org/frameworks/breeze-icons>
+- Licencia del paquete del sistema: LGPL-2.0-or-later, LGPL-2.1-or-later,
+  LGPL-3.0-or-later y CC-BY-SA-4.0.
+- Los SVG incluidos son los simbólicos de `actions/24`; conservan sus trazos y
+  `currentColor`, sin estilos ejecutables.
+
 ## Iconos — Lucide
 
 La interfaz usa iconos de [Lucide](https://lucide.dev), bajo **ISC**. Una parte deriva de

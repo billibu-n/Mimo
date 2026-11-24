@@ -68,6 +68,8 @@
   function esIcono(id) {
     var v = String(id || "");
     if (!v) return false;
+    if (v.indexOf(":") > 0) return true; // un pack que no está se resuelve al nativo
+    if (window.MimoIconosPack && MimoIconosPack.resolver(v).ok) return true;
     var c = catalogo();
     if (c && c.esIcono(v)) return true;
     return Object.prototype.hasOwnProperty.call(MIGRACION, v);
@@ -75,6 +77,8 @@
   function iconoVigente(id) {
     var v = String(id || "");
     if (!v) return "";
+    if (v.indexOf(":") > 0) return v; // el fallback se decide al pintar
+    if (window.MimoIconosPack && MimoIconosPack.resolver(v).ok) return v;
     var c = catalogo();
     if (c && c.esIcono(v)) return v;
     if (Object.prototype.hasOwnProperty.call(MIGRACION, v)) return MIGRACION[v];
@@ -108,7 +112,10 @@
   function iconoHTML(c, clase) {
     var id = iconoDe(c);
     if (!id) return "";
-    return '<svg class="icono ramo-ico' + (clase ? " " + clase : "") + '" style="--ramo:' + (colorDe(c) || "var(--muted)") +
+    var clases = "ramo-ico" + (clase ? " " + clase : "");
+    var estilo = "--ramo:" + (colorDe(c) || "var(--muted)");
+    if (window.MimoIconosPack) return MimoIconosPack.html(id, { clase: clases, style: estilo });
+    return '<svg class="icono ' + clases + '" style="' + estilo +
       '" aria-hidden="true"><use href="#' + id + '"/></svg>';
   }
   /* Punto de color para listas densas (chips del calendario, filas de sesiones). */

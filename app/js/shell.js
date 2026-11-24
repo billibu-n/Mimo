@@ -282,6 +282,7 @@
         temaClaro: "clasico", temaOscuro: "deepsea", fuente: "clasica", fuenteNombre: "", ordenTabs: [], catalogoOrigen: "todos", catalogoTag: "" },
       plegables: {},
       progreso: { v: 1, categorias: [], metas: [], registros: [] },
+      iconos: { v: 1, activo: "nativo", packs: [] },
       notaSel: null, tareaSel: null, eventoSel: null, ramoSel: null, califSel: null, tiempoHijos: HIJOS.map(function (x) { return x[0]; })
     };
   }
@@ -327,6 +328,8 @@
           delete d.kits.evaluaciones;
           if (!d.panel || typeof d.panel !== "object") d.panel = {};
           if (!d.progreso || typeof d.progreso !== "object") d.progreso = { v: 1, metas: [], registros: [] };
+          if (!d.iconos || typeof d.iconos !== "object" || Array.isArray(d.iconos)) d.iconos = { v: 1, activo: "nativo", packs: [] };
+          if (!Array.isArray(d.iconos.packs)) d.iconos.packs = [];
           if (window.MimoProgreso) MimoProgreso.normalizarEstado(d);
         }
       } else {
@@ -583,6 +586,9 @@
     estado.prefs = Object.assign(porDefecto().prefs, nuevo.prefs || {});
     estado.estudio = Object.assign({ metaSemanal: 10, metasRamo: {}, metasSemana: {} }, nuevo.estudio || {});
     normalizarEventos(); normalizarTareas(); normalizarNotas(); normalizarCursos(); normalizarCalifs(); normalizarEstudio();
+    if (!estado.iconos || typeof estado.iconos !== "object" || Array.isArray(estado.iconos)) estado.iconos = { v: 1, activo: "nativo", packs: [] };
+    if (!Array.isArray(estado.iconos.packs)) estado.iconos.packs = [];
+    if (window.MimoIconosPack) MimoIconosPack.refrescar();
     if (!estado.progreso || typeof estado.progreso !== "object") estado.progreso = { v: 1, metas: [], registros: [] };
     if (window.MimoProgreso) MimoProgreso.normalizarEstado(estado);
     guardar(); aplicarTema(estado.tema || "clasico"); aplicarPrefs(); aplicarIdioma();
@@ -6359,6 +6365,13 @@
     // El panel arranca cerrado siempre: se abre cuando el usuario lo pide o
     // cuando un motor lo llama directamente.
     cerrarPanel();
+    if (window.MimoIconosPack) {
+      MimoIconosPack.configurar({
+        L: L,
+        leer: function () { return estado.iconos; },
+        guardar: function (datos) { estado.iconos = datos; guardar(); }
+      });
+    }
     $$("#vista-tareas button").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-vista") === vistaTareas); });
     pintarTemas();
     historial = [JSON.stringify(estado)]; historialPos = 0; pintarHistorial();
