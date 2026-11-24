@@ -1,6 +1,6 @@
 # Cambios
 
-## 1.2.0-beta.9 — en curso
+## 1.2.0-beta.9 — 2026-11-24
 
 ### Tareas
 
@@ -42,7 +42,27 @@
   documento.
 - `gate-progreso-motor` mide normalización, agregación, períodos, pisos/techos, rachas y
   series; `gate-progreso` mide el bloque de punta a punta, el vínculo con Tareas, la fuente de
-  Estudio, el borrado con deshacer, la reinstalación y 411. El arnés pasa a 40 compuertas.
+  Estudio, el borrado con deshacer, la reinstalación y 411. El arnés pasa a 43 compuertas.
+
+### Iconos
+
+- **Paquetes de iconos**: cada icono es una referencia `pack:icono`. El pack declara nombre,
+  procedencia y licencia; la interfaz y la documentación muestran la atribución.
+- Pack `nativo` (Lucide, ISC), pack `kde` de muestra (KDE Breeze, LGPL) y packs de usuario
+  importados desde una carpeta de SVG. Los SVG se sanean y se inyectan como `<symbol>`.
+- Si un pack o un icono falta, se pinta el nativo de respaldo y se conserva el id guardado:
+  reimportar el pack recupera la elección.
+- Un solo selector (`selector-iconos.js`) en la identidad de ramos, en las metas y en las
+  categorías de Progreso, con búsqueda, categorías e importación de carpeta.
+- Las metas de Progreso eligen color por **RGB** o por una paleta de colores predefinidos,
+  con vista previa; el color propio se pinta en la tarjeta, el anillo, la barra y el gráfico.
+- `gate-iconos` mide packs, importación, persistencia, fallback, ramo, meta y color.
+
+### Escritorio
+
+- El paquete instala un alias oculto `mimo.desktop` que coincide con el `app_id` de Wayland:
+  la barra de KDE/GNOME vuelve a mostrar la mascota en vez del icono genérico.
+- El RPM y el DEB se siguen construyendo con Tauri; Arch instala el mismo alias.
 
 ## 1.2.0-beta.8 — 2026-11-05
 
