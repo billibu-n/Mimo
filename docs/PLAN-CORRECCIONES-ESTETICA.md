@@ -1,6 +1,6 @@
 # Plan de correcciones estéticas — Mimo
 
-> **Estado:** Fase 2A en curso; E-01 hecha y suite 42/42. Sigue E-12 (D-09 provisional: la letra sigue en `rem`).
+> **Estado:** Fase 2A en curso; E-01 y T-01…T-04 hechas, suite 43/43. Sigue E-12 (D-09 provisional: la letra sigue en `rem`).
 > **Base:** `t/beta-9` en `4896e08`.
 > **Rama de trabajo:** `t/estetica`, creada desde `4896e08`; se mergea a `t/beta-9` al cerrar.
 > **Fuente de verdad:** este archivo. Si el chat se compacta o se pierde, se retoma por §0.
@@ -10,7 +10,7 @@
 
 1. `git log --oneline -5` y `git status --short`.
 2. Abre §4 y busca la primera fila con estado `en curso` o `pendiente`.
-3. Corre `python3 pruebas/correr-gates.py` (42/42 esperado) y `python3 pruebas/gate-estetica.py`.
+3. Corre `python3 pruebas/correr-gates.py` (43/43 esperado) y `python3 pruebas/gate-estetica.py`.
 4. Abre la ficha de esa unidad en §5. Su columna «Contexto mínimo» lista los archivos y el criterio.
 5. No re-abras la auditoría: los 22 hallazgos y su evidencia están en §3.
 6. Al terminar: actualiza estado, commit y bitácora en el mismo commit. No dejes una unidad a medias sin escribir «en curso» y el paso exacto.
@@ -23,7 +23,7 @@ Si hay una decisión sin responder, usa el default de §2 y márcala `provisiona
 
 **Cierre ejecutable:**
 
-- 42/42 gates en verde (41 actuales + `gate-estetica.py`).
+- 43/43 gates en verde (41 base + `gate-estetica.py` + `gate-iconos.py`).
 - `gate-estetica.py` en verde con sus asserts de tokens, contraste, grilla, controles y disposición.
 - 10 temas: texto normal ≥ 4,5:1; texto grande ≥ 3:1; elementos gráficos ≥ 3:1. El badge de información ≥ 4,5:1.
 - 1440, 411 y 140 % de letra: sin desborde horizontal y sin etiquetas cortadas en las 9 secciones.
@@ -184,6 +184,15 @@ Se actualiza en el mismo commit del cambio. `Commit` es el SHA corto.
 | E-23 | 5 | Higiene de CSS | pendiente | — |
 | E-24 | 5 | Contrato, changelog y cierre | pendiente | — |
 
+### Unidades T — paquetes de iconos (fuera de la serie E)
+
+| ID | Unidad | Estado | Commit |
+|---|---|---|---|
+| T-01 | Capa de packs: nativo, KDE y usuario; saneado y fallback | hecho | T-01 |
+| T-02 | Selector único: ramos y Progreso, búsqueda e importación | hecho | T-02 |
+| T-03 | Color RGB + paleta en la meta de Progreso | hecho | T-03 |
+| T-04 | Gate de packs, importación, fallback y color; documentación | hecho | T-04 |
+
 ## 5. Fichas de ejecución
 
 Cada ficha es autosuficiente: con esto y §3 se puede ejecutar sin el chat.
@@ -193,7 +202,7 @@ Cada ficha es autosuficiente: con esto y §3 se puede ejecutar sin el chat.
 **E-00 · Baseline y gate**
 
 - **Cambio:** crear `pruebas/gate-estetica.py` con el esqueleto de cuatro bloques (`tokens`, `contraste`, `disposicion`, `semantica`) y asserts que ya pasan (10 temas con las mismas variables; 1440 sin desborde). Agregarlo a `GATES` en `correr-gates.py` (42 gates).
-- **Criterio:** `python3 pruebas/gate-estetica.py` sale 0 y `correr-gates.py` sigue 42/42. El gate imprime los ratios de contraste de los 10 temas como informe.
+- **Criterio:** `python3 pruebas/gate-estetica.py` sale 0 y `correr-gates.py` sigue 43/43. El gate imprime los ratios de contraste de los 10 temas como informe.
 - **Contexto mínimo:** `pruebas/gatelib.py` (abrir app), `pruebas/gate-escala.py` (patrón de 140 %), `pruebas/gate-diseno.py`.
 - **Commit:** `estetica E-00: gate de estetica - baseline de tokens, contraste y disposicion`
 
@@ -406,7 +415,7 @@ Cada ficha es autosuficiente: con esto y §3 se puede ejecutar sin el chat.
 **E-24 · Contrato, changelog y cierre**
 
 - **Cambio:** escribir `docs/DISENO.md` con la escala final (tamaños, radios, iconos, colores semánticos, componentes), actualizar `CHANGELOG.md` con una entrada `## 1.2.0-beta.9 — correcciones estéticas`, y dejar §4 sin pendientes.
-- **Criterio:** 42/42; `gate-estetica` verde; `docs/DISENO.md` enlazado desde `docs/BLOQUES.md` o `README`; merge `t/estetica` → `t/beta-9` con `--no-ff`. Sin push a `master`.
+- **Criterio:** 43/43; `gate-estetica` y `gate-iconos` verdes; `docs/DISENO.md` enlazado desde `docs/BLOQUES.md` o `README`; merge `t/estetica` → `t/beta-9` con `--no-ff`. Sin push a `master`.
 - **Commit:** `estetica E-24: contrato de diseno y cierre`
 
 ## 6. El gate como memoria ejecutable
@@ -422,11 +431,11 @@ Cada ficha es autosuficiente: con esto y §3 se puede ejecutar sin el chat.
 | `disposicion` | 1440/411/140: desborde y recortes en 9 secciones | E-02, E-21, E-22 |
 | `semantica` | KPI vs columna, arco del anillo, estados y clases | E-17, E-18, E-12, E-13 |
 
-Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea los cuatro bloques que ya pasan; E-25 agrega `grilla`, E-26 agrega `controles`. Cada unidad agrega su assert al mismo tiempo que su cambio; así el suite queda 42/42 en todo momento y el gate solo contiene lo ya prometido.
+Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea los cuatro bloques que ya pasan; E-25 agrega `grilla`, E-26 agrega `controles`. Cada unidad agrega su assert al mismo tiempo que su cambio; así el suite queda 43/43 en todo momento y el gate solo contiene lo ya prometido.
 
 ## 7. Definición de hecho global
 
-- [ ] 42/42 gates.
+- [ ] 43/43 gates.
 - [ ] `gate-estetica` verde en `tokens`, `grilla`, `controles`, `contraste`, `disposicion`, `semantica`.
 - [ ] 10 temas: texto 4,5:1; grande 3:1; gráficos 3:1; badge q 4,5:1.
 - [ ] 1440/411/140 sin desborde ni recorte en las 9 secciones.
@@ -465,6 +474,10 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 | 2026-11-23 | E-01 | E-01 | Ocho tokens de letra (5 base + `--fs-h1`/`--fs-num`/`--fs-display`). Se barrio todo `font-size` suelto: cero `rem`/`px` fuera de token; el texto minimo medido es 11,2 px. `gate-diseno` pasa a 8 tamaños y `gate-estetica` recorre el CSS y mide el minimo en el navegador. D-09 queda provisional en `rem`. |
 | 2026-11-23 | — | f136042 | Correcciones funcionales del dueño: la mascota ya no navega (solo cambia de cara) y la pestaña se mueve solo al apretarla; en reposo conserva el puntero de selección. `gate-barra` y `gate-correcciones` lo miden. |
 | 2026-11-23 | — | 28c2837 | Ajustes deja de ocupar pestaña: se abre solo con el engranaje del panel superior, que marca `aria-current`. La sección sigue existiendo. `secciones()` no cambia; la barra filtra el id. Gates actualizados con `abrir_seccion()`. |
+| 2026-11-24 | T-01 | 3c5affa | Capa `iconos-pack.js`: pack nativo (121 iconos Lucide), pack KDE Breeze de muestra (8 simbólicos, LGPL) y packs de usuario. Cada pack declara procedencia y licencia; los SVG se sanean y se inyectan como `<symbol>`. Un icono de un pack ausente cae al nativo con `data-fallback="1"` y conserva el id. `estado.iconos` es aditivo y viaja en el respaldo. |
+| 2026-11-24 | T-02 | 9953f66 | Selector único `selector-iconos.js`: paquete, búsqueda, categorías, importación de carpeta y atribución visible. Se usa en línea en la identidad del ramo y en ventana secundaria en las metas de Progreso. `gate-identidad` y `gate-progreso-categorias` actualizados. |
+| 2026-11-24 | T-03 | dcc5f59 | Color de meta por RGB (0–255) y paleta de tokens/paleta de identidad, con vista previa. `color` es aditivo; la tarjeta, el anillo, la barra y el gráfico usan `--prog-color`. |
+| 2026-11-24 | T-04 | T-04 | `gate-iconos.py` (43.º gate): packs nativo/KDE, cambio de pack, importación de carpeta, persistencia, fallback, uso en ramo y meta, y color RGB/paleta. `docs/ICONOS.md`, `docs/ESQUEMA.md`, `CREDITOS.md`. |
 
 ## 10. Cola por gravedad (resumen)
 
@@ -472,3 +485,24 @@ Regla: el gate **no** se pone rojo por una unidad que aún no se hace. E-00 crea
 - **Media (15):** E-01, E-02, E-03, E-06, E-07, E-08, E-10, E-12, E-13, E-15, E-16, E-19, E-20, E-21, E-22. Fases 2A–4.
 - **Baja (4):** E-04, E-05, E-09, E-11. Se ejecutan dentro de Fase 2B/3 porque los componentes los consumen; no se dejan para el final para no rehacer trabajo.
 - **Transversal (4):** E-25, E-26, E-27, E-28. No vienen de un hallazgo: son la grilla de 5 px y la capa de componentes que hacen universales el botón, el campo y el menú. Van en Fase 2B y son la base de E-06…E-11.
+
+## 11. Paquetes de iconos (T-01…T-04)
+
+Esta serie no viene de la auditoría estética: es una funcionalidad pedida sobre
+la misma base. Se registra aquí porque toca el selector de iconos de ramos y el
+modal de metas de Progreso.
+
+- **T-01** — `app/js/dominio/iconos-pack.js`, `pack-kde.js`: manifiesto de pack
+  (`id`, `nombre`, `procedencia`, `licencia`, `origen`), saneado de SVG, inyección
+  de `<symbol>`, resolución `pack:icono` y respaldo nativo.
+- **T-02** — `app/js/dominio/selector-iconos.js`: una sola lógica para el selector
+  en línea (ramos) y compacto con ventana secundaria (Progreso), con búsqueda,
+  categorías, importación de carpeta y atribución.
+- **T-03** — `app/js/dominio/selector-color.js`: R/G/B, paleta y vista previa; el
+  color propio se pinta en tarjeta, anillo, barra y gráfico.
+- **T-04** — `pruebas/gate-iconos.py` (43.º gate) y documentación: `docs/ICONOS.md`,
+  `docs/ESQUEMA.md` (campo `iconos` y `color`), `CREDITOS.md` (KDE Breeze).
+
+Criterio de cierre: suite 43/43; `gate-iconos` verde; un pack de usuario importado
+sobrevive a recargar; un icono de un pack ausente vuelve al nativo sin perder el
+id; el color de una meta se puede fijar por RGB y por paleta.

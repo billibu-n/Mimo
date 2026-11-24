@@ -92,7 +92,7 @@
       "</div>" +
       '<div class="ident-iconos" id="' + idp + '-iconos" role="group" aria-label="' + esc(L("Iconos del paquete")) + '"></div>' +
       '<p class="ident-cuenta" id="' + idp + '-cuenta" role="status" aria-live="polite"></p>' +
-      (opts.sinIcono ? '<button class="btn ident-sin" type="button" data-sel-sin aria-pressed="false">' + esc(L("Sin icono")) + "</button>" : "");
+      (opts.sinIcono ? '<button class="btn ident-sin" type="button" data-sel-sin data-ident-sin-icono aria-pressed="false">' + esc(L("Sin icono")) + "</button>" : "");
   }
 
   function montarPanel(raiz, opts) {
@@ -117,7 +117,7 @@
     var nombrePack = q("#" + idp + "-nombre");
     var file = q("#" + idp + "-file");
     var importar = q("[data-sel-importar]");
-    var sin = q("[data-sel-sin]");
+    var sin = q("[data-sel-sin],[data-ident-sin-icono]");
 
     function packActual() { return packDe(packId) || packDe("nativo"); }
     function pintarCats() {

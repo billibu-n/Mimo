@@ -15,6 +15,20 @@
   var CATEGORIA_DEFECTO = "general";
 
   function texto(v) { return typeof v === "string" ? v.trim() : ""; }
+  /* Un icono puede ser un id nativo (los nueve de siempre o i-ramo-*) o una
+     referencia pack:icono. Si no tiene forma válida, cae en diana. */
+  function iconoValido(v) {
+    v = texto(v);
+    if (!v) return "diana";
+    if (ICONOS.indexOf(v) !== -1) return v;
+    if (/^i-ramo-[a-z0-9-]+$/i.test(v)) return v;
+    if (/^[a-z0-9-]+:[^\s]+$/i.test(v)) return v;
+    return "diana";
+  }
+  function colorValido(v) {
+    v = texto(v);
+    return /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : "";
+  }
   function numero(v, def) {
     var n = Number(v);
     return isFinite(n) ? n : def;
@@ -81,7 +95,7 @@
     return conservar({
       id: texto(c.id) || "c" + (i + 1),
       nombre: texto(c.nombre) || "Categoría",
-      icono: ICONOS.indexOf(String(c.icono)) !== -1 ? String(c.icono) : "diana",
+      icono: iconoValido(c.icono),
       tono: TONOS.indexOf(String(c.tono)) !== -1 ? String(c.tono) : "ac",
       orden: entero(c.orden, 0, 9999, i),
       colapsada: !!c.colapsada
@@ -117,7 +131,8 @@
       paso: paso,
       decimales: decimales,
       tono: TONOS.indexOf(String(m.tono)) !== -1 ? String(m.tono) : "ac",
-      icono: ICONOS.indexOf(String(m.icono)) !== -1 ? String(m.icono) : "diana",
+      icono: iconoValido(m.icono),
+      color: colorValido(m.color),
       categoriaId: texto(m.categoriaId) || CATEGORIA_DEFECTO,
       orden: entero(m.orden, 0, 99999, i),
       fuente: fuente,

@@ -13,7 +13,7 @@ hay **tres documentos JSON**, no uno gigante sin contrato:
 
 | Documento | `schema` | Qué lleva | Qué no lleva |
 |---|---|---|---|
-| Entorno | `mimo.entorno` | prefs, tareas, notas, eventos, periodos, sesiones, tiempo, estudio, bloques instalados | cursos y calificaciones |
+| Entorno | `mimo.entorno` | prefs, tareas, notas, eventos, periodos, sesiones, tiempo, estudio, bloques instalados, paquetes de iconos | cursos y calificaciones |
 | Malla | `mimo.malla` | plan de cursos, calificaciones y metadatos académicos | tareas, notas, eventos |
 | Respaldo | `mimo.backup` | los dos anteriores en un solo archivo | nada |
 

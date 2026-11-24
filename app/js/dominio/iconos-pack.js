@@ -57,6 +57,8 @@
 
   function nombreNativo(id) {
     var clave = "ico." + String(id).replace(/^i-ramo-/, "");
+    var dict = window.MIMO_I18N && window.MIMO_I18N.es;
+    if (dict && dict[clave]) return dict[clave];
     if (window.MimoI18n && typeof window.MimoI18n.clave === "function") {
       var v = window.MimoI18n.clave(clave);
       if (v && v !== clave) return v;
@@ -144,8 +146,9 @@
   /* ---- packs -------------------------------------------------------------- */
   function normalizarIcono(i) {
     if (!i || i.id == null) return null;
-    var s = i.svg && i.svg.cuerpo ? { viewBox: i.svg.viewBox || "0 0 24 24", cuerpo: i.svg.cuerpo }
-      : sanear(i.svg || "");
+    var s = i.cuerpo ? { viewBox: i.viewBox || "0 0 24 24", cuerpo: i.cuerpo }
+      : (i.svg && i.svg.cuerpo ? { viewBox: i.svg.viewBox || "0 0 24 24", cuerpo: i.svg.cuerpo }
+        : sanear(i.svg || ""));
     if (!s) return null;
     return {
       id: String(i.id), nombre: String(i.nombre || titulo(i.id)), cat: String(i.cat || "general"),
