@@ -3823,11 +3823,6 @@
        guarda una cadena vacía, que es una decisión explícita del usuario. */
     var color = MimoIdentidad.tieneColor(cur) ? String(cur.color || "") : colorDeRamo(cur);
     var icono = MimoIdentidad.tieneIcono(cur) ? String(cur.icono || "") : iconoDeRamo(cur);
-    var catalogo = window.MimoIconosRamo || null;
-    var todos = catalogo ? catalogo.ICONOS : [];
-    var categorias = catalogo ? catalogo.CATEGORIAS : [];
-    var normal = function (s) { return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); };
-    var nombreDe = function (i) { return t("ico." + i.id.replace(/^i-ramo-/, "")); };
     var vista = function () {
       var ico = icono ? iconoRamoHTML({ codigo: cur.codigo, color: color, icono: icono }, "ramo-ico--lg") : "";
       return '<div class="ident-preview" id="ident-preview">' + (ico || '<span class="ident-sin-icono" aria-hidden="true">—</span>') +
@@ -3838,17 +3833,6 @@
       return '<button class="ident-color" type="button" data-ident-color="' + esc(h) + '" style="--sw:' + esc(h) +
         '" aria-label="' + esc(h) + '" aria-pressed="' + (h.toLowerCase() === String(color).toLowerCase()) + '"></button>';
     }).join("");
-    var filtros = '<button class="ident-cat on" type="button" data-ident-cat="todas" aria-pressed="true">' + esc(t("ico.todas")) + "</button>" +
-      categorias.map(function (c) {
-        return '<button class="ident-cat" type="button" data-ident-cat="' + esc(c.id) + '" aria-pressed="false">' + esc(c.nombre[idioma()] || c.nombre.es) + "</button>";
-      }).join("");
-
-    var cuerpoIconos = function (i) {
-      return '<button class="ident-ico" type="button" data-ident-icono="' + esc(i.id) + '" aria-pressed="' + (i.id === icono) +
-        '" aria-label="' + esc(nombreDe(i)) + '" title="' + esc(nombreDe(i)) + '">' +
-        iconoRamoHTML({ codigo: cur.codigo, color: color, icono: i.id }) +
-        '<span class="ident-ico__nom">' + esc(nombreDe(i)) + "</span></button>";
-    };
 
     MimoModal.abrir({
       id: "identidad",
@@ -3859,54 +3843,24 @@
           '<div class="ident-fila"><input class="entrada ident-rgb" id="ident-color" type="color" value="' + esc(color || "#2563eb") + '" aria-label="' + esc(t("ident.color")) + '">' +
           '<button class="btn btn--chico ident-sin" type="button" data-ident-sin-color aria-pressed="' + (!color) + '">' + esc(t("ident.sinColor")) + "</button></div></div>" +
         '<div class="ident-grupo"><span class="ident-etq">' + esc(t("ident.paleta")) + '</span><div class="ident-paleta" role="group" aria-label="' + esc(t("ident.paleta")) + '">' + paleta + "</div></div>" +
-        '<div class="ident-grupo"><div class="ident-etq ident-etq--fila"><span>' + esc(t("ident.iconos")) + "</span>" +
-          '<button class="btn btn--chico ident-sin" type="button" data-ident-sin-icono aria-pressed="' + (!icono) + '">' + esc(t("ident.sinIcono")) + "</button></div>" +
-          '<input class="entrada ident-buscar" id="ident-buscar" type="search" placeholder="' + esc(t("ico.buscar")) +
-            '" aria-label="' + esc(t("ico.buscar")) + '" aria-controls="ident-iconos" autocomplete="off">' +
-          '<div class="ident-filtros" role="group" aria-label="' + esc(t("ico.filtro")) + '">' + filtros + "</div>" +
-          '<div class="ident-iconos" id="ident-iconos" role="group" aria-label="' + esc(t("ico.ver")) + '"></div>' +
-          '<p class="ident-cuenta" id="ident-cuenta" role="status" aria-live="polite"></p></div>',
+        '<div class="ident-grupo" id="ident-grupo-icono"><span class="ident-etq">' + esc(t("ident.iconos")) + "</span>" +
+          '<div id="ident-panel"></div></div>',
       guardar: L("Guardar", "Save", "保存"),
       despues: function (form) {
-        var caja = form.querySelector("#ident-iconos");
-        var buscar = form.querySelector("#ident-buscar");
-        var cuenta = form.querySelector("#ident-cuenta");
         var sinColor = form.querySelector("[data-ident-sin-color]");
-        var sinIcono = form.querySelector("[data-ident-sin-icono]");
-        var cat = "todas";
         var pintarVista = function () {
           $("#ident-preview").outerHTML = vista();
           form.querySelectorAll("[data-ident-color]").forEach(function (x) {
             x.setAttribute("aria-pressed", x.getAttribute("data-ident-color").toLowerCase() === String(color).toLowerCase());
           });
           if (sinColor) sinColor.setAttribute("aria-pressed", color ? "false" : "true");
-          if (sinIcono) sinIcono.setAttribute("aria-pressed", icono ? "false" : "true");
         };
-        var filtrar = function () {
-          var q = normal(buscar.value);
-          var lista = todos.filter(function (i) {
-            if (cat !== "todas" && i.cat !== cat) return false;
-            if (!q) return true;
-            return normal(nombreDe(i) + " " + i.tags.join(" ") + " " + i.id).indexOf(q) !== -1;
+        if (window.MimoSelectorIconos) {
+          MimoSelectorIconos.montarPanel(form.querySelector("#ident-panel"), {
+            idPrefijo: "ident", valor: icono, L: L, color: color, sinIcono: true,
+            onCambio: function (v) { icono = v; pintarVista(); }
           });
-          caja.innerHTML = lista.length ? lista.map(cuerpoIconos).join("")
-            : '<p class="muted ident-vacio">' + esc(t("ico.sinResultados")) + "</p>";
-          cuenta.textContent = tf("ico.cuenta", { n: lista.length });
-        };
-        form.querySelectorAll("[data-ident-cat]").forEach(function (b) {
-          b.addEventListener("click", function () {
-            cat = b.getAttribute("data-ident-cat");
-            form.querySelectorAll("[data-ident-cat]").forEach(function (x) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-            filtrar();
-          });
-        });
-        buscar.addEventListener("input", filtrar);
-        caja.addEventListener("click", function (e) {
-          var b = e.target.closest("[data-ident-icono]"); if (!b) return;
-          icono = b.getAttribute("data-ident-icono");
-          caja.querySelectorAll("[data-ident-icono]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-          pintarVista();
-        });
+        }
         form.querySelectorAll("[data-ident-color]").forEach(function (b) {
           b.addEventListener("click", function () {
             color = b.getAttribute("data-ident-color");
@@ -3916,8 +3870,6 @@
         });
         $("#ident-color").addEventListener("input", function () { color = $("#ident-color").value; pintarVista(); });
         if (sinColor) sinColor.addEventListener("click", function () { color = ""; pintarVista(); });
-        if (sinIcono) sinIcono.addEventListener("click", function () { icono = ""; pintarVista(); });
-        filtrar();
       },
       onGuardar: function () {
         if (color && !MimoIdentidad.esColor(color)) return false;

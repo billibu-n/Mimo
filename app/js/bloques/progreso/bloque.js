@@ -531,7 +531,12 @@
     q("#prog-f-inicio").value = m && m.inicio !== null ? m.inicio : "";
     q("#prog-f-decimales").value = m ? String(m.decimales) : "1";
     q("#prog-f-tono").value = m ? m.tono : "ac";
-    q("#prog-f-icono").value = m ? m.icono : "diana";
+    if (window.MimoSelectorIconos && q("#prog-f-icono-campo")) {
+      MimoSelectorIconos.montarCampo(q("#prog-f-icono-campo"), {
+        id: "prog-f-icono", valor: m ? m.icono : "i-ramo-diana", L: L,
+        etiqueta: L("Icono", "Icon", "图标")
+      });
+    }
     var fuente = q("#prog-f-fuente");
     var opSes = fuente ? fuente.querySelector('option[value="sesiones"]') : null;
     if (opSes) opSes.disabled = !estudioInstalado();
@@ -712,7 +717,12 @@
     var c = id ? categoriaPorId(id) : null;
     q("#prog-cat-tit").textContent = c ? L("Editar categoría", "Edit category", "编辑分类") : L("Nueva categoría", "New category", "新分类");
     q("#prog-cat-nombre").value = c ? c.nombre : "";
-    q("#prog-cat-icono").value = c ? c.icono : "diana";
+    if (window.MimoSelectorIconos && q("#prog-cat-icono-campo")) {
+      MimoSelectorIconos.montarCampo(q("#prog-cat-icono-campo"), {
+        id: "prog-cat-icono", valor: c ? c.icono : "i-ramo-diana", L: L,
+        etiqueta: L("Icono", "Icon", "图标")
+      });
+    }
     q("#prog-cat-tono").value = c ? c.tono : "ac";
     q("#prog-cat-eliminar").hidden = !c || c.id === P.CATEGORIA_DEFECTO;
     abrirModal("prog-modal-cat");

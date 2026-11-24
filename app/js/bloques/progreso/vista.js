@@ -34,18 +34,7 @@
       <div class="prog-campos">
         <label class="todo"><span data-l10n-es="Nombre" data-l10n-en="Name" data-l10n-zh="名称">Nombre</span>
           <input id="prog-cat-nombre" type="text" maxlength="40" placeholder="Salud, Estudio, Fuerza…"></label>
-        <label><span data-l10n-es="Icono" data-l10n-en="Icon" data-l10n-zh="图标">Icono</span>
-          <select id="prog-cat-icono">
-            <option value="diana" data-l10n-es="Diana" data-l10n-en="Target" data-l10n-zh="靶心">Diana</option>
-            <option value="agua" data-l10n-es="Gota" data-l10n-en="Drop" data-l10n-zh="水滴">Gota</option>
-            <option value="libro" data-l10n-es="Libro" data-l10n-en="Book" data-l10n-zh="书">Libro</option>
-            <option value="pesa" data-l10n-es="Pesa" data-l10n-en="Weight" data-l10n-zh="哑铃">Pesa</option>
-            <option value="estudio" data-l10n-es="Estudio" data-l10n-en="Study" data-l10n-zh="学习">Estudio</option>
-            <option value="peso" data-l10n-es="Balanza" data-l10n-en="Scale" data-l10n-zh="秤">Balanza</option>
-            <option value="corazon" data-l10n-es="Corazón" data-l10n-en="Heart" data-l10n-zh="心">Corazón</option>
-            <option value="dinero" data-l10n-es="Dinero" data-l10n-en="Money" data-l10n-zh="钱">Dinero</option>
-            <option value="otro" data-l10n-es="Otro" data-l10n-en="Other" data-l10n-zh="其他">Otro</option>
-          </select></label>
+        <div id="prog-cat-icono-campo"></div>
         <label><span data-l10n-es="Color" data-l10n-en="Colour" data-l10n-zh="颜色">Color</span>
           <select id="prog-cat-tono">
             <option value="ac" data-l10n-es="Azul" data-l10n-en="Blue" data-l10n-zh="蓝色">Azul</option>
@@ -115,18 +104,7 @@
             <option value="q" data-l10n-es="Violeta" data-l10n-en="Violet" data-l10n-zh="紫色">Violeta</option>
             <option value="bad" data-l10n-es="Rojo" data-l10n-en="Red" data-l10n-zh="红色">Rojo</option>
           </select></label>
-        <label><span data-l10n-es="Icono" data-l10n-en="Icon" data-l10n-zh="图标">Icono</span>
-          <select id="prog-f-icono">
-            <option value="diana" data-l10n-es="Diana" data-l10n-en="Target" data-l10n-zh="靶心">Diana</option>
-            <option value="agua" data-l10n-es="Gota" data-l10n-en="Drop" data-l10n-zh="水滴">Gota</option>
-            <option value="libro" data-l10n-es="Libro" data-l10n-en="Book" data-l10n-zh="书">Libro</option>
-            <option value="pesa" data-l10n-es="Pesa" data-l10n-en="Weight" data-l10n-zh="哑铃">Pesa</option>
-            <option value="estudio" data-l10n-es="Estudio" data-l10n-en="Study" data-l10n-zh="学习">Estudio</option>
-            <option value="peso" data-l10n-es="Balanza" data-l10n-en="Scale" data-l10n-zh="秤">Balanza</option>
-            <option value="corazon" data-l10n-es="Corazón" data-l10n-en="Heart" data-l10n-zh="心">Corazón</option>
-            <option value="dinero" data-l10n-es="Dinero" data-l10n-en="Money" data-l10n-zh="钱">Dinero</option>
-            <option value="otro" data-l10n-es="Otro" data-l10n-en="Other" data-l10n-zh="其他">Otro</option>
-          </select></label>
+        <div class="todo" id="prog-f-icono-campo"></div>
         <label><span data-l10n-es="Fuente" data-l10n-en="Source" data-l10n-zh="来源">Fuente</span>
           <select id="prog-f-fuente">
             <option value="manual" data-l10n-es="Manual" data-l10n-en="Manual" data-l10n-zh="手动">Manual</option>
