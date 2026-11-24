@@ -31,11 +31,13 @@
 .prog-tono--warn{color:var(--warn)}
 .prog-tono--bad{color:var(--bad)}
 .prog-tono--q{color:var(--q)}
+.prog-tono--propia{color:var(--prog-color)}
 .prog-ring__bar.prog-tono--ac{stroke:var(--ac)}
 .prog-ring__bar.prog-tono--ok{stroke:var(--ok)}
 .prog-ring__bar.prog-tono--warn{stroke:var(--warn)}
 .prog-ring__bar.prog-tono--bad{stroke:var(--bad)}
 .prog-ring__bar.prog-tono--q{stroke:var(--q)}
+.prog-ring__bar.prog-tono--propia{stroke:var(--prog-color)}
 
 .prog-num{min-width:0}
 .prog-num b{display:block;font-size:var(--fs-num);line-height:1;letter-spacing:-.02em;white-space:nowrap}
@@ -57,6 +59,9 @@
 .prog-spark .punto{fill:var(--ac)}
 .prog-spark .punto.tono-bad{fill:var(--bad)}
 .prog-spark .punto.tono-ok{fill:var(--ok)}
+.prog-color--propia .prog-spark rect.on{fill:var(--prog-color)}
+.prog-color--propia .prog-spark .linea{stroke:var(--prog-color)}
+.prog-color--propia .prog-spark .punto{fill:var(--prog-color)}
 
 .prog-vacio{padding:var(--sp-8) var(--sp-4);text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r-lg);margin-top:var(--sp-3)}
 .prog-vacio h2{color:var(--fg);font-size:var(--fs-lg);margin:0 0 var(--sp-1)}
@@ -68,6 +73,7 @@
 .prog-barra i.warn{background:var(--warn)}
 .prog-barra i.bad{background:var(--bad)}
 .prog-barra i.q{background:var(--q)}
+.prog-barra i.propia{background:var(--prog-color)}
 .prog-barra--panel{height:6px;margin:var(--sp-1) 0}
 
 .prog-chart{margin:var(--sp-3) 0;width:100%}
@@ -81,6 +87,9 @@
 .prog-chart .punto{fill:var(--ac);stroke:var(--sup);stroke-width:1.5}
 .prog-chart .punto.ok{fill:var(--ok)}
 .prog-chart .linea{fill:none;stroke:var(--ac);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.prog-color--propia .prog-chart .barra.hoy{fill:var(--prog-color)}
+.prog-color--propia .prog-chart .punto{fill:var(--prog-color)}
+.prog-color--propia .prog-chart .linea{stroke:var(--prog-color)}
 .prog-chart__tit{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);margin-bottom:4px;font-size:var(--fs-xs);color:var(--muted)}
 
 .prog-modal[hidden]{display:none!important}

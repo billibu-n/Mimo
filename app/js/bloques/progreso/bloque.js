@@ -163,6 +163,10 @@
     if (p.cumplido) return "ok";
     return m.tono;
   }
+  function colorMeta(m) {
+    return m && /^#[0-9a-f]{6}$/i.test(String(m.color || "")) ? String(m.color).toLowerCase() : "";
+  }
+  function tonoMeta(m, p) { return colorMeta(m) ? "propia" : tono(m, p); }
   function estadoTexto(m, p) {
     if (p.valor === null) return L("Sin registros todavía.", "No entries yet.", "还没有记录。");
     if (esTecho(m)) {
@@ -187,14 +191,15 @@
     otro: '<circle cx="12" cy="12" r="8"/>'
   };
   function iconoMeta(n) {
+    if (window.MimoIconosPack) return MimoIconosPack.html(n, { clase: "prog-ico" });
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONOS[n] || ICONOS.otro) + "</svg>";
   }
 
-  function anillo(pct, tone) {
+  function anillo(pct, tone, color) {
     var r = 34, c = 2 * Math.PI * r, off = c * (1 - Math.min(100, pct) / 100);
     return '<svg class="prog-ring" viewBox="0 0 80 80" role="img" aria-label="' + pct + '%">' +
       '<circle class="prog-ring__track" cx="40" cy="40" r="34"></circle>' +
-      '<circle class="prog-ring__bar prog-tono--' + tone + '" cx="40" cy="40" r="34" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"></circle>' +
+      '<circle class="prog-ring__bar prog-tono--' + tone + '"' + (color ? ' style="--prog-color:' + esc(color) + '"' : "") + ' cx="40" cy="40" r="34" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"></circle>' +
       '<text class="prog-ring__txt" x="40" y="45" text-anchor="middle">' + pct + "%</text></svg>";
   }
 
@@ -238,7 +243,7 @@
   }
 
   function tarjeta(m) {
-    var p = proyecto(m), ra = racha(m), tone = tono(m, p), techo = esTecho(m);
+    var p = proyecto(m), ra = racha(m), tone = tonoMeta(m, p), color = colorMeta(m), techo = esTecho(m);
     var sinFuente = m.fuente === "sesiones" && !estudioInstalado();
     var pct = p.avancePct === null || sinFuente ? 0 : p.avancePct;
     var valor = (p.valor === null || sinFuente) ? "—" : fmt(p.valor, m);
@@ -271,11 +276,11 @@
     var st = serieTarjeta(m);
     var sp = (m.periodo === "unica" || (m.periodo === "anio" && (m.tipo === "suma" || m.tipo === "conteo"))) ? sparkLinea(m, st) : spark(m, st);
 
-    return '<article class="card prog-card' + (sel === m.id ? " prog-card--sel" : "") + '" data-prog-meta="' + esc(m.id) + '" data-prog-cat="' + esc(m.categoriaId || P.CATEGORIA_DEFECTO) + '" tabindex="0" role="button" aria-label="' + esc(L("Ver detalle de ", "See details of ", "查看详情 ")) + esc(m.nombre) + '">' +
-      '<div class="prog-card__cab"><span class="prog-card__ico prog-tono--' + esc(m.tono) + '">' + iconoMeta(m.icono) + "</span>" +
+    return '<article class="card prog-card' + (sel === m.id ? " prog-card--sel" : "") + (color ? " prog-color--propia" : "") + '" data-prog-meta="' + esc(m.id) + '" data-prog-cat="' + esc(m.categoriaId || P.CATEGORIA_DEFECTO) + '" tabindex="0" role="button" aria-label="' + esc(L("Ver detalle de ", "See details of ", "查看详情 ")) + esc(m.nombre) + '"' + (color ? ' style="--prog-color:' + esc(color) + '"' : "") + '>' +
+      '<div class="prog-card__cab"><span class="prog-card__ico prog-tono--' + esc(color ? "propia" : m.tono) + '">' + iconoMeta(m.icono) + "</span>" +
       '<div class="prog-card__t"><h3>' + esc(m.nombre) + "</h3><small>" + esc(etiquetaTipo(m)) + " · " + esc(etiquetaPeriodo(m)) + "</small></div>" + badge +
       '<span class="prog-drag" draggable="true" data-prog-drag="' + esc(m.id) + '" title="' + esc(L("Arrastrar para ordenar", "Drag to reorder", "拖动排序")) + '" aria-hidden="true">⋮⋮</span></div>' +
-      '<div class="prog-card__cuerpo">' + (p.avancePct === null ? "" : anillo(pct, tone)) +
+      '<div class="prog-card__cuerpo">' + (p.avancePct === null ? "" : anillo(pct, tone, color)) +
       '<div class="prog-num"><b>' + valor + ' <small>/ ' + fmt(m.objetivo, m) + unidad(m) + "</small></b><span class=\"resto resto--" + restoCls + "\">" + resto + "</span></div></div>" +
       sp +
       '<div class="prog-card__pie">' + pie + "</div></article>";
@@ -431,7 +436,7 @@
     if (!C || !sel) return '<h2>' + esc(L("Progreso", "Progress", "进度")) + '</h2><p class="panel__nota">' + esc(L("Elige una meta para ver su detalle.", "Pick a goal to see its details.", "选择一个目标查看详情。")) + "</p>";
     var m = metaPorId(sel);
     if (!m) return '<h2>' + esc(L("Progreso", "Progress", "进度")) + '</h2><p class="panel__nota">' + esc(L("Elige una meta para ver su detalle.", "Pick a goal to see its details.", "选择一个目标查看详情。")) + "</p>";
-    var p = proyecto(m), ra = racha(m), tone = tono(m, p);
+    var p = proyecto(m), ra = racha(m), tone = tonoMeta(m, p), color = colorMeta(m);
     var sinFuente = m.fuente === "sesiones" && !estudioInstalado();
     var pct = p.avancePct === null || sinFuente ? 0 : p.avancePct;
     var hist = registrosEfectivos().filter(function (r) { return r.metaId === m.id; })
@@ -439,10 +444,10 @@
     var tarea = m.tareaId ? tareaPorId(m.tareaId) : null;
     var html = "<h2>" + esc(L("Progreso", "Progress", "进度")) + "</h2><h3>" + esc(m.nombre) + "</h3>" +
       '<div class="panel__bloque"><span>' + esc(L("Ahora", "Now", "当前")) + '</span><small>' + ((p.valor === null || sinFuente) ? "—" : fmt(p.valor, m) + unidad(m)) + " / " + fmt(m.objetivo, m) + unidad(m) + "</small></div>" +
-      '<div class="prog-barra prog-barra--panel"><i class="' + tone + '" style="width:' + pct + '%"></i></div>' +
+      '<div class="prog-barra prog-barra--panel"><i class="' + (color ? "propia" : tone) + '" style="' + (color ? "--prog-color:" + esc(color) + ";" : "") + 'width:' + pct + '%"></i></div>' +
       '<p class="panel__nota">' + esc(estadoTexto(m, p)) + "</p>" +
       '<div class="panel__bloque"><span>' + esc(L("Racha", "Streak", "连续")) + '</span><small>' + ra.actual + " · " + esc(L("mejor ", "best ", "最佳 ")) + ra.mejor + "</small></div>" +
-      '<div class="prog-chart"><div class="prog-chart__tit"><span>' + esc(m.periodo === "unica" ? L("Intentos", "Attempts", "尝试") : (m.periodo === "anio" ? L("Acumulado del año", "Year to date", "年度累计") : L("Últimos períodos", "Recent periods", "最近周期"))) + '</span><span>' + esc(L("línea = objetivo", "line = target", "线 = 目标")) + '</span></div>' +
+      '<div class="prog-chart' + (color ? " prog-color--propia" : "") + '"' + (color ? ' style="--prog-color:' + esc(color) + '"' : "") + '><div class="prog-chart__tit"><span>' + esc(m.periodo === "unica" ? L("Intentos", "Attempts", "尝试") : (m.periodo === "anio" ? L("Acumulado del año", "Year to date", "年度累计") : L("Últimos períodos", "Recent periods", "最近周期"))) + '</span><span>' + esc(L("línea = objetivo", "line = target", "线 = 目标")) + '</span></div>' +
       ((m.periodo === "unica" || (m.periodo === "anio" && (m.tipo === "suma" || m.tipo === "conteo"))) ? linea(serieDetalle(m), m) : barras(serieDetalle(m), m)) + '</div>';
     if (m.fuente === "sesiones") {
       html += '<div class="panel__bloque"><span>' + esc(L("Fuente", "Source", "来源")) + '</span><small>' + esc(estudioInstalado() ? L("Sesiones de Estudio", "Study sessions", "学习时段") : L("Academics no está instalado", "Academics is not installed", "未安装 Academics")) + "</small></div>";
@@ -530,7 +535,13 @@
     q("#prog-f-paso").value = m ? m.paso : 1;
     q("#prog-f-inicio").value = m && m.inicio !== null ? m.inicio : "";
     q("#prog-f-decimales").value = m ? String(m.decimales) : "1";
-    q("#prog-f-tono").value = m ? m.tono : "ac";
+    var colorMetaActual = m && colorMeta(m);
+    if (window.MimoSelectorColor && q("#prog-f-color-campo")) {
+      var colorInicial = colorMetaActual || (window.MimoSelectorColor.token("--" + (m ? m.tono : "ac")) || "#2563eb");
+      MimoSelectorColor.montar(q("#prog-f-color-campo"), {
+        id: "prog-f-color", valor: colorInicial, L: L, etiqueta: L("Color", "Colour", "颜色")
+      });
+    }
     if (window.MimoSelectorIconos && q("#prog-f-icono-campo")) {
       MimoSelectorIconos.montarCampo(q("#prog-f-icono-campo"), {
         id: "prog-f-icono", valor: m ? m.icono : "i-ramo-diana", L: L,
@@ -569,7 +580,8 @@
       paso: Number(q("#prog-f-paso").value) || 1,
       inicio: q("#prog-f-inicio").value === "" ? null : Number(q("#prog-f-inicio").value),
       decimales: Number(q("#prog-f-decimales").value),
-      tono: q("#prog-f-tono").value,
+      tono: editando && metaPorId(editando) ? metaPorId(editando).tono : "ac",
+      color: q("#prog-f-color") ? q("#prog-f-color").value : "",
       icono: q("#prog-f-icono").value,
       fuente: fuente,
       categoriaId: q("#prog-f-categoria").value || P.CATEGORIA_DEFECTO,

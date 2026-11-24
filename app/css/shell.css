@@ -221,6 +221,29 @@ body.split #contenido-b{display:block}
 .sel-ico-cab h2{margin:0;font-size:var(--fs-lg)}
 .sel-ico-pie{display:flex;align-items:center;gap:var(--sp-2);margin-top:var(--sp-4);padding-top:var(--sp-3);border-top:1px solid var(--line2)}
 .sel-ico-pie .crece{flex:1}
+.sel-color-caja{display:flex;flex-direction:column;gap:var(--sp-1);min-width:0}
+.sel-color__etq{font-size:var(--fs-xs);color:var(--muted)}
+.sel-color{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:var(--sp-2)}
+.sel-color__prev{display:inline-flex;align-items:center;justify-content:center;width:var(--sp-7);height:var(--sp-7);
+  flex:none;border-radius:var(--r-sm);background:var(--sel);border:1px solid var(--line)}
+.sel-color__aa{font-size:var(--fs-sm);font-weight:700;color:var(--sel-txt)}
+.sel-color__rgb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:center;gap:var(--sp-1);flex:1 1 160px;min-width:0}
+.sel-color__num{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:var(--sp-1);
+  font-size:var(--fs-xs);color:var(--muted);min-width:0}
+.sel-color__num input{width:100%;min-width:0;min-height:var(--sp-6);padding:0 var(--sp-1);
+  border:1px solid var(--line);border-radius:var(--r-sm);background:var(--sup);color:var(--fg);
+  font:inherit;font-size:var(--fs-sm)}
+.sel-color__hex{font-size:var(--fs-xs);color:var(--muted2);font-variant-numeric:tabular-nums}
+.sel-color__pop{position:absolute;z-index:5;top:calc(100% + var(--sp-1));left:0;right:0;padding:var(--sp-2);
+  border:1px solid var(--line);border-radius:var(--r-md);background:var(--sup);box-shadow:var(--sombra)}
+.sel-color__pop[hidden]{display:none!important}
+.sel-color__pop-tit{font-size:var(--fs-xs);color:var(--muted);margin-bottom:var(--sp-1)}
+.sel-color__sws{display:flex;flex-wrap:wrap;gap:var(--sp-1)}
+.sel-color__sw{width:var(--sp-5);height:var(--sp-5);border-radius:50%;border:2px solid var(--line);
+  background:var(--sw);cursor:pointer;padding:0}
+.sel-color__sw[aria-pressed="true"]{border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 35%,transparent)}
+.sel-color__sw:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+@media (max-width:520px){.sel-color__rgb{flex-basis:100%}}
 @media (max-width:520px){.sel-ico-overlay{padding:var(--sp-2)}.sel-ico-caja{padding:var(--sp-3)}}
 .modal-historial-caja{width:min(560px,100%)}
 .historial-acciones{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2);margin:var(--sp-3) 0}

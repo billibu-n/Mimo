@@ -96,14 +96,7 @@
           <input id="prog-f-inicio" type="number" step="any" placeholder="Para medir el avance"></label>
         <label><span data-l10n-es="Decimales" data-l10n-en="Decimals" data-l10n-zh="小数位">Decimales</span>
           <select id="prog-f-decimales"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></label>
-        <label><span data-l10n-es="Color" data-l10n-en="Colour" data-l10n-zh="颜色">Color</span>
-          <select id="prog-f-tono">
-            <option value="ac" data-l10n-es="Azul" data-l10n-en="Blue" data-l10n-zh="蓝色">Azul</option>
-            <option value="ok" data-l10n-es="Verde" data-l10n-en="Green" data-l10n-zh="绿色">Verde</option>
-            <option value="warn" data-l10n-es="Ámbar" data-l10n-en="Amber" data-l10n-zh="琥珀">Ámbar</option>
-            <option value="q" data-l10n-es="Violeta" data-l10n-en="Violet" data-l10n-zh="紫色">Violeta</option>
-            <option value="bad" data-l10n-es="Rojo" data-l10n-en="Red" data-l10n-zh="红色">Rojo</option>
-          </select></label>
+        <div id="prog-f-color-campo"></div>
         <div class="todo" id="prog-f-icono-campo"></div>
         <label><span data-l10n-es="Fuente" data-l10n-en="Source" data-l10n-zh="来源">Fuente</span>
           <select id="prog-f-fuente">
